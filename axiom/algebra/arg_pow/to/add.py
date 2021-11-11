@@ -20,20 +20,22 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.arg.apply(algebra.pow.to.mul.split.base)
 
-    Eq << algebra.cond.given.et.suffice.split.apply(Eq[-1], cond=Unequal(z, 0))
+    Eq << algebra.cond.given.et.infer.split.apply(Eq[-1], cond=Unequal(z, 0))
 
-    Eq << algebra.suffice.given.suffice.subs.apply(Eq[-1])
+    Eq << algebra.infer.given.infer.subs.apply(Eq[-1])
 
-    Eq << Eq[-2].this.lhs.apply(algebra.is_nonzero.imply.abs_is_positive)
+    Eq << Eq[-2].this.lhs.apply(algebra.ne_zero.imply.abs_gt_zero)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.is_positive.imply.pow_is_positive, n)
+    Eq << Eq[-1].this.lhs.apply(algebra.gt_zero.imply.pow_gt_zero, n)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.is_positive.imply.eq.arg, Eq[-1].find(Exp))
+    Eq << Eq[-1].this.lhs.apply(algebra.gt_zero.imply.eq.arg, Eq[-1].find(Exp))
 
-    Eq << algebra.suffice.given.suffice.subs.apply(Eq[-1])
+    Eq << algebra.infer.given.infer.subs.apply(Eq[-1])
 
     Eq << Eq[-1].this.rhs.lhs.apply(algebra.arg_expi.to.add.ceiling)
 
 
 if __name__ == '__main__':
     run()
+# created on 2018-08-26
+# updated on 2018-08-26

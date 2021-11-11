@@ -19,9 +19,9 @@ def prove(Eq):
     a, b = Symbol(real=True)
     Eq << apply(Interval(a, b) | Interval(b, a))
 
-    Eq << algebra.cond.given.et.suffice.split.apply(Eq[0], cond=a > b)
+    Eq << algebra.cond.given.et.infer.split.apply(Eq[0], cond=a > b)
 
-    Eq << Suffice(a > b, Equal(Min(a, b), b), plausible=True)
+    Eq << Infer(a > b, Equal(Min(a, b), b), plausible=True)
 
     Eq << Eq[-1].this.lhs.apply(algebra.gt.imply.eq.min)
 
@@ -29,9 +29,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.et.given.et.subs.eq, index=0)
 
-    Eq << algebra.suffice.given.et.suffice.apply(Eq[-1])
+    Eq << algebra.infer.given.et.infer.apply(Eq[-1])
 
-    Eq << Suffice(a > b, Equal(Max(a, b), a), plausible=True)
+    Eq << Infer(a > b, Equal(Max(a, b), a), plausible=True)
 
     Eq << Eq[-1].this.lhs.apply(algebra.gt.imply.eq.max)
 
@@ -39,9 +39,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.et.given.et.subs.eq, index=0)
 
-    Eq << algebra.suffice.given.et.suffice.apply(Eq[-1])
+    Eq << algebra.infer.given.et.infer.apply(Eq[-1])
 
-    Eq << Suffice(a > b, Equal(Interval(a, b), a.emptySet), plausible=True)
+    Eq << Infer(a > b, Equal(Interval(a, b), a.emptySet), plausible=True)
 
     Eq << Eq[-1].this.lhs.apply(sets.gt.imply.interval_is_empty)
 
@@ -49,7 +49,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.et.given.et.subs.eq, index=0)
 
-    Eq << Suffice(a <= b, Equal(Max(a, b), b), plausible=True)
+    Eq << Infer(a <= b, Equal(Max(a, b), b), plausible=True)
 
     Eq << Eq[-1].this.lhs.apply(algebra.le.imply.eq.max)
 
@@ -57,9 +57,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.et.given.et.subs.eq, index=0)
 
-    Eq << algebra.suffice.given.et.suffice.apply(Eq[-1])
+    Eq << algebra.infer.given.et.infer.apply(Eq[-1])
 
-    Eq << Suffice(a <= b, Equal(Min(a, b), a), plausible=True)
+    Eq << Infer(a <= b, Equal(Min(a, b), a), plausible=True)
 
     Eq << Eq[-1].this.lhs.apply(algebra.le.imply.eq.min)
 
@@ -67,9 +67,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.et.given.et.subs.eq, index=0)
 
-    Eq << algebra.suffice.given.et.suffice.apply(Eq[-1])
+    Eq << algebra.infer.given.et.infer.apply(Eq[-1])
 
-    Eq << Suffice(a <= b, Subset(Interval(b, a), Interval(a, b)), plausible=True)
+    Eq << Infer(a <= b, Subset(Interval(b, a), Interval(a, b)), plausible=True)
 
     Eq << Eq[-1].this.lhs.apply(sets.le.imply.subset.interval)
 
@@ -78,3 +78,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-06-04
+# updated on 2020-06-04

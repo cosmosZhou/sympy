@@ -57,11 +57,13 @@ def prove(Eq):
 
     Eq << Eq.split.subs(Eq[-1])
 
-    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
+    Eq << Infer(Eq[0], Eq.induct, plausible=True)
 
-    Eq << algebra.eq.suffice.imply.eq.induct.apply(Eq.initial, Eq[-1], n=n)
+    Eq << algebra.eq.infer.imply.eq.induct.apply(Eq.initial, Eq[-1], n=n)
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2020-10-10
+# updated on 2020-10-10

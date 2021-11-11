@@ -22,9 +22,9 @@ def prove(Eq):
 
     Eq << algebra.gt.lt.imply.gt.transit.apply(Eq[-2], Eq[-1])
 
-    Eq << algebra.gt.imply.is_positive.apply(Eq[-1]) / 2
+    Eq << algebra.gt.imply.gt_zero.apply(Eq[-1]) / 2
 
-    Eq << algebra.is_positive.imply.eq.abs.apply(Eq[-1])
+    Eq << algebra.gt_zero.imply.eq.abs.apply(Eq[-1])
 
     Eq << algebra.lt_square.given.et.lt.apply(Eq[1])
 
@@ -34,3 +34,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-11-26
+# updated on 2020-11-26

@@ -16,7 +16,7 @@ def prove(Eq):
 
     Eq << apply(Equal(KroneckerDelta(x, y), 1))
 
-    Eq << algebra.equivalent.given.et.apply(Eq[-1])
+    Eq << algebra.iff.given.et.apply(Eq[-1])
 
     Eq << Eq[-2].this.lhs.lhs.apply(algebra.kroneckerDelta.to.piece)
 
@@ -25,3 +25,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2019-04-20
+# updated on 2019-04-20

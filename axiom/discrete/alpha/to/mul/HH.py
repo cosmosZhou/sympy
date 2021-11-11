@@ -2,7 +2,7 @@ from util import *
 
 from axiom.discrete.H.to.add.definition import H
 
-from axiom.discrete.imply.is_positive.alpha import alpha
+from axiom.discrete.imply.gt_zero.alpha import alpha
 
 
 def reverse(x):
@@ -52,15 +52,17 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.mul.to.add)
 
-    Eq << discrete.imply.is_nonzero.alpha.apply(reverse(x[:n]))
+    Eq << discrete.imply.ne_zero.alpha.apply(reverse(x[:n]))
 
-    Eq << algebra.is_nonzero.eq.imply.eq.inverse.apply(Eq[-1], Eq[0])
+    Eq << algebra.ne_zero.eq.imply.eq.inverse.apply(Eq[-1], Eq[0])
 
-    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
+    Eq << Infer(Eq[0], Eq.induct, plausible=True)
 
-    Eq << algebra.eq.suffice.imply.eq.induct.apply(Eq.initial, Eq[-1], n=n, start=2)
+    Eq << algebra.eq.infer.imply.eq.induct.apply(Eq.initial, Eq[-1], n=n, start=2)
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2020-09-27
+# updated on 2020-09-27

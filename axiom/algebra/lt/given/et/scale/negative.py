@@ -14,8 +14,10 @@ def prove(Eq):
     x, y, z = Symbol(real=True, given=True)
     Eq << apply(Less(x, y), z)
 
-    Eq << algebra.is_negative.gt.imply.lt.div.apply(Eq[2], Eq[1])
+    Eq << algebra.lt_zero.gt.imply.lt.div.apply(Eq[2], Eq[1])
 
 
 if __name__ == '__main__':
     run()
+# created on 2019-12-16
+# updated on 2019-12-16

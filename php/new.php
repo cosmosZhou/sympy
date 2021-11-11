@@ -17,16 +17,11 @@ error_log("prove = " . \std\jsonify($prove));
 ?>
 
 <title><?php echo $module;?></title>
-<link rel=stylesheet href="https://cdn.jsdelivr.net/npm/codemirror@5.41.0/lib/codemirror.css" />
-<link rel=stylesheet href="https://cdn.jsdelivr.net/npm/codemirror@5.41.0/theme/eclipse.css">
-<link rel=stylesheet href="https://cdn.jsdelivr.net/npm/codemirror@5.41.0/addon/hint/show-hint.css">
-<link rel=stylesheet href="static/css/codemirror.css">
-<link rel=stylesheet href="static/css/style.css">
+<link rel=stylesheet href="static/codemirror/lib/codemirror.css">
+<link rel=stylesheet href="static/codemirror/theme/eclipse.css">
+<link rel=stylesheet href="static/codemirror/addon/hint/show-hint.css">
 
-<script	src="https://cdn.jsdelivr.net/npm/codemirror@5.41.0/lib/codemirror.js"></script>
-<script	src="https://cdn.jsdelivr.net/npm/codemirror@5.41.0/mode/python/python.js"></script>
-<script	src="https://cdn.jsdelivr.net/npm/codemirror@5.41.0/addon/hint/show-hint.js"></script>
-<script	src="https://cdn.jsdelivr.net/npm/codemirror@5.41.0/addon/edit/matchbrackets.js"></script>
+<link rel=stylesheet href="static/css/style.css">
 	
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qs/dist/qs.js"></script>
@@ -38,6 +33,12 @@ error_log("prove = " . \std\jsonify($prove));
 <script src="static/js/utility.js"></script>
 
 <script type=module>
+import * as codemirror from "./static/codemirror/lib/codemirror.js";
+import * as python from "./static/codemirror/mode/python/python.js";
+import * as active_line from "./static/codemirror/addon/selection/active-line.js";
+import * as show_hint from "./static/codemirror/addon/hint/show-hint.js";
+import * as matchbrackets from "./static/codemirror/addon/edit/matchbrackets.js";
+
 createApp('newTheorem', {
     apply : <?php echo \std\jsonify($apply)?>,
     prove : <?php echo \std\jsonify($prove)?>,

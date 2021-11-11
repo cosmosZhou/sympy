@@ -26,24 +26,26 @@ def prove(Eq):
     x = Symbol(real=True)
     Eq << apply(m < M, a * x ** 2 + b * x + c, x)
 
-    Eq << algebra.cond.given.et.suffice.split.apply(Eq[-1], cond=a >= 0)
+    Eq << algebra.cond.given.et.infer.split.apply(Eq[-1], cond=a >= 0)
 
-    Eq <<= algebra.suffice.given.suffice.subs.bool.apply(Eq[-2], invert=True), algebra.suffice.given.suffice.subs.bool.apply(Eq[-1])
+    Eq <<= algebra.infer.given.infer.subs.bool.apply(Eq[-2], invert=True), algebra.infer.given.infer.subs.bool.apply(Eq[-1])
 
-    Eq <<= algebra.cond.given.et.suffice.split.apply(Eq[-2], cond=a > 0), algebra.suffice.given.et.suffice_et.apply(Eq[-1], cond=Eq[0])
+    Eq <<= algebra.cond.given.et.infer.split.apply(Eq[-2], cond=a > 0), algebra.infer.given.et.infer_et.apply(Eq[-1], cond=Eq[0])
 
-    Eq <<= Eq[-3].this.apply(algebra.suffice.flatten), Eq[-2].this.apply(algebra.suffice.flatten), Eq[-1].this.lhs.apply(algebra.is_negative.lt.imply.eq.sup.st.quadratic, a * x ** 2 + b * x + c, x)
+    Eq <<= Eq[-3].this.apply(algebra.infer.flatten), Eq[-2].this.apply(algebra.infer.flatten), Eq[-1].this.lhs.apply(algebra.lt_zero.lt.imply.eq.sup.st.quadratic, a * x ** 2 + b * x + c, x)
 
-    Eq << algebra.suffice.given.suffice.subs.apply(Eq[-1])
+    Eq << algebra.infer.given.infer.subs.apply(Eq[-1])
 
-    Eq << algebra.suffice.given.cond.apply(Eq[-1])
+    Eq << algebra.infer.given.cond.apply(Eq[-1])
 
-    Eq << algebra.cond.imply.suffice.et.apply(Eq[0], cond=a > 0)
+    Eq << algebra.cond.imply.infer.et.apply(Eq[0], cond=a > 0)
 
-    Eq << Eq[-1].this.rhs.apply(algebra.is_positive.lt.imply.eq.sup.st.quadratic, a * x ** 2 + b * x + c, x)
+    Eq << Eq[-1].this.rhs.apply(algebra.gt_zero.lt.imply.eq.sup.st.quadratic, a * x ** 2 + b * x + c, x)
 
     Eq << algebra.lt.imply.eq.sup.to.max.st.simple.apply(Eq[0], b * x + c, x)
 
 
 if __name__ == '__main__':
     run()
+# created on 2019-12-27
+# updated on 2019-12-27

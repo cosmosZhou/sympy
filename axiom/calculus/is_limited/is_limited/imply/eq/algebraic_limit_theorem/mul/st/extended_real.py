@@ -15,7 +15,7 @@ def apply(limited_f, limited_g):
     return Equal(Limit[x:x0:dir](fx * gx), limited_f.lhs * limited_g.lhs)
 
 
-@prove
+@prove(proved=False)
 def prove(Eq):
     x, x0 = Symbol(real=True)
     f, g = Function(real=True)
@@ -23,8 +23,11 @@ def prove(Eq):
     Eq << apply(Element(Limit[x:x0:dir](f(x)), ExtendedReals), Element(Limit[x:x0:dir](g(x)), ExtendedReals - {0}))
 
     Eq << Reals - {0}
+
     Eq << ExtendedReals - {0}
 
 
 if __name__ == '__main__':
     run()
+# created on 2021-08-14
+# updated on 2021-08-14

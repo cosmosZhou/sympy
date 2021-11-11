@@ -19,7 +19,7 @@ def prove(Eq):
     Eq << apply(Cap[x:A, y:B](f(x, y) & g(x, y)))
 
     #Eq << apply(Cap[x:A](f(x) & g(x)))
-    Eq << sets.eq.given.et.suffice.apply(Eq[0], wrt=y)
+    Eq << sets.eq.given.et.infer.apply(Eq[0], wrt=y)
 
     Eq <<= Eq[-2].this.rhs.apply(sets.el.given.et.el.split.intersect, simplify=False), \
     Eq[-1].this.lhs.apply(sets.el.imply.et.el.split.intersect, simplify=False)
@@ -45,3 +45,5 @@ from . import single_variable
 from . import st
 from . import doit
 from . import split
+# created on 2021-01-31
+# updated on 2021-01-31

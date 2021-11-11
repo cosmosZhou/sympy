@@ -20,8 +20,10 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq[0].reversed).reversed
 
-    Eq << algebra.ge_minima.imply.all_ge.apply(Eq[-1])
+    Eq << algebra.minima_ge.imply.all_ge.apply(Eq[-1])
 
 
 if __name__ == '__main__':
     run()
+# created on 2019-01-04
+# updated on 2019-01-04

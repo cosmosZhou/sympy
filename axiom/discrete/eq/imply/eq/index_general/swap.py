@@ -13,10 +13,10 @@ def apply(given, i=None, j=None, w=None):
     x = Lamda(x_set_comprehension.expr.arg, *x_set_comprehension.limits).simplify()
 
     if j is None:
-        j = Symbol.j(domain=Range(0, n), given=True)
+        j = Symbol.j(domain=Range(n), given=True)
 
     if i is None:
-        i = Symbol.i(domain=Range(0, n), given=True)
+        i = Symbol.i(domain=Range(n), given=True)
 
     assert j >= 0 and j < n
     assert i >= 0 and i < n
@@ -37,8 +37,8 @@ def prove(Eq):
     n = Symbol(domain=Range(2, oo))
     x = Symbol(shape=(n,), integer=True)
     k = Symbol(integer=True)
-    j, i = Symbol(domain=Range(0, n), given=True)
-    Eq << apply(Equal(x[:n].set_comprehension(k), Range(0, n)), i, j)
+    j, i = Symbol(domain=Range(n), given=True)
+    Eq << apply(Equal(x[:n].set_comprehension(k), Range(n)), i, j)
 
     _, di, dj = Eq[2].lhs.arg.args[0].args
     dj = Symbol("d_j", dj)
@@ -117,3 +117,5 @@ if __name__ == '__main__':
     run()
 
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html
+# created on 2020-10-28
+# updated on 2020-10-28

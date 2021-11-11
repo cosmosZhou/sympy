@@ -23,7 +23,7 @@ def prove(Eq):
     Eq << U.this.definition
     Eq << V.this.definition
 
-    i, j = Symbol(domain=Range(0, n + 1))
+    i, j = Symbol(domain=Range(n + 1))
 
     Eq <<= V[i, j].this.definition, U[i, j].this.definition
 
@@ -41,3 +41,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html
+# created on 2020-11-08
+# updated on 2020-11-08

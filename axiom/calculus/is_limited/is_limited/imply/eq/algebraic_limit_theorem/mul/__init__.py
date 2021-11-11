@@ -25,7 +25,7 @@ def prove(Eq):
     Eq << apply(Element(Limit[x:x0:dir](f(x)), Reals), Element(Limit[x:x0:dir](g(x)), Reals))
 
     is_zero = And(Equal(Eq[0].lhs, 0), Eq[1])
-    Eq << Suffice(is_zero, is_zero, plausible=True)
+    Eq << Infer(is_zero, is_zero, plausible=True)
 
     Eq.is_zero = Eq[-1].this.rhs.apply(calculus.is_zero.is_limited.imply.eq.algebraic_limit_theorem.mul)
 
@@ -35,22 +35,22 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.expr.apply(algebra.eq.eq.imply.eq.mul)
 
-    Eq << algebra.suffice.suffice.imply.suffice.et.apply(Eq.is_zero, Eq[-1])
+    Eq << algebra.infer.infer.imply.infer.et.apply(Eq.is_zero, Eq[-1])
 
     Eq.mul_is_zero = Eq[-1].this.rhs.apply(algebra.eq.eq.imply.eq.transit, reverse=True)
 
     is_nonzero = And(Element(Eq[0].lhs, Reals - {0}), Eq[1])
-    Eq << Suffice(is_nonzero, is_nonzero, plausible=True)
+    Eq << Infer(is_nonzero, is_nonzero, plausible=True)
 
     Eq << Eq[-1].this.rhs.apply(calculus.is_limited.is_limited.imply.eq.algebraic_limit_theorem.mul.nonzero)
 
-    Eq << algebra.suffice.suffice.imply.suffice.ou.apply(Eq.mul_is_zero, Eq[-1])
+    Eq << algebra.infer.infer.imply.infer.ou.apply(Eq.mul_is_zero, Eq[-1])
 
     Eq << Eq[-1].this.lhs.args[0].args[0].apply(sets.eq.given.el)
 
     Eq <<= Eq[0] & Eq[1]
 
-    Eq << algebra.cond.suffice.imply.cond.transit.apply(Eq[-1], Eq[-2])
+    Eq << algebra.cond.infer.imply.cond.transit.apply(Eq[-1], Eq[-2])
 
 
 if __name__ == '__main__':
@@ -60,3 +60,5 @@ if __name__ == '__main__':
 
 from . import nonzero
 from . import st
+# created on 2020-04-17
+# updated on 2020-04-17

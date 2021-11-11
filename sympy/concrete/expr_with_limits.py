@@ -665,7 +665,7 @@ class ExprWithLimits(Expr):
             kwargs = {}
             if self.is_Boolean:
                 kwargs['equivalent'] = self
-#             domain = [dom._subs(x, new) for dom in domain]
+
             index = self.variables.index(x)
             limits = [*self.limits]
             if 'domain' in new._assumptions:
@@ -678,14 +678,20 @@ class ExprWithLimits(Expr):
                         dom = new.domain_conditioned(dom)
                     assert new.domain == dom
                 limits[index] = (new,)
-            else:
-                if len(domain) == 1:
-                    domain = domain[0]
-                    if domain.is_boolean:
-                        domain = domain._subs(x, new)
+            elif len(domain) == 1:
+                domain = domain[0]
+                if domain.is_boolean:
+                    domain = domain._subs(x, new)
+                limits[index] = (new, domain)
+            elif not domain:
+                if 'domain' in x._assumptions:
+                    domain = x.domain_assumed
                     limits[index] = (new, domain)
                 else:
-                    limits[index] = (new, *domain)
+                    limits[index] = (new,)
+            else:
+                limits[index] = (new, *domain)
+                
             for i in range(index):
                 v, *domain = limits[i]
                 domain = [dom._subs(x, new) for dom in domain]
@@ -943,7 +949,9 @@ class ExprWithLimits(Expr):
                     limits[i] = _limit
                     hit = True
             if hit:
-                self = self.func(self.expr, *limits).simplify()
+                self = self.func(self.expr, *limits)
+                if hints.get('simplify', True):
+                    self = self.simplify()
             return self
             
         intersect = self._if_new_has_variables(old, new)            
@@ -1270,20 +1278,24 @@ class ExprWithLimits(Expr):
                     dic[var.base[start + 1: stop]] = domain
                     updated = True
             else:
-                from sympy.core.basic import preorder_traversal
+                
                 validDomain = S.Zero.emptySet
-                for p in preorder_traversal(self.expr):
+                for p in self.expr.preorder_traversal():
                     if p.is_Slice and p.base == var.base:
-                        validDomain |= Range(*p.indices)
+                        if len(p.indices) == 1:
+                            validDomain |= Range(*p.indices[0])
                     elif p.is_Indexed and p.base == var.base:
-                        validDomain |= p.indices[0].set
-                universe = Range(*var.indices)
-                if validDomain != universe and validDomain in universe:
-                    if validDomain.is_Range:
-                        start, end = validDomain.start, validDomain.stop
-                        del dic[var]
-                        dic[var.base[start: end]] = domain
-                        updated = True
+                        if len(p.indices) == 1:
+                            validDomain |= p.indices[0].set
+                            
+                if len(var.indices) == 1:
+                    universe = Range(*var.indices[0])
+                    if validDomain != universe and validDomain in universe:
+                        if validDomain.is_Range:
+                            start, end = validDomain.start, validDomain.stop
+                            del dic[var]
+                            dic[var.base[start: end]] = domain
+                            updated = True
 
         if updated:
             dic_original = {x: domain for x, *domain in limits}
@@ -1430,7 +1442,7 @@ class MINMAXBase(ExprWithLimits):
                 [domain] = ab
                 if domain.is_Interval:
                     if domain.left_open or domain.right_open:
-                        if self.expr.is_continuous(x, a, b): 
+                        if self.expr.is_continuous(x, domain): 
                             return False
                 return
             return
@@ -2648,7 +2660,7 @@ class Lamda(ExprWithLimits):
                         base = base[a:b]
                     else:
                         domain = x.domain
-                        if domain == Range(0, base.shape[0]):
+                        if domain == Range(base.shape[0]):
                             ...
                         else:
                             return None, exp
@@ -2968,12 +2980,12 @@ class Lamda(ExprWithLimits):
         is_diagonal
         is_lower_hessenberg
         """
-        j = self.generate_var(domain=Range(0, self.cols))
-        i = j.generate_var(domain=Range(0, j))
+        j = self.generate_var(domain=Range(self.cols))
+        i = j.generate_var(domain=Range(j))
         if self[i, j].is_zero:
             return True
 
-        i = self.generate_var(domain=Range(0, self.rows))
+        i = self.generate_var(domain=Range(self.rows))
         j = i.generate_var(domain=Range(i + 1, self.cols))
         if self[i, j].is_zero:
             return True
@@ -3021,13 +3033,13 @@ class Lamda(ExprWithLimits):
         is_upper_hessenberg
         """
         
-        j = self.generate_var(domain=Range(0, self.cols))
+        j = self.generate_var(domain=Range(self.cols))
         i = j.generate_var(domain=Range(j + 1, self.rows))
         if self[i, j].is_zero:
             return True
         
-        i = self.generate_var(domain=Range(0, self.rows))
-        j = i.generate_var(domain=Range(0, i))
+        i = self.generate_var(domain=Range(self.rows))
+        j = i.generate_var(domain=Range(i))
         if self[i, j].is_zero:
             return True
 

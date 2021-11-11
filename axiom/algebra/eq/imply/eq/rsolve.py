@@ -22,7 +22,7 @@ def prove(Eq):
     x, a, b = Symbol(real=True)
     k, n = Symbol(integer=True)
     c = Symbol(real=True, positive=True)
-    i = Symbol(domain=Range(0, k + 1))
+    i = Symbol(domain=Range(k + 1))
 
     y = Symbol(real=True, shape=(oo,))
 
@@ -32,3 +32,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2021-09-29
+# updated on 2021-09-29

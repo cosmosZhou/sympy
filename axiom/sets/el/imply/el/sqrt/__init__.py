@@ -25,10 +25,12 @@ def prove(Eq):
 
     Eq << algebra.ge.imply.ge.relax.apply(Eq[-2], lower=0)
 
-    Eq << algebra.is_nonnegative.lt.imply.lt.sqrt.apply(Eq[-1], Eq[-2])
+    Eq << algebra.ge_zero.lt.imply.lt.sqrt.apply(Eq[-1], Eq[-2])
 
 
 if __name__ == '__main__':
     run()
 
 from . import max
+# created on 2019-06-28
+# updated on 2019-06-28

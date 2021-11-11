@@ -23,7 +23,7 @@ def prove(Eq):
 
     Eq << sets.any.imply.any_et.single_variable.apply(Eq[-1])
 
-    Eq << sets.any_el.imply.is_nonempty.apply(Eq[-1])
+    Eq << sets.any_el.imply.ne_empty.apply(Eq[-1])
 
     Eq <<= Eq[-1] & Eq[0]
 
@@ -31,3 +31,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2021-05-12
+# updated on 2021-05-12

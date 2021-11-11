@@ -79,11 +79,11 @@ def prove(Eq):
 
     Eq <<= Eq[-1] & Eq[-4]
 
-    Eq <<= Suffice(And(*Eq[-1].args[:2]), And(*Eq[-1].args[:2]), plausible=True), Suffice(And(*Eq[-1].args[2:]), And(*Eq[-1].args[2:]), plausible=True)
+    Eq <<= Infer(And(*Eq[-1].args[:2]), And(*Eq[-1].args[:2]), plausible=True), Infer(And(*Eq[-1].args[2:]), And(*Eq[-1].args[2:]), plausible=True)
 
     Eq <<= Eq[-2].this.rhs.apply(algebra.eq.eq.imply.eq.transit), Eq[-1].this.rhs.apply(algebra.eq.ne.imply.ne.transit)
 
-    Eq << algebra.suffice.suffice.imply.suffice.et.apply(Eq[-2], Eq[-1])
+    Eq << algebra.infer.infer.imply.infer.et.apply(Eq[-2], Eq[-1])
 
     Eq << ~Eq[-1]
 
@@ -91,3 +91,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2021-04-02
+# updated on 2021-04-02

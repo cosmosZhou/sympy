@@ -4,7 +4,7 @@ from . import given
 from . import el
 from . import subset
 from . import all
-from . import suffice
+from . import infer
 from . import sub
 from . import negate
 from . import add

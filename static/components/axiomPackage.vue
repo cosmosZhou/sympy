@@ -1,5 +1,5 @@
 <template>
-	<icon class=package :text=module :lines=3></icon>
+	<icon ref=icon class=package :text=module :lines=3 :index=index></icon>
 </template>
 
 <script>
@@ -8,8 +8,12 @@ import icon from "./icon.vue"
 export default {
 	components: {icon},
 
-	props : ['module'],
+	props : ['module', 'index'],
 
+	created(){
+		this.$parent.axiomPackage[this.index] = this;	
+	},
+	
 	methods : {
 		dblclick(event) {
 			var self = event.target;
@@ -29,6 +33,7 @@ export default {
 					search += '/' + text + '/';
 			}
 
+			location.hash = '';
 			location.search = search;
 		},
 		
@@ -48,8 +53,7 @@ export default {
 			
 			form_post('php/request/delete/package.php', data).then(res => {
 				console.log('res = ' + res);
-			}).catch(fail);
-
+			});
 		},
 	}
 }

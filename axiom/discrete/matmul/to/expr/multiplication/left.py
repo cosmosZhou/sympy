@@ -4,14 +4,14 @@ from util import *
 @apply
 def apply(x, lamda, w=None):
     n = x.shape[0]
-    i = Symbol(domain=Range(0, n))
+    i = Symbol(domain=Range(n))
 
     if w is None:
-        w = Symbol.w(Lamda[i](MultiplicationMatrix(n, i, lamda)))
-        w_quote = Symbol.w_quote(Lamda[i](MultiplicationMatrix(n, i, 1 / lamda)))
+        w = Symbol.w(Lamda[i](MulMatrix(n, i, lamda)))
+        w_quote = Symbol.w_quote(Lamda[i](MulMatrix(n, i, 1 / lamda)))
     else:
-        assert w[i] == MultiplicationMatrix(n, i, lamda)
-        assert w_quote[i] == MultiplicationMatrix(n, i, 1 / lamda)
+        assert w[i] == MulMatrix(n, i, lamda)
+        assert w_quote[i] == MulMatrix(n, i, 1 / lamda)
 
     return Equal(w_quote[i] @ w[i] @ x, x)
 
@@ -43,3 +43,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html
+# created on 2020-11-12
+# updated on 2020-11-12

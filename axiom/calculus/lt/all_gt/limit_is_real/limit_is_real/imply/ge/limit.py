@@ -38,7 +38,7 @@ def prove(Eq):
     f, g = Function(real=True, continuous=domain)
     Eq << apply(a < b, All[x:domain](Greater(f(x), g(x))), Element(Limit[x:b:-1](f(x)), Reals), Element(Limit[x:b:-1](g(x)), Reals))
 
-    
+
 
     Eq <<= calculus.imply.is_continuous.interval.apply(f(x), (x, domain)), calculus.imply.is_continuous.interval.apply(g(x), (x, domain))
 
@@ -47,7 +47,7 @@ def prove(Eq):
     Eq << Eq[-1].this.expr.apply(calculus.eq_limit.eq_limit.imply.eq_limit.sub)
 
     xi = Eq[-1].variable
-    Eq <<= Eq[1].this.expr.apply(algebra.gt.imply.is_positive)
+    Eq <<= Eq[1].this.expr.apply(algebra.gt.imply.gt_zero)
 
     Eq <<= Eq[-1].limits_subs(x, xi)
 
@@ -55,7 +55,7 @@ def prove(Eq):
 
     Eq <<= Eq[-1].this.expr.apply(algebra.eq.gt.imply.gt.subs)
 
-    Eq <<= algebra.all.imply.suffice.apply(Eq[-1])
+    Eq <<= algebra.all.imply.infer.apply(Eq[-1])
 
     epsilon = Symbol(positive=True)
     Eq <<= Eq[-1].subs(xi, b - epsilon)
@@ -66,11 +66,11 @@ def prove(Eq):
 
     Eq <<= Eq[-1].this.lhs.apply(sets.el.given.et.split.interval)
 
-    Eq << algebra.suffice.imply.all.apply(Eq[-1])
+    Eq << algebra.infer.imply.all.apply(Eq[-1])
 
-    Eq << algebra.lt.imply.is_positive.apply(Eq[0])
+    Eq << algebra.lt.imply.gt_zero.apply(Eq[0])
 
-    Eq << calculus.is_positive.all_is_positive.imply.limit_is_nonnegative.st.limit.apply(Eq[-1], Eq[-2])
+    Eq << calculus.gt_zero.all_gt_zero.imply.limit_ge_zero.st.limit.apply(Eq[-1], Eq[-2])
 
     Eq << calculus.is_limited.is_limited.imply.eq.algebraic_limit_theorem.sub.apply(Eq[2], Eq[3])
 
@@ -81,3 +81,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-06-26
+# updated on 2020-06-26

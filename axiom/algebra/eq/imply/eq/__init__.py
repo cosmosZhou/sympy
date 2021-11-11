@@ -32,3 +32,4 @@ from . import sup
 from . import piece
 from . import inf
 from . import sup_inf
+from . import solve

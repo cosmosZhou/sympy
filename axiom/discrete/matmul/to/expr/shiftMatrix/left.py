@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(x, w=None):
     n = x.shape[0]
-    i, j = Symbol(domain=Range(0, n))
+    i, j = Symbol(domain=Range(n))
 
     if w is None:
         w = Symbol.w(Lamda[j, i](ShiftMatrix(n, i, j)))
@@ -50,3 +50,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html
+# created on 2020-11-13
+# updated on 2020-11-13

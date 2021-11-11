@@ -226,7 +226,7 @@ instance = MySQLConnector()
     
 def select_axiom_lapse_from_tbl_axiom_py(user='root'):
     try:
-        return {axiom: (lapse, timestamp.strftime("%Y-%m-%d %H:%M:%S")) for axiom, lapse, timestamp in instance.select("select axiom, lapse, timestamp from tbl_axiom_py where user='%s'" % user)}
+        return {axiom: lapse for axiom, lapse in instance.select("select axiom, lapse from tbl_axiom_py where user='%s'" % user)}
     except mysql.connector.errors.ProgrammingError as err:
         print(err.msg)
         m = re.compile("Table '(\w+)\.([\w_]+)' doesn't exist").search(err.msg)
@@ -240,7 +240,6 @@ CREATE TABLE `tbl_axiom_py` (
   `state` enum('proved', 'failed', 'plausible', 'unproved', 'unprovable', 'slow') NOT NULL,
   `lapse` double default NULL,  
   `latex` text NOT NULL,
-  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`user`, `axiom`) 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
 PARTITION BY KEY () PARTITIONS 8
@@ -286,6 +285,7 @@ CREATE TABLE `tbl_login_py` (
   `user` varchar(32) NOT NULL,
   `password` varchar(32) NOT NULL,
   `email` varchar(128) NOT NULL,
+  `port` int DEFAULT '0',
   `visibility` enum('public','private','protected') NOT NULL,
   PRIMARY KEY (`user`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
@@ -297,7 +297,7 @@ PARTITION BY KEY () PARTITIONS 8
         instance.execute(sql)
         
         sql = '''\
-CREATE TABLE `tbl_console_py` (  
+CREATE TABLE `tbl_debug_py` (  
   `symbol` varchar(64) NOT NULL,
   `script` text NOT NULL,
   `latex` text NOT NULL,
@@ -317,6 +317,17 @@ CREATE TABLE `tbl_function_py` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci 
 PARTITION BY KEY () 
 PARTITIONS 8
+'''
+        instance.execute(sql)
+        
+        sql = '''\
+CREATE TABLE `tbl_breakpoint_py` (
+  `user` varchar(32) NOT NULL,
+  `module` varchar(256) NOT NULL,  
+  `line` int NOT NULL,
+  PRIMARY KEY (`user`, `module`, `line`) 
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+PARTITION BY KEY () PARTITIONS 8
 '''
         instance.execute(sql)
         

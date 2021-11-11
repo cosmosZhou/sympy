@@ -53,9 +53,9 @@ def prove(Eq):
 
     Eq.equal = Eq[-1].this.lhs.args[1].cond.args[0].apply(algebra.et.to.ou)
 
-    Eq.suffice = Suffice(Eq.equal.lhs.args[1].cond, Equal(x * y, 0), plausible=True)
+    Eq.suffice = Infer(Eq.equal.lhs.args[1].cond, Equal(x * y, 0), plausible=True)
 
-    Eq << algebra.suffice.given.et.suffice.split.ou.apply(Eq.suffice)
+    Eq << algebra.infer.given.et.infer.split.ou.apply(Eq.suffice)
 
     Eq <<= Eq[-2].this.lhs.apply(algebra.et.imply.cond, index=1), Eq[-1].this.lhs.apply(algebra.et.imply.cond, index=0)
 
@@ -65,31 +65,33 @@ def prove(Eq):
 
     Eq << -Eq.suffice.this.rhs
 
-    Eq << Eq[-1].apply(algebra.suffice.imply.equivalent)
+    Eq << Eq[-1].apply(algebra.infer.imply.iff)
 
-    Eq << algebra.equivalent.imply.eq.subs.apply(Eq[-1], Eq.equal.lhs)
+    Eq << algebra.iff.imply.eq.subs.apply(Eq[-1], Eq.equal.lhs)
 
     Eq << Eq[-1].this.rhs.apply(algebra.piece.subs, index=1, reverse=True)
 
     Eq << Eq.equal.this.lhs.subs(Eq[-1])
 
-    Eq.equal = Eq[-1].this.rhs.apply(algebra.abs.to.piece.is_positive)
+    Eq.equal = Eq[-1].this.rhs.apply(algebra.abs.to.piece.gt_zero)
 
     Eq.equivalent = Equivalent(Eq.equal.lhs.args[0].cond, Eq.equal.rhs.args[0].cond, plausible=True)
 
-    Eq.suffice, Eq.necessary = algebra.equivalent.given.et.apply(Eq.equivalent)
+    Eq.suffice, Eq.necessary = algebra.iff.given.et.apply(Eq.equivalent)
 
-    Eq << algebra.suffice.given.et.suffice.split.ou.apply(Eq.suffice)
+    Eq << algebra.infer.given.et.infer.split.ou.apply(Eq.suffice)
 
-    Eq << Eq[-2].this.lhs.apply(algebra.is_negative.is_negative.imply.is_positive)
+    Eq << Eq[-2].this.lhs.apply(algebra.lt_zero.lt_zero.imply.gt_zero)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.is_positive.is_positive.imply.is_positive)
+    Eq << Eq[-1].this.lhs.apply(algebra.gt_zero.gt_zero.imply.gt_zero)
 
-    Eq << Eq.necessary.this.rhs.apply(algebra.is_positive.imply.ou)
+    Eq << Eq.necessary.this.rhs.apply(algebra.gt_zero.imply.ou)
 
-    Eq << algebra.equivalent.imply.eq.subs.apply(Eq.equivalent, Eq.equal.lhs)
+    Eq << algebra.iff.imply.eq.subs.apply(Eq.equivalent, Eq.equal.lhs)
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2018-02-11
+# updated on 2018-02-11

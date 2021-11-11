@@ -30,11 +30,13 @@ def prove(Eq):
 
     Eq <<= Eq[-1] & Eq[1]
 
-    Eq << Suffice(Eq[1], Eq.induct, plausible=True)
+    Eq << Infer(Eq[1], Eq.induct, plausible=True)
 
-    Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq.initial, Eq[-1], n=m, start=1, simplify=None)
+    Eq << algebra.cond.infer.imply.cond.induct.apply(Eq.initial, Eq[-1], n=m, start=1, simplify=None)
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2021-07-04
+# updated on 2021-07-04

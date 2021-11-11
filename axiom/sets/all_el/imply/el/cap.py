@@ -17,11 +17,13 @@ def prove(Eq):
 
     Eq << apply(All[k:n](Element(x, A[k])))
 
-    Eq << sets.imply.suffice.el.induct.apply(Element(x, A[k]), n)
+    Eq << sets.imply.infer.el.induct.apply(Element(x, A[k]), n)
 
-    Eq << algebra.cond.suffice.imply.cond.transit.apply(Eq[0], Eq[-1])
+    Eq << algebra.cond.infer.imply.cond.transit.apply(Eq[0], Eq[-1])
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2021-01-09
+# updated on 2021-01-09

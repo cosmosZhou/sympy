@@ -10,10 +10,10 @@ def apply(imply, i=None):
     if isinstance(i, (tuple, Tuple)):
         shape = x.shape
         for i_, n in zip(i, shape):
-            assert i_.domain == Range(0, n)
+            assert i_.domain == Range(n)
     else:
         n = x.shape[0]
-        assert i.domain == Range(0, n)
+        assert i.domain == Range(n)
 
     return Equal(x[i], y[i])
 
@@ -23,7 +23,7 @@ def prove(Eq):
     from axiom import algebra
     n = Symbol(integer=True, positive=True, given=True)
     a, b = Symbol(shape=(n,), etype=dtype.integer)
-    i = Symbol(domain=Range(0, n))
+    i = Symbol(domain=Range(n))
 
     Eq << apply(Equal(a, b), i=i)
 
@@ -33,3 +33,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2018-04-03
+# updated on 2018-04-03

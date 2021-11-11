@@ -13,7 +13,7 @@ def prove(Eq):
     n = Symbol(integer=True, positive=True, given=False)
     k = Symbol(integer=True)
     A = Symbol(shape=(oo,), etype=dtype.integer)
-    
+
     Eq << apply(A[k], (k, 0, n + 1))
 
     Eq << Eq[0].subs(n, 1)
@@ -34,11 +34,13 @@ def prove(Eq):
 
     Eq << Eq.induct.this.rhs.apply(algebra.sum.to.add.pop_back)
 
-    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
+    Eq << Infer(Eq[0], Eq.induct, plausible=True)
 
-    Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq[1], Eq[-1], n=n, start=1)
+    Eq << algebra.cond.infer.imply.cond.induct.apply(Eq[1], Eq[-1], n=n, start=1)
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2020-07-07
+# updated on 2020-07-07

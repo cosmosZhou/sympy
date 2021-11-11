@@ -37,7 +37,7 @@ from multiprocessing import cpu_count
 from queue import PriorityQueue
 from functools import singledispatch 
 import random
-from util.utility import RetCode, current_timestamp
+from util.utility import RetCode
 
 sep = os.path.sep
 
@@ -58,8 +58,6 @@ class Globals:
     plausible = []
 
     failed = []
-
-    websites = []
 
     data = []
     
@@ -288,35 +286,30 @@ def prove(**kwargs):
     
     newTasks = taskSet - tasks.keys()
     if newTasks:
-        [[latest_timestamp]] = MySQL.instance.select("select max(timestamp) from tbl_axiom_py where user = '%s'" % user)
-        diff = current_timestamp(strftime=False) - latest_timestamp
-        diff /= len(newTasks)
         for i, module in enumerate(newTasks):
-            tasks[module] = (random.random(), (latest_timestamp + diff * i).strftime("%Y-%m-%d %H:%M:%S"))
-        
+            tasks[module] = random.random()
+
     packages = tuple([] for _ in range(cpu_count()))
     timings = [0 for _ in range(cpu_count())]
     
-    total_timing = sum(timing for task, (timing, *_) in tasks.items())
+    total_timing = sum(timing for task, timing in tasks.items())
     
     average_timing = total_timing / len(packages)
     print('total_timing =', total_timing)
     print('average_timing =', average_timing)
     
     tasks = [*tasks.items()]
-    tasks.sort(key=lambda pair: pair[1][0], reverse=True)
+    tasks.sort(key=lambda pair: pair[1], reverse=True)
     
     pq = PriorityQueue()
     for i, t in enumerate(timings):
         pq.put((t, i))
 
-    timestampDict = {}
-    for task, (timing, timestamp) in tasks:
+    for task, timing in tasks:
         t, i = pq.get()
         packages[i].append(task)
         timings[i] += timing
         pq.put((timings[i], i))
-        timestampDict[task] = timestamp
         
     for proc, timing in zip(packages, timings):
         print('timing =', timing)
@@ -327,7 +320,7 @@ def prove(**kwargs):
     data = []
     
     for array in process(packages, **kwargs):
-        data += post_process(array, True, timestampDict=timestampDict)
+        data += post_process(array, True)
         
     MySQL.instance.load_data('tbl_axiom_py', data, replace=True, ignore=True)
     print('in all %d axioms' % Globals.count)
@@ -338,17 +331,17 @@ def print_summary():
     if Globals.plausible:
         print('plausible:')
         for p in Globals.plausible:
-            print(p)
-
+            for p in p:
+                print(p)
+            print()
+            
     if Globals.failed:
         print('failed:')
         for p in Globals.failed:
-            print(p)
+            for p in p:
+                print(p)
+            print()
 
-    if Globals.websites:
-        print('websites:')
-        for p in Globals.websites:
-            print(p)
     timing = time.time() - start
     print('seconds costed =', timing)
     print('minutes costed =', timing / 60)    
@@ -356,27 +349,25 @@ def print_summary():
     print('total failed    =', len(Globals.failed))
 
         
-def post_process(result, truncate=False, timestampDict=None):
+def post_process(result, truncate=False):
     data = []
     for package, file, state, lapse, latex in result:
+        if latex is None:
+            print(package)
+            print(file)
+            latex = ''
+            assert state is RetCode.failed
         if truncate and len(latex) > 65535:
             latex = latex[:65535]
             
-        if timestampDict:
-            timestamp = timestampDict[package]
-        else:
-            timestamp = current_timestamp()
-            
-        data.append((user, package, state, lapse, latex, timestamp))
+        data.append((user, package, state, lapse, latex))
             
         if state is RetCode.plausible: 
-            Globals.plausible.append(file)
+            Globals.plausible.append((file, f"http://localhost/{user}/axiom.php?module={package}"))
         elif state is RetCode.failed:
-            Globals.failed.append(file)            
+            Globals.failed.append((file, f"http://localhost/{user}/axiom.php?module={package}"))            
         else:
             continue
-        
-        Globals.websites.append(f"http://localhost/{user}/axiom.php?module={package}")
         
     return data
 
@@ -543,12 +534,11 @@ if __name__ == '__main__':
 #         print("QUERY_STRING =", QUERY_STRING, "<br>")
         
         if not QUERY_STRING:
-            from util.summary import summary
-            summary()
-            exit()
-            
-        kwargs = {key: value for key, value in map(lambda s: s.split('='), QUERY_STRING.split('&'))}
-#         print(kwargs, "<br>")
+            kwargs = {}            
+        else:
+            kwargs = {key: value for key, value in map(lambda s: s.split('='), QUERY_STRING.split('&'))}
+        
+#         print("kwargs =", kwargs, "<br>")        
         args = ''
         
     else: 
@@ -569,6 +559,63 @@ if __name__ == '__main__':
                     from util.hierarchy import insert_into_hierarchy
                     insert_into_hierarchy()
         else:
-            prove(debug=debug, parallel=parallel)
+            if is_http:
+                print('''
+<style type="text/css">
+body {
+    background-color: rgb(199, 237, 204);
+    margin-left: 1.5em;
+}
+</style>
+
+<script>
+var ret = setInterval(()=>{
+    var textarea = document.querySelector('textarea');
+    if (textarea){
+        console.log("textarea.scrollTop = textarea.scrollHeight;");
+        textarea.scrollTop = textarea.scrollHeight;
+    }
+},
+1000);
+</script>
+
+<textarea
+readonly=true 
+spellcheck=false
+style="height:100%; width:100%; overflow:auto; word-break:break-all; background-color:rgb(199, 237, 204);">
+''')
+                prove(debug=debug, parallel=parallel)
+                print(r'''</textarea>
+<div></div>
+<script>
+var textarea = document.querySelector('textarea');
+var lines = textarea.value;
+lines = lines.split(/\n/);
+var div = document.querySelector('div');
+for (let line of lines){
+    if (line.endsWith('.py'))
+        continue;
+        
+    var el;
+    if (line.startsWith('http')){
+        el = document.createElement('a');
+        el.href = line;
+        line = line.match(/module=(\S+)/)[1];
+        el.innerText = line;
+    }
+    else{
+        el = document.createElement('p');
+        el.innerText = line;
+    }
+    
+    div.appendChild(el);
+}
+textarea.remove();
+el.scrollIntoView();
+clearInterval(ret);
+</script>''')
+            else:
+                prove(debug=debug, parallel=parallel)
+            
     else: 
         run_with_module(*args)

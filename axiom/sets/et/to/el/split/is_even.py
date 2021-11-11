@@ -18,7 +18,7 @@ def prove(Eq):
     a, b, n = Symbol(integer=True)
     Eq << apply(Equal(n % 2, 0) & Element(n, Range(a, b + 1)))
 
-    Eq << algebra.equivalent.given.et.apply(Eq[0])
+    Eq << algebra.iff.given.et.apply(Eq[0])
 
     Eq << Eq[-2].this.lhs.apply(sets.is_even.el.imply.el)
 
@@ -28,3 +28,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2018-05-28
+# updated on 2018-05-28

@@ -27,10 +27,12 @@ def prove(Eq):
 
     Eq << sets.eq.imply.eq.union.apply(Eq[0], Interval(n, n + 1, left_open=True))
 
-    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
+    Eq << Infer(Eq[0], Eq.induct, plausible=True)
 
-    Eq << algebra.suffice.imply.eq.induct.apply(Eq[-1], n=n, start=0)
+    Eq << algebra.infer.imply.eq.induct.apply(Eq[-1], n=n, start=0)
 
 
 if __name__ == '__main__':
     run()
+# created on 2018-09-02
+# updated on 2018-09-02

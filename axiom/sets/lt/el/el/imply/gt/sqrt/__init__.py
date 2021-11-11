@@ -28,26 +28,28 @@ def prove(Eq):
 
     Eq.y_contains = sets.gt.el.imply.el.intersect.apply(Eq[-1], Eq[2])
 
-    Eq << algebra.cond.given.et.suffice.split.apply(Eq[3], cond=Equal(x, -1))
+    Eq << algebra.cond.given.et.infer.split.apply(Eq[3], cond=Equal(x, -1))
 
-    Eq << algebra.suffice.given.suffice.subs.apply(Eq[-2])
+    Eq << algebra.infer.given.infer.subs.apply(Eq[-2])
 
-    Eq << algebra.suffice.given.cond.apply(Eq[-1])
+    Eq << algebra.infer.given.cond.apply(Eq[-1])
 
     Eq << -sets.el.imply.lt.square.apply(Eq.y_contains) + 1
 
-    Eq << algebra.is_positive.imply.sqrt_is_positive.apply(Eq[-1])
+    Eq << algebra.gt_zero.imply.sqrt_gt_zero.apply(Eq[-1])
 
-    Eq << algebra.cond.imply.suffice.apply(Eq.x_contains, cond=Eq[-4].lhs)
+    Eq << algebra.cond.imply.infer.apply(Eq.x_contains, cond=Eq[-4].lhs)
 
-    Eq << algebra.suffice.imply.suffice.et.apply(Eq[-1])
+    Eq << algebra.infer.imply.infer.et.apply(Eq[-1])
 
     Eq << Eq[-1].this.rhs.apply(sets.ne.el.imply.el)
 
-    Eq << algebra.cond.suffice.imply.suffice.et.rhs.apply(Eq.y_contains & Eq[0], Eq[-1])
+    Eq << algebra.cond.infer.imply.infer.et.rhs.apply(Eq.y_contains & Eq[0], Eq[-1])
     Eq << Eq[-1].this.rhs.apply(sets.lt.el.el.imply.gt.sqrt.open)
 
 
 if __name__ == '__main__':
     run()
 from . import open
+# created on 2020-11-29
+# updated on 2020-11-29

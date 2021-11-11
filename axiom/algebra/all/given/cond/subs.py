@@ -20,7 +20,7 @@ def prove(Eq):
     x = Symbol(integer=True)
     n = Symbol(integer=True, positive=True)
 
-    m = Symbol(domain=Range(0, n + 1))
+    m = Symbol(domain=Range(n + 1))
     f = Function(shape=(), integer=True)
     s = Symbol(etype=dtype.integer)
 
@@ -32,3 +32,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2018-12-13
+# updated on 2018-12-13

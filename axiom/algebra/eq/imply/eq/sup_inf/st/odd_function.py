@@ -24,10 +24,10 @@ def prove(Eq):
     Eq <<= algebra.eq.imply.et.squeeze.apply(Eq[-1].reversed), Eq[1].subs(Eq[-1].reversed)
 
     z = Symbol(real=True)
-    Eq <<= algebra.le_inf.imply.all_any_lt.apply(Eq[-3], z), algebra.ge_inf.imply.all_ge.apply(Eq[-2]), algebra.eq.given.et.squeeze.apply(Eq[-1])
+    Eq <<= algebra.inf_le.imply.all_any_lt.apply(Eq[-3], z), algebra.inf_ge.imply.all_ge.apply(Eq[-2]), algebra.eq.given.et.squeeze.apply(Eq[-1])
 
     Eq <<= Eq[-4].this.expr.apply(algebra.any.imply.any.limits.negate), algebra.all.imply.all.limits.subs.negate.real.apply(Eq[-3], x, -x), \
-        algebra.le_sup.given.all_le.apply(Eq[-2]), algebra.ge_sup.given.all_any_gt.apply(Eq[-1], z)
+        algebra.sup_le.given.all_le.apply(Eq[-2]), algebra.sup_ge.given.all_any_gt.apply(Eq[-1], z)
 
     Eq <<= Eq[-2].subs(Eq[0]), Eq[-1].subs(Eq[0])
 
@@ -37,3 +37,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2019-04-12
+# updated on 2019-04-12

@@ -25,10 +25,10 @@ def prove(Eq):
     w = Symbol(Lamda[j, i](SwapMatrix(n, i, j)))
     Eq << apply(All[x:S](Element(w[0, j] @ x, S)))
 
-    j_ = j.copy(domain=Range(0, n))
+    j_ = j.copy(domain=Range(n))
     Eq.given = Eq[0].subs(j, j_)
 
-    i_ = i.copy(domain=Range(0, n))
+    i_ = i.copy(domain=Range(n))
     Eq.given_i = Eq.given.subs(j_, i_)
 
     Eq << algebra.all.imply.ou.subs.apply(Eq.given, x, Eq.given_i.expr.lhs)
@@ -79,3 +79,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html
+# created on 2020-08-25
+# updated on 2020-08-25

@@ -23,7 +23,7 @@ def prove(Eq):
 
     Eq << Eq[-1] / 2
 
-    Eq << algebra.is_nonnegative.imply.eq.abs.apply(Eq[-1])
+    Eq << algebra.ge_zero.imply.eq.abs.apply(Eq[-1])
 
     Eq << algebra.le.ge.imply.le.abs.apply(Eq[0], Eq[1])
 
@@ -34,3 +34,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2019-05-30
+# updated on 2019-05-30

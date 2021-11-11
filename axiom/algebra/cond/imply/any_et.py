@@ -14,7 +14,7 @@ def apply(given, wrt=None):
 def prove(Eq):
     from axiom import sets, algebra
     n = Symbol(integer=True, positive=True, given=True)
-    e = Symbol(domain=Range(0, n), given=True)
+    e = Symbol(domain=Range(n), given=True)
     f = Function(integer=True, shape=())
     Eq << apply(f(e) > 0, wrt=e)
 
@@ -30,3 +30,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2019-02-26
+# updated on 2019-02-26

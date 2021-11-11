@@ -27,9 +27,9 @@ def prove(Eq):
 
     Eq << algebra.le.le.imply.le.transit.apply(Eq[-1], Eq[-2])
 
-    Eq << Suffice(Eq[2], Eq.induct, plausible=True)
+    Eq << Infer(Eq[2], Eq.induct, plausible=True)
 
-    Eq << algebra.suffice.imply.cond.induct.apply(Eq[-1], n=m, start=0)
+    Eq << algebra.infer.imply.cond.induct.apply(Eq[-1], n=m, start=0)
 
     Eq << algebra.cond.imply.all.apply(Eq[2], m)
 
@@ -42,3 +42,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2019-10-29
+# updated on 2019-10-29

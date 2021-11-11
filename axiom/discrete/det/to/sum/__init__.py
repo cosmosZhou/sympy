@@ -1,8 +1,6 @@
 from util import *
 
 
-
-
 @apply
 def apply(self):
     A = self.of(Determinant)
@@ -11,7 +9,7 @@ def apply(self):
     i = self.generate_var(integer=True, var='i')
     j = self.generate_var(integer=True, var='j')
 
-    return Equal(self, Sum[p:Equal(p[:n].set_comprehension(), Range(0, n))]((-1) ** Sum[j:i, i:n](Bool(p[i] < p[j])) * Product[i:n](A[i, p[i]])))
+    return Equal(self, Sum[p:Equal(p[:n].set_comprehension(), Range(n))]((-1) ** Sum[j:i, i:n](Bool(p[i] < p[j])) * Product[i:n](A[i, p[i]])))
 
 
 @prove(provable=False)
@@ -25,3 +23,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 from . import expansion_by_minors
+# created on 2021-09-26
+# updated on 2021-09-26

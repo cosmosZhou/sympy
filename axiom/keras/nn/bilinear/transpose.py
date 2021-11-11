@@ -15,7 +15,7 @@ def prove(Eq):
     W = Symbol(shape=(n, n), real=True)
     Eq << apply(x, y, W)
 
-    i, j = Symbol(domain=Range(0, n))
+    i, j = Symbol(domain=Range(n))
     Eq << (x @ W).this.apply(discrete.matmul.to.lamda, var={i, j})
 
     Eq << Eq[-1] @ y
@@ -37,3 +37,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2021-01-04
+# updated on 2021-01-04

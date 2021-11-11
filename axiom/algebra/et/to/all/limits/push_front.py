@@ -31,13 +31,13 @@ def prove(Eq):
     from axiom import algebra
     i = Symbol(integer=True)
     n = Symbol(integer=True, positive=True)
-    a = Symbol(domain=Range(0, n))
+    a = Symbol(domain=Range(n))
 
     x = Symbol(real=True, shape=(oo,))
 
     Eq << apply(And(All[i:a:n](x[i] > 0), x[a - 1] > 0, x[a - 2] > 0))
 
-    Eq << algebra.equivalent.given.et.apply(Eq[-1])
+    Eq << algebra.iff.given.et.apply(Eq[-1])
 
     Eq <<= Eq[-2].this.rhs.apply(algebra.all.given.et, cond={a - 2}), Eq[-1].this.rhs.apply(algebra.all.imply.et.split, cond={a - 2})
 
@@ -47,3 +47,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2019-05-06
+# updated on 2019-05-06

@@ -18,7 +18,7 @@ def prove(Eq):
 
     f = Function(shape=(), integer=True)
 
-    P = Symbol(conditionset(x[:n], f(x[:n]) > 0, CartesianSpace(Range(0, m), n)))
+    P = Symbol(conditionset(x[:n], f(x[:n]) > 0, CartesianSpace(Range(m), n)))
     Eq << apply(P)
 
     Eq << algebra.all_et.imply.all.apply(Eq[-1])
@@ -33,3 +33,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-08-12
+# updated on 2020-08-12

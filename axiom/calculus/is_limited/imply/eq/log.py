@@ -24,15 +24,15 @@ def prove(Eq):
 
     Eq << Eq[0].subs(Eq.is_limited)
 
-    Eq.A_is_positive = sets.el.imply.is_positive.apply(Eq[-1])
+    Eq.A_is_positive = sets.el.imply.gt_zero.apply(Eq[-1])
 
-    Eq << algebra.is_positive.eq.imply.eq.log.apply(Eq.A_is_positive, Eq.is_limited)
+    Eq << algebra.gt_zero.eq.imply.eq.log.apply(Eq.A_is_positive, Eq.is_limited)
 
     Eq << Eq[1].subs(Eq[-1])
 
     Eq << algebra.et.given.et.apply(Eq[-1])
 
-    Eq << sets.el.imply.is_nonzero.apply(Eq[0])
+    Eq << sets.el.imply.ne_zero.apply(Eq[0])
 
     Eq << Eq[-2].this.apply(calculus.eq.to.any_all.limit_definition, delta=delta, epsilon=epsilon)
 
@@ -48,7 +48,7 @@ def prove(Eq):
 
     Eq << algebra.cond.any_all.imply.any_all_et.apply(Eq.A_is_positive, Eq[-1])
 
-    Eq << Eq[-1].this.expr.expr.apply(sets.is_positive.el.imply.el.div)
+    Eq << Eq[-1].this.expr.expr.apply(sets.gt_zero.el.imply.el.div)
 
     Eq << Eq[-1].this.expr.expr.rhs.args[0].apply(algebra.mul.to.add)
 
@@ -62,3 +62,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-06-19
+# updated on 2020-06-19

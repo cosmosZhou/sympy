@@ -19,9 +19,11 @@ def prove(Eq):
 
     Eq << Eq[-1].apply(algebra.cond.given.et.all, cond=Unequal(S, S.etype.emptySet))
 
-    Eq << Eq[-1].this.expr.apply(sets.any_el.given.is_nonempty)
+    Eq << Eq[-1].this.expr.apply(sets.any_el.given.ne_empty)
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2018-09-06
+# updated on 2018-09-06

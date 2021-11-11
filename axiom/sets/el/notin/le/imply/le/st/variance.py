@@ -29,9 +29,9 @@ def prove(Eq):
     X, Y = Symbol(etype=dtype.integer, finiteset=True, given=True)
     Eq << apply(abs(a[y_quote] - Sum[x:X](a[x]) / Card(X)) <= abs(a[y_quote] - Sum[y:Y](a[y]) / Card(Y)), Element(y_quote, Y), NotElement(y_quote, X))
 
-    Eq.eq, Eq.ne = algebra.cond.given.et.suffice.split.apply(Eq[-1], cond=Equal(Card(Y), 1))
+    Eq.eq, Eq.ne = algebra.cond.given.et.infer.split.apply(Eq[-1], cond=Equal(Card(Y), 1))
 
-    Eq.suffice_et = algebra.cond.imply.suffice.et.apply(Eq[1], cond=Eq.eq.lhs)
+    Eq.suffice_et = algebra.cond.imply.infer.et.apply(Eq[1], cond=Eq.eq.lhs)
 
     Eq << Eq.suffice_et.this.rhs.apply(sets.eq.el.imply.is_empty)
 
@@ -39,7 +39,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.et.given.et.subs.eq)
 
-    Eq << algebra.suffice.given.et.suffice.apply(Eq[-1])
+    Eq << algebra.infer.given.et.infer.apply(Eq[-1])
 
     Eq.suffice_eq = Eq.suffice_et.this.rhs.apply(sets.eq.el.imply.eq.finiteset)
 
@@ -47,19 +47,19 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.et.given.et.subs.eq)
 
-    Eq << algebra.suffice.given.et.suffice.apply(Eq[-1])
+    Eq << algebra.infer.given.et.infer.apply(Eq[-1])
 
     Eq << Eq[-1].this.rhs.apply(algebra.le.given.eq)
 
-    Eq << algebra.cond.imply.suffice.apply(Eq[0], cond=Eq[-1].lhs)
+    Eq << algebra.cond.imply.infer.apply(Eq[0], cond=Eq[-1].lhs)
 
     Eq <<= Eq[-1] & Eq.suffice_eq
 
     Eq << Eq[-1].this.rhs.apply(algebra.eq.cond.imply.cond.subs)
 
-    Eq << Eq[-1].this.rhs.apply(algebra.abs_is_nonpositive.imply.is_zero)
+    Eq << Eq[-1].this.rhs.apply(algebra.abs_le_zero.imply.is_zero)
 
-    Eq << algebra.cond.imply.suffice.apply(Eq[2], cond=Eq[-1].lhs)
+    Eq << algebra.cond.imply.infer.apply(Eq[2], cond=Eq[-1].lhs)
 
     Eq <<= Eq[-1] & Eq[-2]
 
@@ -71,11 +71,11 @@ def prove(Eq):
 
     Eq << sets.el.imply.ge.card.apply(Eq[1])
 
-    Eq << algebra.cond.imply.suffice.et.apply(Eq[-1], cond=Eq.ne.lhs)
+    Eq << algebra.cond.imply.infer.et.apply(Eq[-1], cond=Eq.ne.lhs)
 
     Eq << Eq[-1].this.rhs.apply(algebra.gt.imply.ge.strengthen)
 
-    Eq << algebra.cond.imply.suffice.apply(Eq[0] & Eq[1] & Eq[2], cond=Eq.ne.lhs)
+    Eq << algebra.cond.imply.infer.apply(Eq[0] & Eq[1] & Eq[2], cond=Eq.ne.lhs)
 
     Eq <<= Eq[-1] & Eq[-2]
 
@@ -84,3 +84,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2021-03-25
+# updated on 2021-03-25

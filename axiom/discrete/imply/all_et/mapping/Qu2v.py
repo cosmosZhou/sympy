@@ -19,7 +19,7 @@ def X_definition(n, w, x):
 def predefined_symbols(n):
     x = Symbol(shape=(oo,), integer=True, nonnegative=True)
     t, i, j = Symbol(integer=True)
-    Q = Symbol(Lamda[t:n + 1](conditionset(x[:n + 1], Equal(x[:n + 1].set_comprehension(), Range(0, n + 1)) & Equal(x[n], t))))
+    Q = Symbol(Lamda[t:n + 1](conditionset(x[:n + 1], Equal(x[:n + 1].set_comprehension(), Range(n + 1)) & Equal(x[n], t))))
     w = Symbol(Lamda[j, i](SwapMatrix(n + 1, i, j)))
 
     return Q, w, x
@@ -30,8 +30,8 @@ def prove(Eq):
     from axiom import sets, algebra, discrete
 
     n = Symbol(integer=True, positive=True, given=True)
-    u = Symbol(domain=Range(0, n + 1), given=True)
-    v = Symbol(domain=Range(0, n + 1))
+    u = Symbol(domain=Range(n + 1), given=True)
+    v = Symbol(domain=Range(n + 1))
     Eq << apply(n, u, v)
 
     w, i, j = Eq[0].lhs.args
@@ -88,7 +88,7 @@ def prove(Eq):
     Eq << Eq.x_slice_domain.this.expr.apply(discrete.eq.imply.et.index, u)
     Eq.indexu_contains, Eq.x_indexu_equality = algebra.all_et.imply.all.apply(Eq[-1], simplify=None)
     Eq.equality_of_indexu_and_n = (Eq.x_indexu_equality & Eq.x_slice_last).this.expr.apply(algebra.eq.eq.imply.eq.transit)
-    i, j, m = Symbol(domain=Range(0, n + 1))
+    i, j, m = Symbol(domain=Range(n + 1))
     Eq << Eq.x_slice_domain.this.expr.apply(discrete.combinatorics.permutation.index.kronecker_delta.indexOf, i, j)
     x = Eq[-1].variable.base
     Eq.ou = Eq[-1].subs(i, x[n])
@@ -126,3 +126,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-07-26
+# updated on 2020-07-26

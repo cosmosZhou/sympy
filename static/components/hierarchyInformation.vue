@@ -8,7 +8,7 @@
 </template>
 
 <script>
-	console.log('importing hierarchy-information.vue');	
+	console.log('importing hierarchyInformation.vue');	
 
 	export default {
 		props : [ 'keyInput', 'deep' ],

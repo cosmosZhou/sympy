@@ -19,7 +19,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.factor()
 
-    Eq << algebra.is_nonpositive.imply.ou.split.mul.apply(Eq[-1])
+    Eq << algebra.le_zero.imply.ou.split.mul.apply(Eq[-1])
 
     Eq << Eq[-1].this.args[0].args[0] - y
 
@@ -37,3 +37,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2019-05-31
+# updated on 2019-05-31

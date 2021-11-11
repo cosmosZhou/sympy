@@ -40,7 +40,7 @@ def prove(Eq):
 
     Eq << ~Eq[3]
 
-    Eq << Eq[-1].this.expr.apply(algebra.is_nonzero.imply.is_positive)
+    Eq << Eq[-1].this.expr.apply(algebra.ne_zero.imply.gt_zero)
 
     Eq << Eq[-3].this.lhs.apply(algebra.sum.to.add.split, cond={i})
 
@@ -53,3 +53,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2019-04-28
+# updated on 2019-04-28

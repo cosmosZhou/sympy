@@ -26,14 +26,14 @@ def prove(Eq):
 
     Eq << apply(All(Equal(x[i] & x[j], x[i].etype.emptySet), (j, Unequal(j, i))), n)
 
-    Eq << algebra.all.imply.suffice.apply(Eq[0])
+    Eq << algebra.all.imply.infer.apply(Eq[0])
 
     Eq << Eq[-1].this.lhs.apply(algebra.ne.given.lt)
 
     j_ = Symbol.j(integer=True, nonnegative=True)
     Eq << Eq[-1].subs(j, j_)
 
-    Eq << algebra.suffice.imply.all.apply(Eq[-1])
+    Eq << algebra.infer.imply.all.apply(Eq[-1])
 
     Eq << sets.all_is_empty.imply.eq.nonoverlapping.intlimit.utility.apply(Eq[-1], n)
 
@@ -41,3 +41,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2021-01-12
+# updated on 2021-01-12

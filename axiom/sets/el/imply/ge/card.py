@@ -16,12 +16,14 @@ def prove(Eq):
     S = Symbol(etype=dtype.complex * n, given=True)
     Eq << apply(Element(x, S))
 
-    Eq << sets.el.imply.is_nonempty.apply(Eq[0])
+    Eq << sets.el.imply.ne_empty.apply(Eq[0])
 
-    Eq << sets.is_nonempty.imply.is_positive.apply(Eq[-1])
+    Eq << sets.ne_empty.imply.gt_zero.apply(Eq[-1])
 
     Eq << algebra.gt.imply.ge.strengthen.apply(Eq[-1])
 
 
 if __name__ == '__main__':
     run()
+# created on 2021-03-10
+# updated on 2021-03-10

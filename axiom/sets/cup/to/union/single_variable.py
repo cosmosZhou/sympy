@@ -16,7 +16,7 @@ def prove(Eq):
 
     Eq << apply(Cup[x:B](Piecewise((f(x, y), Element(x, A)), (g(x, y), True))))
 
-    Eq << sets.eq.given.et.suffice.apply(Eq[0], wrt='y')
+    Eq << sets.eq.given.et.infer.apply(Eq[0], wrt='y')
 
     Eq <<= Eq[-2].this.lhs.apply(sets.el_cup.imply.any_el), \
     Eq[-1].this.rhs.apply(sets.el_cup.given.any_el)
@@ -47,3 +47,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2018-10-03
+# updated on 2018-10-03

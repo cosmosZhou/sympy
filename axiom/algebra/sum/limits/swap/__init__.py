@@ -52,9 +52,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this.apply(algebra.eq.simplify.terms.common)
 
-    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
+    Eq << Infer(Eq[0], Eq.induct, plausible=True)
 
-    Eq << algebra.eq.suffice.imply.eq.induct.apply(Eq.initial, Eq[-1], n=n, start=1)
+    Eq << algebra.eq.infer.imply.eq.induct.apply(Eq.initial, Eq[-1], n=n, start=1)
 
 
 if __name__ == '__main__':
@@ -62,3 +62,5 @@ if __name__ == '__main__':
 
 from . import intlimit
 from . import subs
+# created on 2018-04-30
+# updated on 2018-04-30

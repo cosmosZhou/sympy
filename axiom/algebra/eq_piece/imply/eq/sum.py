@@ -29,7 +29,7 @@ def prove(Eq):
     i, j = Symbol(integer=True)
     n = Symbol(domain=Range(2, oo))
     x, y = Symbol(real=True, shape=(oo,))
-    t = Symbol(domain=Range(0, n))
+    t = Symbol(domain=Range(n))
     f = Function(real=True)
     Eq << apply(Equal(y[i], Piecewise((x[i], i < t),(x[i + 1], True))), Sum[i:n - 1](f(y[i])))
 
@@ -38,3 +38,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2019-11-27
+# updated on 2019-11-27

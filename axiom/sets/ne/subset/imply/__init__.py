@@ -1,1 +1,1 @@
-from . import is_nonempty
+from . import ne_empty

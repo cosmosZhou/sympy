@@ -21,7 +21,7 @@ def prove(Eq):
     f = Function(real=True, continuous=True)
     Eq << apply(Integral[x:a:b](f(x)))
 
-    Eq << algebra.cond.given.et.suffice.split.apply(Eq[0], cond=a < b)
+    Eq << algebra.cond.given.et.infer.split.apply(Eq[0], cond=a < b)
 
     Eq << (a < b).this.apply(calculus.lt.imply.eq.integral.to.mul.limit.maxima.Darboux, Eq[0].lhs)
 
@@ -31,24 +31,26 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.eq.eq.imply.eq.transit)
 
-    Eq << algebra.suffice.imply.suffice.et.apply(Eq[-1])
+    Eq << algebra.infer.imply.infer.et.apply(Eq[-1])
 
-    Eq << Eq[-1].this.rhs.args[1].apply(algebra.lt.imply.is_positive)
+    Eq << Eq[-1].this.rhs.args[1].apply(algebra.lt.imply.gt_zero)
 
-    Eq << Eq[-1].this.rhs.apply(algebra.is_positive.eq.imply.eq.div)
+    Eq << Eq[-1].this.rhs.apply(algebra.gt_zero.eq.imply.eq.div)
 
-    Eq << algebra.suffice.imply.suffice.et.apply(Eq[-1])
+    Eq << algebra.infer.imply.infer.et.apply(Eq[-1])
 
     Eq << Eq[-1].this.rhs.apply(calculus.lt.eq_limit.imply.eq.Darboux)
 
-    Eq << algebra.cond.given.et.suffice.split.apply(Eq[2], cond=a > b)
+    Eq << algebra.cond.given.et.infer.split.apply(Eq[2], cond=a > b)
 
-    Eq <<= Eq[-2].this.apply(algebra.suffice.flatten), Eq[-1].this.apply(algebra.suffice.flatten)
+    Eq <<= Eq[-2].this.apply(algebra.infer.flatten), Eq[-1].this.apply(algebra.infer.flatten)
 
     Eq << Eq[-2].this.lhs.apply(calculus.gt.imply.eq.integral.to.limit.Riemann, Eq[0].lhs)
 
-    Eq << algebra.suffice.given.suffice.subs.apply(Eq[-1])
+    Eq << algebra.infer.given.infer.subs.apply(Eq[-1])
 
 
 if __name__ == '__main__':
     run()
+# created on 2020-06-08
+# updated on 2020-06-08

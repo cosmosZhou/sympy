@@ -3,8 +3,6 @@ from util.search import py_to_module, read_directory, read_all_files, \
     axiom_directory, is_py_theorem, yield_function_from_py
 from os.path import basename
 from util import MySQL
-import time
-import datetime
 
 
 def read_all_axioms(dir):
@@ -64,32 +62,7 @@ def topological_sort():
     G = topological_sort_depth_first(graph)
     return G
 
-    
-def update_timestamp():
-    G = topological_sort()
-    # for axiom in G:
-        # print(axiom)
-
-    print(len(G))
-    datetime.date(2018, 1, 1)
-    initial = time.mktime(datetime.date(2018, 1, 1).timetuple())
-    delta = time.time() - initial
-    delta /= len(G)
-    
-    create_times = []
-    for i in range(len(G)):
-        create_time = initial + delta * i
-        create_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(create_time))
-        create_times.append(create_time)
-        
-    seq_params = [(create_time, axiom) for axiom, create_time in zip(G, create_times)]
-        
-    print("len(seq_params) =", len(seq_params))
-    rowcount = MySQL.instance.executemany("update tbl_axiom_py set timestamp = %s where user = 'sympy' and axiom = %s", seq_params)
-    print("rowcount =", rowcount)
-
 
 if __name__ == '__main__':
     insert_into_function()
-#     update_timestamp()    
 # exec(open('./util/function.py').read())

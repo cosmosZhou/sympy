@@ -33,7 +33,7 @@ def prove(Eq):
     i, j = Symbol(integer=True)
     n = Symbol(domain=Range(2, oo))
     x = Symbol(shape=(oo,), etype=dtype.integer, finiteset=True)
-    j_domain = Range(0, n) - {i}
+    j_domain = Range(n) - {i}
     emptySet = x[i].etype.emptySet
     Eq << apply(All[j: j_domain, i: n](Equal(x[i] & x[j], emptySet)))
 
@@ -73,3 +73,5 @@ if __name__ == '__main__':
     run()
 
 from . import utility
+# created on 2021-01-13
+# updated on 2021-01-13

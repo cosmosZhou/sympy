@@ -15,7 +15,7 @@ def prove(Eq):
     x = Symbol(real=True)
     Eq << apply(ceiling(x))
 
-    Eq << algebra.cond.given.et.suffice.split.apply(Eq[-1], cond=Element(x, Integers))
+    Eq << algebra.cond.given.et.infer.split.apply(Eq[-1], cond=Element(x, Integers))
 
     Eq << Eq[-2].this.lhs.apply(sets.el.imply.any_eq)
 
@@ -40,3 +40,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2018-05-21
+# updated on 2018-05-21

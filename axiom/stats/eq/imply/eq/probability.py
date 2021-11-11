@@ -12,7 +12,7 @@ def apply(given):
 @prove
 def prove(Eq):
     n = Symbol(integer=True, positive=True, given=True)
-    i = Symbol(domain=Range(0, n))
+    i = Symbol(domain=Range(n))
     p, q = Symbol(shape=(n,), integer=True, random=True)
 
     Eq << apply(Equal(p[i], q[i]))
@@ -23,3 +23,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-12-13
+# updated on 2020-12-13

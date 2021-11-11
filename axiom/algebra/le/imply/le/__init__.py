@@ -2,7 +2,6 @@ from . import sum
 from . import sqrt
 from . import min
 from . import floor
-from . import split
 from . import mul
 from . import square
 from . import st

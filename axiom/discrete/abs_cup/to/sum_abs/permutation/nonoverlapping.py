@@ -21,11 +21,11 @@ def prove(Eq):
     Q = Eq[0].lhs.base
     t = Q.definition.variable
     j = Symbol(integer=True)
-    Eq.nonoverlapping = All[j: Range(0, n + 1) - {t}, t](Equal(Q[t] & Q[j], Q[t].etype.emptySet), plausible=True)
+    Eq.nonoverlapping = All[j: Range(n + 1) - {t}, t](Equal(Q[t] & Q[j], Q[t].etype.emptySet), plausible=True)
 
     Eq << ~Eq.nonoverlapping
 
-    Eq << Eq[-1].this.expr.apply(sets.intersect_is_nonempty.imply.any_el, wrt=Eq[0].rhs.variable, simplify=None)
+    Eq << Eq[-1].this.expr.apply(sets.intersect_ne_empty.imply.any_el, wrt=Eq[0].rhs.variable, simplify=None)
 
     Eq << Eq[-1].this.find(Element).rhs.definition
 
@@ -42,3 +42,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-08-06
+# updated on 2020-08-06

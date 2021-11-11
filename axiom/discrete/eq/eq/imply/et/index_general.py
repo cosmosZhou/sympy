@@ -18,14 +18,14 @@ def apply(a_size, xa_equality, j=None):
     a = Lamda[_k:_a:_b](aexpr).simplify()
 
     if j is None:
-        j = Symbol(domain=Range(0, n), given=True)
+        j = Symbol(domain=Range(n), given=True)
 
     assert j >= 0 and j < n
 
     from axiom.discrete.eq.imply.et.index import index_function
     index = index_function(n)
     index_j = index[j](x[:n], a[:n], evaluate=False)
-    return Element(index_j, Range(0, n)), Equal(x[index_j], a[j])
+    return Element(index_j, Range(n)), Equal(x[index_j], a[j])
 
 
 @prove
@@ -35,7 +35,7 @@ def prove(Eq):
     n = Symbol(domain=Range(2, oo), given=True)
     x, a = Symbol(shape=(n,), integer=True, given=True)
     k = Symbol(integer=True)
-    j = Symbol(domain=Range(0, n), given=True)
+    j = Symbol(domain=Range(n), given=True)
     Eq << apply(Equal(Card(a.set_comprehension(k)), n),
                 Equal(x[:n].set_comprehension(k), a.set_comprehension(k)),
                 j=j)
@@ -50,7 +50,7 @@ def prove(Eq):
 
     Eq << algebra.eq.eq.imply.eq.subs.rhs.apply(Eq[-1], Eq[-2])
 
-    s_j = Symbol(conditionset(k, Equal(a[j], x[k]), Range(0, n)))
+    s_j = Symbol(conditionset(k, Equal(a[j], x[k]), Range(n)))
     Eq.s_j_definition = s_j.this.definition
 
     Eq << Sum[k:s_j](k).this.limits[0][1].definition
@@ -74,7 +74,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq.s_j_definition_reversed)
 
-    Eq.s_j_greater_than_1 = sets.is_nonempty.imply.ge.apply(Eq[-1])
+    Eq.s_j_greater_than_1 = sets.ne_empty.imply.ge.apply(Eq[-1])
 
     Eq.distribute = Eq.distribute.subs(Eq.s_j_definition_reversed)
 
@@ -147,3 +147,5 @@ if __name__ == '__main__':
 
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html
 
+# created on 2020-07-22
+# updated on 2020-07-22

@@ -11,7 +11,7 @@ def apply(given, *limits):
 @prove
 def prove(Eq):
     n = Symbol(integer=True, positive=True)
-    i = Symbol(domain=Range(0, n))
+    i = Symbol(domain=Range(n))
     f, g = Function(real=True)
     Eq << apply(Equal(f(i), g(i)), (i, 0, n))
 
@@ -27,3 +27,5 @@ if __name__ == '__main__':
     run()
     
 from . import st
+# created on 2021-09-16
+# updated on 2021-09-16

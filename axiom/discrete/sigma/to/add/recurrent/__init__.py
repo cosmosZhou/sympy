@@ -10,7 +10,7 @@ def sigma(x, *limits):
     d = x.generate_var(exclues={k, i, j}, shape=(oo,), integer=True, var='d')
 
     return Piecewise((ZeroMatrix(*x.shape[1:]), Equal(k, 0) | (k > n)),
-                     (Sum[d[:k]:All[j:i, i:k](d[j] < d[i]):CartesianSpace(Range(0, n), k)](abs(Product[i:k](x[d[i]]))), True))
+                     (Sum[d[:k]:All[j:i, i:k](d[j] < d[i]):CartesianSpace(Range(n), k)](abs(Product[i:k](x[d[i]]))), True))
 
 
 sigma = Function.sigma(eval=sigma, shape=())
@@ -45,3 +45,5 @@ if __name__ == '__main__':
     run()
 
 from . import two
+# created on 2021-08-23
+# updated on 2021-08-23

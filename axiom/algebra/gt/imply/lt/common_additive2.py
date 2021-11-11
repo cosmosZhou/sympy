@@ -77,7 +77,7 @@ def prove(Eq):
 
     Eq << algebra.le.lt.imply.lt.add.apply(Eq[-2], Eq[-1])
 
-    Eq << algebra.is_positive.lt.imply.lt.mul.apply(Eq[0], Eq.lt)
+    Eq << algebra.gt_zero.lt.imply.lt.mul.apply(Eq[0], Eq.lt)
 
     Eq << algebra.le.lt.imply.lt.transit.apply(Eq.less_than, Eq[-1])
 
@@ -85,3 +85,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2019-07-27
+# updated on 2019-07-27

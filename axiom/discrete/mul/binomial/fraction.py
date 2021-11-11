@@ -11,7 +11,7 @@ def prove(Eq):
     from axiom import discrete
 
     n = Symbol(integer=True, positive=True)
-    k = Symbol(domain=Range(0, n))
+    k = Symbol(domain=Range(n))
     Eq << apply(n, k)
 
     Eq << Eq[-1].this.find(binomial).apply(discrete.binomial.to.mul)
@@ -27,3 +27,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-10-07
+# updated on 2020-10-07

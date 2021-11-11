@@ -112,14 +112,23 @@ class DenseMatrix(MatrixBase):
             # row-wise decomposition of matrix
             if isinstance(key, slice):
                 return self._new(self._args[key])
+            
+            from sympy import Equal, Piecewise
+            args = []
             if len(self.shape) == 1:
-                from sympy.functions.elementary.piecewise import Piecewise
-                from sympy import Equal
-                args = []
                 for i in range(len(self._args)):
                     args.append([self._args[i], Equal(key, i)])
                 args[-1][1] = True
                 return Piecewise(*args).simplify()
+            
+            if len(self.shape) == 2:
+                col = self.shape[1]
+                for i in range(self.shape[0]):
+                    args.append([self.func(self._args[col * i: col * (i + 1)]), Equal(key, i)])
+                    
+                args[-1][1] = True
+                return Piecewise(*args).simplify()
+            
             return self._args[a2idx(key)]
 
     def __setitem__(self, key, value):
@@ -434,7 +443,7 @@ class DenseMatrix(MatrixBase):
             if self.is_positive:
                 interval = Range(1, oo)
             elif self.is_nonnegative:
-                interval = Range(0, oo)
+                interval = Range(oo)
             elif self.is_negative:
                 interval = Range(-oo, 0)
             elif self.is_nonpositive:

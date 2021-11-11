@@ -26,10 +26,12 @@ def prove(Eq):
 
     Eq << Eq[0] * f(m)
 
-    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
+    Eq << Infer(Eq[0], Eq.induct, plausible=True)
 
-    Eq << algebra.suffice.imply.cond.induct.apply(Eq[-1], n=m, start=0)
+    Eq << algebra.infer.imply.cond.induct.apply(Eq[-1], n=m, start=0)
 
 
 if __name__ == '__main__':
     run()
+# created on 2020-02-26
+# updated on 2020-02-26

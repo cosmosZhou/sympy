@@ -56,7 +56,7 @@ def prove(Eq):
 
     Eq << algebra.any.given.any.subs.apply(Eq[1], Eq[1].variable, M)
 
-    Eq << Eq[-1].this.find(Element).apply(sets.el.given.is_positive)
+    Eq << Eq[-1].this.find(Element).apply(sets.el.given.gt_zero)
 
     Eq.is_nonzero = Unequal(M, 0, plausible=True)
 
@@ -66,15 +66,15 @@ def prove(Eq):
 
     Eq << Eq[-1].this.expr.apply(algebra.eq_max.imply.et.ge, index=1, simplify=None)
 
-    Eq << Eq[-1].this.expr.args[0].apply(algebra.is_nonpositive.imply.is_zero, simplify=None)
+    Eq << Eq[-1].this.expr.args[0].apply(algebra.le_zero.imply.is_zero, simplify=None)
 
     Eq << Eq[-1].this.expr.args[1].apply(algebra.eq_max.imply.et.ge, simplify=None)
 
     Eq << Eq[-1].this.expr.apply(algebra.et.imply.et.delete, index=0)
 
-    Eq << Eq[-1].this.args[0].apply(algebra.abs_is_nonpositive.imply.is_zero)
+    Eq << Eq[-1].this.args[0].apply(algebra.abs_le_zero.imply.is_zero)
 
-    Eq << Eq[-1].this.args[0].apply(algebra.abs_is_nonpositive.imply.is_zero)
+    Eq << Eq[-1].this.args[0].apply(algebra.abs_le_zero.imply.is_zero)
 
 
 
@@ -84,7 +84,7 @@ def prove(Eq):
 
     Eq << GreaterEqual(M, 0, plausible=True)
 
-    Eq << algebra.is_nonzero.is_nonnegative.imply.is_positive.apply(Eq.is_nonzero, Eq[-1])
+    Eq << algebra.ne_zero.ge_zero.imply.gt_zero.apply(Eq.is_nonzero, Eq[-1])
 
     Eq << algebra.cond.any.imply.any_et.apply(Eq[-1], Eq.any)
 
@@ -92,3 +92,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-05-16
+# updated on 2020-05-16

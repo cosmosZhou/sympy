@@ -57,7 +57,7 @@ def prove(Eq):
 
     M, n = Symbol(integer=True, positive=True)
     i = Symbol(integer=True)
-    k = Symbol(domain=Range(0, M))
+    k = Symbol(domain=Range(M))
     x = Symbol(real=True, shape=(M, n))
     w = Symbol(shape=(k,), etype=dtype.integer, empty=False)
     Eq << apply(Equal(Sum[i](Card(w[i])), M), Equal(Cup[i](w[i]), k.domain), x=x)
@@ -69,7 +69,7 @@ def prove(Eq):
     Eq.omega_i_definition = Eq.omega_i_definition0.this.rhs.apply(sets.conditionset.rewrite.domain_defined)
 
     j = Eq.omega_i_definition.rhs.variable
-    Eq << sets.eq.given.et.suffice.apply(Eq[4], wrt=j)
+    Eq << sets.eq.given.et.infer.apply(Eq[4], wrt=j)
 
     Eq <<= Eq[-2].this.lhs.apply(sets.el_cup.imply.any_el), \
     Eq[-1].this.rhs.apply(sets.el_cup.given.any_el)
@@ -105,3 +105,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-12-24
+# updated on 2020-12-24

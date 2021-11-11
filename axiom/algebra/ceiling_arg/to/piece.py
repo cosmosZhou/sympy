@@ -32,9 +32,9 @@ def prove(Eq):
     V = -sqrt(delta) - q
     Eq << apply(Ceiling(3 * Arg(U ** (S.One / 3) * V ** (S.One / 3)) / (S.Pi * 2) - S.One / 2))
 
-    Eq << algebra.cond.given.et.suffice.split.apply(Eq[0], cond=Equal(p, 0))
+    Eq << algebra.cond.given.et.infer.split.apply(Eq[0], cond=Equal(p, 0))
 
-    Eq << algebra.suffice.given.suffice.subs.apply(Eq[-2])
+    Eq << algebra.infer.given.infer.subs.apply(Eq[-2])
 
     Eq << algebra.mul_root.to.mul_piece.cubic_root.apply(Eq[-1].find(Arg[~Mul]))
 
@@ -42,14 +42,16 @@ def prove(Eq):
 
     Eq << Eq[-3].subs(Eq[-1])
 
-    Eq << Unequal(p, 0).this.apply(algebra.is_nonzero.imply.eq.ceiling_arg.to.piece, q)
+    Eq << Unequal(p, 0).this.apply(algebra.ne_zero.imply.eq.ceiling_arg.to.piece, q)
 
-    Eq << Eq[-1].lhs.this.apply(algebra.is_nonzero.imply.equivalent.eq, Eq[-1].find(Equal[~Ceiling, 0]))
+    Eq << Eq[-1].lhs.this.apply(algebra.ne_zero.imply.iff.eq, Eq[-1].find(Equal[~Ceiling, 0]))
 
     Eq <<= Eq[-1] & Eq[-2]
-    Eq << Eq[-1].this.rhs.apply(algebra.equivalent.cond.imply.cond.subs)
+    Eq << Eq[-1].this.rhs.apply(algebra.iff.cond.imply.cond.subs)
 
 
 
 if __name__ == '__main__':
     run()
+# created on 2018-11-09
+# updated on 2018-11-09

@@ -31,7 +31,7 @@ def prove(Eq):
 
     Eq << apply(((a < b) | (c < d)) & (f(x) < g(y)) & ((x < y) | (c < d)), cond=c < d)
 
-    Eq << algebra.equivalent.given.et.apply(Eq[-1])
+    Eq << algebra.iff.given.et.apply(Eq[-1])
 
     Eq << Eq[-2].this.lhs.apply(algebra.et.imply.et.collect, cond=c < d)
 
@@ -41,3 +41,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2019-04-30
+# updated on 2019-04-30

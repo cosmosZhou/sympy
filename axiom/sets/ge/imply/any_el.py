@@ -20,9 +20,11 @@ def prove(Eq):
 
     Eq << algebra.ge.imply.gt.relax.apply(Eq[0], 0)
 
-    Eq << sets.is_positive.imply.any_el.apply(Eq[-1], simplify=False)
+    Eq << sets.gt_zero.imply.any_el.apply(Eq[-1], simplify=False)
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2020-07-13
+# updated on 2020-07-13

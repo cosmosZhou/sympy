@@ -10,7 +10,7 @@ def apply(given, exclude=None):
     j = xi.generate_var(excludes=exclude, integer=True)
     xj = xi.subs(i, j)
 
-    return All[j:Range(0, n) - {i}, i:n](Unequal(xi, xj))
+    return All[j:Range(n) - {i}, i:n](Unequal(xi, xj))
 
 
 @prove
@@ -41,3 +41,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-07-19
+# updated on 2020-07-19

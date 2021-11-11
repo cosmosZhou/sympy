@@ -1,1 +1,1 @@
-from . import equivalent
+from . import iff

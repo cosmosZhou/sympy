@@ -14,9 +14,9 @@ def prove(Eq):
     x, a, b = Symbol(real=True)
     Eq << apply(Element(x, Interval(a, b)))
 
-    Eq << algebra.equivalent.given.et.apply(Eq[0])
+    Eq << algebra.iff.given.et.apply(Eq[0])
 
-    Eq <<= Eq[-2].apply(algebra.suffice.given.ou), Eq[-1].apply(algebra.necessary.given.ou)
+    Eq <<= Eq[-2].apply(algebra.infer.given.ou), Eq[-1].apply(algebra.assuming.given.ou)
 
     Eq << Eq[-2].this.args[0].apply(sets.el.given.el.neg)
 
@@ -26,3 +26,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2018-10-06
+# updated on 2018-10-06

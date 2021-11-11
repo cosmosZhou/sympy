@@ -23,11 +23,11 @@ def prove(Eq):
 
     Eq << apply(Piecewise((s(x), (f(x) > 0) & (g(x) > 0)), (x.universalSet, True)))
 
-    Eq.suffice, Eq.necessary = sets.eq.given.et.suffice.apply(Eq[0], wrt=t)
+    Eq.suffice, Eq.necessary = sets.eq.given.et.infer.apply(Eq[0], wrt=t)
 
     Eq << Eq.suffice.this.find(Element).apply(sets.el_piece.imply.ou)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.ou.to.suffice, index=slice(1, 3))
+    Eq << Eq[-1].this.lhs.apply(algebra.ou.to.infer, index=slice(1, 3))
 
     Eq << Eq[-1].this.rhs.apply(sets.el.given.ou.split.union, simplify=None)
 
@@ -35,7 +35,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.find(Element).apply(sets.el_piece.given.ou)
 
-    Eq << Eq[-1].this.rhs.apply(algebra.ou.to.suffice, index=slice(2, 4))
+    Eq << Eq[-1].this.rhs.apply(algebra.ou.to.infer, index=slice(2, 4))
 
     Eq << Eq.necessary.this.find(Element).apply(sets.el.imply.ou.split.union, simplify=None)
 
@@ -43,13 +43,15 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.find(Element).apply(sets.el_piece.imply.ou)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.ou.to.suffice, index=slice(2, 4))
+    Eq << Eq[-1].this.lhs.apply(algebra.ou.to.infer, index=slice(2, 4))
 
     Eq << Eq[-1].this.rhs.apply(sets.el_piece.given.ou)
 
-    Eq << Eq[-1].this.rhs.apply(algebra.ou.to.suffice, index=slice(1, 3))
+    Eq << Eq[-1].this.rhs.apply(algebra.ou.to.infer, index=slice(1, 3))
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2021-01-24
+# updated on 2021-01-24

@@ -5,7 +5,7 @@ from . import supset
 from . import any_eq
 from . import is_empty
 from . import ne
-from . import is_nonempty
+from . import ne_empty
 from . import et
 from . import all_ne
 from . import any_et

@@ -46,10 +46,12 @@ def prove(Eq):
 #     K = Symbol.K(shape=(m, n), real=True)
 #     Eq << apply(Lamda[j:k](Q @ K[j]))
 
-    j = Symbol(domain=Range(0, k))
+    j = Symbol(domain=Range(k))
     Eq << algebra.eq.given.eq.getitem.apply(Eq[0], j)
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2020-08-17
+# updated on 2020-08-17

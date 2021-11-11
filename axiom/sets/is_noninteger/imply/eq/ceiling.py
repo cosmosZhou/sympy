@@ -16,11 +16,11 @@ def prove(Eq):
 
     Eq << algebra.imply.ge.ceiling.apply(x)
 
-    Eq << sets.notin.imply.is_positive.frac.apply(Eq[0])
+    Eq << sets.notin.imply.gt_zero.frac.apply(Eq[0])
 
     Eq << Eq[-1].this.lhs.apply(algebra.frac.to.add)
 
-    Eq << algebra.is_positive.imply.gt.apply(Eq[-1])
+    Eq << algebra.gt_zero.imply.gt.apply(Eq[-1])
 
     Eq.lt_floor = Eq[-1].reversed
 
@@ -52,3 +52,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2018-05-17
+# updated on 2018-05-17

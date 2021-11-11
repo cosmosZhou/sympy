@@ -16,10 +16,12 @@ def prove(Eq):
 
     Eq << ~Eq[-1]
 
-    Eq << Eq[-1].apply(algebra.is_nonzero.eq.imply.eq.mul)
+    Eq << Eq[-1].apply(algebra.ne_zero.eq.imply.eq.mul)
 
     Eq <<= ~Eq[-1] & Eq[0]
 
 
 if __name__ == '__main__':
     run()
+# created on 2020-02-06
+# updated on 2020-02-06

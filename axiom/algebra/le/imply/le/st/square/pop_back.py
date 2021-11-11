@@ -155,7 +155,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.collect(Eq[-2].lhs.find(Sum))
 
-    Eq.is_nonnegative = algebra.le.given.is_nonnegative.apply(Eq[-1])
+    Eq.is_nonnegative = algebra.le.given.ge_zero.apply(Eq[-1])
 
     x_ = Symbol.x(Lamda[i](y[m - 1] - x[i]))
     Eq <<= x_[i].this.definition, x_[j].this.definition
@@ -223,3 +223,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2019-11-09
+# updated on 2019-11-09

@@ -6,8 +6,8 @@ def apply(A):
     n = A.shape[0]
     i, j = Symbol(integer=True)
     d = Symbol(shape=(oo,), integer=True)
-    k = Symbol(domain=Range(0, n + 1))
-    M = Symbol(Lamda[k](Piecewise((Sum[d[:k]:All[j:i, i:k](d[j] < d[i]):CartesianSpace(Range(0, n), k)](Card(Cap[i:k](A[d[i]]))), k > 0), (Card(Cup[i:n](A[i])), True))))
+    k = Symbol(domain=Range(n + 1))
+    M = Symbol(Lamda[k](Piecewise((Sum[d[:k]:All[j:i, i:k](d[j] < d[i]):CartesianSpace(Range(n), k)](Card(Cap[i:k](A[d[i]]))), k > 0), (Card(Cup[i:n](A[i])), True))))
 
     assert M.shape[0] == n + 1
     return Equal(Sum[k]((-1) ** k * M[k]), 0)
@@ -54,3 +54,5 @@ from . import basic
 
 # reference
 # www.cut-the-knot.org/arithmetic/combinatorics/InclusionExclusion.shtml
+# created on 2021-04-23
+# updated on 2021-04-23

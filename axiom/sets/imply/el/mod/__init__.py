@@ -7,7 +7,7 @@ def apply(self):
     assert n.is_integer
     assert d.is_integer
     assert d > 0
-    return Element(self, Range(0, d))
+    return Element(self, Range(d))
 
 
 @prove
@@ -39,3 +39,5 @@ if __name__ == '__main__':
     run()
 
 from . import negative
+# created on 2018-03-02
+# updated on 2018-03-02

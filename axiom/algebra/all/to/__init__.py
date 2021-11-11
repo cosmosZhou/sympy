@@ -1,2 +1,2 @@
-from . import suffice
 from . import ou, et
+from . import infer

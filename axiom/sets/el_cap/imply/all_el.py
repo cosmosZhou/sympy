@@ -25,7 +25,7 @@ def prove(Eq):
     A = Symbol(shape=(oo,), etype=dtype.integer, given=True)
     Eq << apply(Element(x, Cap[k:n](A[k])))
 
-    k = Symbol(domain=Range(0, n))
+    k = Symbol(domain=Range(n))
     Eq << Eq[0].this.rhs.apply(sets.cap.to.intersect.split, {k})
 
     Eq << sets.el.imply.el.split.intersect.apply(Eq[-1], index=0)
@@ -36,3 +36,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2021-01-22
+# updated on 2021-01-22

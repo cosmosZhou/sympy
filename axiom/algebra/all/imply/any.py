@@ -21,16 +21,18 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import sets
-    S = Range(0, oo)
+    S = Range(oo)
     e = Symbol(integer=True)
     f = Function(integer=True, shape=())
     Eq << apply(All[e:S](f(e) > 0))
 
     Eq << Unequal(S, S.etype.emptySet, plausible=True)
 
-    Eq << sets.is_nonempty.all.imply.any.apply(Eq[-1], Eq[0])
+    Eq << sets.ne_empty.all.imply.any.apply(Eq[-1], Eq[0])
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2018-12-18
+# updated on 2018-12-18

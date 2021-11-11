@@ -498,30 +498,32 @@ class Range(Set):
             return self
 
     def __new__(cls, start=None, stop=None, **kwargs):
-         
-        assert 'integer' not in kwargs
-        if start is None or stop is None:
-            if kwargs.get('positive'):
-                stop = S.Infinity
-                start = S.One
-            elif kwargs.get('nonnegative'):
-                start = S.Zero
-                stop = S.Infinity
-            elif kwargs.get('negative'):
-                start = S.NegativeInfinity
-                stop = S.Zero
-                kwargs['right_open'] = True
-            elif kwargs.get('nonpositive'):
-                start = S.NegativeInfinity
-                stop = S.Zero
+        if stop is None:
+            if start is None:
+                if kwargs.get('positive'):
+                    stop = S.Infinity
+                    start = S.One
+                elif kwargs.get('nonnegative'):
+                    start = S.Zero
+                    stop = S.Infinity
+                elif kwargs.get('negative'):
+                    start = S.NegativeInfinity
+                    stop = S.Zero
+                    kwargs['right_open'] = True
+                elif kwargs.get('nonpositive'):
+                    start = S.NegativeInfinity
+                    stop = S.Zero
+                else:
+                    start = S.NegativeInfinity
+                    stop = S.Infinity
+                    
+                if kwargs.get('odd'):
+                    return cls(start, stop, left_open=start.is_NegativeInfinity, right_open=True).retain_odd()
+                elif kwargs.get('even'):
+                    return cls(start, stop, left_open=start.is_NegativeInfinity, right_open=True).retain_even()
             else:
-                start = S.NegativeInfinity
-                stop = S.Infinity
-                
-            if kwargs.get('odd'):
-                return cls(start, stop, left_open=start.is_NegativeInfinity, right_open=True).retain_odd()
-            elif kwargs.get('even'):
-                return cls(start, stop, left_open=start.is_NegativeInfinity, right_open=True).retain_even()
+                stop = _sympify(start)
+                start = S.Zero
         else:
             start = _sympify(start)
             stop = _sympify(stop)

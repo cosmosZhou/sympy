@@ -1,4 +1,4 @@
 from . import imply
-from . import suffice
+from . import infer
 from . import cond
 from . import given

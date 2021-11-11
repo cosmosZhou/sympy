@@ -32,9 +32,9 @@ def prove(Eq):
     s = a[:n].set_comprehension()
     Eq << apply(All[j:i, i:n](Unequal(a[i], a[j])), Sum[x:s](f(x)))
 
-    Eq << algebra.imply.suffice.eq.sum.induct.apply(Eq[1].lhs)
+    Eq << algebra.imply.infer.eq.sum.induct.apply(Eq[1].lhs)
 
-    Eq << algebra.cond.suffice.imply.cond.transit.apply(Eq[0], Eq[-1])
+    Eq << algebra.cond.infer.imply.cond.transit.apply(Eq[0], Eq[-1])
 
 
 
@@ -45,3 +45,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2019-02-05
+# updated on 2019-02-05

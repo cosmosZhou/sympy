@@ -47,9 +47,9 @@ def prove(Eq):
 
     Eq << Eq[-1] * 2
 
-    Eq << algebra.imply.is_nonnegative.square.apply(sqrt(x[0]) - sqrt(x[1]))
+    Eq << algebra.imply.ge_zero.square.apply(sqrt(x[0]) - sqrt(x[1]))
 
-    Eq << algebra.is_nonnegative.imply.ge.apply(Eq[-1])
+    Eq << algebra.ge_zero.imply.ge.apply(Eq[-1])
 
     k_ = Symbol.k(domain=Range(2, n))
     t = Function(eval=lambda k: (sigma[k](x[:n]) / binomial(n, k)) ** (1 / k), real=True)
@@ -104,3 +104,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-11-05
+# updated on 2020-11-05

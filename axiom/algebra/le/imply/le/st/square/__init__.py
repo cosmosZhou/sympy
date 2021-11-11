@@ -34,7 +34,7 @@ def prove(Eq):
     m = Symbol(domain=Range(2, oo))
     y = Symbol(real=True, shape=(m,))
     i, j = Symbol(integer=True)
-    t = Symbol(domain=Range(0, m))
+    t = Symbol(domain=Range(m))
     Eq << apply(abs(y[t] - Sum[i](x[i]) / n) <= abs(y[t] - Sum[j](y[j]) / m))
 
     y_ = Symbol("y'", y @ SwapMatrix(m, t, m - 1))
@@ -93,3 +93,5 @@ if __name__ == '__main__':
     run()
 
 from . import pop_back
+# created on 2019-11-15
+# updated on 2019-11-15

@@ -9,7 +9,7 @@ def apply(self, offset):
         limit = (x, a - offset, b - offset)
     else:
         limit = (x,)
-        
+
     return Equal(self, Integral(expr._subs(x, x + offset), limit))
 
 
@@ -25,13 +25,13 @@ def prove(Eq):
     fn = Function("f^-", eval=lambda x : (abs(f(x)) - f(x)) / 2)
     Eq << fp(x).this.defun()
 
-    Eq << algebra.imply.add_is_nonnegative.abs.apply(f(x)) / 2
+    Eq << algebra.imply.add_ge_zero.abs.apply(f(x)) / 2
 
     Eq.fp_is_nonnegative = Eq[-1].subs(Eq[-2].reversed)
 
     Eq << fn(x).this.defun()
 
-    Eq << algebra.imply.add_is_nonnegative.abs.minus.apply(f(x)) / 2
+    Eq << algebra.imply.add_ge_zero.abs.minus.apply(f(x)) / 2
 
     Eq.fn_is_nonnegative =  Eq[-1].subs(Eq[-2].reversed)
 
@@ -47,11 +47,13 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(calculus.integral.to.add)
 
-    Eq << calculus.is_nonnegative.imply.eq.integral.limits.offset.apply(Eq.fp_is_nonnegative, Eq[-1].lhs.args[0], d)
+    Eq << calculus.ge_zero.imply.eq.integral.limits.offset.apply(Eq.fp_is_nonnegative, Eq[-1].lhs.args[0], d)
 
     Eq << Eq[-2].subs(Eq[-1]).simplify()
-    Eq << calculus.is_nonnegative.imply.eq.integral.limits.offset.apply(Eq.fn_is_nonnegative, Eq[-1].lhs, d)
+    Eq << calculus.ge_zero.imply.eq.integral.limits.offset.apply(Eq.fn_is_nonnegative, Eq[-1].lhs, d)
 
 
 if __name__ == '__main__':
     run()
+# created on 2020-06-05
+# updated on 2020-06-05

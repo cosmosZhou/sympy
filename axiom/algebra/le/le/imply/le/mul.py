@@ -31,7 +31,7 @@ def prove(Eq):
 
     Eq << Eq[1] - x
 
-    Eq.is_nonnegative = algebra.is_nonnegative.is_nonnegative.imply.is_nonnegative.apply(Eq[-1], Eq[-2])
+    Eq.is_nonnegative = algebra.ge_zero.ge_zero.imply.ge_zero.apply(Eq[-1], Eq[-2])
 
     Eq << Eq[0] - a
 
@@ -39,10 +39,12 @@ def prove(Eq):
 
     Eq << GreaterEqual(x, 0, plausible=True)
 
-    Eq << algebra.is_nonpositive.is_nonnegative.imply.is_nonpositive.apply(Eq[-2], Eq[-1])
+    Eq << algebra.le_zero.ge_zero.imply.le_zero.apply(Eq[-2], Eq[-1])
 
     Eq << algebra.ge.le.imply.le.transit.apply(Eq.is_nonnegative, Eq[-1])
 
 
 if __name__ == '__main__':
     run()
+# created on 2018-07-02
+# updated on 2018-07-02

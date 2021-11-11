@@ -22,10 +22,12 @@ def prove(Eq):
 
     Eq << algebra.ge_minima.given.all_ge.apply(Eq[-1])
 
-    Eq << algebra.all.given.suffice.apply(Eq[-1])
+    Eq << algebra.all.given.infer.apply(Eq[-1])
 
     Eq << Eq[-1].this.lhs.apply(algebra.all_le.imply.le_maxima)
 
 
 if __name__ == '__main__':
     run()
+# created on 2019-09-21
+# updated on 2019-09-21

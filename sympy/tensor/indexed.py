@@ -1197,7 +1197,7 @@ class Slice(Expr):
                     domain = Interval(-oo, 0)
             elif base.is_nonnegative:
                 if base.is_integer:
-                    domain = Range(0, oo)
+                    domain = Range(oo)
                 else:
                     domain = Interval(0, oo)
             else:
@@ -1404,21 +1404,21 @@ class SliceIndexed(Expr):
         """Allow derivatives with respect to an ``Indexed`` object."""
         return True
 
-    def __getitem__(self, indices, **kw_args):
-        if is_sequence(indices):
-            if len(indices) == 0:
+    def __getitem__(self, key, **kw_args):
+        if is_sequence(key):
+            if len(key) == 0:
                 return self
 
-            index = indices[0]
+            index = key[0]
             start, stop = self.index
             base = self.base[index - start]
 
-            if len(indices) == 1:
+            if len(key) == 1:
                 return base
 
-            return base[indices[1:]]
-        elif isinstance(indices, slice):
-            start, stop = indices.start, indices.stop
+            return base[key[1:]]
+        elif isinstance(key, slice):
+            start, stop = key.start, key.stop
             if start is None:
                 start = 0
             if start == stop - 1:
@@ -1428,8 +1428,11 @@ class SliceIndexed(Expr):
 #             assert stop <= self_stop, "try to prove, %s <= %s" % (stop, self_stop)
             return self.base[start: stop]
         else:
-            start, stop = self.index
-            return self.base[indices + start]
+            (start, stop), *slices = self.slices
+            base = self.base[key + start]
+            if slices:
+                return self.func(base, *slices, *self.indices)
+            return base[self.indices]
 
     def _eval_derivative(self, wrt):
         from sympy.tensor.array.ndim_array import NDimArray

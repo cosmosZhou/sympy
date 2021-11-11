@@ -16,7 +16,7 @@ def apply(given, epsilon=None):
     return Any[epsilon:0:1](Equal(Integral(f, (z, a, b)), (b - a) * f._subs(z, a * epsilon + b * (1 - epsilon))))
 
 
-@prove
+@prove(proved=False)
 def prove(Eq):
     from axiom import calculus
 
@@ -28,3 +28,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-05-02
+# updated on 2020-05-02

@@ -42,7 +42,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Factorial).apply(discrete.factorial.to.mul)
 
-    _k = Symbol.k(domain=Range(0, n))
+    _k = Symbol.k(domain=Range(n))
     Eq.hypothesis_k = Eq[0].subs(n, _k)
 
     Eq << discrete.eq.imply.eq.difference.apply(Eq.hypothesis_k, (x, n - _k))
@@ -59,13 +59,13 @@ def prove(Eq):
 
     Eq << Eq[-1] + Eq[-2]
 
-    Eq << Suffice(Eq[0] & Eq.hypothesis_k, Eq.induct, plausible=True)
+    Eq << Infer(Eq[0] & Eq.hypothesis_k, Eq.induct, plausible=True)
 
     Eq << Eq[-1].this.lhs.args[0].apply(algebra.cond.given.all, _k)
 
     Eq << Eq[-1].this.lhs.apply(algebra.cond.all.given.all.push_back)
 
-    Eq << algebra.cond.suffice.imply.cond.induct.second.split.all.apply(Eq.initial, Eq[-1], n=n)
+    Eq << algebra.cond.infer.imply.cond.induct.second.split.all.apply(Eq.initial, Eq[-1], n=n)
 
     Eq << Eq[0].subs(n, _k)
 
@@ -73,3 +73,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-10-12
+# updated on 2020-10-12

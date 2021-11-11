@@ -30,10 +30,12 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Element).apply(sets.el.imply.lt.split.interval)
 
-    Eq << Eq[-1].this.expr.expr.apply(algebra.is_negative.gt.imply.lt.mul)
+    Eq << Eq[-1].this.expr.expr.apply(algebra.lt_zero.gt.imply.lt.mul)
 
     Eq << Eq[-1].this.expr.expr.apply(algebra.lt.transposition, lhs=0)
 
 
 if __name__ == '__main__':
     run()
+# created on 2020-04-27
+# updated on 2020-04-27

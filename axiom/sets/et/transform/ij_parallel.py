@@ -28,7 +28,7 @@ def prove(Eq):
     a, i, j, n, m, d = Symbol(integer=True)
     Eq << apply(Element(i, Range(d + j, n + j)) & Element(j, Range(a, m)))
 
-    Eq << algebra.equivalent.given.et.apply(Eq[0])
+    Eq << algebra.iff.given.et.apply(Eq[0])
 
     Eq << Eq[-2].this.lhs.apply(sets.el.el.imply.el.range.ij_parallel)
 
@@ -37,3 +37,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-03-21
+# updated on 2020-03-21

@@ -17,9 +17,9 @@ def prove(Eq):
 
     Eq << Eq[0].this.lhs.apply(geometry.acos.to.add.asin)
 
-    Eq << algebra.cond.given.et.suffice.split.apply(Eq[1], cond=x >= 0)
+    Eq << algebra.cond.given.et.infer.split.apply(Eq[1], cond=x >= 0)
 
-    Eq <<= algebra.suffice.given.suffice.subs.bool.apply(Eq[-2]), algebra.suffice.given.suffice.subs.bool.apply(Eq[-1], invert=True)
+    Eq <<= algebra.infer.given.infer.subs.bool.apply(Eq[-2]), algebra.infer.given.infer.subs.bool.apply(Eq[-1], invert=True)
 
     Eq <<= Eq[-2].this.rhs.apply(algebra.eq.transposition), Eq[-1].this.rhs.apply(algebra.eq.transposition)
 
@@ -29,12 +29,14 @@ def prove(Eq):
 
     Eq << -Eq[-1].this.rhs
 
-    Eq << Eq.is_nonnegative.this.lhs.apply(geometry.is_nonnegative.imply.eq.add.asin)
+    Eq << Eq.is_nonnegative.this.lhs.apply(geometry.ge_zero.imply.eq.add.asin)
 
-    Eq << Eq[-1].this.lhs.apply(geometry.is_negative.imply.eq.add.asin)
+    Eq << Eq[-1].this.lhs.apply(geometry.lt_zero.imply.eq.add.asin)
 
     #https://en.wikipedia.org/wiki/Argument_(complex_analysis)
 
 
 if __name__ == '__main__':
     run()
+# created on 2018-07-14
+# updated on 2018-07-14

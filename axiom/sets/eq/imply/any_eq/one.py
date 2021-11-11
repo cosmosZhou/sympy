@@ -26,9 +26,9 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq[0])
 
-    Eq << sets.is_positive.imply.is_nonempty.apply(Eq[-1])
+    Eq << sets.gt_zero.imply.ne_empty.apply(Eq[-1])
 
-    Eq << sets.is_nonempty.imply.any_el.apply(Eq[-1], simplify=False)
+    Eq << sets.ne_empty.imply.any_el.apply(Eq[-1], simplify=False)
 
     Eq << Eq[-1].this.expr.apply(sets.el.imply.subset, simplify=False)
 
@@ -38,3 +38,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-07-21
+# updated on 2020-07-21

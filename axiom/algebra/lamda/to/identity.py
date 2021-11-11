@@ -19,7 +19,7 @@ def prove(Eq):
 
     Eq << apply(Lamda[j:n, i:n](KroneckerDelta(i, j)))
 
-    i = Symbol(domain=Range(0, n))
+    i = Symbol(domain=Range(n))
 
     Eq << algebra.eq.given.eq.getitem.apply(Eq[0], i)
 
@@ -27,3 +27,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2018-04-16
+# updated on 2018-04-16

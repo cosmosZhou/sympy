@@ -35,12 +35,14 @@ def prove(Eq):
 
     Eq <<= Eq[-2].this.lhs.apply(algebra.mul.to.add), Eq[-1].this.lhs.apply(algebra.mul.to.add)
 
-    Eq << calculus.is_positive.imply.lt.monotony.apply(Eq.is_positive)
+    Eq << calculus.gt_zero.imply.lt.monotony.apply(Eq.is_positive)
 
     Eq << algebra.lt.imply.le.relax.apply(Eq[-1])
 
-    Eq << calculus.is_nonpositive.imply.le.monotony.apply(Eq.is_nonpositive)
+    Eq << calculus.le_zero.imply.le.monotony.apply(Eq.is_nonpositive)
 
 
 if __name__ == '__main__':
     run()
+# created on 2019-09-21
+# updated on 2019-09-21

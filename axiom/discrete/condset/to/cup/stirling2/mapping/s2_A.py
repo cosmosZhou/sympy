@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(n, k, s2=None, A=None):
     from sympy.functions.combinatorial.numbers import Stirling
-    j = Symbol(domain=Range(0, k + 1))
+    j = Symbol(domain=Range(k + 1))
     if s2 is None:
         x = Symbol(shape=(oo,), etype=dtype.integer, finiteset=True)
         s2 = Symbol(Cup[x[:k + 1]:Stirling.conditionset(n + 1, k + 1, x)](x[:k + 1].set_comprehension().set))
@@ -45,7 +45,7 @@ def prove(Eq):
 
     Eq.x_union_s1 = algebra.all_et.imply.all.apply(Eq[-1], 2)
 
-    j = Symbol(domain=Range(0, k + 1))
+    j = Symbol(domain=Range(k + 1))
     x_quote = Eq[1].lhs.base
     Eq.x_quote_set_in_s2 = Subset(imageset(x_slice, Cup[i:k + 1](x_quote[i].set), s1_quote), Eq[0].lhs, plausible=True)
 
@@ -189,3 +189,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-10-03
+# updated on 2020-10-03

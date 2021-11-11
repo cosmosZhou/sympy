@@ -8,7 +8,7 @@ def apply(n):
 
     p = Symbol(shape=(oo,), integer=True, nonnegative=True)
 
-    P = Symbol(conditionset(p[:n], Equal(p[:n].set_comprehension(), Range(0, n))))
+    P = Symbol(conditionset(p[:n], Equal(p[:n].set_comprehension(), Range(n))))
 
     return All[p[:n]:P](Any[i:n](Equal(p[i], n - 1)))
 
@@ -34,3 +34,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-08-31
+# updated on 2020-08-31

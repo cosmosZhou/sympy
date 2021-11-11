@@ -16,7 +16,7 @@ def prove(Eq):
 
     Eq << apply(All[x:A](f(x) > 0))
 
-    Eq << algebra.equivalent.given.et.suffice.apply(Eq[0])
+    Eq << algebra.iff.given.et.infer.apply(Eq[0])
 
     Eq << Eq[-2].this.lhs.apply(algebra.all.imply.ou)
 
@@ -26,3 +26,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2018-12-23
+# updated on 2018-12-23

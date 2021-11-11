@@ -16,9 +16,11 @@ def prove(Eq):
     x = Symbol(complex=True, given=True)
     Eq << apply(Equal(x ** n, 0))
 
-    Eq << algebra.imply.suffice.is_zero.st.pow_is_zero.apply(x, n)
-    Eq << algebra.cond.suffice.imply.cond.transit.apply(Eq[0], Eq[-1])
+    Eq << algebra.imply.infer.is_zero.st.pow_is_zero.apply(x, n)
+    Eq << algebra.cond.infer.imply.cond.transit.apply(Eq[0], Eq[-1])
 
 
 if __name__ == '__main__':
     run()
+# created on 2018-11-03
+# updated on 2018-11-03

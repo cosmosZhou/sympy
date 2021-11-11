@@ -20,5 +20,6 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
-del div
 from . import div
+# created on 2020-02-24
+# updated on 2020-02-24

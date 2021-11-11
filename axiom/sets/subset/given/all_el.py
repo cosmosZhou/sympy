@@ -24,7 +24,7 @@ def prove(Eq):
 
     Eq << ~Eq[-1]
 
-    Eq << sets.is_nonempty.imply.any_el.st.complement.apply(Eq[-1], simplify=False, wrt=Eq[1].variable)
+    Eq << sets.ne_empty.imply.any_el.st.complement.apply(Eq[-1], simplify=False, wrt=Eq[1].variable)
 
     Eq << algebra.all.any.imply.any_et.apply(Eq[-1], Eq[1])
 
@@ -32,3 +32,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2018-03-27
+# updated on 2018-03-27

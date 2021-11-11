@@ -23,12 +23,14 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.ratsimp()
 
-    Eq << Eq[-1].this.find(Sin[Add]).apply(geometry.sin.to.add.principle.add)
+    Eq << Eq[-1].this.find(Sin[Add]).apply(geometry.sin.to.add.principle)
 
-    Eq << Eq[-1].this.find(Cos[Add]).apply(geometry.cos.to.add.principle.add)
+    Eq << Eq[-1].this.find(Cos[Add]).apply(geometry.cos.to.add.principle)
 
 
 
 
 if __name__ == '__main__':
     run()
+# created on 2020-12-06
+# updated on 2020-12-06

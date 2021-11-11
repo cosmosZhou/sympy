@@ -17,7 +17,7 @@ def apply(m, d, w=None, x=None):
         x = Symbol.x(shape=(oo,), integer=True, nonnegative=True)
     x = x[:n]
 
-    P = Symbol(conditionset(x, Equal(x.set_comprehension(), Range(0, n))))
+    P = Symbol(conditionset(x, Equal(x.set_comprehension(), Range(n))))
 
     return All[x:P](Element(x @ MatProduct[i:m](w[i, d[i]]), P))
 
@@ -47,11 +47,13 @@ def prove(Eq):
 
     Eq << algebra.all_et.imply.all.apply(Eq[-1])
 
-    Eq << Suffice(Eq[2], Eq.induct, plausible=True)
+    Eq << Infer(Eq[2], Eq.induct, plausible=True)
 
-    Eq << algebra.suffice.imply.cond.induct.apply(Eq[-1], n=m)
+    Eq << algebra.infer.imply.cond.induct.apply(Eq[-1], n=m)
 
 
 if __name__ == '__main__':
     run()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html
+# created on 2020-11-02
+# updated on 2020-11-02

@@ -14,13 +14,13 @@ def prove(Eq):
     x, y = Symbol(real=True, given=True)
     Eq << apply(x >= y)
 
-    Eq << algebra.cond.given.et.suffice.split.apply(Eq[-1], cond=x > y)
+    Eq << algebra.cond.given.et.infer.split.apply(Eq[-1], cond=x > y)
 
     Eq.is_zero = (x > y).this.apply(sets.gt.imply.interval_is_empty)
 
     Eq << sets.imply.subset.intersect.apply(x, y)
 
-    Eq << algebra.cond.suffice.imply.suffice.et.rhs.apply(Eq[-1], Eq.is_zero)
+    Eq << algebra.cond.infer.imply.infer.et.rhs.apply(Eq[-1], Eq.is_zero)
 
     Eq << Eq[-1].this.rhs.apply(algebra.eq.cond.imply.cond.subs)
 
@@ -30,9 +30,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.eq.eq.imply.eq.transit)
 
-    Eq << Suffice(x <= y, Equal(x, y), plausible=True)
+    Eq << Infer(x <= y, Equal(x, y), plausible=True)
 
-    Eq << algebra.suffice.given.ou.apply(Eq[-1])
+    Eq << algebra.infer.given.ou.apply(Eq[-1])
 
     Eq <<= Eq[3] & Eq[-1]
 
@@ -41,3 +41,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2018-09-15
+# updated on 2018-09-15

@@ -1,2 +1,2 @@
 from . import imply
-from . import all_is_nonnegative
+from . import all_ge_zero

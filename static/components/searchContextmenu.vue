@@ -1,18 +1,18 @@
 <template>
     <ul class=contextmenu tabindex=2 :style="'left:%spx; top:%spx'.format(left, top)" @blur=blur @keydown=keydown>
-        <li @mouseover=mouseover @mouseout=mouseout @click.prevent=clickRename>
+        <li @mouseover=mouseover @click.prevent=clickRename :style=style_font(0)>
             <u>R</u>ename
         </li>
-        <li @mouseover=mouseover @mouseout=mouseout @click.prevent=clickDelete>
+        <li @mouseover=mouseover @click.prevent=clickDelete :style=style_font(1)>
             <u>D</u>elete
         </li>
-        <li @mouseover=mouseover @mouseout=mouseout @click.prevent=clickOpenInNewTab>
+        <li @mouseover=mouseover @click.prevent=clickOpenInNewTab :style=style_font(2)>
             Open in new <u>t</u>ab
         </li>
-        <li @mouseover=mouseover @mouseout=mouseout @click.prevent=clickOpenInNewWindow>
+        <li @mouseover=mouseover @click.prevent=clickOpenInNewWindow :style=style_font(3)>
             Open in new <u>w</u>indow
         </li>
-        <li @mouseover=mouseover @mouseout=mouseout @click.prevent=clickProperty>
+        <li @mouseover=mouseover @click.prevent=clickProperty :style=style_font(4)>
             <u>P</u>roperty
         </li>
     </ul>
@@ -38,24 +38,13 @@ export default {
             return this.$parent.href;
         },
     },
-    /*
-    watch: {
-        focusedIndex(newIndex, oldIndex){
-            var children = this.$el.children;
-            //console.log("oldIndex = " + oldIndex);
-            //console.log("newIndex = " + newIndex);            
-            
-            if (newIndex >= 0)
-                children[newIndex].style.background = '#ccc';
-            
-            if (oldIndex >= 0)
-                children[oldIndex].style.background = null;
-            
-        }
-    },
-    */
     
     methods : {    
+		style_font(i){
+			if (this.focusedIndex == i)
+				return `background: #ccc;`
+		},
+    	
         click(event, args){
             console.log(event);            
             console.log(args);
@@ -167,13 +156,13 @@ export default {
         },
         
         mouseover(event){                        
-            var li = event.target;            
-            this.focusedIndex = this.$el.children.indexOf(li);
-        },
-        
-        mouseout(event){
-            this.focusedIndex = -1;
-        },
+            var li = event.target;  
+            var focusedIndex = this.$el.children.indexOf(li);
+            console.log("focusedIndex = " + focusedIndex);
+            if (focusedIndex != this.focusedIndex && focusedIndex >= 0){
+            	this.focusedIndex = focusedIndex;
+            }
+        },        
     },
 }
 </script>

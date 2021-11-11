@@ -24,9 +24,11 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq[0])
 
-    Eq << algebra.is_positive.imply.is_nonzero.apply(Eq[-1])
+    Eq << algebra.gt_zero.imply.ne_zero.apply(Eq[-1])
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2018-08-04
+# updated on 2018-08-04

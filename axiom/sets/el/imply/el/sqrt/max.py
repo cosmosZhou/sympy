@@ -22,16 +22,18 @@ def prove(Eq):
 
     Eq << algebra.le.imply.le.square.apply(Eq[-1]).reversed
 
-    Eq << algebra.ge.imply.is_nonnegative.apply(Eq[-1])
+    Eq << algebra.ge.imply.ge_zero.apply(Eq[-1])
 
-    Eq << algebra.is_nonnegative.imply.sqrt_is_nonnegative.apply(Eq[-1])
+    Eq << algebra.ge_zero.imply.sqrt_ge_zero.apply(Eq[-1])
 
     Eq << LessEqual(-x ** 2, 0, plausible=True)
 
     Eq << algebra.le.imply.le.add.apply(Eq[-1], Max(abs(a), abs(b)) ** 2)
 
-    Eq << algebra.is_nonnegative.le.imply.le.sqrt.apply(Eq[-3], Eq[-1])
+    Eq << algebra.ge_zero.le.imply.le.sqrt.apply(Eq[-3], Eq[-1])
 
 
 if __name__ == '__main__':
     run()
+# created on 2018-07-08
+# updated on 2018-07-08

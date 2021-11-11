@@ -18,10 +18,12 @@ def prove(Eq):
 
     Eq << ~Eq[1]
 
-    Eq << sets.lt.imply.interval_is_nonempty.apply(Eq[-1], right_open=False)
+    Eq << sets.lt.imply.interval_ne_empty.apply(Eq[-1], right_open=False)
 
     Eq << ~Eq[-1]
 
 
 if __name__ == '__main__':
     run()
+# created on 2021-05-03
+# updated on 2021-05-03

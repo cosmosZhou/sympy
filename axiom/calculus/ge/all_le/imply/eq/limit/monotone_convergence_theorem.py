@@ -6,7 +6,7 @@ def apply(ge, any_all_le):
     an1, an = ge.of(GreaterEqual)
     ((_an, _M), (n, _0, b)), (M,) = any_all_le.of(Any[All[LessEqual]])
     assert an == _an
-    assert b == oo 
+    assert b == oo
     assert M == _M
     assert an._subs(n, n + 1) == an1
     return Equal(Limit[n:oo](an), Sup[n:0:oo](an))
@@ -27,11 +27,11 @@ def prove(Eq):
 
     Eq << ~Eq.any_gt
 
-    Eq << Eq[-1].this.expr.apply(algebra.all_le.imply.le_sup)
+    Eq << Eq[-1].this.expr.apply(algebra.all_le.imply.sup_le)
 
     Eq.any_le = Eq[-1].this.find(Sup).limits_subs(N, n)
 
-    Eq << Eq[1].this.expr.apply(algebra.all_le.imply.le_sup)
+    Eq << Eq[1].this.expr.apply(algebra.all_le.imply.sup_le)
 
     Eq << Eq[-1].this.expr.apply(algebra.le.imply.lt.relax, upper=oo)
 
@@ -76,3 +76,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-05-20
+# updated on 2020-05-20

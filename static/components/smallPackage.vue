@@ -1,29 +1,28 @@
 <template>
-	<small-icon class=small-package :text=package :lines=2></small-icon>
+	<smallIcon class=smallPackage :text=package :lines=2></smallIcon>
 </template>
 
 <script>
-	console.log('importing small-package.vue');
-	import smallIcon from "./smallIcon.vue"
-	export default {
-		components: {smallIcon},
-		
-		props : ['package'],
-		
-		methods : {
-			dblclick(event) {
-				//console.log("dblclick(event) { in small-package.vue");
-				var parent = this.$parent;
-				parent.path += "/" + this.package;
-				parent.fucus();
-			},
-		}
+console.log('importing smallPackage.vue');
+import smallIcon from "./smallIcon.vue"
+export default {
+	components: {smallIcon},
+	
+	props : ['package'],
+	
+	methods : {
+		dblclick(event) {
+			var parent = this.$parent;
+			parent.path += "/" + this.package;
+			parent.fucus();
+		},
 	}
+}
 </script>
 
 <style>
 
-.small-package {
+.smallPackage {
 	width: 2.5em;
 	height: 1.5em;
 	margin: 25px auto;
@@ -32,7 +31,7 @@
 	z-index: 1;
 }
 
-div .small-package {
+div .smallPackage {
 	display: inline-block;
 	background: rgb(220, 220, 0);
 	text-align: center;
@@ -42,7 +41,7 @@ div .small-package {
 	border-top-right-radius: 0.15em;
 }
 
-.small-package:before {
+.smallPackage:before {
 	width: 1.5em;
 	height: 0.5em;
 	position: absolute;
@@ -56,7 +55,7 @@ div .small-package {
 	z-index: 0;
 }
 
-.small-package:after {
+.smallPackage:after {
 	position: absolute;
 	content: "";
 }

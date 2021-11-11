@@ -20,9 +20,11 @@ def prove(Eq):
 
     Eq << sets.el.imply.et.split.interval.apply(Eq[0])
 
-    Eq << algebra.is_nonpositive.ge.imply.le.square.apply(Eq[-1], Eq[-2])
+    Eq << algebra.le_zero.ge.imply.le.square.apply(Eq[-1], Eq[-2])
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2021-03-11
+# updated on 2021-03-11

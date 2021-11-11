@@ -24,7 +24,7 @@ def prove(Eq):
 
     m, n, d, d_quote, l, r = Symbol(integer=True, positive=True)
     #r is the dilation rate
-    β = Symbol(shape=(m,), domain=Range(0, n))
+    β = Symbol(shape=(m,), domain=Range(n))
     ζ = Symbol(shape=(m,), domain=Range(1, n + 1))
     x = Symbol(real=True, shape=(m, n, d))
     w = Symbol(real=True, shape=(l, d, d_quote))
@@ -97,3 +97,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2021-01-01
+# updated on 2021-01-01

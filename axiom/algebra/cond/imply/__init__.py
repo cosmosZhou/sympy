@@ -5,4 +5,4 @@ from . import ou
 from . import any_et
 from . import et
 from . import cond
-from . import suffice
+from . import infer

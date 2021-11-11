@@ -22,7 +22,7 @@ def prove(Eq):
 
     Eq << Eq[0] - y
 
-    Eq << algebra.is_nonnegative.imply.is_zero.min.apply(Eq[-1])
+    Eq << algebra.ge_zero.imply.is_zero.min.apply(Eq[-1])
 
     Eq << algebra.eq.imply.eq.min.apply(Eq[-1], -y + z)
 
@@ -33,3 +33,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2019-05-28
+# updated on 2019-05-28

@@ -45,7 +45,7 @@ def prove(Eq):
 
     Eq << Any(Unequal(Eq[-1].rhs, 0), *Eq.S_supset.limits, plausible=True)
 
-    Eq << Eq[-1].this.expr.apply(algebra.is_nonzero.imply.eq.kroneckerDelta)
+    Eq << Eq[-1].this.expr.apply(algebra.ne_zero.imply.eq.kroneckerDelta)
 
     Eq << algebra.any.imply.any_et.limits.unleash.apply(Eq[-1])
 
@@ -67,3 +67,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-09-07
+# updated on 2020-09-07

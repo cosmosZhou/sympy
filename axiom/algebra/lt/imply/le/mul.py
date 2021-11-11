@@ -22,13 +22,15 @@ def prove(Eq):
 
     Eq << Eq[0] - y
 
-    Eq << algebra.is_nonnegative.is_negative.imply.is_nonpositive.apply(Eq[-2], Eq[-1])
+    Eq << algebra.ge_zero.lt_zero.imply.le_zero.apply(Eq[-2], Eq[-1])
 
     Eq << Eq[-1].this.lhs.expand()
 
-    Eq << algebra.is_nonpositive.imply.le.apply(Eq[-1])
+    Eq << algebra.le_zero.imply.le.apply(Eq[-1])
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2019-11-24
+# updated on 2019-11-24

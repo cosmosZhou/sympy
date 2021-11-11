@@ -24,9 +24,9 @@ def prove(Eq):
 
     Eq <<= ~Eq[1] & Eq[0]
 
-    Eq << Eq[-1].this.args[0].apply(algebra.is_nonzero.imply.et.matrix)
+    Eq << Eq[-1].this.args[0].apply(algebra.ne_zero.imply.et.matrix)
 
-    Eq << Eq[-1].this.args[0].apply(algebra.is_nonzero.imply.et.matrix)
+    Eq << Eq[-1].this.args[0].apply(algebra.ne_zero.imply.et.matrix)
 
     Eq << algebra.et.imply.ou.apply(Eq[-1])
 
@@ -34,3 +34,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2018-01-26
+# updated on 2018-01-26

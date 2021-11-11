@@ -28,10 +28,10 @@ def prove(Eq):
     Y = Symbol(shape=(p, q, m, n), real=True)
     Eq << apply(Y)
 
-    i = Symbol(domain=Range(0, p))
-    k = Symbol(domain=Range(0, q))
-    h = Symbol(domain=Range(0, m))
-    t = Symbol(domain=Range(0, n))
+    i = Symbol(domain=Range(p))
+    k = Symbol(domain=Range(q))
+    h = Symbol(domain=Range(m))
+    t = Symbol(domain=Range(n))
     Eq << algebra.eq.given.eq.getitem.apply(Eq[0], i)
 
     Eq << algebra.eq.given.eq.getitem.apply(Eq[-1], k)
@@ -43,3 +43,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2019-05-08
+# updated on 2019-05-08

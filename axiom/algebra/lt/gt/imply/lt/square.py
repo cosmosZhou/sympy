@@ -27,7 +27,7 @@ def prove(Eq):
 
     Eq << algebra.ou.imply.ou.invert.apply(Eq[-2])
 
-    Eq << Eq[-1].this.args[0].apply(algebra.is_nonnegative.lt.imply.lt.square)
+    Eq << Eq[-1].this.args[0].apply(algebra.ge_zero.lt.imply.lt.square)
 
     Eq << Eq[-1].this.args[1].apply(algebra.lt.imply.lt.relax, Eq[2].rhs)
 
@@ -37,7 +37,7 @@ def prove(Eq):
 
     Eq << algebra.ou.imply.ou.invert.apply(Eq[-2])
 
-    Eq << Eq[-1].this.args[0].apply(algebra.is_nonpositive.gt.imply.lt.square)
+    Eq << Eq[-1].this.args[0].apply(algebra.le_zero.gt.imply.lt.square)
 
     Eq << Eq[-1].this.args[1].apply(algebra.lt.imply.lt.relax, Eq[2].rhs)
 
@@ -46,3 +46,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2019-08-31
+# updated on 2019-08-31

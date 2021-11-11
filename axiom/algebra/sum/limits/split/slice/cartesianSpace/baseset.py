@@ -17,7 +17,7 @@ def prove(Eq):
     from axiom import algebra
     a, b = Symbol(integer=True)
     n = Symbol(integer=True, positive=True)
-    i = Symbol(domain=Range(0, n - 1))
+    i = Symbol(domain=Range(n - 1))
     x = Symbol(integer=True, shape=(oo,))
     f, g = Function(real=True, shape=())
     Eq << apply(Sum[x[i:n]:g(x[i:n]) > 0:CartesianSpace(Range(a, b + 1), n - i)](f(x[i:n])))
@@ -42,3 +42,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-03-18
+# updated on 2020-03-18

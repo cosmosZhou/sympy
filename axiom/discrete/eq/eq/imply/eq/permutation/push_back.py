@@ -11,9 +11,9 @@ def apply(set_comprehension_equality, last_element_equality):
 
     assert set_comprehension_equality.is_Equal
     assert set_comprehension_equality.lhs._dummy_eq(p[:n].set_comprehension())
-    assert set_comprehension_equality.rhs == Range(0, n)
+    assert set_comprehension_equality.rhs == Range(n)
 
-    return Equal(p[:n + 1].set_comprehension(), Range(0, n + 1))
+    return Equal(p[:n + 1].set_comprehension(), Range(n + 1))
 
 
 @prove
@@ -22,7 +22,7 @@ def prove(Eq):
 
     n = Symbol(integer=True, positive=True, given=True)
     p = Symbol(shape=(oo,), integer=True, nonnegative=True, given=True)
-    Eq << apply(Equal(p[:n].set_comprehension(), Range(0, n)),
+    Eq << apply(Equal(p[:n].set_comprehension(), Range(n)),
                 Equal(p[n], n))
 
     Eq << Eq[-1].this.lhs.apply(sets.cup.to.union.split, cond=slice(-1))
@@ -34,3 +34,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-07-08
+# updated on 2020-07-08

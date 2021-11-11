@@ -4,10 +4,10 @@ from util import *
 @apply
 def apply(given, n=None):
     (xi, xj), (j, i) = given.of(All[Equal[Intersection, EmptySet], Tuple[0, Expr]])
-    
+
     if not xi.has(i):
         xi, xj = xj, xi
-        
+
     assert xi.has(i)
     assert xj.has(j)
 
@@ -45,11 +45,13 @@ def prove(Eq):
 
     Eq << Eq[-2].subs(Eq[-1].reversed)
 
-    Eq << Suffice(Eq[1], Eq.induct, plausible=True)
+    Eq << Infer(Eq[1], Eq.induct, plausible=True)
 
-    Eq << algebra.suffice.imply.cond.induct.apply(Eq[-1], n=n, start=1)
+    Eq << algebra.infer.imply.cond.induct.apply(Eq[-1], n=n, start=1)
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2020-12-23
+# updated on 2020-12-23

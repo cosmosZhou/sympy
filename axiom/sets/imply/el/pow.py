@@ -23,7 +23,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.arg.definition
 
-    Eq << algebra.eq.imply.ou.st.abs.apply(Eq[-1])
+    Eq << algebra.eq_abs.imply.ou.apply(Eq[-1])
 
     Eq << sets.ou_eq.imply.el.finiteset.apply(Eq[-1])
 
@@ -33,3 +33,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-03-01
+# updated on 2020-03-01

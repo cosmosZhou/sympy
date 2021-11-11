@@ -239,17 +239,13 @@ class MatrixExpr(Expr):
                 i, j = key
                 if isinstance(i, slice) or isinstance(j, slice):
                     return self._entry(i, j)
-#                     return MatrixSlice(self, i, j)
+
                 i, j = _sympify(i), _sympify(j)
-                if self.valid_index(i, j) != False:
-                    return self._entry(i, j, expand=False)
-                else:
-                    raise IndexError("Invalid indices (%s, %s)" % (i, j))
+                assert self.valid_index(i, j) != False
+                return self._entry(i, j, expand=False)
                 
-        if isinstance(key, (SYMPY_INTS, Integer, Symbol, Expr, slice)):
-            return self._entry(key)
-#             # row-wise decomposition of matrix
-        raise IndexError("Invalid index, wanted %s[i,j]" % self)
+        assert isinstance(key, (int, slice)) or key.is_Expr
+        return self._entry(key)
 
     def as_explicit(self):
         """
@@ -528,10 +524,6 @@ class MatrixExpr(Expr):
         return ElementwiseApplyFunction(func, self)
 
     def _eval_Eq(self, other):
-#         if not isinstance(other, MatrixExpr):
-#             return False
-#         if self.shape != other.shape:
-#             return False
         if isinstance(other, MatrixExpr) and not self - other:
             return True
         return Eq(self, other, evaluate=False)
@@ -541,7 +533,7 @@ def get_postprocessor(cls):
 
     def _postprocessor(expr):
         # To avoid circular imports, we can't have MatMul/MatAdd on the top level
-        mat_class = {Mul: MatMul, Add: Add}[cls]
+        mat_class = {Mul: Mul, Add: Add}[cls]
         nonmatrices = []
         matrices = []
         for term in expr.args:
@@ -555,6 +547,7 @@ def get_postprocessor(cls):
 
         if nonmatrices:
             if cls == Mul:
+                return expr
                 for i in range(len(matrices)):
                     if not matrices[i].is_MatrixExpr:
                         # If one of the matrices explicit, absorb the scalar into it
@@ -836,11 +829,17 @@ class Identity(MatrixExpr):
     def conjugate(self):
         return self
 
-    def _entry(self, i, j=None, **kwargs):
+    def _entry(self, i, j=None, **_):
+        from sympy.concrete.expr_with_limits import Lamda
         if j is None:
-            from sympy.concrete.expr_with_limits import Lamda
             j = self.generate_var(excludes=i.free_symbols, integer=True)
             return Lamda[j:self.n](KroneckerDelta(i, j))
+        elif isinstance(i, slice):
+            if i.start is None and i.stop is None and i.step is None:
+                i = self.generate_var(excludes=j.free_symbols, integer=True)
+                return Lamda[i:self.n](KroneckerDelta(i, j))
+            else:
+                raise Exception("unimplemented")
         else:
             eq = Eq(i, j)
             if eq is S.true:
@@ -1052,9 +1051,13 @@ class OneMatrix(MatrixExpr):
     Matrix whose all entries are ones.
     """
 
-    def __new__(cls, *shape):
+    def __new__(cls, *shape):        
         if not shape:
             return S.One
+        while shape[0] == 1:
+            shape = shape[1:]
+            if not shape:
+                return S.One
         return super(OneMatrix, cls).__new__(cls, *shape)
 
     @property
@@ -1081,7 +1084,7 @@ class OneMatrix(MatrixExpr):
     def conjugate(self):
         return self
 
-    def _entry(self, i, j=None, **kwargs):
+    def _entry(self, i, j=None, **_):
         if isinstance(i, slice):
             if isinstance(j, slice):
                 raise Exception('unimplemented slice object %s' % j)
@@ -1090,8 +1093,11 @@ class OneMatrix(MatrixExpr):
                 if start is None:
                     if stop is None:
                         return self.func(self.shape[0])
-                raise Exception('unimplemented slice object %s' % j)        
-        return S.One
+                raise Exception('unimplemented slice object %s' % j)
+        if len(self.shape) > 1:
+            return self.func(*self.shape[1:])
+        else: 
+            return S.One
 
     def _latex(self, p):
         return r"\mathbf{1}"
@@ -1362,10 +1368,37 @@ class SwapMatrix(Identity):
     is_finite = True 
     
     is_integer = True
+    
+    @_sympifyit('other', NotImplemented)
+    @call_highest_priority('__rmatmul__')
+    def __matmul__(self, other):
+        if other.is_BlockMatrix:
+            other_i = other[self.i]
+            other_j = other[self.j]
+            
+            try:
+                args = other.args
+                i_ = args.index(other_i)
+                j_ = args.index(other_j)
+                
+                args = [*args]
+                args[i_], args[j_] = args[j_], args[i_]
+                return other.func(*args)
+            except ValueError:
+                return MatrixExpr.__matmul__(self, other)  
+        elif other.is_DenseMatrix:
+            rows = [other[i]._args for i in range(other.rows)]
+            rows[self.i], rows[self.j] = rows[self.j], rows[self.i]
+            
+            return other.func(tuple(rows)).simplify()  
+            
+        return MatrixExpr.__matmul__(self, other)
 
     
-class MultiplicationMatrix(Identity):
+class MulMatrix(Identity):
 
+    _op_priority = 11.1
+    
     def _latex(self, p):
         return p._print_Basic(self)
 
@@ -1422,7 +1455,11 @@ class MultiplicationMatrix(Identity):
                 args = []
                 if self.i != 0:
                     args.append(rhs[:self.i])
-                args.append(other_i * self.multiplier)
+                if other_i.is_BlockMatrix:
+                    other_i = other_i.func(*[arg * self.multiplier for arg in other_i.args])
+                else:
+                    other_i *= self.multiplier
+                args.append(other_i)
                 if self.i + 1 != self.shape[0]:
                     args.append(rhs[self.i + 1:])
                 
@@ -1438,19 +1475,22 @@ class MultiplicationMatrix(Identity):
 
     @_sympifyit('lhs', NotImplemented)
     @call_highest_priority('__matmul__')
-    def __rmatmul__(self, lhs):
-        from sympy.matrices.dense import DenseMatrix                
-        if isinstance(lhs, DenseMatrix):
+    def __rmatmul__(self, lhs):                
+        if lhs.is_DenseMatrix:
             d = lhs.shape[0]
             _args = [*lhs._args]
             for i in range(self.i, self.i + d * d, d):
                 _args[i] *= self.multiplier
             return lhs.func(*lhs.shape, type(lhs._args)(_args))
+        if lhs.is_BlockMatrix:
+            block = self.T @ lhs.T
+            if block.is_BlockMatrix:
+                return block.T
             
         return MatrixExpr.__rmatmul__(self, lhs)
 
     
-class AdditionMatrix(MultiplicationMatrix):
+class AddMatrix(MulMatrix):
     '''
     multiply the ith row and add it to the jth row
     or multiply the ith column and add it to the jth column
@@ -1513,22 +1553,46 @@ class AdditionMatrix(MultiplicationMatrix):
             other_i = other[self.i]
             other_j = other[self.j]
             args = []
-            if self.i < self.j:
-                if self.i != 0:
-                    args.append(other[:self.i])
-                args.append(other_i + other_j * self.multiplier)
-                if self.i + 1 != self.shape[0]:
-                    args.append(other[self.i + 1:])
-            elif self.i > self.j: 
-                args.append(other[:self.i])
-                args.append(other_i + other_j * self.multiplier)
-                if self.i + 1 != self.shape[0]:
-                    args.append(other[self.i + 1:])                    
+            if self.i < self.j or self.i > self.j:
+                if self.j > 0:
+                    args.append(other[:self.j])
+                    
+                args.append(other_i * self.multiplier + other_j)
+                
+                if self.j + 1 != self.shape[0]:
+                    args.append(other[self.j + 1:])
+                    
             else:
                 return MatrixExpr.__matmul__(self, other)
             return other.func(*args).simplify()  
+        elif other.is_DenseMatrix:
+            other_i = other[self.i]
+            other_j = other[self.j]
+            args = []
+            if self.i < self.j or self.i > self.j: 
+                for k in range(self.j):
+                    args.append(other[k]._args)
+
+                row = other_i * self.multiplier + other_j
+                args.append(row._args)
+                
+                for k in range(self.j + 1, self.shape[0]):
+                    args.append(other[k]._args)
+            else:
+                return MatrixExpr.__matmul__(self, other)
+            return other.func(tuple(args)).simplify()  
             
         return MatrixExpr.__matmul__(self, other)
+
+    @_sympifyit('lhs', NotImplemented)
+    @call_highest_priority('__matmul__')
+    def __rmatmul__(self, lhs):
+        if lhs.is_DenseMatrix or lhs.is_BlockMatrix:
+            if self.i < self.j or self.i > self.j:
+#                 lhs @ self = (self.T @ lhs.T).T
+                return (self.T @ lhs.T).T
+            
+        return MatrixExpr.__rmatmul__(self, lhs)
 
     @property
     def is_upper(self):
@@ -1667,6 +1731,7 @@ class ShiftMatrix(Identity):
     is_finite = True 
     
     is_integer = True
+
 
 from .matmul import MatMul
 from .matpow import MatPow

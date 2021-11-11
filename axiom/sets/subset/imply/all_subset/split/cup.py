@@ -18,7 +18,7 @@ def prove(Eq):
     A = Symbol(etype=dtype.complex * n)
     Eq << apply(Subset(Cup[i:n](x[i]), A))
 
-    k = Symbol(domain=Range(0, n))
+    k = Symbol(domain=Range(n))
     Eq << Eq[0].this.lhs.apply(sets.cup.to.union.split, cond=k.set)
 
     Eq << sets.subset.imply.subset.split.union.apply(Eq[-1])
@@ -29,3 +29,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-07-28
+# updated on 2020-07-28

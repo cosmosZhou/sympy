@@ -17,10 +17,12 @@ def prove(Eq):
 
     Eq << algebra.eq.imply.le.apply(Eq[0]).reversed
 
-    Eq << algebra.ge_inf.imply.all_ge.apply(Eq[-1])
+    Eq << algebra.inf_ge.imply.all_ge.apply(Eq[-1])
 
     Eq << Eq[-1].this.expr.reversed
 
 
 if __name__ == '__main__':
     run()
+# created on 2019-04-23
+# updated on 2019-04-23

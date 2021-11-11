@@ -23,13 +23,13 @@ def prove(Eq):
 
     Eq << GreaterEqual(Re(x) ** 2, 0, plausible=True)
 
-    Eq << algebra.is_positive.is_nonnegative.imply.is_positive.add.apply(Eq.Im_is_positive, Eq[-1])
+    Eq << algebra.gt_zero.ge_zero.imply.gt_zero.add.apply(Eq.Im_is_positive, Eq[-1])
 
     Eq << Eq[-1].subs(Eq.square_is_zero)
 
     Eq << ~Eq.Im_is_positive
 
-    Eq << algebra.is_nonpositive.imply.is_zero.apply(Eq[-1])
+    Eq << algebra.le_zero.imply.is_zero.apply(Eq[-1])
 
     Eq.Im_is_zero = algebra.square_is_zero.imply.is_zero.real.apply(Eq[-1])
 
@@ -37,13 +37,13 @@ def prove(Eq):
 
     Eq << GreaterEqual(Im(x) ** 2, 0, plausible=True)
 
-    Eq << algebra.is_positive.is_nonnegative.imply.is_positive.add.apply(Eq.Re_is_positive, Eq[-1])
+    Eq << algebra.gt_zero.ge_zero.imply.gt_zero.add.apply(Eq.Re_is_positive, Eq[-1])
 
     Eq << Eq[-1].subs(Eq.square_is_zero)
 
     Eq << ~Eq.Re_is_positive
 
-    Eq << algebra.is_nonpositive.imply.is_zero.apply(Eq[-1])
+    Eq << algebra.le_zero.imply.is_zero.apply(Eq[-1])
 
     Eq.Re_is_zero = algebra.square_is_zero.imply.is_zero.real.apply(Eq[-1])
 
@@ -54,5 +54,7 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
-    
+
 from . import real
+# created on 2018-03-16
+# updated on 2018-03-16

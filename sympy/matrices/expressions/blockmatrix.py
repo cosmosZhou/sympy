@@ -97,7 +97,7 @@ class BlockMatrix(MatrixExpr):
             if len(shape) > length:
                 length = len(shape)
                 
-        if length == 1 and all(shape[0] == shapes[0][0] and len(shape) == length for shape in shapes):            
+        if length == 1 and all(shape[0] == shapes[0][0] and len(shape) == length for shape in shapes): 
             length += 1
             
         for i, shape in enumerate(shapes):
@@ -189,9 +189,11 @@ class BlockMatrix(MatrixExpr):
             if len(args) == 0:
                 return ZeroMatrix(*self.shape)
             return self.func(*args)
+        
         if isinstance(key, tuple):
             if len(key) == 1:
                 key = key[0]
+                j = None
                 
             elif len(key) == 2:
                 i, j = key
@@ -217,54 +219,40 @@ class BlockMatrix(MatrixExpr):
                 elif isinstance(j, slice):
                     raise Exception('unimplemented method') 
                 from sympy.core.sympify import _sympify
-                i, j = _sympify(i), _sympify(j)
-                if self.valid_index(i, j) != False: 
-                    args = []
-                    length = 0
-                    for arg in self.args:
-                        _length = length
-                        
-                        shape = arg.shape                         
-                        length += shape[0]
-                        cond = i < length
-                        if len(arg.shape) == 1:
-                            args.append([arg[j], cond])
-                        else: 
-                            if cond.is_BooleanFalse:
-                                continue                         
-                            args.append([arg[i - _length, j], cond])
-                            
-                    args[-1][-1] = True
-                    return Piecewise(*args)
+                key, j = _sympify(i), _sympify(j) 
+        else:
+            j = None
+                  
+        assert isinstance(key, int) or key.is_Integer or key.is_Symbol or key.is_Expr
+        
+        if self.axis == 0: 
+            rows = 0
+            args = []
+            len_shape = len(self.shape)
+            for arg in self.args:
+                index = rows
+                if len(arg.shape) < len_shape:
+                    rows += 1
                 else:
-                    raise IndexError("Invalid indices (%s, %s)" % (i, j))
-                
-        if isinstance(key, int) or key.is_Integer or key.is_Symbol or key.is_Expr:
-            if self.axis == 0: 
-                from sympy import S
-                rows = S.Zero
-                args = []
-                for arg in self.args:
-                    index = rows
-                    if len(arg.shape) < len(self.shape):
-                        rows += S.One
-                    else:
-                        rows += arg.shape[0]
-                        
-                    cond = key < rows
-                    if cond.is_BooleanFalse:
-                        continue
+                    rows += arg.shape[0]
                     
-                    if len(arg.shape) < len(self.shape):
-                        args.append([arg, cond])
-                    else:
-                        args.append([arg[key - index], cond]) 
-                args[-1][-1] = True
-                return Piecewise(*args)
-            else:
-                return self.func(*(a[key] for a in self.args), axis=self.axis - 1)                
-
-        raise IndexError("Invalid index, wanted %s[i,j]" % self)
+                cond = key < rows
+                if cond.is_BooleanFalse:
+                    continue
+                
+                if len(arg.shape) < len_shape:
+                    args.append([arg, cond])
+                else:
+                    args.append([arg[key - index], cond])
+                    
+            if j is not None:
+                for arg in args:
+                    arg[0] = arg[0][j]
+                     
+            args[-1][-1] = True
+            return Piecewise(*args)
+        else:
+            return self.func(*(a[key] for a in self.args), axis=self.axis - 1)                
 
     def _eval_determinant(self):
         from sympy.concrete.products import Product
@@ -317,7 +305,7 @@ class BlockMatrix(MatrixExpr):
         """
         from sympy import Range, Min
 
-        i = self.generate_var(domain=Range(0, Min(self.rows, self.cols - 1)))
+        i = self.generate_var(domain=Range(Min(self.rows, self.cols - 1)))
         j = i.generate_var(free_symbols=self.free_symbols, domain=Range(i + 1, self.cols))
         assert i < j
         return self[i, j] == 0
@@ -366,7 +354,7 @@ class BlockMatrix(MatrixExpr):
         """
         from sympy import Range, Min
 
-        j = self.generate_var(domain=Range(0, Min(self.cols, self.rows - 1)))
+        j = self.generate_var(domain=Range(Min(self.cols, self.rows - 1)))
         i = j.generate_var(free_symbols=self.free_symbols, domain=Range(j + 1, self.rows))
         assert i > j
         return self[i, j] == 0
@@ -383,23 +371,33 @@ class BlockMatrix(MatrixExpr):
             return MatrixExpr.simplify(self, deep=deep, **kwargs)
         if self.axis == 0:
             if self.shape[0] == len(self.args):
-                from sympy import Indexed
                 start = None
+                mat = []
                 for i, arg in enumerate(self.args):
-                    if not isinstance(arg, Indexed):
-                        return self
-                    diff = arg.indices[-1] - i
-                    if start is None:
-                        start = diff
+                    if arg.is_Indexed:
+                        diff = arg.indices[-1] - i
+                        if start is None:
+                            start = diff
+                        else:
+                            if start != diff:
+                                return self
+                    elif arg.is_DenseMatrix:
+                        mat.append(arg)
                     else:
-                        if start != diff:
-                            return self
+                        return self 
                     
-                return arg.base[start:len(self.args)]
+                if start is not None:
+                    return arg.base[start:len(self.args)]
+                
+                if len(mat) == len(self.args):
+                    return self.to_DenseMatrix()
+                else:
+                    return self
             
             b = None
             
             start, stop = None, None
+            mat = []
             for arg in self.args:
                 if arg.is_Slice or arg.is_Indexed:
                     if b is None:
@@ -425,10 +423,21 @@ class BlockMatrix(MatrixExpr):
                             b = None
                             break
                         stop = _stop
+                elif arg.is_DenseMatrix:
+                    mat.append(arg)
             if b is not None:
-                return b[start:stop]        
+                return b[start:stop]
+            elif len(mat) == len(self.args):
+                return self.to_DenseMatrix()
+            
         return self
     
+    def to_DenseMatrix(self):
+        args = []
+        for m in self.args:
+            args.extend(m._args)
+        return Matrix(*args, shape=self.shape)
+            
     @property
     def blocks(self):
         cols = None
@@ -471,10 +480,11 @@ class BlockMatrix(MatrixExpr):
                 vector = [b for b in block if len(b.shape) == 1]
                 if any(v.shape[0] != cols for v in vector):
                     return
-                
+                                
                 scalar = [b for b in block if len(b.shape) == 0]
                 if scalar:
-                    return
+                    print(__file__)
+                    # return
                 
         return blocks
         

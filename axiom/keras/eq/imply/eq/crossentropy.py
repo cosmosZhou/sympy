@@ -38,7 +38,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.args[1].apply(discrete.matmul.to.sum, var=j)
 
-    i = Symbol(domain=Range(0, n))
+    i = Symbol(domain=Range(n))
     xi = Eq[2].lhs.variable[i]
     Eq << Eq[-1].apply(calculus.eq.imply.eq.derive, (xi,), simplify=False)
 
@@ -72,3 +72,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-12-27
+# updated on 2020-12-27

@@ -29,7 +29,7 @@ def prove(Eq):
     i, j = Symbol(integer=True)
     n = Symbol(domain=Range(2, oo))
     x = Symbol(integer=True, shape=(oo,))
-    t = Symbol(domain=Range(0, n))
+    t = Symbol(domain=Range(n))
     Eq << apply((Sum[j:i, i:n]((x[i] - x[j]) ** 2) - Sum[i:n]((x[i] - x[t]) ** 2)) / (n - 1))
 
     y = Symbol(Lamda[i:n - 1](Piecewise((x[i], i < t),(x[i + 1], True))))
@@ -75,3 +75,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2019-11-27
+# updated on 2019-11-27

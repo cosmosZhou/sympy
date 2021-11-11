@@ -3,7 +3,7 @@ from util import *
 from axiom.discrete.H.to.add.definition import H
 from axiom.discrete.K.to.add.definition import K
 
-from axiom.discrete.imply.is_positive.alpha import alpha
+from axiom.discrete.imply.gt_zero.alpha import alpha
 
 
 @apply
@@ -23,11 +23,11 @@ def prove(Eq):
 
     Eq << apply(x[:n + 1])
 
-    Eq << discrete.alpha.to.mul.HK.st.is_positive.apply(alpha(x[:n + 1]))
+    Eq << discrete.alpha.to.mul.HK.st.gt_zero.apply(alpha(x[:n + 1]))
 
     Eq << Eq[-1].this.lhs.defun()
 
-    Eq << discrete.alpha.to.mul.HK.st.is_positive.apply(alpha(x[1:n + 1]))
+    Eq << discrete.alpha.to.mul.HK.st.gt_zero.apply(alpha(x[1:n + 1]))
 
     Eq << algebra.eq.eq.imply.eq.subs.apply(Eq[-1], Eq[-2])
 
@@ -37,3 +37,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-09-25
+# updated on 2020-09-25

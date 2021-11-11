@@ -3,10 +3,10 @@ from util import *
 
 @apply
 def apply(is_zero, n=None, negative=False):
-    x = is_zero.of(Equal[Cos, 0])    
+    x = is_zero.of(Equal[Cos, 0])
     if n is None:
-        n = is_zero.generate_var(integer=True, var='n')    
-    
+        n = is_zero.generate_var(integer=True, var='n')
+
     Pi = -S.Pi if negative else S.Pi
     return All[n:0:oo](Equal(cos(x + n * Pi), 0))
 
@@ -28,9 +28,9 @@ def prove(Eq):
 
     Eq << Eq.induct.this.find(Mul).apply(algebra.mul.to.add).reversed
 
-    Eq << Suffice(Eq[2], Eq.induct, plausible=True)
+    Eq << Infer(Eq[2], Eq.induct, plausible=True)
 
-    Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq[0], Eq[-1], n=n, start=0)
+    Eq << algebra.cond.infer.imply.cond.induct.apply(Eq[0], Eq[-1], n=n, start=0)
 
     Eq << algebra.cond.imply.all.apply(Eq[2], n)
 
@@ -39,3 +39,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2018-06-18
+# updated on 2018-06-18

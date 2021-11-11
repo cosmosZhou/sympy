@@ -17,10 +17,12 @@ def prove(Eq):
 
     Eq << ~Eq[-1]
 
-    Eq << Eq[-1].apply(algebra.is_nonzero.is_nonzero.imply.is_nonzero)
+    Eq << Eq[-1].apply(algebra.ne_zero.ne_zero.imply.ne_zero)
 
     Eq <<= Eq[-1] & Eq[0]
 
 
 if __name__ == '__main__':
     run()
+# created on 2018-03-20
+# updated on 2018-03-20

@@ -17,7 +17,7 @@ def prove(Eq):
     n = Symbol(integer=True, positive=True)
     x = Symbol(shape=(n, n), real=True)
     Eq << apply(Lamda[i:n](Sum[j:n](x[j, i])))
-    i = Symbol(domain=Range(0, n))
+    i = Symbol(domain=Range(n))
     Eq << algebra.eq.given.eq.getitem.apply(Eq[0], i)
 
     Eq << Eq[-1].this.rhs.simplify()
@@ -25,3 +25,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2019-10-21
+# updated on 2019-10-21

@@ -5,7 +5,7 @@ from util import *
 def apply(n, k, A=None):
     from sympy.functions.combinatorial.numbers import Stirling
     assert k < n
-    j = Symbol(domain=Range(0, k + 1))
+    j = Symbol(domain=Range(k + 1))
     if A is None:
         x = Symbol(shape=(oo,), etype=dtype.integer, finiteset=True)
         i = Symbol(integer=True)
@@ -34,7 +34,7 @@ def prove(Eq):
 
     Eq.x_union_s1 = algebra.all_et.imply.all.apply(Eq.s1_quote_definition, 2)
 
-    j = Symbol(domain=Range(0, k + 1))
+    j = Symbol(domain=Range(k + 1))
     Eq << sets.eq.imply.eq.cup.apply(Eq[0], (i, 0, k + 1))
 
     Eq.x_quote_union = algebra.all_eq.cond.imply.all.subs.apply(Eq.x_union_s1, Eq[-1])
@@ -83,11 +83,11 @@ def prove(Eq):
     Eq.A_definition_simplified = Eq[2].this.rhs.subs(Eq.A_quote_definition[j].reversed)
 
     j_quote = Symbol(integer=True)
-    Eq.nonoverlapping = All(Equal(A_quote[j_quote] & A_quote[j], A_quote[j].etype.emptySet), *((j_quote, Range(0, k + 1) - {j}),) + Eq.A_definition_simplified.rhs.limits, plausible=True)
+    Eq.nonoverlapping = All(Equal(A_quote[j_quote] & A_quote[j], A_quote[j].etype.emptySet), *((j_quote, Range(k + 1) - {j}),) + Eq.A_definition_simplified.rhs.limits, plausible=True)
 
     Eq << ~Eq.nonoverlapping
 
-    Eq << Eq[-1].this.expr.apply(sets.intersect_is_nonempty.imply.any_el, simplify=None)
+    Eq << Eq[-1].this.expr.apply(sets.intersect_ne_empty.imply.any_el, simplify=None)
 
     Eq << Eq[-1].this.expr.subs(Eq.A_quote_definition[j])
 
@@ -121,7 +121,7 @@ def prove(Eq):
     Eq << Eq[-2].this.expr.apply(sets.eq.imply.eq.complement, {n})
     Eq << Eq[-1].limits_subs(j_quote, i)
     Eq << Eq[-1].subs(Eq.xi_complement_n.subs(i, j)).subs(Eq.xi_complement_n)
-    _i = i.copy(domain=Range(0, k + 1) - {j})
+    _i = i.copy(domain=Range(k + 1) - {j})
     Eq << Eq[-1].limits_subs(i, _i)
     Eq << Eq.x_union_s1.function.lhs.this.bisect({_i, j})
     Eq << Eq[-1].subs(Eq[-2].reversed)
@@ -145,3 +145,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-08-11
+# updated on 2020-08-11

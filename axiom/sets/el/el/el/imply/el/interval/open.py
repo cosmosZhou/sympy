@@ -27,9 +27,9 @@ def prove(Eq):
 
     Eq.w1_is_positive = -Eq.w1_is_positive + 1
 
-    Eq << sets.is_positive.el.imply.el.mul.apply(Eq.w_is_positive, Eq[1])
+    Eq << sets.gt_zero.el.imply.el.mul.apply(Eq.w_is_positive, Eq[1])
 
-    Eq << sets.is_positive.el.imply.el.mul.apply(Eq.w1_is_positive, Eq[2])
+    Eq << sets.gt_zero.el.imply.el.mul.apply(Eq.w1_is_positive, Eq[2])
 
     Eq << sets.el.el.imply.el.add.interval.apply(Eq[-2], Eq[-1])
 
@@ -40,3 +40,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-05-08
+# updated on 2020-05-08

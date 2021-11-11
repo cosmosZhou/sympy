@@ -39,21 +39,21 @@ def prove(Eq):
     x, y, z = Symbol(real=True, random=True)
     Eq << apply(Equal(x | y.as_boolean() & z.as_boolean(), x | y), Equal(z | y, z))
 
-    Eq.yz_nonzero = stats.eq_conditioned.imply.is_nonzero.apply(Eq[0])
+    Eq.yz_nonzero = stats.eq_conditioned.imply.ne_zero.apply(Eq[0])
 
-    Eq.y_nonzero = stats.eq_conditioned.imply.is_nonzero.apply(Eq[0], reverse=True)
+    Eq.y_nonzero = stats.eq_conditioned.imply.ne_zero.apply(Eq[0], reverse=True)
 
-    _, Eq.z_nonzero = stats.is_nonzero.imply.et.apply(Eq.yz_nonzero)
+    _, Eq.z_nonzero = stats.ne_zero.imply.et.apply(Eq.yz_nonzero)
 
-    Eq << stats.is_nonzero.imply.eq.bayes.apply(Eq.yz_nonzero, x)
+    Eq << stats.ne_zero.imply.eq.bayes.apply(Eq.yz_nonzero, x)
 
     Eq << Eq[-1].subs(Eq[0])
 
-    Eq << stats.is_nonzero.imply.eq.bayes.apply(Eq.y_nonzero, z)
+    Eq << stats.ne_zero.imply.eq.bayes.apply(Eq.y_nonzero, z)
 
     Eq << Eq[-2].subs(Eq[-1])
 
-    Eq.xy_probability = stats.is_nonzero.imply.eq.bayes.apply(Eq.y_nonzero, x)
+    Eq.xy_probability = stats.ne_zero.imply.eq.bayes.apply(Eq.y_nonzero, x)
 
     Eq << Eq[-1].subs(Eq.xy_probability.reversed)
 
@@ -62,7 +62,7 @@ def prove(Eq):
     y_ = pspace(y).symbol
     Eq << stats.integral.to.probability.apply(Integral[y_](Eq[-1].lhs))
 
-    Eq << Eq[-1].subs(stats.is_nonzero.imply.eq.bayes.apply(Eq.z_nonzero, x))
+    Eq << Eq[-1].subs(stats.ne_zero.imply.eq.bayes.apply(Eq.z_nonzero, x))
 
     Eq << calculus.eq.imply.eq.integral.apply(Eq[-3], (y_,))
 
@@ -70,8 +70,10 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Integral).apply(stats.integral.to.probability)
 
-    Eq << algebra.is_nonzero.eq.imply.eq.scalar.apply(Eq[-1], Eq.z_nonzero)
+    Eq << algebra.ne_zero.eq.imply.eq.scalar.apply(Eq[-1], Eq.z_nonzero)
 
 
 if __name__ == '__main__':
     run()
+# created on 2021-07-14
+# updated on 2021-07-14

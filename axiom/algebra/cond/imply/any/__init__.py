@@ -23,7 +23,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.definition
 
-    Eq << sets.is_nonempty.all.imply.any.apply(Eq[-1], Eq[2])
+    Eq << sets.ne_empty.all.imply.any.apply(Eq[-1], Eq[2])
 
     Eq << Eq[-1].this.limits[0][1].definition
 
@@ -32,3 +32,5 @@ if __name__ == '__main__':
     run()
 
 from . import subs, conditioned
+# created on 2018-12-01
+# updated on 2018-12-01

@@ -411,16 +411,16 @@ class Basic:
         return self.func.is_And
     
     @property
-    def is_Suffice(self):
-        return self.func.is_Suffice
+    def is_Infer(self):
+        return self.func.is_Infer
     
     @property
     def is_Equivalent(self):
         return self.func.is_Equivalent
     
     @property
-    def is_Necessary(self):
-        return self.func.is_Necessary
+    def is_Assuming(self):
+        return self.func.is_Assuming
     
     @property
     def is_ForAll(self):
@@ -485,7 +485,7 @@ class Basic:
             args = []
             for arg in self.args:
                 s = repr(arg)
-                if arg.is_Suffice or arg.is_Necessary or arg.is_Equivalent:
+                if arg.is_Infer or arg.is_Assuming or arg.is_Equivalent:
                     s = "(%s)" % s
                 args.append(s)
                 

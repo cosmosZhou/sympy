@@ -17,12 +17,14 @@ def prove(Eq):
     a, b, k = Symbol(integer=True)
     Eq << apply(a < b, k)
 
-    Eq << algebra.cond.given.et.suffice.split.apply(Eq[1], cond=a >= 0)
+    Eq << algebra.cond.given.et.infer.split.apply(Eq[1], cond=a >= 0)
 
-    Eq <<= algebra.cond.imply.suffice.et.apply(Eq[0], cond=Eq[-2].lhs), algebra.cond.imply.suffice.et.apply(Eq[0], cond=Eq[-1].lhs)
+    Eq <<= algebra.cond.imply.infer.et.apply(Eq[0], cond=Eq[-2].lhs), algebra.cond.imply.infer.et.apply(Eq[0], cond=Eq[-1].lhs)
 
-    Eq <<= Eq[-2].this.rhs.apply(sets.is_nonnegative.lt.imply.eq.cup.to.interval.right_open), Eq[-1].this.rhs.apply(sets.is_negative.lt.imply.eq.cup.to.interval.right_open)
+    Eq <<= Eq[-2].this.rhs.apply(sets.ge_zero.lt.imply.eq.cup.to.interval.right_open), Eq[-1].this.rhs.apply(sets.lt_zero.lt.imply.eq.cup.to.interval.right_open)
 
 
 if __name__ == '__main__':
     run()
+# created on 2021-02-22
+# updated on 2021-02-22

@@ -18,7 +18,7 @@ def prove(Eq):
     k = Symbol(integer=True)
     Eq << apply(Cup[k](Interval(k, k + 1, left_open=True)))
 
-    Eq << sets.eq.given.et.suffice.apply(Eq[0])
+    Eq << sets.eq.given.et.infer.apply(Eq[0])
 
     x = Eq[-1].lhs
     Eq <<= sets.el_cup.given.any_el.apply(Eq[-1])
@@ -34,3 +34,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2021-02-18
+# updated on 2021-02-18

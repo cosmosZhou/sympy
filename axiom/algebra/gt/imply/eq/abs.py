@@ -10,13 +10,15 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    
+
     x, y = Symbol(real=True)
     Eq << apply(x > y)
-    
-    Eq << algebra.gt.imply.is_positive.apply(Eq[0])
-    Eq << algebra.is_positive.imply.eq.abs.apply(Eq[-1])
+
+    Eq << algebra.gt.imply.gt_zero.apply(Eq[0])
+    Eq << algebra.gt_zero.imply.eq.abs.apply(Eq[-1])
 
 
 if __name__ == '__main__':
     run()
+# created on 2019-07-21
+# updated on 2019-07-21

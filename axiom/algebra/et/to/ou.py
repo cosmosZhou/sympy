@@ -24,7 +24,7 @@ def prove(Eq):
 
     Eq << apply(And((a < b) | (c < d), (f(x) < g(y))))
 
-    Eq << algebra.equivalent.given.et.apply(Eq[-1])
+    Eq << algebra.iff.given.et.apply(Eq[-1])
 
 #     Eq << Eq[-2].this.lhs.apply(algebra.et.imply.ou, simplify=False)
 
@@ -34,3 +34,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2018-01-21
+# updated on 2018-01-21

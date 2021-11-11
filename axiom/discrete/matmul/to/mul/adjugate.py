@@ -21,3 +21,5 @@ if __name__ == '__main__':
 # https://en.wikipedia.org/wiki/Minor_(linear_algebra)
 # https://mathworld.wolfram.com/DeterminantExpansionbyMinors.html
 # https://mathworld.wolfram.com/Minor.html
+# created on 2020-02-10
+# updated on 2020-02-10

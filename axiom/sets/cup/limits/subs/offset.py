@@ -15,7 +15,7 @@ def prove(Eq):
     f = Function(etype=dtype.integer)
     Eq << apply(Cup[n:a:b](f(n)), d)
 
-    Eq << sets.eq.given.et.suffice.apply(Eq[0])
+    Eq << sets.eq.given.et.infer.apply(Eq[0])
 
     Eq <<= Eq[-2].this.lhs.apply(sets.el_cup.imply.any_el), Eq[-1].this.lhs.apply(sets.el_cup.imply.any_el)
 
@@ -28,3 +28,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2018-10-06
+# updated on 2018-10-06

@@ -117,14 +117,14 @@ class Invoker:
         from sympy import Boolean
         if isinstance(self.source, Boolean):
             if 'given' in assumptions:
-                from sympy import Suffice
-                return Suffice(self.source, obj, plausible=None)
+                from sympy import Infer
+                return Infer(self.source, obj, plausible=None)
             if 'equivalent' in assumptions:
                 from sympy import Equivalent
                 return Equivalent(self.source, obj, plausible=None)
             if 'imply' in assumptions:
-                from sympy import Necessary
-                return Necessary(self.source, obj, plausible=None)
+                from sympy import Assuming
+                return Assuming(self.source, obj, plausible=None)
             
         return obj
 

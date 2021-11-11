@@ -5,3 +5,4 @@ from . import le
 from . import gt
 from . import lt
 from . import el
+from . import is_positive

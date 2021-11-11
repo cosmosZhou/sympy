@@ -16,7 +16,7 @@ def prove(Eq):
 
     Eq << apply(All[i:n](Equal(f(i), g(i))))
 
-    i_ = Symbol.i(domain=Range(0, n))
+    i_ = Symbol.i(domain=Range(n))
 
     Eq << Eq[0].limits_subs(i, i_)
 
@@ -30,3 +30,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-10-29
+# updated on 2020-10-29

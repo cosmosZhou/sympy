@@ -14,7 +14,7 @@ def prove(Eq):
     x = Symbol(real=True)
     Eq << apply(NotElement(x, Integers))
 
-    Eq << sets.notin.imply.is_nonzero.frac.apply(Eq[0])
+    Eq << sets.notin.imply.ne_zero.frac.apply(Eq[0])
 
     Eq << Element(frac(x), Interval(0, 1, right_open=True), plausible=True)
 
@@ -23,3 +23,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2018-05-17
+# updated on 2018-05-17

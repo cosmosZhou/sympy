@@ -262,7 +262,7 @@ function hint(cm, options) {
 				from: Pos(cur.line, token.start),
 				to: Pos(cur.line, token.end)
 			});
-		}).catch(fail);
+		});
 	});
 }
 
@@ -462,20 +462,6 @@ function find_and_jump(event) {
 
 }
 
-function saveDocument() {
-	console.log("'Ctrl-S' is pressed!");
-	var module = document.querySelector('input').value;
-	console.log("module = " + module);
-	module = module.replace(/\./g, '/');
-	console.log("module = " + module);
-
-	var user = sympy_user();
-	form.action = `/${user}/axiom.php?module=${module}`;
-	console.log("form.action = " + form.action);
-	console.log("save the content now");
-	form.submit();
-}
-
 async function createApp(component, data, id) {
 	const options = {
 		moduleCache: { vue: Vue },
@@ -485,6 +471,17 @@ async function createApp(component, data, id) {
 	
 			if (!res.ok)
 				throw Object.assign(new Error(res.statusText + ' ' + url), { res });
+				
+			if (url.endsWith(".js")) {
+				return res.text().then(text => {
+                    return {
+						getContentData(){
+							return text;	
+						}, 
+						type: ".mjs"
+					};
+                });
+            }		
 			
 			return res.text();
 		},

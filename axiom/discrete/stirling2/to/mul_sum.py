@@ -85,10 +85,12 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.sum.to.add.pop_back)
 
-    Eq << Suffice(Eq.hypothesis, Eq.induct, plausible=True)
+    Eq << Infer(Eq.hypothesis, Eq.induct, plausible=True)
 
-    Eq << algebra.suffice.imply.cond.induct.apply(Eq[-1], n=k)
+    Eq << algebra.infer.imply.cond.induct.apply(Eq[-1], n=k)
 
 
 if __name__ == '__main__':
     run()
+# created on 2020-10-13
+# updated on 2020-10-13

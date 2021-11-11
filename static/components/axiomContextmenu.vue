@@ -1,17 +1,24 @@
 <template>
     <ul class=contextmenu tabindex=2
-        :style="'left:%spx; top:%spx'.format(left, top)" @blur=blur
-        @keydown=keydown>
-        <li class=select @mouseover=mouseover @mouseout=mouseout @click=clickRename><u>R</u>ename</li>
-        <li class=select @mouseover=mouseover @mouseout=mouseout @click=clickDelete><u>D</u>elete</li>
-        <li class=expand @mouseover=mouseover @mouseout=mouseout @click=clickMoveTo>
+        :style="'left:%spx; top:%spx'.format(left, top)" @blur=blur @keydown=keydown>
+        <li class=select @mouseover=mouseover @click=clickRename :style=style_font(0)>
+        	<u>R</u>ename
+        </li>
+        <li class=select @mouseover=mouseover @click=clickDelete :style=style_font(1)>
+        	<u>D</u>elete
+        </li>
+        <li class=expand @mouseover=mouseover @click=clickMoveTo :style=style_font(2)>
             <u>M</u>ove to ...            
         </li>
-        <li class=select @mouseover=mouseover @mouseout=mouseout @click=clickOpenInNewTab>Open
-            in new <u>t</u>ab</li>
-        <li class=select @mouseover=mouseover @mouseout=mouseout
-            @click=clickOpenInNewWindow>Open in new <u>w</u>indow</li>
-        <li class=select @mouseover=mouseover @mouseout=mouseout @click=clickProperty><u>P</u>roperty</li>
+        <li class=select @mouseover=mouseover @click=clickOpenInNewTab :style=style_font(3)>
+        	Open in new <u>t</u>ab
+        </li>
+        <li class=select @mouseover=mouseover @click=clickOpenInNewWindow :style=style_font(4)>
+        	Open in new <u>w</u>indow
+        </li>
+        <li class=select @mouseover=mouseover @click=clickProperty :style=style_font(5)>
+        	<u>P</u>roperty
+        </li>
     </ul>
 </template>
 
@@ -32,23 +39,12 @@ export default {
         },
     },
     
-    /*
-    watch: {
-        focusedIndex(newIndex, oldIndex){
-            var children = this.$el.children;
-            //console.log("oldIndex = " + oldIndex);
-            //console.log("newIndex = " + newIndex);                
-            
-            if (newIndex >= 0)
-                children[newIndex].style.background = '#ccc';
-            
-            if (oldIndex >= 0)
-                children[oldIndex].style.background = null;
-            
-        }
-    },*/
-    
     methods : {        
+		style_font(i){
+			if (this.focusedIndex == i)
+				return `background: #ccc;`
+		},
+    	
         click(event, args){
             console.log(event);                
             console.log(args);
@@ -93,12 +89,12 @@ export default {
         
         clickRename(event){                
             var parent = this.$parent;
-            var icon = parent.$children[parent.focusedIndex];
+            var icon = parent.focusedElement;
             console.log('icon = ');
             console.log(icon);                
             
             parent.focusedIndex = -1;
-            icon = icon.$children[0];
+            icon = icon.$refs.icon;
             icon.rename();
         },
         
@@ -112,7 +108,7 @@ export default {
         },
         
         get_href(){
-            var icon = this.$parent.$children[this.$parent.focusedIndex];
+            var icon = this.$parent.focusedElement;
 
             var theorem = icon.$el.lastChild.textContent.trim();
             var href = location.href;
@@ -166,13 +162,13 @@ export default {
         },
         
         mouseover(event){                            
-            var li = event.target;                
-            this.focusedIndex = this.$el.children.indexOf(li);
-        },
-        
-        mouseout(event){
-            this.focusedIndex = -1;
-        },
+            var li = event.target;  
+            var focusedIndex = this.$el.children.indexOf(li);
+            console.log("focusedIndex = " + focusedIndex);
+            if (focusedIndex != this.focusedIndex && focusedIndex >= 0){
+            	this.focusedIndex = focusedIndex;
+            }
+        },       
         
     },
 }

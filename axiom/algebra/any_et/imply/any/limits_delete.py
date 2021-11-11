@@ -40,7 +40,7 @@ def prove(Eq):
 
     n = Symbol(integer=True, positive=True)
     i, k = Symbol(integer=True)
-    j = Symbol(domain=Range(0, k))
+    j = Symbol(domain=Range(k))
     x = Symbol(real=True, shape=(oo,))
     f, g = Function(shape=(), integer=True)
     f_quote = Function("f'", shape=(), integer=True)
@@ -53,3 +53,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2019-02-28
+# updated on 2019-02-28

@@ -2,7 +2,7 @@
 	<div>
 		theorems:<br>
 		<template v-for="theorem, i of theorems">
-			<theorem :theorem=theorem :tabindex="i + initialIndex"></theorem>
+			<theorem :theorem=theorem :tabindex="i + initialIndex" :index=i></theorem>
 			<template v-if='i == focusedIndex'>
 				<axiomContextmenu v-if='left >= 0' :left=left :top=top></axiomContextmenu>
 				<packageSelector v-else :path=path></packageSelector>				
@@ -23,6 +23,7 @@ export default {
 			focusedIndex: -1,
 			left: -1,
 			top: -1,
+			theorem: [],
 		};
 	},
 	
@@ -35,23 +36,29 @@ export default {
 			var href = location.href;				
 			return href.match(/\/axiom.php(\/.*)\/(\w+)\/*$/)[1];
 		},
+		
+		focusedElement(){
+			return this.theorem[this.focusedIndex];
+		},
 	},
 	
-	methods: {		
-		focus(theorem){
-			if (theorem){
+	methods: {
+		
+		indexOf(element){
+			return this.theorems.indexOf(element.theorem);	
+		},
+		
+		focus(hash){
+			if (hash){
 				for (let el of this.$el.querySelectorAll(".theorem")){
-					if (el.textContent.trim() == theorem){
+					if (el.textContent.trim() == hash){
 						el.focus();
 						return true;
 					}
 				}
 			}
-			else{
-				var el = this.$el.querySelector(".theorem");
-				el.focus();
-				return true;
-			}
+			var el = this.$el.querySelector(".theorem");
+			el.focus();
 		},
 		
 		remove(indexFocused){

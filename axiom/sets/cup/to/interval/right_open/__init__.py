@@ -18,7 +18,7 @@ def prove(Eq):
     k, a, b = Symbol(integer=True)
     Eq << apply(Cup[k:a:b](Interval(k, k + 1, right_open=True)))
 
-    Eq << algebra.cond.given.et.suffice.split.apply(Eq[0], cond=a < b)
+    Eq << algebra.cond.given.et.infer.split.apply(Eq[0], cond=a < b)
 
     Eq << Eq[-2].this.lhs.apply(sets.lt.imply.eq.cup.to.interval.right_open, k)
 
@@ -28,7 +28,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.eq.eq.given.et.subs)
 
-    Eq << algebra.suffice.given.et.suffice.apply(Eq[-1])
+    Eq << algebra.infer.given.et.infer.apply(Eq[-1])
 
     Eq << Eq[-1].this.find(Cup).apply(sets.cup.piece)
 
@@ -42,3 +42,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 from . import negative
+# created on 2021-02-23
+# updated on 2021-02-23

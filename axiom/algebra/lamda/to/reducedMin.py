@@ -15,10 +15,12 @@ def prove(Eq):
     n = Symbol(integer=True, positive=True)
     a = Symbol(shape=(oo, n), real=True)
     Eq << apply(Lamda[i:n](ReducedMin(a[i])))
-    i = Symbol(domain=Range(0, n))
+    i = Symbol(domain=Range(n))
     Eq << algebra.eq.given.eq.getitem.apply(Eq[0], i)
 
 
 
 if __name__ == '__main__':
     run()
+# created on 2019-10-20
+# updated on 2019-10-20

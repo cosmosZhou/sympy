@@ -16,12 +16,14 @@ def prove(Eq):
 
     Eq << apply(All[i:n](Subset(f(i), g(i))))
 
-    Eq << sets.imply.suffice.subset.induct.apply(Subset(f(i), g(i)), (i, 0, n))
+    Eq << sets.imply.infer.subset.induct.apply(Subset(f(i), g(i)), (i, 0, n))
 
-    Eq << algebra.cond.suffice.imply.cond.transit.apply(Eq[0], Eq[-1])
+    Eq << algebra.cond.infer.imply.cond.transit.apply(Eq[0], Eq[-1])
 
 
 if __name__ == '__main__':
     run()
 
 from . import lhs
+# created on 2020-08-03
+# updated on 2020-08-03

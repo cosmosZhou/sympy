@@ -174,7 +174,7 @@ function insertmany($table, $matrix, $replace = true)
     $insert = $replace ? 'replace' : 'insert';
 
     $sql = "$insert into $table values" . implode(",", array_map(fn ($vector) => "(" . substr(\std\jsonify($vector), 1, - 1) . ")", $matrix));
-//     error_log("sql = $sql");
+    // error_log("sql = $sql");
     return execute($sql);
 }
 
@@ -250,10 +250,32 @@ class ConnectMysqli
         if (is_array($sql))
             $sql = implode(';', $sql);
 
-        $array = $this->link->multi_query($sql);
-        if ($array === false) {
-            throw new Exception($this->link->error);
+        $link = $this->link;
+        $result = $link->multi_query($sql);
+        if ($result === false) {
+            throw new Exception($link->error);
         }
+
+        $array = [];
+        do {
+            $result = $link->store_result();
+            if ($result instanceof mysqli_result) {
+                
+                $rows = [];
+                while ($row = $result->fetch_row()) {                    
+                    //while ($row = $result->fetch_assoc()){}
+                    $rows[] = $row;
+                }
+                $array[] = $rows;
+                
+                error_log(\std\jsonify($rows));
+            }
+            else{
+                $array[] = $link->affected_rows;
+            }
+            
+        } while ($link->more_results() && $link->next_result());
+
         return $array;
     }
 
@@ -473,20 +495,16 @@ function yield_from_mysql($axiom)
     global $user;
     error_log("user = $user");
 
-    foreach (select("select latex, timestamp from tbl_axiom_py where user = '$user' and axiom = '$axiom'") as list ($latex, $timestamp)) {
-        return [
-            explode("\n", $latex),
-            $timestamp
-        ];
+    foreach (select("select latex from tbl_axiom_py where user = '$user' and axiom = '$axiom'") as list ($latex,)) {
+        return explode("\n", $latex);
     }
 }
 
 function yield_from_sql($sqlFile)
 {
-//     error_log("function yield_from_sql($sqlFile)");
-//     error_log(file_get_contents($sqlFile));
-//     error_log(\std\jsonify(explode(';', file_get_contents($sqlFile))));
-    
+    // error_log("function yield_from_sql($sqlFile)");
+    // error_log(file_get_contents($sqlFile));
+    // error_log(\std\jsonify(explode(';', file_get_contents($sqlFile))));
     $text = new Text($sqlFile);
 
     foreach ($text as $line) {
@@ -497,7 +515,7 @@ function yield_from_sql($sqlFile)
         if (\std\startsWith($line, 'b'))
             $line = substr($line, 2, - 1);
 
-//         error_log("line = " . $line);
+        // error_log("line = " . $line);
         preg_match("/update tbl_axiom_py set state = \"\w+\", lapse = \S+, latex = (\"[\s\S]+\") where user = \"\w+\" and axiom = \"\S+\"/", $line, $matches);
         $latex = $matches[1];
         $latex = eval("return $latex;");
@@ -729,7 +747,7 @@ function update_suggest($package, $old, $new, $is_folder = false)
     } else
         $sql = "update tbl_suggest_py set phrase = '$new' where user = '$user' and prefix = '$package' and phrase = '$old'";
 
-//     error_log("sql = $sql");
+    // error_log("sql = $sql");
 
     $rows_affected = \mysql\execute($sql);
     if ($rows_affected < 1) {
@@ -766,7 +784,7 @@ function update_axiom($old, $new, $is_folder = false)
         $sql = "update tbl_axiom_py set axiom = '$new' where user = '$user' and axiom = '$old'";
     }
 
-//     error_log("sql = $sql");
+    // error_log("sql = $sql");
     $rows_affected = \mysql\execute($sql);
     if ($rows_affected < 1) {
         error_log("error found in $sql");
@@ -838,7 +856,7 @@ function update_hierarchy($old, $new, $is_folder = false)
         // update the python files that contains $old theorem!
         $sql = "select caller from tbl_hierarchy_py where user = '$user' and callee = '$old'";
 
-//         error_log("sql = $sql");
+        // error_log("sql = $sql");
 
         replace_with_callee($old, $new);
 

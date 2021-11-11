@@ -15,7 +15,7 @@ def prove(Eq):
     n = Symbol(integer=True)
     d = Symbol("d_z", integer=True)
 #     i = Symbol.i(integer=True)
-    h = Symbol(domain=Range(0, n + 1))
+    h = Symbol(domain=Range(n + 1))
     Eq << apply(n, d, slice(0, h))
 
     M = Symbol(Eq[0].rhs.args[0].arg)
@@ -32,3 +32,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2021-08-25
+# updated on 2021-08-25

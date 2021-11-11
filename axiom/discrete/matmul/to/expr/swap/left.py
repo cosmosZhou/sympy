@@ -5,10 +5,10 @@ from util import *
 def apply(x, i=None, j=None, w=None):
     n = x.shape[0]
     if i is None:
-        i = Symbol.i(domain=Range(0, n))
+        i = Symbol.i(domain=Range(n))
 
     if j is None:
-        j = Symbol.j(domain=Range(0, n))
+        j = Symbol.j(domain=Range(n))
 
     if w is None:
         w = Symbol.w(Lamda[j, i](SwapMatrix(n, i, j)))
@@ -45,3 +45,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html
+# created on 2020-11-14
+# updated on 2020-11-14

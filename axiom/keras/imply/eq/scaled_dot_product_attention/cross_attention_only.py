@@ -40,7 +40,7 @@ def prove(Eq):
     h = Symbol(domain=Range(1, n))
     Eq << apply(n, d_z, h)
 
-    i = Symbol(domain=Range(0, n))
+    i = Symbol(domain=Range(n))
     j = Symbol(integer=True)
     a = Eq[0].lhs
     Eq << keras.imply.eq.bert.mask.cross_attention.apply(a, h)
@@ -189,3 +189,5 @@ if __name__ == '__main__':
 # reference:
 # Self-Attention with Relative Position Representations.pdf
 # https://arxiv.org/abs/1803.02155
+# created on 2021-01-02
+# updated on 2021-01-02

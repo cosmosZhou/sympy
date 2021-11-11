@@ -1,8 +1,8 @@
 <template>
 	<div>
-		<hierarchy-information :key-input=keyInput :deep="!deep"></hierarchy-information>
+		<hierarchyInformation :key-input=keyInput :deep="!deep"></hierarchyInformation>
 		<br>
-		<hierarchy-module ref=module :module=module :show=true></hierarchy-module>			
+		<hierarchyModule ref=module :module=module :show=true></hierarchyModule>			
 	</div>
 </template>
 

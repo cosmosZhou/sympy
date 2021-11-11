@@ -32,15 +32,17 @@ def prove(Eq):
 
     Eq << sets.subset.imply.all_el.apply(Eq[0], wrt=x)
 
-    Eq << algebra.all.imply.suffice.apply(Eq[-1])
+    Eq << algebra.all.imply.infer.apply(Eq[-1])
 
-    Eq << algebra.all.imply.suffice.apply(Eq[1])
+    Eq << algebra.all.imply.infer.apply(Eq[1])
 
-    Eq << algebra.suffice.suffice.imply.suffice.transit.apply(Eq[-1], Eq[-2])
+    Eq << algebra.infer.infer.imply.infer.transit.apply(Eq[-1], Eq[-2])
 
-    Eq << algebra.all.given.suffice.apply(Eq[2])
+    Eq << algebra.all.given.infer.apply(Eq[2])
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2020-04-01
+# updated on 2020-04-01

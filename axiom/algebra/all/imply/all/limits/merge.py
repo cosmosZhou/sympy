@@ -61,11 +61,11 @@ def prove(Eq):
     f = Function(real=True)
     Eq << apply(All[x[:n]:CartesianSpace(Interval(a, b), n), x[n]:Interval(a, b)](f(x[:n + 1]) > 0))
 
-    Eq << algebra.all.given.suffice.apply(Eq[1])
+    Eq << algebra.all.given.infer.apply(Eq[1])
 
     Eq << Eq[-1].this.lhs.apply(algebra.all.imply.et.split, cond={n})
 
-    Eq << algebra.all.imply.suffice.apply(Eq[0])
+    Eq << algebra.all.imply.infer.apply(Eq[0])
 
     Eq << Eq[-1].this.lhs.args[0].simplify()
 
@@ -73,3 +73,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2018-12-09
+# updated on 2018-12-09

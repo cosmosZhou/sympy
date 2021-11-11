@@ -34,9 +34,9 @@ def prove(Eq):
     Eq <<= algebra.eq.imply.et.squeeze.apply(Eq[-1]), Eq[0].subs(Eq[-1])
 
     z = Symbol(real=True)
-    Eq <<= algebra.le_inf.imply.all_any_lt.apply(Eq[-3], z), algebra.ge_inf.imply.all_ge.apply(Eq[-2]), algebra.eq.given.et.squeeze.apply(Eq[-1])
+    Eq <<= algebra.inf_le.imply.all_any_lt.apply(Eq[-3], z), algebra.inf_ge.imply.all_ge.apply(Eq[-2]), algebra.eq.given.et.squeeze.apply(Eq[-1])
 
-    Eq <<= algebra.le_inf.given.all_any_lt.apply(Eq[-2], z), algebra.ge_inf.given.all_ge.apply(Eq[-1])
+    Eq <<= algebra.inf_le.given.all_any_lt.apply(Eq[-2], z), algebra.inf_ge.given.all_ge.apply(Eq[-1])
 
     Eq << algebra.all.given.all.limits.subs.offset.apply(Eq[-1], h)
 
@@ -45,3 +45,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2019-08-26
+# updated on 2019-08-26

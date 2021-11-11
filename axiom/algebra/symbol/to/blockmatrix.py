@@ -69,7 +69,7 @@ def prove(Eq):
     y = Symbol(real=True, shape=(oo,))
     Eq << apply(x)
 
-    i = Symbol(domain=Range(0, n + 1))
+    i = Symbol(domain=Range(n + 1))
     Eq << algebra.eq.given.eq.getitem.apply(Eq[0], i)
 
     Eq << Eq[-1].this.rhs.apply(algebra.piece.to.kroneckerDelta)
@@ -77,3 +77,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-03-29
+# updated on 2020-03-29

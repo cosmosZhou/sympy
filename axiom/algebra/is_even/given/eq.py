@@ -17,7 +17,7 @@ def prove(Eq):
 
     Eq << ~Eq[0]
 
-    Eq << algebra.mod_is_nonzero.imply.is_odd.apply(Eq[-1])
+    Eq << algebra.mod_ne_zero.imply.is_odd.apply(Eq[-1])
 
     Eq << algebra.is_odd.imply.eq.pow.apply(Eq[-1])
 
@@ -26,3 +26,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2019-10-10
+# updated on 2019-10-10

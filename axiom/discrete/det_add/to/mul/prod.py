@@ -50,7 +50,7 @@ def prove(Eq):
     Eq.deduction = Eq[-1].reversed
 
     D = Eq.deduction.lhs.expr.args[1].arg
-    i = Eq.deduction.lhs.variable.copy(domain=Range(0, n))
+    i = Eq.deduction.lhs.variable.copy(domain=Range(n))
     D = D._subs(Eq.deduction.lhs.variable, i)
     def column_transformation(*limits):
         n = limits[0][-1]
@@ -116,9 +116,9 @@ def prove(Eq):
 
     Eq << algebra.et.given.et.subs.all_eq.apply(Eq.deduction & Eq[-1])
 
-    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
+    Eq << Infer(Eq[0], Eq.induct, plausible=True)
 
-    Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq.initial, Eq[-1], n=n, start=1)
+    Eq << algebra.cond.infer.imply.cond.induct.apply(Eq.initial, Eq[-1], n=n, start=1)
 
 
 if __name__ == '__main__':
@@ -127,3 +127,5 @@ if __name__ == '__main__':
 # https://en.wikipedia.org/wiki/Minor_(linear_algebra)
 # https://mathworld.wolfram.com/DeterminantExpansionbyMinors.html
 # https://mathworld.wolfram.com/Minor.html
+# created on 2020-10-04
+# updated on 2020-10-04

@@ -27,13 +27,13 @@ def prove(Eq):
     b = Symbol(shape=(k,), real=True)
     Eq << apply(And(Unequal(x, y), Unequal(f(x), g(y)), Equal(f(x), b)), index=slice(1, 3))
 
-    Eq << Suffice(Eq[0], Eq[1], plausible=True)
+    Eq << Infer(Eq[0], Eq[1], plausible=True)
 
-    Eq << algebra.cond.suffice.imply.cond.transit.apply(Eq[0], Eq[-1])
+    Eq << algebra.cond.infer.imply.cond.transit.apply(Eq[0], Eq[-1])
 
-    Eq << Suffice(Eq[0], Eq[2], plausible=True)
+    Eq << Infer(Eq[0], Eq[2], plausible=True)
 
-    Eq << algebra.cond.suffice.imply.cond.transit.apply(Eq[0], Eq[-1])
+    Eq << algebra.cond.infer.imply.cond.transit.apply(Eq[0], Eq[-1])
 
 
 if __name__ == '__main__':
@@ -43,3 +43,5 @@ if __name__ == '__main__':
 from . import delete
 from . import subs
 from . import collect
+# created on 2018-01-04
+# updated on 2018-01-04

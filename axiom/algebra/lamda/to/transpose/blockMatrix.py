@@ -18,11 +18,11 @@ def prove(Eq):
 
     i, j = Symbol(integer=True)
     n, m = Symbol(integer=True, positive=True)
-    k = Symbol(domain=Range(0, n))
+    k = Symbol(domain=Range(n))
     f = Function(real=True)
     Eq << apply(Lamda[j:n, i:m](f(i, j)), k)
 
-    i = Symbol(domain=Range(0, m))
+    i = Symbol(domain=Range(m))
     Eq << algebra.eq.given.eq.getitem.apply(Eq[0], i)
 
     
@@ -31,3 +31,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2019-10-22
+# updated on 2019-10-22

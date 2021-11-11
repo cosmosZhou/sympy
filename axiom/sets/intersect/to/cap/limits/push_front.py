@@ -12,7 +12,7 @@ def prove(Eq):
     from axiom import sets
 
     k, n = Symbol(integer=True)
-    i = Symbol(domain=Range(0, n))
+    i = Symbol(domain=Range(n))
     f = Function(etype=dtype.integer)
     Eq << apply(Intersection(Cap[k:1 + i:n](f(k)), f(i), evaluate=False))
 
@@ -21,3 +21,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2021-04-27
+# updated on 2021-04-27

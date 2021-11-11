@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(eq, eq1):
-    from axiom.discrete.eq.eq.imply.is_positive.catalan import is_catalan_series
+    from axiom.discrete.eq.eq.imply.gt_zero.catalan import is_catalan_series
     Cn, n = is_catalan_series(eq, eq1)
     return Equal(Cn, binomial(n * 2, n) / (n + 1))
 
@@ -49,7 +49,7 @@ def prove(Eq):
 
     Eq << algebra.eq.imply.is_zero.apply(Eq[-1])
 
-    Eq.ou = Eq[-1].apply(algebra.add_is_zero.imply.et.suffice.quadratic, x=g(x), simplify=False)
+    Eq.ou = Eq[-1].apply(algebra.poly_is_zero.imply.et.infer.quadratic, x=g(x), simplify=False)
 
     Eq.negative_sqrt = Eq.ou.args[0].copy(plausible=True)
 
@@ -64,7 +64,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.subs(Eq[-2].reversed)
 
-    Eq << calculus.is_negative.imply.gt.monotony.apply(Eq[-1])
+    Eq << calculus.lt_zero.imply.gt.monotony.apply(Eq[-1])
 
     Eq << algebra.any_eq.cond.imply.any.subs.apply(Eq.positive_sqrt_quote, Eq[-1], reverse=True)
 
@@ -78,7 +78,7 @@ def prove(Eq):
 
     Eq.g_derivative = Eq[-1].this.rhs.apply(algebra.mul.to.sum)
 
-    Eq << discrete.eq.eq.imply.is_positive.catalan.apply(Eq[0], Eq[1])
+    Eq << discrete.eq.eq.imply.gt_zero.catalan.apply(Eq[0], Eq[1])
 
     Eq << Eq[-1] * x ** (n - 1)
 
@@ -86,7 +86,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.subs(Eq.g_derivative.reversed)
 
-    Eq << calculus.is_positive.imply.le.monotony.apply(Eq[-1])
+    Eq << calculus.gt_zero.imply.le.monotony.apply(Eq[-1])
 
     Eq << Eq.ou.subs(x, S.One / 4)
 
@@ -170,3 +170,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-10-21
+# updated on 2020-10-21

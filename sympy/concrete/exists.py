@@ -77,8 +77,7 @@ class Exists(Quantifier):
                         if limits:
                             return self.func(function, *limits)
                         return function
-
-        from sympy import Equal
+        
         if self.expr.is_Element: 
             limits_dict = self.limits_dict
             x = None
@@ -117,7 +116,8 @@ class Exists(Quantifier):
                 
             if x is not None:
                 domain = limits_dict[x]
-                if isinstance(domain, list): 
+                if isinstance(domain, list):
+                    from sympy import Equal 
                     function = Equal(S, x.emptySet)
                 elif domain.is_set:
                     if domain.is_FiniteSet:

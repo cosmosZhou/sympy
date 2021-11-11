@@ -13,7 +13,7 @@ def prove(Eq):
     from axiom import discrete
     n = Symbol(integer=True)
     x, y = Symbol(shape=(n,), real=True)
-    i = Symbol(domain=Range(0, n))
+    i = Symbol(domain=Range(n))
     Eq << apply(x, y)
 
     Eq << Eq[0].lhs.this.apply(discrete.matmul.to.sum, var=i)
@@ -25,3 +25,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-08-16
+# updated on 2020-08-16

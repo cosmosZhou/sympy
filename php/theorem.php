@@ -18,13 +18,8 @@ $statements_before_yield = '';
 $content = [];
 
 if (!$statementsFromSQLFile){
-    list($statementsFromSQLFile, $timestamp) = \mysql\yield_from_mysql($module);
+    $statementsFromSQLFile = \mysql\yield_from_mysql($module);
 }
-else{
-    $timestamp = date('Y-m-d h:i:s', time());
-}
-
-// error_log("timestamp = $timestamp");
 
 preg_match("/([\w.]+)\.(imply|given)\./", $module, $m);
 $numOfRequisites = $m ? count(explode(".", $m[1])) - 1 : 0;
@@ -126,10 +121,9 @@ $logStr = "[$logStr]";
 ?>
 
 <title><?php echo $module;?></title>
-<link rel=stylesheet href="https://cdn.jsdelivr.net/npm/codemirror@5.41.0/lib/codemirror.css" />
-<link rel=stylesheet href="https://cdn.jsdelivr.net/npm/codemirror@5.41.0/theme/eclipse.css">
-<link rel=stylesheet href="https://cdn.jsdelivr.net/npm/codemirror@5.41.0/addon/hint/show-hint.css">
-<link rel=stylesheet href="static/css/codemirror.css">
+<link rel=stylesheet href="static/codemirror/lib/codemirror.css">
+<link rel=stylesheet href="static/codemirror/theme/eclipse.css">
+<link rel=stylesheet href="static/codemirror/addon/hint/show-hint.css">
 <body></body>
 
 <script>
@@ -152,7 +146,7 @@ MathJax = {
                               break;
                           }
                       }                                                    
-                  }, 500);
+                  }, 700);
                 });                  
         }
       },
@@ -163,14 +157,8 @@ MathJax = {
     },
 };
 </script>
+
 <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/codemirror@5.41.0/lib/codemirror.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/codemirror@5.41.0/mode/python/python.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/codemirror@5.41.0/mode/markdown/markdown.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/codemirror@5.41.0/addon/hint/show-hint.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/codemirror@5.41.0/addon/edit/matchbrackets.js"></script>
-
 <script src="https://unpkg.com/vue@3.2.11/dist/vue.global.prod.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vue3-sfc-loader/dist/vue3-sfc-loader.js"></script>
 
@@ -180,163 +168,53 @@ MathJax = {
 <script src='static/js/std.js'></script>
 <script src='static/js/utility.js'></script>
 
-<script>
+<script type=module>
+import * as codemirror from "./static/codemirror/lib/codemirror.js";
+import * as python from "./static/codemirror/mode/python/python.js";
+import * as active_line from "./static/codemirror/addon/selection/active-line.js";
+import * as show_hint from "./static/codemirror/addon/hint/show-hint.js";
+import * as matchbrackets from "./static/codemirror/addon/edit/matchbrackets.js";
 
 var logs = <?php echo $logStr?>;
 
-console.log(logs);
+var error = [];
+//console.log(logs);
 for (let i = 0; i < logs.length; ++i){
     var log = logs[i];
     if (log.startsWith('{') && log.endsWith('}')){
-        logs[i] = JSON.parse(log);
+    	error.push(JSON.parse(log));
+    	logs.remove(i);
+        break;
+    }
+    
+    if (log.startsWith('[') && log.endsWith(']')){
+    	logs.remove(i);
+        error = JSON.parse(log);
+        break;
     }
 }
 
-var applyArg = `<?php echo array_key_exists('apply', $_GET)? $_GET['apply']: null ?>`;
-var apply = applyArg? `<?php echo fetch_codes($module); ?>` : null;
-
 createApp('render', {
+	error : error,
     logs : logs,
-    apply: apply,
-    applyArg: applyArg,
     prove : <?php echo \std\jsonify($prove)?>,
     unused : <?php echo \std\jsonify($unused)?>,
     module: <?php echo \std\jsonify($module)?>,
     given: <?php echo \std\jsonify($given)?>,
     imply: <?php echo \std\jsonify($imply)?>,
     where: <?php echo \std\jsonify($where)?>,
-    timestamp: <?php echo \std\jsonify($timestamp)?>,
+    createdTime: `<?php echo $createdTime?>`,
+    updatedTime: `<?php echo $updatedTime?>`,
 });
-
-function locate_definition(cm, index, symbol) {
-    var regex = eval(`/(?:    )*from axiom\\.(.+) import ${symbol}\\b/`);
-
-    for (; index >= 0; --index) {
-        var line = cm.getLine(index);
-        console.log(line);
-
-        var m = line.match(regex);
-        if (m) {
-            return m[1];
-        }
-    }
-}
-
-function F3(cm, refresh, self) {
-    var cursor = cm.getCursor();
-    console.log("cursor.ch = " + cursor.ch);
-
-    var text = cm.getLine(cursor.line);
-
-    var selectionStart = cursor.ch;
-    console.log("selectionStart = " + selectionStart);
-
-    for (; selectionStart < text.length; ++selectionStart) {
-        var char = text[selectionStart];
-        if (char >= 'a' && char <= 'z' ||
-            char >= 'A' && char <= 'Z' ||
-            char == '_' ||
-            char >= '0' && char <= '9') {
-            continue;
-        }
-        else {
-            break;
-        }
-    }
-
-    var textForFocus = text.slice(0, selectionStart);
-    var m = textForFocus.match(/(\w+)(?:\.\w+)*$/);
-    var module = m[0];
-    console.log('module = ' + module);
-    switch (module) {
-        case 'apply':
-        	self.open_apply();
-            break;
-
-        case 'prove':
-            break;
-
-        default:
-            var m = module.match(/(.+)\.apply$/);
-            if (m) {
-                module = m[1];
-                var apply = true;
-            }
-            else {
-                var apply = false;
-            }
-
-            m = module.match(/^axiom\.(.+)/);
-            if (m) {
-                module = m[1];
-            }
-
-            var symbol = null;
-
-            if (module.indexOf('.') < 0) {
-                switch (module) {
-                    case 'algebra':
-                    case 'calculus':
-                    case 'discrete':
-                    case 'geometry':
-                    case 'keras':
-                    case 'sets':
-                    case 'stats':
-                        break;
-                    default:
-                        var symbol = module;
-                        module = locate_definition(cm, cursor.line, symbol);
-                        if (module == null){
-                            var href = `/sympy/axiom.php?symbol=${symbol}`;
-                            if (refresh)
-                                location.href = href;
-                            else
-                                window.open(href);
-                            return;
-                        }                                
-                }
-            }
-            else {
-                m = module.match(/^(\w+)\.(.+)/);
-                switch (m[1]) {
-                    case 'algebra':
-                    case 'calculus':
-                    case 'discrete':
-                    case 'geometry':
-                    case 'keras':
-                    case 'sets':
-                    case 'stats':
-                        break;
-                    default:
-                        return;
-                }
-            }
-
-            var user = sympy_user();
-            var href = `/${user}/axiom.php?module=${module}`;
-
-            if (apply)
-                href += "&apply=0";
-            else if (symbol)
-                href += `&apply=${symbol}`;
-
-            if (refresh)
-                location.href = href;
-            else
-                window.open(href);
-
-            break;
-    }
-}
 
 var sqlFile = `<?php echo $sql_statement?>`;
 if (sqlFile) {
     console.log(`execute sql file: ${sqlFile}`);
 
-    form_post("php/request/execute.php", { sqlFile: sqlFile }).then(res => {
+    form_post("php/request/mysql/update.php", { sqlFile: sqlFile }).then(res => {
         console.log('success code = ');
         console.log(res);
-    }).catch(fail);
+    });
 }
 
 //http://codemirror.net/doc/manual.html

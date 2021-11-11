@@ -21,7 +21,7 @@ def prove(Eq):
 
     n = Symbol(integer=True, positive=True)
     x, y = Symbol(shape=(n,), real=True, given=True)
-    i, j = Symbol(domain=Range(0, n))
+    i, j = Symbol(domain=Range(n))
     t = Symbol(integer=True)
     Eq << apply(Equal(x @ SwapMatrix(n, i, j), y), t)
 
@@ -36,3 +36,5 @@ if __name__ == '__main__':
     run()
 from . import square
 from . import pow
+# created on 2019-11-11
+# updated on 2019-11-11

@@ -11,7 +11,7 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra
     k, n = Symbol(integer=True)
-    i = Symbol(domain=Range(0, n + 1))
+    i = Symbol(domain=Range(n + 1))
     f = Function(integer=True)
     Eq << apply(Mul(Product[k:i:n](f(k)), f(n)))
 
@@ -28,3 +28,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-02-01
+# updated on 2020-02-01

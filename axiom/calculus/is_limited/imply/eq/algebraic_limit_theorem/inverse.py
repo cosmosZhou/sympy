@@ -26,9 +26,9 @@ def prove(Eq):
 
     Eq.is_nonzero_real = Eq[0].subs(Eq.is_limited)
 
-    Eq << sets.el.imply.is_nonzero.apply(Eq.is_nonzero_real)
+    Eq << sets.el.imply.ne_zero.apply(Eq.is_nonzero_real)
 
-    Eq << algebra.is_nonzero.eq.imply.eq.inverse.apply(Eq[-1], Eq.is_limited)
+    Eq << algebra.ne_zero.eq.imply.eq.inverse.apply(Eq[-1], Eq.is_limited)
 
     Eq << Eq[1].subs(Eq[-1])
 
@@ -39,17 +39,17 @@ def prove(Eq):
     delta1 = Symbol(positive=True)
     Eq << calculus.eq.el.imply.any_all.lt.half.apply(Eq.is_limited, Eq.is_nonzero_real, delta=delta1)
 
-    Eq.A_is_positive = sets.is_nonzero_real.imply.abs_is_positive.apply(Eq.is_nonzero_real)
+    Eq.A_is_positive = sets.is_nonzero_real.imply.abs_gt_zero.apply(Eq.is_nonzero_real)
 
     Eq << algebra.cond.any_all.imply.any_all_et.apply(Eq.A_is_positive / 2, Eq[-1])
 
-    Eq << Eq[-1].this.expr.expr.apply(algebra.is_positive.gt.imply.lt.inverse)
+    Eq << Eq[-1].this.expr.expr.apply(algebra.gt_zero.gt.imply.lt.inverse)
 
-    Eq << algebra.is_positive.imply.is_positive.div.apply(Eq.A_is_positive)
+    Eq << algebra.gt_zero.imply.gt_zero.div.apply(Eq.A_is_positive)
 
     Eq << algebra.cond.any_all.imply.any_all_et.apply(Eq[-1], Eq[-2])
 
-    Eq << Eq[-1].this.expr.expr.apply(algebra.is_positive.lt.imply.lt.mul)
+    Eq << Eq[-1].this.expr.expr.apply(algebra.gt_zero.lt.imply.lt.mul)
 
     Eq << algebra.any_all.any_all.imply.any_all_et.limits_intersect.apply(Eq[2], Eq[-1])
 
@@ -70,7 +70,7 @@ def prove(Eq):
     epsilon, delta = Symbol(positive=True)
     Eq << algebra.cond.imply.ou.subs.apply(Eq[-1], epsilon0, abs(A) ** 2 / 2 * epsilon)
 
-    Eq << algebra.is_positive.imply.square_is_positive.apply(Eq.A_is_positive) * epsilon / 2
+    Eq << algebra.gt_zero.imply.square_gt_zero.apply(Eq.A_is_positive) * epsilon / 2
 
     Eq << algebra.cond.ou.imply.cond.apply(Eq[-1], Eq[-2])
 
@@ -81,3 +81,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-06-18
+# updated on 2020-06-18

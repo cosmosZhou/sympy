@@ -46,7 +46,7 @@ def prove(Eq):
 
     Eq.induct = Eq.hypothesis.subs(m, m + 1)
 
-    k = Symbol(domain=Range(0, m + 1))
+    k = Symbol(domain=Range(m + 1))
     Eq.hypothesis_k = Eq.hypothesis.subs(m, k)
 
     Eq << Eq.hypothesis_k * x ** k
@@ -93,9 +93,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.args[1]().expr.doit()
 
-    Eq << Suffice(Eq.hypothesis_k, Eq.induct, plausible=True)
+    Eq << Infer(Eq.hypothesis_k, Eq.induct, plausible=True)
 
-    Eq << algebra.cond.suffice.imply.cond.induct.second.apply(Eq.initial, Eq[-1], n=m + 1, k=k, hypothesis=True)
+    Eq << algebra.cond.infer.imply.cond.induct.second.apply(Eq.initial, Eq[-1], n=m + 1, k=k, hypothesis=True)
 
     Eq << Eq.hypothesis.subs(m, n)
 
@@ -105,3 +105,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-05-18
+# updated on 2020-05-18

@@ -41,7 +41,7 @@ f = Function(real=True, continuous=True) denotes a real-valued function continuo
 f = Function(real=True, differentiable=True) denotes a real-valued function differentiable at any given point;    
 f = Function(measurable=True, domain=Interval(0, 1)) denotes a measurable real-valued function whose value lies within domain [0, 1];    
 f = Function(real=True, integrable=True) denotes a real-valued function Lebesgue-integrable at any given interval;    
-as well as system built-in function, such as [cos](../axiom.php?symbol=cos)(x), [sin](../axiom.php?symbol=sin)(x), [tan](../axiom.php?symbol=tan)(x), [log](../axiom.php?symbol=log)(x), [exp](../axiom.php?symbol=exp)(x), and some more complex operators [Sum](../axiom.php?symbol=Sum)\[k:a:b\](h\[k\]), [Product](../axiom.php?symbol=Product)\[k:a:b\](h\[k\]), [All](../axiom.php?symbol=All)\[k:a:b\](h\[k\] > t\[k\]), [Any](../axiom.php?symbol=Any)\[k:a:b\](h\[k\] > t\[k\]), etc.  
+as well as system built-in function, such as [cos](../axiom.php?symbol=cos)(x), [sin](../axiom.php?symbol=sin)(x), [tan](../axiom.php?symbol=tan)(x), [log](../axiom.php?symbol=log)(x), [exp](../axiom.php?symbol=exp)(x), and some more complex operators [Sum](../axiom.php?symbol=Sum)\[k:a:b\](h\[k\]), [Product](../axiom.php?symbol=Product)\[k:a:b\](h\[k\]), [ForAll](../axiom.php?symbol=All)\[k:a:b\](h\[k\] > t\[k\]), [Exists](../axiom.php?symbol=Any)\[k:a:b\](h\[k\] > t\[k\]), etc.  
 All these functions will not perform any float-point calculations as usual, since during the process of mathematical proving, any involvement of calculations with float-point values will yield a logic error in pure mathematics.    
 Every value in mathematical proving is in strict sense mathematical value, there is no concept of approximate values like float-pointing values;      
 
@@ -49,7 +49,7 @@ Every value in mathematical proving is in strict sense mathematical value, there
 * Theorem denotes a theorem that is provable or an axiom that is unprovable ;      
 The inputs of theorems must be expression(s) or condition(s), its outputs are necessarily condition(s). It is stored in a mysql database as a theorem knowledge bank. Its main usage is as follows: Theorem.apply(...); for instance:    
 a, b, c = Symbol(complex=True)  
-[algebra.add_is_zero.imply.et.suffice.cubic.apply](../axiom.php?module=algebra.add_is_zero.imply.et.suffice.cubic)(Equal(x ** 3 + a * x ** 2 + b * x + c, 0), x=x), denotes the determination process of a cubic equation within the domain of Complexes.     
+[algebra.poly_is_zero.imply.et.suffice.cubic.apply](../axiom.php?module=algebra.poly_is_zero.imply.et.suffice.cubic)(Equal(x ** 3 + a * x ** 2 + b * x + c, 0), x=x), denotes the determination process of a cubic equation within the domain of Complexes.     
 One can compare it to the solve set of Mathematica:  
 https://www.wolframcloud.com/obj/744984949/Published/cubic_root.   
 
@@ -73,14 +73,14 @@ extended_integer ⊂ extended_rational ⊂ [extended_real](https://en.wikipedia.
 As of this writing, <label id=count>____</label> theorems have been recored in the theorem repertoire, which can be applied in semi-mechanized axiomatized system of mathematical theorem proving.  
 It is mainly comprising of :  	
 	
-* [algebra](../axiom.php?module=algebra) refers to elementary algebra, which mainly delves into equations transformation、symbol substitution techniques, finite series [∑ telescoping](../axiom.php?module=algebra.sum.to.add.telescope)、∏ product telescoping, the property of transitivity for inequalities, solving [simple equations](../axiom.php?module=algebra.add_is_zero.imply.et.suffice.simple_equation), [quadratic equations](../axiom.php?module=algebra.add_is_zero.imply.et.suffice.quadratic), [cubic equations](../axiom.php?module=algebra.add_is_zero.imply.et.suffice.cubic) and [quartic equations](../axiom.php?module=algebra.add_is_zero.imply.et.suffice.quartic), common properties of some elementary functions, as well as the proof of [mathematical induction method](../axiom.php?module=algebra.is_nonzero.suffice.imply.is_nonzero.induct);   
+* [algebra](../axiom.php?module=algebra) refers to elementary algebra, which mainly delves into equations transformation、symbol substitution techniques, finite series [∑ telescoping](../axiom.php?module=algebra.sum.to.add.telescope)、∏ product telescoping, the property of transitivity for inequalities, solving [simple equations](../axiom.php?module=algebra.poly_is_zero.imply.et.suffice.simple_equation), [quadratic equations](../axiom.php?module=algebra.poly_is_zero.imply.et.suffice.quadratic), [cubic equations](../axiom.php?module=algebra.poly_is_zero.imply.et.suffice.cubic) and [quartic equations](../axiom.php?module=algebra.poly_is_zero.imply.et.suffice.quartic), common properties of some elementary functions, as well as the proof of [mathematical induction method](../axiom.php?module=algebra.ne_zero.suffice.imply.is_nonzero.induct);   
 * [sets](../axiom.php?module=sets) refers to sets theory, which is the core foundation of the theories of whole mathematical proving and analysis. It involves lots of propositions using the terminologies like 
-All(forall), Any(exists), Element, Subset, for example: 
+ForAll, Exists, Element, Subset, for example: 
 the proof of [inclusion-exclusion principle](../axiom.php?module=sets/imply/eq/principle/inclusion_exclusion/basic). It can be so said that: set theory is the fundamental grammar of automatic theorem proving.  
 * [geometry](../axiom.php?module=geometry) is comprised of junior-middle school 
 [plane geometry](../axiom.php?module=geometry/plane), trigonometry and senior-middle school
 [solid geometry](../axiom.php?module=geometry/solid), some trigonometric identities, for instance:  
-[addition principle of cosine](../axiom.php?module=geometry/plane/trigonometry/cosine/principle/add), product principle of trigonometry, and so on.   
+[addition principle of cosine](../axiom.php?module=geometry.cos.to.add.principle.add), [product principle of trigonometry](../axiom.php?module=geometry.mul.to.add.sin), and so on.   
 * [calculus](../axiom.php?module=calculus) comprises :   
 [the definition of limit](../axiom.php?module=calculus/eq/to/any_all/limit_definition) and its fundamental theories which is the theoretical basis of calculus.  
 operational properties of [infinite series](../axiom.php?module=calculus.eq.imply.eq.series.infinite.coefficient); 

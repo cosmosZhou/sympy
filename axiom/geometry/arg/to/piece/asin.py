@@ -33,11 +33,11 @@ def prove(Eq):
     ou = Eq.eq.find(Or)
     Eq.equivalent = Equivalent(ou & (x / sqrt(x ** 2 + y ** 2) >= 0), (x >= 0) & ou, plausible=True)
 
-    Eq << algebra.equivalent.given.et.suffice.apply(Eq.equivalent)
+    Eq << algebra.iff.given.et.infer.apply(Eq.equivalent)
 
-    Eq <<= Eq[-2].this.find(Or).apply(algebra.ou_is_nonzero.imply.sqrt_is_positive), Eq[-1].this.find(Or).apply(algebra.ou_is_nonzero.imply.sqrt_is_positive)
+    Eq <<= Eq[-2].this.find(Or).apply(algebra.ou_ne_zero.imply.sqrt_gt_zero), Eq[-1].this.find(Or).apply(algebra.ou_ne_zero.imply.sqrt_gt_zero)
 
-    Eq <<= Eq[-2].this.lhs.apply(algebra.is_nonnegative.is_positive.imply.is_nonnegative), Eq[-1].this.lhs.apply(algebra.is_positive.ge.imply.ge.div)
+    Eq <<= Eq[-2].this.lhs.apply(algebra.ge_zero.gt_zero.imply.ge_zero), Eq[-1].this.lhs.apply(algebra.gt_zero.ge.imply.ge.div)
 
     Eq << algebra.cond.given.cond.subs.cond.apply(Eq.eq, old=Eq.equivalent.lhs, new=Eq.equivalent.rhs)
 
@@ -51,27 +51,27 @@ def prove(Eq):
 
     Eq.eq1 = Eq[-1].this.lhs.apply(algebra.piece.invert.delete, 0, 3)
 
-    Eq.suffice = Suffice(y >= 0, Equal(asin(sqrt(1 - x ** 2 / (x ** 2 + y ** 2))), asin(y / sqrt(x ** 2 + y ** 2))), plausible=True)
+    Eq.suffice = Infer(y >= 0, Equal(asin(sqrt(1 - x ** 2 / (x ** 2 + y ** 2))), asin(y / sqrt(x ** 2 + y ** 2))), plausible=True)
 
     Eq << Eq.suffice.this.find(Pow).base.apply(algebra.add.to.mul.together)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.is_nonnegative.imply.eq.abs)
+    Eq << Eq[-1].this.lhs.apply(algebra.ge_zero.imply.eq.abs)
 
-    Eq << algebra.suffice.given.suffice.subs.apply(Eq[-1])
+    Eq << algebra.infer.given.infer.subs.apply(Eq[-1])
 
-    Eq.eq2 = algebra.suffice.imply.eq.piece.apply(Eq.suffice, Eq.eq1.lhs)
+    Eq.eq2 = algebra.infer.imply.eq.piece.apply(Eq.suffice, Eq.eq1.lhs)
 
-    Eq.suffice = Suffice(y < 0, Equal(asin(sqrt(1 - x ** 2 / (x ** 2 + y ** 2))), -asin(y / sqrt(x ** 2 + y ** 2))), plausible=True)
+    Eq.suffice = Infer(y < 0, Equal(asin(sqrt(1 - x ** 2 / (x ** 2 + y ** 2))), -asin(y / sqrt(x ** 2 + y ** 2))), plausible=True)
 
     Eq << Eq.suffice.this.find(Pow).base.apply(algebra.add.to.mul.together)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.is_negative.imply.eq.abs)
+    Eq << Eq[-1].this.lhs.apply(algebra.lt_zero.imply.eq.abs)
 
-    Eq << algebra.suffice.given.suffice.subs.apply(Eq[-1])
+    Eq << algebra.infer.given.infer.subs.apply(Eq[-1])
 
     Eq << algebra.piece.invert.apply(Eq.eq2.rhs, 1, 2)
 
-    Eq << algebra.suffice.imply.eq.piece.apply(Eq.suffice, Eq[-1].rhs)
+    Eq << algebra.infer.imply.eq.piece.apply(Eq.suffice, Eq[-1].rhs)
 
     Eq << algebra.eq.eq.imply.eq.transit.apply(Eq[-2], Eq[-1])
 
@@ -85,7 +85,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.apply(algebra.piece.invert, 2, 1)
 
-    Eq << algebra.suffice.imply.eq.piece.apply(Eq.suffice, Eq[-1].lhs)
+    Eq << algebra.infer.imply.eq.piece.apply(Eq.suffice, Eq[-1].lhs)
 
     Eq << Eq[-2].subs(Eq[-1])
 
@@ -100,3 +100,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2018-07-24
+# updated on 2018-07-24

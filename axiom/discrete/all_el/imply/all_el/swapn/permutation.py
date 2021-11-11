@@ -15,7 +15,7 @@ def apply(given):
 
     p = Symbol(shape=(oo,), integer=True, nonnegative=True)
 
-    P = Symbol(conditionset(p[:n], Equal(p[:n].set_comprehension(), Range(0, n))))
+    P = Symbol(conditionset(p[:n], Equal(p[:n].set_comprehension(), Range(n))))
 
     return All[p[:n]:P, x:S](Element(Lamda[k:n](x[p[k]]), S))
 
@@ -66,3 +66,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html
+# created on 2020-09-03
+# updated on 2020-09-03

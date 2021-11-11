@@ -18,8 +18,10 @@ def prove(Eq):
 
     Eq << sets.gt.imply.el.interval.apply(Eq[0])
 
-    Eq << sets.el.imply.el.relax.apply(Eq[-1], Interval(-oo, oo))
+    Eq << sets.el.imply.el.relax.apply(Eq[-1], Interval(-oo, oo), simplify=None)
 
 
 if __name__ == '__main__':
     run()
+# created on 2020-04-02
+# updated on 2020-04-02

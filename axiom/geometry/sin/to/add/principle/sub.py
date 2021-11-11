@@ -14,8 +14,10 @@ def prove(Eq):
     x, y = Symbol(real=True)
     Eq << apply(sin(x - y))
 
-    Eq << geometry.sin.to.add.principle.add.apply(sin(x - y))
+    Eq << geometry.sin.to.add.principle.apply(sin(x - y))
 
 
 if __name__ == '__main__':
     run()
+# created on 2020-11-24
+# updated on 2020-11-24

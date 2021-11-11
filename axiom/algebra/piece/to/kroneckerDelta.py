@@ -135,7 +135,7 @@ def prove(Eq):
     from axiom import algebra
 
     n, k = Symbol(integer=True, positive=True)
-    i = Symbol(domain=Range(0, n))
+    i = Symbol(domain=Range(n))
     x, y = Symbol(real=True, shape=(k,), given=True)
     g, f, h = Function(real=True)
     Eq << apply(Piecewise((g(i), i < n - 1), (h(i), True)))
@@ -147,3 +147,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2019-10-14
+# updated on 2019-10-14

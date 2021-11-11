@@ -24,10 +24,12 @@ def prove(Eq):
 
     Eq << (Eq[1] - y).reversed
 
-    Eq << algebra.is_nonnegative.lt.imply.eq.frac.apply(Eq[-1], Eq[-2])
+    Eq << algebra.ge_zero.lt.imply.eq.frac.apply(Eq[-1], Eq[-2])
 
     Eq << Eq[-1].this.rhs.apply(algebra.frac.to.add)
 
 
 if __name__ == '__main__':
     run()
+# created on 2019-03-08
+# updated on 2019-03-08

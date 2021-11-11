@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(x, w=None):
     n = x.shape[0]
-    i, j = Symbol(domain=Range(0, n))
+    i, j = Symbol(domain=Range(n))
 
     if w is None:
         w = Symbol.w(Lamda[j](SwapMatrix(n, 0, j)))
@@ -36,3 +36,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 from . import helper
+# created on 2020-09-11
+# updated on 2020-09-11

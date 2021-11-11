@@ -32,9 +32,9 @@ def prove(Eq):
     m, d, d_quote = Symbol(integer=True, positive=True)
     n, l, r = Symbol(shape=(2,), integer=True, positive=True)
     #r = dilation rate
-    β0 = Symbol("β^0", shape=(m,), domain=Range(0, n[0]))
+    β0 = Symbol("β^0", shape=(m,), domain=Range(n[0]))
     ζ0 = Symbol("ζ^0", shape=(m,), domain=Range(1, n[0] + 1))
-    β1 = Symbol("β^1", shape=(m,), domain=Range(0, n[1]))
+    β1 = Symbol("β^1", shape=(m,), domain=Range(n[1]))
     ζ1 = Symbol("ζ^1", shape=(m,), domain=Range(1, n[1] + 1))
     x = Symbol(real=True, shape=(m, n[0], n[1], d))
     w = Symbol(real=True, shape=(l[0], l[1], d, d_quote))
@@ -118,3 +118,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2021-01-01
+# updated on 2021-01-01

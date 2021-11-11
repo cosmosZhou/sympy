@@ -3,18 +3,11 @@ from . import eq
 from . import el
 from . import ne
 from . import any_eq
-from . import is_positive
-from . import is_negative
-from . import is_nonnegative
-from . import is_nonpositive
 from . import is_zero
 
-from . import is_nonzero
 from . import is_real
 from . import floor_is_zero
 from . import ceiling_is_zero
-from . import sqrt_is_nonnegative
-from . import sqrt_is_positive
 from . import any_el
 from . import ou
 from . import le
@@ -22,5 +15,12 @@ from . import ge
 from . import et
 from . import lt
 from . import gt
-from . import is_nonempty
+from . import ne_empty
 from . import notin
+from . import gt_zero
+from . import sqrt_gt_zero
+from . import lt_zero
+from . import ge_zero
+from . import sqrt_ge_zero
+from . import le_zero
+from . import ne_zero

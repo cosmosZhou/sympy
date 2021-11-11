@@ -18,7 +18,7 @@ def prove(Eq):
     Eq << apply(Cup[x:A, y:B](f(x, y) | g(x, y)))
 
     #Eq << apply(Cup[x:A](f(x) | g(x)))
-    Eq << sets.eq.given.et.suffice.apply(Eq[0], wrt=y)
+    Eq << sets.eq.given.et.infer.apply(Eq[0], wrt=y)
 
     Eq <<= Eq[-2].this.rhs.apply(sets.el.given.ou.split.union, simplify=False), \
     Eq[-1].this.lhs.apply(sets.el.imply.ou.split.union, simplify=False)
@@ -46,3 +46,5 @@ from . import doit
 from . import st
 from . import single_variable
 from . import split
+# created on 2021-02-10
+# updated on 2021-02-10

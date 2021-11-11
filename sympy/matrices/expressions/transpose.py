@@ -51,10 +51,8 @@ class Transpose(MatrixExpr):
 
     def _latex(self, p): 
         if self.arg.is_BlockMatrix:
-            X = self.arg
-            return r"{\left(\begin{array}{%s}%s\end{array}\right)}" % ('c' * len(X.args),
-                                                                        ' & '.join('{%s}' % p._print(arg.T) for arg in X.args))
-
+            X = self.arg            
+            return r"{\left(\begin{array}{%s}%s\end{array}\right)}" % ('c' * len(X.args), ' & '.join('{%s}' % p._print(arg.T) for arg in X.args))
         else:
             from sympy.printing.precedence import precedence_traditional
             return r"{%s}^{\color{magenta} T}" % p.parenthesize(self.arg, precedence_traditional(self), True)
@@ -170,17 +168,17 @@ class Transpose(MatrixExpr):
                         return self._entry(i, j)
                     else:
                         return self.func(self.arg[j])
-#                     return MatrixSlice(self, i, j)
+
                 i, j = _sympify(i), _sympify(j)
                 if self.valid_index(i, j) != False:
                     return self._entry(i, j)
                 else:
                     raise IndexError("Invalid indices (%s, %s)" % (i, j))
-        from sympy import Integer, Symbol, Expr
-        if isinstance(key, (int, Integer, Symbol, Expr)):
-            return self._entry(key)
-#             # row-wise decomposition of matrix
-        raise IndexError("Invalid index, wanted %s[i,j]" % self)
+        
+        assert isinstance(key, int) or key.is_Expr
+        return self._entry(key)
+
+        
 
 
 def transpose(expr):

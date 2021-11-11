@@ -1,3 +1,3 @@
 from . import eq
-from . import equivalent
+from . import iff
 from . import le

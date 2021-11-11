@@ -815,7 +815,7 @@ class CartesianSpace(Set):
             return S.true
         if other.is_Slice or other.is_Symbol:
             n = other.shape[0]
-            i = Dummy('i', domain=Range(0, n))
+            i = Dummy('i', domain=Range(n))
             space_shape = self.space_shape[1:]
             if space_shape:
                 domain = self.func(self.space, *space_shape)
@@ -838,7 +838,7 @@ class CartesianSpace(Set):
                 for block in other.args:
                     if block.shape: 
                         n = block.shape[0]
-                        i = Dummy('i', domain=Range(0, n))
+                        i = Dummy('i', domain=Range(n))
                         cond = Element(other[i], domain)
                     else:
                         cond = Element(block, domain)
@@ -987,7 +987,8 @@ class Interval(Set, EvalfMixin):
     def intersection_sets(self, b):
         if not (b.is_Interval or b.is_Range):
             if self.is_UniversalSet:
-                return b
+                if b.etype in self.etype:
+                    return b
             return
         # handle cases like (-oo, oo) and [-oo, oo]
         if self.start.is_NegativeInfinity and self.stop.is_Infinity:

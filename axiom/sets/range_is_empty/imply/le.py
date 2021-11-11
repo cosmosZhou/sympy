@@ -17,9 +17,11 @@ def prove(Eq):
 
     Eq << ~Eq[-1]
 
-    Eq << sets.gt.imply.range_is_nonempty.apply(Eq[-1])
+    Eq << sets.gt.imply.range_ne_empty.apply(Eq[-1])
     Eq << ~Eq[-1]
 
 
 if __name__ == '__main__':
     run()
+# created on 2021-06-18
+# updated on 2021-06-18

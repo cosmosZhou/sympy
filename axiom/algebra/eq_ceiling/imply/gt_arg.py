@@ -16,13 +16,15 @@ def prove(Eq):
     A, B = Symbol(complex=True, given=True)
     Eq << apply(Equal(Ceiling((Arg(A) + Arg(B)) / (S.Pi * 2) - S.One / 2), 1))
 
-    Eq << algebra.eq.imply.is_positive.apply(Eq[0])
+    Eq << algebra.eq.imply.gt_zero.apply(Eq[0])
 
-    Eq << algebra.ceiling_is_positive.imply.is_positive.apply(Eq[-1])
+    Eq << algebra.ceiling_gt_zero.imply.gt_zero.apply(Eq[-1])
 
-    Eq << algebra.is_positive.imply.gt.apply(Eq[-1])
+    Eq << algebra.gt_zero.imply.gt.apply(Eq[-1])
     Eq << Eq[-1] * S.Pi * 2
 
 
 if __name__ == '__main__':
     run()
+# created on 2018-10-31
+# updated on 2018-10-31

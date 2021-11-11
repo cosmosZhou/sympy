@@ -95,9 +95,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this.expr.apply(sets.any.imply.any.limits.swap)
 
-    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
+    Eq << Infer(Eq[0], Eq.induct, plausible=True)
 
-    Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq.initial, Eq[-1], start=2, n=n)
+    Eq << algebra.cond.infer.imply.cond.induct.apply(Eq.initial, Eq[-1], start=2, n=n)
 
 
 if __name__ == '__main__':
@@ -105,3 +105,5 @@ if __name__ == '__main__':
 
 from . import two
 from . import split
+# created on 2020-09-10
+# updated on 2020-09-10

@@ -30,7 +30,7 @@ def prove(Eq):
     j = Eq[-1].variables[0]
     Eq << ~Eq[-1]
 
-    Eq << Eq[-1].this.expr.apply(sets.is_nonempty.imply.is_positive)
+    Eq << Eq[-1].this.expr.apply(sets.ne_empty.imply.gt_zero)
 
     Eq << sets.imply.eq.principle.inclusion_exclusion.basic.apply(x[i], x[j])
 
@@ -64,3 +64,5 @@ if __name__ == '__main__':
 
 
 from . import complement
+# created on 2021-03-19
+# updated on 2021-03-19

@@ -47,10 +47,12 @@ def prove(Eq):
     Eq << Eq[-3].subs(Eq.xy_probability)
     Eq << Eq[-1].subs(Eq[-2])
     Eq << Eq[-1].subs(Eq[-4])
-    Eq << algebra.is_nonzero.eq.imply.eq.scalar.apply(Eq[-1], Eq.y_nonzero)
+    Eq << algebra.ne_zero.eq.imply.eq.scalar.apply(Eq[-1], Eq.y_nonzero)
     Eq << Eq[-1].reversed
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2021-07-14
+# updated on 2021-07-14

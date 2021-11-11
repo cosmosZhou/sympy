@@ -23,7 +23,7 @@ def prove(Eq):
 
     d, n = Symbol(domain=Range(2, oo))
     x = Symbol(shape=(n, d), real=True, random=True, given=True)
-    y = Symbol(shape=(n,), domain=Range(0, d), random=True, given=True)
+    y = Symbol(shape=(n,), domain=Range(d), random=True, given=True)
     k = Symbol(integer=True)
     Eq << apply(Equal(y[k] | (x[:k].as_boolean() & y[:k].as_boolean()), y[k] | y[k - 1]))
 
@@ -40,3 +40,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2021-07-15
+# updated on 2021-07-15

@@ -85,7 +85,11 @@ if __name__ == '__main__':
     
     symbols = [symbol for symbol in sympy.__dict__ if re.match('^[A-Za-z]+$', symbol)]
     vocab += symbols
-
+    
+    vocab.remove('symbol')
+    vocab.remove('function')
+    vocab.remove('binomial')
+    
 #     print(vocab)
     
     data = []

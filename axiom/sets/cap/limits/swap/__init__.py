@@ -41,9 +41,9 @@ def prove(Eq):
 
     Eq << sets.eq.imply.eq.intersect.apply(Eq[0], Eq[-1].lhs.args[0])
 
-    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
+    Eq << Infer(Eq[0], Eq.induct, plausible=True)
 
-    Eq << algebra.suffice.imply.eq.induct.apply(Eq[-1], n=n, start=1)
+    Eq << algebra.infer.imply.eq.induct.apply(Eq[-1], n=n, start=1)
 
 
 if __name__ == '__main__':
@@ -51,3 +51,5 @@ if __name__ == '__main__':
 
 from . import intlimit
 from . import subs
+# created on 2021-01-31
+# updated on 2021-01-31

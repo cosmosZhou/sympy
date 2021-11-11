@@ -9,13 +9,13 @@ def apply(self, index=-1):
             break
     else:
         return
-    
+
     del args[i]
     this = self.func(*args)
     args = eq.args
     lhs = And(*args[:index])
     rhs = And(*args[index:])
-    
+
     return (lhs | this).simplify(), (rhs | this).simplify()
 
 
@@ -37,4 +37,6 @@ if __name__ == '__main__':
     run()
 
 from . import collect
-from . import suffice
+from . import infer
+# created on 2019-04-29
+# updated on 2019-04-29

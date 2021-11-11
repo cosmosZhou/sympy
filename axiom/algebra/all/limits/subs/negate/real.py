@@ -31,18 +31,20 @@ def prove(Eq):
     f = Function(real=True)
     Eq << apply(All[x:Interval(a, b, left_open=True)](f(x) > 0), x, c - x)
 
-    Eq << algebra.equivalent.given.et.apply(Eq[0])
+    Eq << algebra.iff.given.et.apply(Eq[0])
 
     Eq << Eq[-2].this.lhs.apply(algebra.all.imply.all.limits.subs.negate.real, x, c - x)
 
     Eq << Eq[-1].this.rhs.apply(algebra.all.imply.all.limits.subs.negate.real, x, c - x)
 
-    
 
-    
 
-    
+
+
+
 
 
 if __name__ == '__main__':
     run()
+# created on 2018-12-20
+# updated on 2018-12-20

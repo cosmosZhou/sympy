@@ -2,7 +2,7 @@ from util import *
 
 
 @apply
-def apply(self): 
+def apply(self):
     expr, *limits = self.of(Sup)
     vars = [x for x, *ab in limits]
     const = []
@@ -13,10 +13,10 @@ def apply(self):
         else:
             const.append(arg)
     assert const
-    
+
     const = Add(*const)
     expr = Add(*args)
-    
+
     return Equal(self, const + Sup(expr, *limits))
 
 
@@ -34,9 +34,9 @@ def prove(Eq):
     Eq <<= algebra.eq.imply.et.squeeze.apply(Eq[-1]), Eq[0].subs(Eq[-1])
 
     z = Symbol(real=True)
-    Eq <<= algebra.le_sup.imply.all_le.apply(Eq[-3]), algebra.ge_sup.imply.all_any_gt.apply(Eq[-2], z), algebra.eq.given.et.squeeze.apply(Eq[-1])
+    Eq <<= algebra.sup_le.imply.all_le.apply(Eq[-3]), algebra.sup_ge.imply.all_any_gt.apply(Eq[-2], z), algebra.eq.given.et.squeeze.apply(Eq[-1])
 
-    Eq <<= algebra.le_sup.given.all_le.apply(Eq[-2]), algebra.ge_sup.given.all_any_gt.apply(Eq[-1], z)
+    Eq <<= algebra.sup_le.given.all_le.apply(Eq[-2]), algebra.sup_ge.given.all_any_gt.apply(Eq[-1], z)
 
     Eq << algebra.all.given.all.limits.subs.offset.apply(Eq[-1], h)
 
@@ -45,3 +45,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2019-09-09
+# updated on 2019-09-09

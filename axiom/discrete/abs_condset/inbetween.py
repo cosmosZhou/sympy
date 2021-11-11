@@ -8,7 +8,7 @@ def apply(n, Q=None):
         Q, w, x = predefined_symbols(n)
     else:
         x = Q.definition.expr.variable
-    P_quote = Symbol("P'", conditionset(x[:n + 1], Equal(x[:n].set_comprehension(), Range(0, n)) & Equal(x[n], n)))
+    P_quote = Symbol("P'", conditionset(x[:n + 1], Equal(x[:n].set_comprehension(), Range(n)) & Equal(x[n], n)))
 
     t = Q.definition.variable
     return Equal(Card(Q[t]), Card(P_quote))
@@ -34,3 +34,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-08-01
+# updated on 2020-08-01

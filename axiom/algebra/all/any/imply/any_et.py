@@ -43,15 +43,17 @@ def prove(Eq):
 
     Eq.any = algebra.any.imply.any_et.limits.unleash.apply(Eq[1], simplify=False)
 
-    Eq << algebra.all.imply.suffice.apply(Eq[0])
+    Eq << algebra.all.imply.infer.apply(Eq[0])
 
     Eq << Eq[-1].this.lhs.apply(algebra.gt.given.gt.strengthen, 1)
 
-    Eq << algebra.suffice.imply.suffice.et.apply(Eq[-1])
+    Eq << algebra.infer.imply.infer.et.apply(Eq[-1])
 
-    Eq << Eq.any.this.expr.args[2].apply(algebra.cond.suffice.imply.cond.transit, Eq[-1])
+    Eq << Eq.any.this.expr.args[2].apply(algebra.cond.infer.imply.cond.transit, Eq[-1])
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2018-03-26
+# updated on 2018-03-26

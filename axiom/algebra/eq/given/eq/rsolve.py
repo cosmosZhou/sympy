@@ -22,10 +22,12 @@ def prove(Eq):
     x, a, b = Symbol(real=True)
     k, n = Symbol(integer=True)
     c = Symbol(real=True, positive=True)
-    i = Symbol(domain=Range(0, k + 1))
+    i = Symbol(domain=Range(k + 1))
     y = Symbol(real=True, shape=(oo,))
     Eq << apply(Equal(y[n + 1], y[n] * (k + 1) + i ** n), y=y[n])
 
 
 if __name__ == '__main__':
     run()
+# created on 2021-07-31
+# updated on 2021-07-31

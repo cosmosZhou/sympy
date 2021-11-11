@@ -235,7 +235,7 @@ $.ajax({
     	newText.push(text.slice(start));
     	text = newText.join('');
     	
-        $("#content").html(marked(text));
+        $("#content").html(marked.marked(text));
     }
 });
 

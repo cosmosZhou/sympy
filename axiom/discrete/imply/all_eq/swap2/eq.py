@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(n, w=None):
-    i, j = Symbol(domain=Range(0, n))
+    i, j = Symbol(domain=Range(n))
 
     assert n >= 2
     if w is None:
@@ -18,7 +18,7 @@ def apply(n, w=None):
 def prove(Eq):
     from axiom import discrete
     n = Symbol(domain=Range(2, oo))
-    assert 0 in Range(0, n)
+    assert 0 in Range(n)
     Eq << apply(n)
     w = Eq[0].lhs.base
     Eq << discrete.imply.all_eq.swap2.eq_general.apply(n, w=w)
@@ -32,3 +32,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html
+# created on 2020-08-23
+# updated on 2020-08-23

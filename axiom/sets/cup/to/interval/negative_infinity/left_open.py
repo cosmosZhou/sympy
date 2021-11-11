@@ -18,7 +18,7 @@ def prove(Eq):
     k = Symbol(integer=True)
     Eq << apply(Cup[k:oo](Interval(-k - 1, -k, left_open=True)))
 
-    Eq << sets.eq.given.et.suffice.apply(Eq[0])
+    Eq << sets.eq.given.et.infer.apply(Eq[0])
 
     Eq <<= Eq[-2].this.lhs.apply(sets.el_cup.imply.any_el), Eq[-1].this.rhs.apply(sets.el_cup.given.any_el)
 
@@ -26,22 +26,24 @@ def prove(Eq):
     x = Eq[-1].lhs.lhs
     Eq <<= Eq[-2].this.lhs.expr.apply(sets.el.imply.ge.split.interval), Eq[-1].this.rhs.apply(algebra.any.given.cond.subs, k, -Ceiling(x))
 
-    Eq <<= Eq[-2].this.lhs.apply(algebra.any.imply.any_et.limits.unleash, simplify=None), algebra.suffice.given.et.suffice.apply(Eq[-1])
+    Eq <<= Eq[-2].this.lhs.apply(algebra.any.imply.any_et.limits.unleash, simplify=None), algebra.infer.given.et.infer.apply(Eq[-1])
 
-    Eq <<= Eq[-3].this.lhs.expr.args[1].apply(sets.el.imply.ge.split.range), Eq[-2].this.rhs.apply(sets.el.given.et.split.range), algebra.suffice.given.cond.apply(Eq[-1])
+    Eq <<= Eq[-3].this.lhs.expr.args[1].apply(sets.el.imply.ge.split.range), Eq[-2].this.rhs.apply(sets.el.given.et.split.range), algebra.infer.given.cond.apply(Eq[-1])
 
     Eq <<= Eq[-3].this.lhs.expr.apply(algebra.ge.ge.imply.ge.add), -Eq[-2].this.rhs, sets.el.given.et.split.interval.apply(Eq[-1])
 
-    Eq << Eq[-4].this.lhs.apply(sets.is_nonpositive.imply.is_nonpositive_real, simplify=None)
+    Eq << Eq[-4].this.lhs.apply(sets.le_zero.imply.is_nonpositive, simplify=None)
 
     Eq << algebra.imply.gt.ceiling.apply(x)
 
     Eq << Eq[-3].this.lhs.apply(sets.el.imply.le.split.interval)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.is_nonpositive.imply.ceiling_is_nonpositive)
+    Eq << Eq[-1].this.lhs.apply(algebra.le_zero.imply.ceiling_le_zero)
 
     Eq << algebra.imply.le.ceiling.apply(x)
 
 
 if __name__ == '__main__':
     run()
+# created on 2021-02-16
+# updated on 2021-02-16

@@ -25,18 +25,18 @@ def prove(Eq):
 
     n = Symbol(integer=True, positive=True)
     p, x = Symbol(integer=True, shape=(n,))
-    Eq << apply(Equal(p.set_comprehension(), Range(0, n)), x)
+    Eq << apply(Equal(p.set_comprehension(), Range(n)), x)
 
     A = Symbol(Eq[1].lhs)
     B = Symbol(Eq[1].rhs)
     Eq.A_definition = A.this.definition
 
     i = Eq[1].lhs.variable
-    _i = Symbol.i(domain=Range(0, n))
+    _i = Symbol.i(domain=Range(n))
     Eq.A_definition = Eq.A_definition.this.rhs.limits_subs(i, _i)
 
     j = Eq[1].rhs.variable
-    _j = Symbol.j(domain=Range(0, n))
+    _j = Symbol.j(domain=Range(n))
     Eq.B_definition = B.this.definition
 
     Eq.B_definition = Eq.B_definition.this.rhs.limits_subs(Eq.B_definition.rhs.variable, _j)
@@ -77,3 +77,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-09-14
+# updated on 2020-09-14

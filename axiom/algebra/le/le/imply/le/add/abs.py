@@ -22,12 +22,14 @@ def prove(Eq):
 
     Eq << algebra.le_abs.given.et.apply(Eq[-1])
 
-    Eq << algebra.le_abs.imply.et.apply(Eq[0])
+    Eq << algebra.abs_le.imply.et.apply(Eq[0])
 
-    Eq << algebra.le_abs.imply.et.apply(Eq[1])
+    Eq << algebra.abs_le.imply.et.apply(Eq[1])
 
     Eq <<= Eq[-4] + Eq[-2], Eq[-3] + Eq[-1]
 
 
 if __name__ == '__main__':
     run()
+# created on 2019-11-19
+# updated on 2019-11-19

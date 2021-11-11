@@ -21,7 +21,7 @@ def apply(all_x, all_p, equality):
     assert p.shape[0] == n
 
     lhs, rhs = P.args
-    assert rhs == Range(0, n)
+    assert rhs == Range(n)
     assert lhs == p.set_comprehension()
 
     _e, _n = equality.of(Equal[Card])
@@ -41,7 +41,7 @@ def prove(Eq):
     i, j, k = Symbol(integer=True)
     e = Symbol(etype=dtype.integer, given=True)
     p = Symbol(shape=(n,), integer=True, nonnegative=True)
-    P = Symbol(conditionset(p[:n], Equal(p[:n].set_comprehension(), Range(0, n))))
+    P = Symbol(conditionset(p[:n], Equal(p[:n].set_comprehension(), Range(n))))
     Eq << apply(All[x:S](Equal(x.set_comprehension(), e)),
                 All[x:S, p[:n]:P](Element(Lamda[k:n](x[p[k]]), S)),
                 Equal(Card(e), n))
@@ -69,3 +69,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html
+# created on 2020-09-11
+# updated on 2020-09-11

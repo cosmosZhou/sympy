@@ -20,7 +20,7 @@ def prove(Eq):
 
     Eq << ~Eq[-1]
 
-    Eq << sets.any_el.imply.is_nonempty.apply(Eq[0], simplify=None)
+    Eq << sets.any_el.imply.ne_empty.apply(Eq[0], simplify=None)
 
     Eq << algebra.cond.imply.all.restrict.apply(Eq[-1], (t, S))
 
@@ -32,3 +32,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-07-14
+# updated on 2020-07-14

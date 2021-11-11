@@ -40,7 +40,7 @@ def prove(Eq):
 
     n = Symbol(integer=True, positive=True)
     i, k = Symbol(integer=True)
-    j = Symbol(domain=Range(0, k))
+    j = Symbol(domain=Range(k))
     x = Symbol(real=True, shape=(oo,))
     f, g = Function(shape=(), integer=True)
     f_quote = Function("f'", shape=(), integer=True)
@@ -54,7 +54,12 @@ def prove(Eq):
 
     Eq << Eq[0].this.expr.apply(algebra.et.given.et.split.eq, delta=False, simplify=None)
 
+    
+    
+
 
 if __name__ == '__main__':
     run()
 
+# created on 2019-02-27
+# updated on 2021-10-04

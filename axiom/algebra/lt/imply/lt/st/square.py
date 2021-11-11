@@ -84,11 +84,11 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.expand()
 
-    Eq << algebra.le.given.is_nonnegative.apply(Eq[-1])
+    Eq << algebra.le.given.ge_zero.apply(Eq[-1])
 
     Eq << Eq[-1] / 5 * 8
 
-    Eq << algebra.imply.is_nonnegative.square.apply(x0_ + x1_)
+    Eq << algebra.imply.ge_zero.square.apply(x0_ + x1_)
 
     Eq << algebra.lt.le.imply.lt.transit.apply(Eq.lt, Eq.le)
 
@@ -96,3 +96,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-01-02
+# updated on 2020-01-02

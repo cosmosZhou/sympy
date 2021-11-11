@@ -15,7 +15,7 @@ def apply(n, w=None, left=True, P=None):
     x = x[:n]
 
     if P is None:
-        P = Symbol(conditionset(x, Equal(x.set_comprehension(), Range(0, n))))
+        P = Symbol(conditionset(x, Equal(x.set_comprehension(), Range(n))))
 
     if left:
         return All[x:P](Element(w[i, j] @ x, P))
@@ -44,3 +44,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html
+# created on 2020-07-26
+# updated on 2020-07-26

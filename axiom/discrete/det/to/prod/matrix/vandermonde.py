@@ -102,11 +102,13 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.args[0].doit()
 
-    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
+    Eq << Infer(Eq[0], Eq.induct, plausible=True)
 
-    Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq.initial, Eq[-1], n=n, start=2)
+    Eq << algebra.cond.infer.imply.cond.induct.apply(Eq.initial, Eq[-1], n=n, start=2)
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2020-08-21
+# updated on 2020-08-21

@@ -36,11 +36,13 @@ def prove(Eq):
 
     Eq << algebra.eq.eq.imply.eq.transit.apply(Eq[0], Eq[-1])
 
-    Eq << Suffice(Eq[1], Eq.induct, plausible=True)
+    Eq << Infer(Eq[1], Eq.induct, plausible=True)
 
-    Eq << algebra.suffice.imply.eq.induct.apply(Eq[-1], n=n)
+    Eq << algebra.infer.imply.eq.induct.apply(Eq[-1], n=n)
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2019-04-05
+# updated on 2019-04-05

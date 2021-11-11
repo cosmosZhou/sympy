@@ -22,7 +22,7 @@ def prove(Eq):
     f = Function(etype=dtype.integer)
     Eq << apply(Cap[k:n](f(k)) | x)
 
-    Eq << sets.eq.given.et.suffice.apply(Eq[-1])
+    Eq << sets.eq.given.et.infer.apply(Eq[-1])
 
     Eq <<= Eq[-2].this.rhs.apply(sets.el_cap.given.all_el),\
     Eq[-1].this.lhs.apply(sets.el_cap.imply.all_el)
@@ -38,3 +38,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2021-07-11
+# updated on 2021-07-11

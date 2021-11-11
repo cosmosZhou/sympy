@@ -185,11 +185,11 @@ class Boolean(Basic):
 
     def __rshift__(self, other):
         """Overloading for >>"""
-        return Suffice(self, other)
+        return Infer(self, other)
 
     def __lshift__(self, other):
         """Overloading for <<"""
-        return Suffice(other, self)
+        return Infer(other, self)
 
     __rrshift__ = __lshift__
     __rlshift__ = __rshift__
@@ -1755,7 +1755,7 @@ class Not(BooleanFunction):
         if func == Or:
             return And._to_nnf(*[~arg for arg in args], simplify=simplify)
 
-        if func == Suffice:
+        if func == Infer:
             a, b = args
             return And._to_nnf(a, ~b, simplify=simplify)
 
@@ -1991,11 +1991,11 @@ class Xnor(BooleanFunction):
         return Not(Xor(*args))
 
        
-class Suffice(BooleanAssumption):
+class Infer(BooleanAssumption):
     """
     Logical implication.
 
-    A is Suffice for B is equivalent to !A v B
+    A is Infer for B is equivalent to !A v B
 
     Accepts two Boolean arguments; A and B.
     Returns False if A is True and B is False
@@ -2004,29 +2004,29 @@ class Suffice(BooleanAssumption):
     Examples
     ========
 
-    >>> from sympy.logic.boolalg import Suffice
+    >>> from sympy.logic.boolalg import Infer
     >>> from sympy import symbols
     >>> x, y = symbols('x y')
 
-    >>> Suffice(True, False)
+    >>> Infer(True, False)
     False
-    >>> Suffice(False, False)
+    >>> Infer(False, False)
     True
-    >>> Suffice(True, True)
+    >>> Infer(True, True)
     True
-    >>> Suffice(False, True)
+    >>> Infer(False, True)
     True
     >>> x >> y
-    Suffice(x, y)
+    Infer(x, y)
     >>> y << x
-    Suffice(x, y)
+    Infer(x, y)
 
     Notes
     =====
 
     The ``>>`` and ``<<`` operators are provided as a convenience, but note
     that their use here is different from their normal use in Python, which is
-    bit shifts. Hence, ``Suffice(a, b)`` and ``a >> b`` will return different
+    bit shifts. Hence, ``Infer(a, b)`` and ``a >> b`` will return different
     things if ``a`` and ``b`` are integers.  In particular, since Python
     considers ``True`` and ``False`` to be integers, ``True >> True`` will be
     the same as ``1 >> 1``, i.e., 0, which has a truth value of False.  To
@@ -2060,7 +2060,7 @@ class Suffice(BooleanAssumption):
             A, B = newargs                            
         except ValueError:
             raise ValueError(
-                "%d operand(s) used for an Suffice "
+                "%d operand(s) used for an Infer "
                 "(pairs are required): %s" % (len(args), str(args)))
             
         if B.is_BooleanFalse:
@@ -2120,16 +2120,16 @@ class Suffice(BooleanAssumption):
 
     def __and__(self, other):
         """Overloading for & operator"""
-        if other.is_Suffice:
+        if other.is_Infer:
             if self.lhs == other.lhs:
                 return self.func(self.lhs, self.rhs & other.rhs)
             if self.lhs == other.rhs:
                 if self.rhs == other.lhs:
                     return Equivalent(self.lhs, self.rhs)
             if self.rhs == other.rhs:
-                return Suffice(self.lhs | other.lhs, self.rhs)
+                return Infer(self.lhs | other.lhs, self.rhs)
                 
-        elif other.is_Necessary:
+        elif other.is_Assuming:
             if self.lhs == other.lhs:
                 if self.rhs == other.rhs:
                     return Equivalent(self.lhs, self.rhs)
@@ -2170,7 +2170,7 @@ class Suffice(BooleanAssumption):
                      
                 eqs.append(eq)
                 
-            return Suffice(p, And(*eqs))
+            return Infer(p, And(*eqs))
         elif q.is_Or:
             p, p_set = self.premise_set()
             
@@ -2185,19 +2185,19 @@ class Suffice(BooleanAssumption):
                         else:
                             continue
                 eqs.append(eq)
-            return Suffice(p, Or(*eqs))
+            return Infer(p, Or(*eqs))
             
         return self
 
     def inference_status(self, child):
         return child == 0       
 
-        
-class Necessary(BooleanAssumption):
+# http://www.frdic.com/dicts/fr/quand        
+class Assuming(BooleanAssumption):
     """
     Logical implication.
 
-    A is Necessary for B is equivalent to A v !B
+    A is Assuming for B is equivalent to A v !B
 
     Accepts two Boolean arguments; A and B.
     Returns False if A is True and B is False
@@ -2210,7 +2210,7 @@ class Necessary(BooleanAssumption):
 
     @classmethod
     def eval(cls, *args):
-        return Suffice.eval(*args[::-1])
+        return Infer.eval(*args[::-1])
 
     def to_nnf(self, simplify=True):
         b, a = self.args
@@ -2226,17 +2226,17 @@ class Necessary(BooleanAssumption):
             return p._print_Function(self)
     
     def _latex(self, p, rotate=False):
-        return Suffice._latex(self, p, '\Leftarrow', rotate=rotate)
+        return Infer._latex(self, p, '\Leftarrow', rotate=rotate)
 
     def __and__(self, other):
         """Overloading for & operator"""
-        if other.is_Suffice:
+        if other.is_Infer:
             if self.lhs == other.lhs:
                 if self.rhs == other.rhs:
                     return Equivalent(self.lhs, self.rhs)
-        elif other.is_Necessary:
+        elif other.is_Assuming:
             if self.lhs == other.lhs: 
-                return Necessary(self.lhs, self.rhs | other.rhs)
+                return Assuming(self.lhs, self.rhs | other.rhs)
 
         return BinaryCondition.__and__(self, other)
 
@@ -2320,7 +2320,7 @@ class Equivalent(BooleanAssumption):
         return "%s \N{LEFT RIGHT DOUBLE ARROW} %s" % (p._print(self.lhs), p._print(self.rhs))
 
     def _latex(self, p, rotate=False):
-        return Suffice._latex(self, p, '\Leftrightarrow', rotate=rotate)
+        return Infer._latex(self, p, '\Leftrightarrow', rotate=rotate)
 
     def _pretty(self, p, altchar=None):
         if p._use_unicode:
@@ -2332,7 +2332,7 @@ class Equivalent(BooleanAssumption):
         raise Exception("boolean conditions within Equivalent are not applicable for inequivalent inference!")       
 
        
-class NotSuffice(BooleanAssumption):
+class NotInfer(BooleanAssumption):
 
     def __new__(cls, *args, **assumptions):
         return BinaryCondition.eval(cls, *args, **assumptions)
@@ -2366,7 +2366,7 @@ class Unnecessary(BooleanAssumption):
         return "%s \N{LEFTWARDS DOUBLE ARROW WITH STROKE} %s" % (p._print(self.lhs), p._print(self.rhs))
 
     def _latex(self, p, altchar='\nLeftarrow', rotate=False):
-        return Suffice._latex(self, p, altchar, rotate=rotate)
+        return Infer._latex(self, p, altchar, rotate=rotate)
 
     def inference_status(self, child):
         return child == 0
@@ -2378,26 +2378,26 @@ class Inequivalent(BooleanAssumption):
         return "%s \N{LEFT RIGHT DOUBLE ARROW WITH STROKE} %s" % (p._print(self.lhs), p._print(self.rhs))
 
     def _latex(self, p, altchar='\nLeftrightarrow', rotate=False):
-        return Suffice._latex(self, p, altchar, rotate=rotate)
+        return Infer._latex(self, p, altchar, rotate=rotate)
 
     def inference_status(self, child):
         raise Exception("boolean conditions within Inequivalent are not applicable for inequivalent inference!")       
 
 
-Suffice.reversed_type = Necessary
-Necessary.reversed_type = Suffice
+Infer.reversed_type = Assuming
+Assuming.reversed_type = Infer
 Equivalent.reversed_type = Equivalent
 
-NotSuffice.reversed_type = Unnecessary
-Unnecessary.reversed_type = NotSuffice
+NotInfer.reversed_type = Unnecessary
+Unnecessary.reversed_type = NotInfer
 Inequivalent.reversed_type = Inequivalent
 
-Suffice.invert_type = NotSuffice
-Necessary.invert_type = Unnecessary
+Infer.invert_type = NotInfer
+Assuming.invert_type = Unnecessary
 Equivalent.invert_type = Inequivalent
 
-NotSuffice.invert_type = Suffice 
-Unnecessary.invert_type = Necessary
+NotInfer.invert_type = Infer 
+Unnecessary.invert_type = Assuming
 Inequivalent.invert_type = Equivalent
 
 
@@ -2843,10 +2843,10 @@ def eliminate_implications(expr):
     Examples
     ========
 
-    >>> from sympy.logic.boolalg import Suffice, Equivalent, \
+    >>> from sympy.logic.boolalg import Infer, Equivalent, \
          eliminate_implications
     >>> from sympy.abc import A, B, C
-    >>> eliminate_implications(Suffice(A, B))
+    >>> eliminate_implications(Infer(A, B))
     B | ~A
     >>> eliminate_implications(Equivalent(A, B))
     (A | ~B) & (B | ~A)

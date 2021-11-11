@@ -38,7 +38,7 @@ def prove(Eq):
 
     Eq << B_quote.this.definition
 
-    Eq.suffice = Suffice(Element(y, B), Element(y, B_quote), plausible=True)
+    Eq.suffice = Infer(Element(y, B), Element(y, B_quote), plausible=True)
 
     Eq << Eq.suffice.this.rhs.rhs.definition
 
@@ -52,7 +52,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.expr.apply(algebra.et.given.et.split.eq, reverse=True)
 
-    Eq.necessary = Necessary(Element(y, B), Element(y, B_quote), plausible=True)
+    Eq.necessary = Assuming(Element(y, B), Element(y, B_quote), plausible=True)
 
     Eq << Eq.necessary.this.rhs.rhs.definition
 
@@ -66,7 +66,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.args[1].apply(sets.el.given.any_eq.split.imageset)
 
-    Eq << sets.suffice.necessary.imply.eq.apply(Eq.suffice, Eq.necessary)
+    Eq << sets.infer.assuming.imply.eq.apply(Eq.suffice, Eq.necessary)
 
     Eq << Eq[-1].this.lhs.definition
 
@@ -76,3 +76,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2021-02-04
+# updated on 2021-02-04

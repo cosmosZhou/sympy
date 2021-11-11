@@ -79,7 +79,7 @@ def prove(Eq):
     Eq << Eq.x_abs_sum + Eq[-2]
     Eq <<= Eq.x_abs_positive & Eq[-2]
     Eq <<= x_union & Eq[-1] & Eq[-2]
-    j = Symbol(domain=Range(0, k + 1))
+    j = Symbol(domain=Range(k + 1))
     Eq << plausible0.subs(Eq[2].reversed)
     Eq << s2.this.bisect(conditionset(e, Element({n}, e), s2))
     Eq.subset_B = Subset(Eq[-1].rhs.args[0], Eq[-2].lhs, plausible=True)  # unproven
@@ -169,3 +169,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-09-29
+# updated on 2020-09-29

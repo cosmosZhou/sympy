@@ -1,4 +1,4 @@
-from . import equivalent
+from . import iff
 from . import imply
 from . import given
 from . import cond
@@ -6,6 +6,6 @@ from . import ou
 from . import any
 from . import all
 from . import all_any
-from . import suffice
+from . import infer
 from . import any_all
-from . import necessary
+from . import assuming

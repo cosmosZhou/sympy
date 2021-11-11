@@ -20,7 +20,7 @@ def prove(Eq):
 
     Eq << ~Eq[-1]
 
-    Eq << sets.intersect_is_nonempty.imply.any_el.apply(Eq[-1])
+    Eq << sets.intersect_ne_empty.imply.any_el.apply(Eq[-1])
 
     Eq <<= Eq[-1] & Eq[0]
 
@@ -28,3 +28,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2019-01-31
+# updated on 2019-01-31

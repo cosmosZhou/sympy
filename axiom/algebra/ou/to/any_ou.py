@@ -26,7 +26,7 @@ def prove(Eq):
 
     Eq << apply(Or(Any[x:A]((g(x) > 0)), Any[x:A](f(x) > 0)))
 
-    Eq << algebra.equivalent.given.et.apply(Eq[0])
+    Eq << algebra.iff.given.et.apply(Eq[0])
 
     Eq << Eq[-2].this.rhs.apply(algebra.any_ou.given.ou.any)
 
@@ -36,3 +36,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-02-20
+# updated on 2020-02-20

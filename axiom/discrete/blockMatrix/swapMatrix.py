@@ -15,8 +15,8 @@ def prove(Eq):
     Eq << apply(n)
 
     _, i, j = Eq[0].rhs.args
-    _i = i.copy(domain=Range(0, n))
-    _j = j.copy(domain=Range(0, n))
+    _i = i.copy(domain=Range(n))
+    _j = j.copy(domain=Range(n))
 
     W = Symbol(Eq[0].lhs._subs(i, _i)._subs(j, _j))
     V = Symbol(Eq[0].rhs._subs(i, _i)._subs(j, _j))
@@ -24,7 +24,7 @@ def prove(Eq):
     Eq << W.this.definition
     Eq << V.this.definition
 
-    h, k = Symbol(domain=Range(0, n + 1))
+    h, k = Symbol(domain=Range(n + 1))
 
     Eq << (V[h, k].this.definition, W[h, k].this.definition)
 
@@ -46,3 +46,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html
+# created on 2020-08-30
+# updated on 2020-08-30

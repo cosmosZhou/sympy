@@ -16,7 +16,7 @@ def prove(Eq):
 
     Eq << ~Eq[-1]
 
-    Eq << sets.is_nonempty.imply.any_el.apply(Eq[-1], simplify=False)
+    Eq << sets.ne_empty.imply.any_el.apply(Eq[-1], simplify=False)
 
     Eq << Eq[-1].this.expr.apply(sets.el.imply.et.split.complement, simplify=None)
 
@@ -31,3 +31,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2021-05-04
+# updated on 2021-05-04

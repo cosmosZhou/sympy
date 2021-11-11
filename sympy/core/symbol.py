@@ -581,7 +581,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
             return Interval(-oo, 0)
         if self.is_nonnegative:
             if self.is_integer:
-                return Range(0, oo)
+                return Range(oo)
             return Interval(0, oo)
         
     def domain_defined(self, x, **_):
@@ -2562,7 +2562,7 @@ class DtypeIntegerConditional(DtypeInteger):
         odd = self.assumptions.get('odd')
         
         if even:
-            return Range(0, S.PositiveInfinity, step=2, integer=True) | Range(S.NegativeInfinity, 0, step=2, integer=True)
+            return Range(S.PositiveInfinity, step=2, integer=True) | Range(S.NegativeInfinity, 0, step=2, integer=True)
         if odd:
             return Range(1, S.PositiveInfinity, step=2, integer=True) | Range(S.NegativeInfinity, -1, step=2, integer=True)
         return S.Integers

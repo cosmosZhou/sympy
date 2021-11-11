@@ -14,8 +14,8 @@ def apply(equal_sum, equal_union):
     assert _xi == xi
     assert limit == (_i, 0, k)
 
-    j = Symbol(domain=Range(0, k))
-    complement = Range(0, k) - {j}
+    j = Symbol(domain=Range(k))
+    complement = Range(k) - {j}
 
     return Equal(Cup[i:complement](x[i]) & x[j], xi.etype.emptySet)
 
@@ -26,7 +26,7 @@ def prove(Eq):
     x = Symbol(shape=(oo,), etype=dtype.integer, finite=True)
     k, n = Symbol(integer=True, positive=True)
     i = Symbol(integer=True)
-    Eq << apply(Equal(Sum[i:k](Card(x[i])), n), Equal(Cup[i:k](x[i]), Range(0, n)))
+    Eq << apply(Equal(Sum[i:k](Card(x[i])), n), Equal(Cup[i:k](x[i]), Range(n)))
 
     Eq << sets.eq.imply.eq.card.apply(Eq[1])
 
@@ -45,3 +45,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2021-03-27
+# updated on 2021-03-27

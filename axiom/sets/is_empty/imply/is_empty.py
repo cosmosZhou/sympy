@@ -18,7 +18,7 @@ def prove(Eq):
 
     Eq.A_nonempty = ~Eq[-1]
 
-    Eq.A_positive = Eq.A_nonempty.apply(sets.is_nonempty.imply.is_positive)
+    Eq.A_positive = Eq.A_nonempty.apply(sets.ne_empty.imply.gt_zero)
 
     Eq.AB_union_empty = Eq[0].apply(sets.eq.imply.eq.card)
 
@@ -35,3 +35,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2021-05-13
+# updated on 2021-05-13

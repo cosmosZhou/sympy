@@ -27,7 +27,7 @@ def prove(Eq):
     Eq << apply(x)
 
     i, j = Eq[0].lhs.indices
-    k = Eq[1].lhs.variable.copy(domain=Range(0, n))
+    k = Eq[1].lhs.variable.copy(domain=Range(n))
     Eq << Eq[0].lhs[k].this.definition
 
     Eq << (Eq[0].lhs[k] @ x).this.args[0].definition
@@ -59,3 +59,5 @@ if __name__ == '__main__':
     run()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html
 
+# created on 2020-07-25
+# updated on 2020-07-25

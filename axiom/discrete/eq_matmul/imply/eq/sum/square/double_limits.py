@@ -23,7 +23,7 @@ def prove(Eq):
 
     n = Symbol(integer=True, positive=True)
     x, y = Symbol(shape=(n,), real=True, given=True)
-    i, j = Symbol(domain=Range(0, n))
+    i, j = Symbol(domain=Range(n))
     Eq << apply(Equal(x @ SwapMatrix(n, i, j), y))
 
     j, i = Eq[1].lhs.variables
@@ -44,3 +44,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2019-11-14
+# updated on 2019-11-14

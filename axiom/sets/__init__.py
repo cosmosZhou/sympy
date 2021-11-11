@@ -15,7 +15,6 @@ from . import any_el
 from . import any
 from . import is_zero
 from . import is_empty
-from . import is_positive
 from . import all_ne
 from . import any_et
 from . import all_subset
@@ -24,7 +23,7 @@ from . import le
 from . import gt
 from . import lt
 from . import all_notin
-from . import is_nonempty
+from . import ne_empty
 from . import is_even
 from . import is_odd
 from . import all_is_empty
@@ -37,43 +36,36 @@ from . import union
 from . import cap
 from . import piece
 from . import intersect
-from . import suffice
-
+from . import infer
 from . import eq_complement
-
 from . import intersect_finiteset
-
-from . import interval_is_nonempty
-
+from . import interval_ne_empty
 from . import interval_is_empty
-
-from . import is_negative
+from . import lt_zero
 from . import eq_sum
-from . import is_nonnegative
-from . import is_nonpositive
+from . import ge_zero
 from . import intersect_is_empty
-from . import card_is_positive
+from . import card_gt_zero
 from . import eq_card
 from . import eq_cup
 from . import le_abs
 from . import ge_card
-from . import card_is_nonzero
+from . import card_ne_zero
 from . import range
 from . import imageset, finiteset
 from . import eq_mod
 from . import ou_eq
 from . import eq_intersect
-from . import range_is_nonempty
+from . import range_ne_empty
 from . import range_is_empty
-from . import intersect_is_nonempty
+from . import intersect_ne_empty
 from . import subset_piece
 from . import supset_piece
 from . import el_piece
 from . import notin_piece
 from . import el_interval
 from . import measure
-from . import is_positive_real
-from . import is_negative_real
+from . import is_positive
 from . import is_nonzero_real
 from . import is_extended_real
 from . import ceiling_is_zero
@@ -82,3 +74,8 @@ from . import floor_is_zero
 from . import el_cup
 from . import el_cap
 from . import is_noninteger
+from . import gt_zero
+from . import le_zero
+from . import is_negative
+from . import abs_lt
+from . import abs_le

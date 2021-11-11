@@ -19,7 +19,7 @@ def prove(Eq):
 
     Eq << Eq[1].this.find(Equal & ~Equal).apply(algebra.is_even.to.eq)
 
-    Eq << Eq[-1].this.find(Unequal).apply(algebra.mod_is_nonzero.to.is_odd)
+    Eq << Eq[-1].this.find(Unequal).apply(algebra.mod_ne_zero.to.is_odd)
 
     Eq << Eq[-1].this.find(Equal & ~Equal).apply(algebra.is_odd.to.eq)
 
@@ -31,3 +31,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-03-01
+# updated on 2020-03-01

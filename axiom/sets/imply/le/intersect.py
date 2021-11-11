@@ -24,9 +24,11 @@ def prove(Eq):
 
     Eq << Eq[-1].this.apply(algebra.le.simplify.terms.common)
 
-    Eq << Eq[-1].this.apply(algebra.is_nonnegative.imply.le)
+    Eq << Eq[-1].this.apply(algebra.ge_zero.imply.le)
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2021-04-24
+# updated on 2021-04-24

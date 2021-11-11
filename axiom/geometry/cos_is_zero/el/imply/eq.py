@@ -22,7 +22,7 @@ def prove(Eq):
 
     Eq << sets.gt.el.imply.el.intersect.apply(Eq.gt, Eq[1])
 
-    Eq << geometry.el.imply.cos_is_negative.apply(Eq[-1])
+    Eq << geometry.el.imply.cos_lt_zero.apply(Eq[-1])
 
     Eq <<= Eq[-1] & Eq[0]
 
@@ -30,7 +30,7 @@ def prove(Eq):
 
     Eq << sets.lt.el.imply.el.intersect.apply(Eq.lt, Eq[1])
 
-    Eq << geometry.el.imply.cos_is_positive.apply(Eq[-1])
+    Eq << geometry.el.imply.cos_gt_zero.apply(Eq[-1])
 
     Eq <<= Eq[-1] & Eq[0]
     Eq <<= ~Eq.gt & ~Eq.lt
@@ -40,3 +40,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2018-06-23
+# updated on 2018-06-23

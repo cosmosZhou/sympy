@@ -24,10 +24,12 @@ def prove(Eq):
 
     Eq << Eq[0].subs(Eq.is_limited)
 
-    Eq << sets.el.imply.is_positive.apply(Eq[-1])
+    Eq << sets.el.imply.gt_zero.apply(Eq[-1])
 
-    Eq << algebra.is_positive.eq.imply.eq.log.apply(Eq[-1], Eq.is_limited)
+    Eq << algebra.gt_zero.eq.imply.eq.log.apply(Eq[-1], Eq.is_limited)
 
 
 if __name__ == '__main__':
     run()
+# created on 2020-06-20
+# updated on 2020-06-20

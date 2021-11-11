@@ -23,11 +23,13 @@ def prove(Eq):
 
     Eq << algebra.any.given.any.subs.apply(Eq[-1], a, x)
 
-    Eq << sets.any_el.given.is_nonempty.apply(Eq[-1])
+    Eq << sets.any_el.given.ne_empty.apply(Eq[-1])
 
-    Eq << sets.el.imply.is_nonempty.apply(Eq[0])
+    Eq << sets.el.imply.ne_empty.apply(Eq[0])
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2021-03-02
+# updated on 2021-03-02

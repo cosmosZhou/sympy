@@ -36,7 +36,7 @@ def prove(Eq):
 
     i = Symbol(integer=True)
     x = Eq[0].rhs.variable.base
-    j = Symbol(domain=Range(0, k + 1))
+    j = Symbol(domain=Range(k + 1))
     B = Eq[1].lhs
     Eq.plausible_notcontains = All(NotElement({n}, e), (e, s0), plausible=True)
 
@@ -92,3 +92,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-08-14
+# updated on 2020-08-14

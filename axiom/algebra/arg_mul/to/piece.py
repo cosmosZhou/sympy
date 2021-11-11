@@ -15,19 +15,21 @@ def prove(Eq):
     x, y = Symbol(complex=True, given=True)
     Eq << apply(Arg(x * y))
 
-    Eq << algebra.cond.given.et.suffice.split.apply(Eq[0], cond=Eq[0].find(Or))
+    Eq << algebra.cond.given.et.infer.split.apply(Eq[0], cond=Eq[0].find(Or))
 
-    Eq << algebra.suffice.given.suffice.subs.bool.apply(Eq[-2])
+    Eq << algebra.infer.given.infer.subs.bool.apply(Eq[-2])
 
     Eq << Eq[-1].this.lhs.apply(algebra.ou.imply.is_zero)
 
-    Eq << algebra.suffice.given.suffice.subs.apply(Eq[-1])
+    Eq << algebra.infer.given.infer.subs.apply(Eq[-1])
 
-    Eq << algebra.suffice.given.suffice.subs.bool.apply(Eq[2], invert=True)
+    Eq << algebra.infer.given.infer.subs.bool.apply(Eq[2], invert=True)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.is_nonzero.is_nonzero.imply.eq.arg.to.add)
+    Eq << Eq[-1].this.lhs.apply(algebra.ne_zero.ne_zero.imply.eq.arg.to.add)
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2018-10-26
+# updated on 2018-10-26

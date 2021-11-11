@@ -25,11 +25,13 @@ def prove(Eq):
 
     Eq << algebra.cond.imply.all.apply(Eq[-1], w)
 
-    Eq << algebra.all.imply.suffice.apply(Eq[-1])
+    Eq << algebra.all.imply.infer.apply(Eq[-1])
 
-    Eq << algebra.cond.suffice.imply.cond.transit.apply(Eq[0], Eq[-1])
+    Eq << algebra.cond.infer.imply.cond.transit.apply(Eq[0], Eq[-1])
 
 
 if __name__ == '__main__':
     run()
 from . import open
+# created on 2020-05-30
+# updated on 2020-05-30

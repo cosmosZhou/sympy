@@ -18,9 +18,11 @@ def prove(Eq):
     x, y = Symbol(shape=(n, n), real=True)
     Eq << apply(Lamda[i:n](x[j, i] + y[i, j]))
 
-    i = Symbol(domain=Range(0, n))
+    i = Symbol(domain=Range(n))
     Eq << algebra.eq.given.eq.getitem.apply(Eq[0], i)
 
 
 if __name__ == '__main__':
     run()
+# created on 2019-10-13
+# updated on 2019-10-13

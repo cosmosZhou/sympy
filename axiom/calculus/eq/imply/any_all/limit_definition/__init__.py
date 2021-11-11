@@ -26,10 +26,12 @@ def prove(Eq):
 
     Eq << calculus.eq.to.any_all.limit_definition.apply(Eq[0])
 
-    Eq << algebra.cond.equivalent.imply.cond.transit.apply(Eq[0], Eq[-1])
+    Eq << algebra.cond.iff.imply.cond.transit.apply(Eq[0], Eq[-1])
 
 
 if __name__ == '__main__':
     run()
 
 from . import limit
+# created on 2020-04-04
+# updated on 2020-04-04

@@ -17,7 +17,7 @@ def prove(Eq):
 
     Eq << apply(conditionset(x, f(x) > 0, A) - B)
 
-    Eq << sets.eq.given.et.suffice.apply(Eq[0])
+    Eq << sets.eq.given.et.infer.apply(Eq[0])
 
     Eq <<= Eq[-2].this.lhs.apply(sets.el.imply.et.split.complement, simplify=None), \
     Eq[-1].this.rhs.apply(sets.el.given.et.split.complement, simplify=None)
@@ -31,3 +31,5 @@ if __name__ == '__main__':
     run()
 
 from . import is_odd
+# created on 2020-11-17
+# updated on 2020-11-17

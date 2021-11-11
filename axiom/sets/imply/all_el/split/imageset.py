@@ -19,7 +19,7 @@ def prove(Eq):
     S = Symbol(imageset(e, f(e), s))
     Eq << apply(S)
 
-    Eq << algebra.all.given.suffice.apply(Eq[1])
+    Eq << algebra.all.given.infer.apply(Eq[1])
 
     Eq << Eq[-1].this.lhs.apply(sets.el.imply.el.imageset, f)
 
@@ -29,3 +29,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-08-13
+# updated on 2020-08-13

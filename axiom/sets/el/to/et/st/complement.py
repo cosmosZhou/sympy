@@ -17,9 +17,9 @@ def prove(Eq):
     A, B = Symbol(etype=dtype.real)
     Eq << apply(Element(x, B - A))
 
-    Eq.suffice, Eq.necessary = algebra.equivalent.given.et.suffice.apply(Eq[-1])
+    Eq.suffice, Eq.necessary = algebra.iff.given.et.infer.apply(Eq[-1])
 
-    Eq << algebra.suffice.given.et.suffice.apply(Eq.suffice)
+    Eq << algebra.infer.given.et.infer.apply(Eq.suffice)
 
     Eq << Eq[-2].this.lhs.apply(sets.el.imply.el.st.complement)
 
@@ -31,3 +31,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2021-01-25
+# updated on 2021-01-25

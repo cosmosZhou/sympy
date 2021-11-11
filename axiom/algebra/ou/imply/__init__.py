@@ -9,4 +9,4 @@ from . import ne
 from . import all, any
 from . import et
 from . import any_ou
-from . import suffice
+from . import infer

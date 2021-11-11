@@ -2033,7 +2033,7 @@ class Stirling(Function):
         from sympy import Cup, All, Range, Equal, Sum, conditionset, Card
         i = Symbol(integer=True)
         return conditionset(x[:k],
-                                Equal(Cup[i:k](x[i]), Range(0, n)) & 
+                                Equal(Cup[i:k](x[i]), Range(n)) & 
                                     Equal(Sum[i:k](Card(x[i])), n) & 
                                     All[i:k](Card(x[i]) > 0))
 

@@ -498,7 +498,7 @@ class BinomialDistribution(SingleDiscreteDistribution):
     @property
     def domain(self):
         from sympy import Range  
-        return Range(0, self.n + 1) 
+        return Range(self.n + 1) 
 
     set = domain
     

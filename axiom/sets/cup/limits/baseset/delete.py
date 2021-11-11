@@ -32,12 +32,12 @@ def prove(Eq):
     f = Function(etype=dtype.integer)
     h = Function(etype=dtype.real)
 
-    Eq << apply(Cup[j:f(k), k: x[k] > a[i]: Range(0, n)](h(x[k], j)))
+    Eq << apply(Cup[j:f(k), k: x[k] > a[i]: Range(n)](h(x[k], j)))
 
     s = Symbol(Cup[j:f(k)](h(x[k], j)))
     Eq << s.this.definition
 
-    Eq << sets.eq.imply.eq.cup.apply(Eq[-1], (k, x[k] > a[i], Range(0, n)))
+    Eq << sets.eq.imply.eq.cup.apply(Eq[-1], (k, x[k] > a[i], Range(n)))
 
     Eq << Eq[-1].this.lhs.expr.definition
 
@@ -47,3 +47,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2021-02-07
+# updated on 2021-02-07

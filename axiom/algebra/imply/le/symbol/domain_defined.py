@@ -19,9 +19,11 @@ def prove(Eq):
 
     Eq << Element(x, domain, plausible=True)
 
-    Eq << sets.el.imply.is_nonempty.apply(Eq[-1])
-    Eq << sets.interval_is_nonempty.imply.le.apply(Eq[-1])
+    Eq << sets.el.imply.ne_empty.apply(Eq[-1])
+    Eq << sets.interval_ne_empty.imply.le.apply(Eq[-1])
 
 
 if __name__ == '__main__':
     run()
+# created on 2019-09-24
+# updated on 2019-09-24

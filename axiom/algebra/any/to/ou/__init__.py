@@ -17,7 +17,7 @@ def prove(Eq):
 
     Eq << apply(Any[i:n]((f(i) > 0) | (h(i) > 0)))
 
-    Eq << algebra.equivalent.given.et.apply(Eq[-1])
+    Eq << algebra.iff.given.et.apply(Eq[-1])
 
     Eq << Eq[-2].this.lhs.apply(algebra.any_ou.imply.ou.any)
 
@@ -30,3 +30,5 @@ if __name__ == '__main__':
 from . import doit
 from . import split
 
+# created on 2019-02-23
+# updated on 2019-02-23

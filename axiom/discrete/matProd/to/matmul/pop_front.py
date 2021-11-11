@@ -21,13 +21,13 @@ def prove(Eq):
     f = Function(real=True, shape=(m, m))
     Eq << apply(MatProduct[i:0:n + 1](f(i)))
 
-    Eq << algebra.cond.given.et.suffice.split.apply(Eq[0], cond=n > 0)
+    Eq << algebra.cond.given.et.infer.split.apply(Eq[0], cond=n > 0)
 
-    Eq << Eq[2].this.lhs.apply(algebra.is_nonpositive.imply.is_zero)
+    Eq << Eq[2].this.lhs.apply(algebra.le_zero.imply.is_zero)
 
-    Eq << algebra.suffice.given.suffice.subs.apply(Eq[-1])
+    Eq << algebra.infer.given.infer.subs.apply(Eq[-1])
 
-    Eq << algebra.suffice.given.all.apply(Eq[1])
+    Eq << algebra.infer.given.all.apply(Eq[1])
 
     n_ = Symbol.n(integer=True, positive=True)
     Eq << algebra.all.given.cond.subs.apply(Eq[-1], Eq[-1].variable, n_)
@@ -38,3 +38,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-11-16
+# updated on 2020-11-16

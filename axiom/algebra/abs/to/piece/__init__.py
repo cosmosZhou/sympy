@@ -18,7 +18,9 @@ if __name__ == '__main__':
     run()
 
 
-from . import is_positive
+from . import gt_zero
 from . import is_zero
-from . import is_nonpositive
-from . import is_negative
+from . import lt_zero
+from . import le_zero
+# created on 2018-01-01
+# updated on 2018-01-01

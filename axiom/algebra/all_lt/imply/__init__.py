@@ -1,4 +1,4 @@
 from . import lt
-from . import le_sup
-from . import ge_inf
 from . import lt_maxima
+from . import sup_le
+from . import inf_ge

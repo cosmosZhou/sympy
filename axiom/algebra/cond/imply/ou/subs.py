@@ -25,7 +25,7 @@ def prove(Eq):
     n = Symbol(integer=True, positive=True)
     x, j = Symbol(integer=True)
     y = Symbol(integer=True, shape=(oo,))
-    t = Symbol(domain=Range(0, n + 1))
+    t = Symbol(domain=Range(n + 1))
     f, g = Function(integer=True)
     Eq << apply(f(x, t) > g(t), t, y[j])
 
@@ -38,3 +38,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2019-03-19
+# updated on 2019-03-19

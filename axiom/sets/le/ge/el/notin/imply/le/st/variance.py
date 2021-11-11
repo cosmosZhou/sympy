@@ -32,9 +32,9 @@ def prove(Eq):
     a, b, a_quote, b_quote = Symbol(shape=(oo,), integer=True)
     Eq << sets.ge_card.imply.any_eq.apply(Eq[1], b)
 
-    Eq << algebra.le.imply.is_nonzero.domain_definition.st.abs.apply(Eq[0])
+    Eq << algebra.le.imply.ne_zero.domain_definition.st.abs.apply(Eq[0])
 
-    Eq << sets.card_is_nonzero.imply.any_eq.apply(Eq[-1], a)
+    Eq << sets.card_ne_zero.imply.any_eq.apply(Eq[-1], a)
 
     Eq.any_et = algebra.any.any.imply.any_et.apply(Eq[-1], Eq[-3], simplify=None)
 
@@ -48,9 +48,9 @@ def prove(Eq):
 
     Eq.abs_union = sets.notin.imply.eq.card.apply(Eq[3])
 
-    Eq << algebra.eq.imply.is_positive.apply(Eq.abs_union)
+    Eq << algebra.eq.imply.gt_zero.apply(Eq.abs_union)
 
-    Eq << sets.card_is_positive.imply.any_eq.apply(Eq[-1], a_quote)
+    Eq << sets.card_gt_zero.imply.any_eq.apply(Eq[-1], a_quote)
 
     Eq << Eq[-1].subs(Eq.abs_union)
 
@@ -65,3 +65,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2021-03-25
+# updated on 2021-03-25

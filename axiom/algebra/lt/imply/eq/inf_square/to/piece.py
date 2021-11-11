@@ -19,39 +19,41 @@ def prove(Eq):
     x = Symbol(real=True)
     Eq << apply(m < M, x=x)
 
-    Eq <<= algebra.cond.imply.suffice.et.apply(Eq[0], cond=m >= 0), algebra.cond.imply.suffice.et.apply(Eq[0], cond=M <= 0)
+    Eq <<= algebra.cond.imply.infer.et.apply(Eq[0], cond=m >= 0), algebra.cond.imply.infer.et.apply(Eq[0], cond=M <= 0)
 
-    Eq <<= Eq[-2].this.rhs.apply(algebra.is_nonnegative.lt.imply.eq.inf_square.to.square), Eq[-2].this.rhs.apply(algebra.is_nonnegative.lt.imply.eq.min), \
-        Eq[-1].this.rhs.apply(algebra.is_nonpositive.lt.imply.eq.inf_square.to.square), Eq[-1].this.rhs.apply(algebra.is_nonpositive.lt.imply.eq.min)
+    Eq <<= Eq[-2].this.rhs.apply(algebra.ge_zero.lt.imply.eq.inf_square.to.square), Eq[-2].this.rhs.apply(algebra.ge_zero.lt.imply.eq.min), \
+        Eq[-1].this.rhs.apply(algebra.le_zero.lt.imply.eq.inf_square.to.square), Eq[-1].this.rhs.apply(algebra.le_zero.lt.imply.eq.min)
 
     Eq <<= Eq[-3] & Eq[-4], Eq[-1] & Eq[-2]
 
     Eq <<= Eq[-2].this.rhs.apply(algebra.eq.eq.imply.eq.subs, swap=True, reverse=True), Eq[-1].this.rhs.apply(algebra.eq.eq.imply.eq.subs, swap=True, reverse=True)
 
-    Eq << algebra.cond.given.et.suffice.split.apply(Eq[1], cond=M >= 0)
+    Eq << algebra.cond.given.et.infer.split.apply(Eq[1], cond=M >= 0)
 
-    Eq <<= algebra.suffice.given.suffice.subs.bool.apply(Eq[-2]), algebra.suffice.given.suffice.subs.bool.apply(Eq[-1], invert=True)
+    Eq <<= algebra.infer.given.infer.subs.bool.apply(Eq[-2]), algebra.infer.given.infer.subs.bool.apply(Eq[-1], invert=True)
 
-    Eq <<= Eq[-1].this.lhs.apply(algebra.is_negative.imply.is_nonpositive), algebra.cond.given.et.suffice.split.apply(Eq[-2], cond=m <= 0)
+    Eq <<= Eq[-1].this.lhs.apply(algebra.lt_zero.imply.le_zero), algebra.cond.given.et.infer.split.apply(Eq[-2], cond=m <= 0)
 
-    Eq <<= algebra.suffice.given.suffice.subs.bool.apply(Eq[-2]), algebra.suffice.given.suffice.subs.bool.apply(Eq[-1], invert=True)
+    Eq <<= algebra.infer.given.infer.subs.bool.apply(Eq[-2]), algebra.infer.given.infer.subs.bool.apply(Eq[-1], invert=True)
 
-    Eq <<= Eq[-2].this.apply(algebra.suffice.flatten), Eq[-1].this.apply(algebra.suffice.flatten)
+    Eq <<= Eq[-2].this.apply(algebra.infer.flatten), Eq[-1].this.apply(algebra.infer.flatten)
 
-    Eq <<= algebra.cond.given.et.suffice.split.apply(Eq[-2], cond=M > 0), algebra.suffice_et.given.suffice.delete.apply(Eq[-1], 0)
+    Eq <<= algebra.cond.given.et.infer.split.apply(Eq[-2], cond=M > 0), algebra.infer_et.given.infer.delete.apply(Eq[-1], 0)
 
-    Eq <<= Eq[-3].this.apply(algebra.suffice.flatten), Eq[-2].this.apply(algebra.suffice.flatten), Eq[-1].this.lhs.apply(algebra.gt.imply.ge.relax)
+    Eq <<= Eq[-3].this.apply(algebra.infer.flatten), Eq[-2].this.apply(algebra.infer.flatten), Eq[-1].this.lhs.apply(algebra.gt.imply.ge.relax)
 
-    Eq <<= Eq[-2].this.lhs.apply(algebra.is_positive.is_nonpositive.imply.eq.inf_square.to.zero), algebra.suffice_et.given.suffice.subs.apply(Eq[-1])
+    Eq <<= Eq[-2].this.lhs.apply(algebra.gt_zero.le_zero.imply.eq.inf_square.to.zero), algebra.infer_et.given.infer.subs.apply(Eq[-1])
 
-    Eq << algebra.suffice_et.given.suffice.delete.apply(Eq[-1])
+    Eq << algebra.infer_et.given.infer.delete.apply(Eq[-1])
 
-    Eq <<= algebra.suffice.given.et.suffice_et.apply(Eq[-1], cond=Eq[0])
+    Eq <<= algebra.infer.given.et.infer_et.apply(Eq[-1], cond=Eq[0])
 
     Eq <<= Eq[-1].this.lhs.apply(algebra.eq.cond.imply.cond.subs)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.is_negative.imply.eq.inf_square.to.zero, x)
+    Eq << Eq[-1].this.lhs.apply(algebra.lt_zero.imply.eq.inf_square.to.zero, x)
 
 
 if __name__ == '__main__':
     run()
+# created on 2019-12-21
+# updated on 2019-12-21

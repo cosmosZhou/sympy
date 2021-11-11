@@ -17,7 +17,7 @@ def prove(Eq):
     y = Symbol(positive=True)
     Eq << apply(GreaterEqual(x, y))
 
-    Eq << Eq[1].this.apply(algebra.ge.given.is_nonnegative)
+    Eq << Eq[1].this.apply(algebra.ge.given.ge_zero)
 
     Eq << Eq[-1].this.lhs.apply(algebra.add.to.log)
 
@@ -29,11 +29,13 @@ def prove(Eq):
     Eq << algebra.cond.imply.all.apply(Eq[-1], t)
 
     t = Eq[-1].variable
-    Eq << algebra.all.imply.suffice.apply(Eq[-1])
+    Eq << algebra.all.imply.infer.apply(Eq[-1])
 
     Eq << Eq[-1].subs(t, Eq.is_nonnegative.lhs)
-    Eq << algebra.cond.suffice.imply.cond.transit.apply(Eq.is_nonnegative, Eq[-1])
+    Eq << algebra.cond.infer.imply.cond.transit.apply(Eq.is_nonnegative, Eq[-1])
 
 
 if __name__ == '__main__':
     run()
+# created on 2019-05-26
+# updated on 2019-05-26

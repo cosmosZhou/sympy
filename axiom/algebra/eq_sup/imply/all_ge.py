@@ -2,7 +2,7 @@ from util import *
 
 
 @apply
-def apply(given): 
+def apply(given):
     (fx, *limits), M = given.of(Equal[Sup])
     return All(M >= fx, *limits)
 
@@ -17,9 +17,11 @@ def prove(Eq):
 
     Eq << algebra.eq.imply.ge.apply(Eq[0]).reversed
 
-    Eq << algebra.le_sup.imply.all_le.apply(Eq[-1])
+    Eq << algebra.sup_le.imply.all_le.apply(Eq[-1])
     Eq << Eq[-1].this.expr.reversed
 
 
 if __name__ == '__main__':
     run()
+# created on 2018-12-27
+# updated on 2018-12-27

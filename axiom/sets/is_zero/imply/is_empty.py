@@ -18,7 +18,7 @@ def prove(Eq):
 
     Eq << ~Eq[-1]
 
-    Eq << sets.is_nonempty.imply.is_nonzero.apply(Eq[-1])
+    Eq << sets.ne_empty.imply.ne_zero.apply(Eq[-1])
 
     Eq << ~Eq[0]
 
@@ -26,3 +26,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-07-20
+# updated on 2020-07-20

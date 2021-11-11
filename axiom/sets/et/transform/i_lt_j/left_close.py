@@ -29,7 +29,7 @@ def prove(Eq):
 
     Eq << apply(And(Element(i, Range(a + d, j + d)), Element(j, Range(a, n))))
 
-    Eq << algebra.equivalent.given.et.apply(Eq[0])
+    Eq << algebra.iff.given.et.apply(Eq[0])
 
     Eq << Eq[-2].this.lhs.apply(sets.el.el.imply.el.range.i_lt_j.i_in_j.left_close)
 
@@ -39,3 +39,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-03-06
+# updated on 2020-03-06

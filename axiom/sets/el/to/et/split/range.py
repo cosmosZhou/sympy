@@ -15,7 +15,7 @@ def prove(Eq):
     x, a, b = Symbol(integer=True)
     Eq << apply(Element(x, Range(a, b)))
 
-    Eq << algebra.equivalent.given.et.apply(Eq[0])
+    Eq << algebra.iff.given.et.apply(Eq[0])
 
     Eq << Eq[-2].this.lhs.apply(sets.el.imply.et.split.range, simplify=False)
 
@@ -24,3 +24,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-03-24
+# updated on 2020-03-24

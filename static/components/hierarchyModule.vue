@@ -2,22 +2,20 @@
 	<li :style=li_style>
    		<search-link :module=module></search-link>
    		<template v-if=modules>
-   			<button class=transparent @click=click>{{buttonText}}</button>
+   			<button class=transparent @click=click :title=buttonTitle>{{buttonText}}</button>
    		 	<ul v-if=show>
-   	 			<hierarchy-module ref=module v-for="module of modules" :module=module></hierarchy-module>
+   	 			<hierarchyModule ref=module v-for="module of modules" :module=module></hierarchyModule>
    			</ul>
 		</template>				
     </li>
 </template>
 
 <script>
-	console.log('importing hierarchy-module.vue');
+	console.log('importing hierarchyModule.vue');
 	
 	import searchLink from "./searchLink.vue"
 	
 	export default {
-		name: 'hierarchy-module',
-		
 		components : {searchLink},
 		
 		props : {
@@ -75,6 +73,10 @@
 				return this.show? '<<<<' : '>>>>';
 			},
 			
+			buttonTitle(){
+				return this.show? 'click to collapse' : 'click to expand';
+			},
+
 			modules(){
 				return this.$root.graph[this.module];
 			},

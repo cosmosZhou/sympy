@@ -12,7 +12,7 @@ def apply(self):
 @prove(provable=False)
 def prove(Eq):
     n = Symbol(integer=True, positive=True)
-    i = Symbol(domain=Range(0, n - 1))
+    i = Symbol(domain=Range(n - 1))
     x = Symbol(integer=True, shape=(oo,))
     f = Function(real=True, shape=())
     Eq << apply(Sum[x[i:n]](f(x[i:n])))
@@ -21,3 +21,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-03-18
+# updated on 2020-03-18

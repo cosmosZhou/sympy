@@ -38,7 +38,7 @@ def prove(Eq):
     m = Symbol(domain=Range(2, oo))
     y = Symbol(real=True, shape=(m,))
     i, j = Symbol(integer=True)
-    t = Symbol(domain=Range(0, m))
+    t = Symbol(domain=Range(m))
     Eq << apply(abs(y[t] - Sum[i](x[i]) / n) <= abs(y[t] - Sum[j](y[j]) / m))
 
     Eq << Eq[-1].rhs.args[0].this.apply(algebra.sum_square.to.mul.st.variance)
@@ -83,3 +83,5 @@ if __name__ == '__main__':
 
 
 from . import function
+# created on 2019-11-28
+# updated on 2019-11-28

@@ -32,15 +32,15 @@ def prove(Eq):
     x, y, z = Symbol(real=True, random=True)
     Eq << apply(Equal(x | y.as_boolean() & z.as_boolean(), x))
 
-    Eq << stats.eq_conditioned.imply.is_nonzero.apply(Eq[0])
+    Eq << stats.eq_conditioned.imply.ne_zero.apply(Eq[0])
 
-    Eq.y_nonzero, Eq.z_nonzero = stats.is_nonzero.imply.et.apply(Eq[-1])
+    Eq.y_nonzero, Eq.z_nonzero = stats.ne_zero.imply.et.apply(Eq[-1])
 
 
 
-    Eq.xy_probability = stats.is_nonzero.imply.eq.bayes.apply(Eq.y_nonzero, x)
+    Eq.xy_probability = stats.ne_zero.imply.eq.bayes.apply(Eq.y_nonzero, x)
 
-    Eq << stats.is_nonzero.imply.eq.bayes.apply(Eq[2], x)
+    Eq << stats.ne_zero.imply.eq.bayes.apply(Eq[2], x)
 
     Eq << Eq[-1].subs(Eq[0])
 
@@ -55,7 +55,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq[-4])
 
-    Eq << algebra.is_nonzero.eq.imply.eq.scalar.apply(Eq[-1], Eq.y_nonzero)
+    Eq << algebra.ne_zero.eq.imply.eq.scalar.apply(Eq[-1], Eq.y_nonzero)
 
     Eq << Eq[-1].reversed
 
@@ -63,3 +63,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-12-13
+# updated on 2020-12-13

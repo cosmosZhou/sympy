@@ -18,11 +18,13 @@ def prove(Eq):
 
     Eq << apply(All[k:n](NotElement(x, A[k])))
 
-    Eq << sets.imply.suffice.notin.induct.apply(Eq[0].expr, n)
+    Eq << sets.imply.infer.notin.induct.apply(Eq[0].expr, n)
 
-    Eq << algebra.cond.suffice.imply.cond.transit.apply(Eq[0], Eq[-1])
+    Eq << algebra.cond.infer.imply.cond.transit.apply(Eq[0], Eq[-1])
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2018-09-08
+# updated on 2018-09-08

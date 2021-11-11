@@ -44,7 +44,7 @@ def prove(Eq):
     Eq << ~Eq.plausible
     Eq << Eq[-1].apply(sets.element.imply.any_contains.split.cup)
     i = Eq[-1].variable
-    _i = i.copy(domain=Range(0, n))
+    _i = i.copy(domain=Range(n))
     Eq << Eq[-1].limits_subs(i, _i)
     Eq << Eq[0].lhs.this.split({_i, n})
     Eq.paradox = Eq[-1].subs(Eq[-2].reversed).subs(Eq[1])
@@ -59,3 +59,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-10-22
+# updated on 2020-10-22

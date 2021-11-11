@@ -39,6 +39,10 @@
 				<td>{{tuple.count}}</td>
 			</tr>	
 		</table>
+		most recent <input size=2 v-model=topk @change=change_input>axioms updated:
+		<a v-for="axiom of recentAxioms" :href="'/%s/axiom.php?module=%s'.format(user, axiom)">
+			<p>{{axiom}}</p>
+		</a>
 		<br>
 	</div>
 </template>
@@ -56,19 +60,25 @@ export default {
 	computed: {
 		user(){
 			return sympy_user();
-		},			
+		},	
 	},
 	
 	data(){
 		return {
-			issearch: false,				
+			issearch: false,
+			recentAxioms: [],
+			topk: 10,
 		};
 	},
 
+	created(){
+		this.updateRecentAxioms();
+	},
+	
 	methods: {
 		state_href(state){
 			if (state == 'total'){
-				return `/${this.user}/axiom.php`;
+				return `/${this.user}/run.py`;
 			}
 			return `/${this.user}/axiom.php?state=${state}`;
 		},
@@ -82,6 +92,14 @@ export default {
 					event.preventDefault();
 				}
 			}
+		},
+		
+		async updateRecentAxioms(){
+			this.recentAxioms = await form_get(`php/request/recent.php?top=${this.topk}`);;
+		},
+		
+		change_input(event){
+			this.updateRecentAxioms();
 		},
 	},
 	

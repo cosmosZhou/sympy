@@ -27,7 +27,7 @@ def prove(Eq):
 
     Eq << (n < 0).this.apply(algebra.lt.imply.sum_is_zero, Eq[-1].find(Sum))
 
-    Eq << algebra.suffice.imply.eq.piece.apply(Eq[-1], Eq[-2].lhs)
+    Eq << algebra.infer.imply.eq.piece.apply(Eq[-1], Eq[-2].lhs)
 
     Eq << Eq[-1].this.rhs.apply(algebra.piece.swap)
     Eq << Eq[-1].this.find(GreaterEqual).reversed
@@ -35,3 +35,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-03-25
+# updated on 2020-03-25

@@ -16,8 +16,10 @@ def prove(Eq):
     Eq << apply(Element(x, Interval(0, 1, right_open=True)))
 
     Eq << sets.el.imply.et.split.interval.apply(Eq[0])
-    Eq << algebra.is_nonnegative.lt.imply.floor_is_zero.apply(Eq[-2], Eq[-1])
+    Eq << algebra.ge_zero.lt.imply.floor_is_zero.apply(Eq[-2], Eq[-1])
 
 
 if __name__ == '__main__':
     run()
+# created on 2018-10-21
+# updated on 2018-10-21

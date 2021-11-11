@@ -3,7 +3,7 @@ from util import *
 
 @apply(given=None)
 def apply(self, offset):
-    from axiom.algebra.sum.limits.subs.offset import limits_subs    
+    from axiom.algebra.sum.limits.subs.offset import limits_subs
     return Equivalent(self, limits_subs(All, self, offset), evaluate=False)
 
 
@@ -15,7 +15,7 @@ def prove(Eq):
     f = Function(integer=True)
     Eq << apply(All[n:1:m + 1](f(n) > 0), d)
 
-    Eq << algebra.equivalent.given.et.suffice.apply(Eq[-1])
+    Eq << algebra.iff.given.et.infer.apply(Eq[-1])
 
     Eq << Eq[-2].this.lhs.apply(algebra.all.imply.all.limits.subs.offset, d)
 
@@ -24,3 +24,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2018-12-20
+# updated on 2018-12-20

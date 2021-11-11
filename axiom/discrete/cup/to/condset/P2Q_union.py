@@ -6,7 +6,7 @@ def apply(n):
     from axiom.discrete.imply.all_et.mapping.Qu2v import predefined_symbols
     Q, w, x = predefined_symbols(n)
 
-    Pn1 = Symbol("P_{n+1}", conditionset(x[:n + 1], Equal(x[:n + 1].set_comprehension(), Range(0, n + 1))))
+    Pn1 = Symbol("P_{n+1}", conditionset(x[:n + 1], Equal(x[:n + 1].set_comprehension(), Range(n + 1))))
 
     t = Q.definition.variable
     return Equal(Cup[t](Q[t]), Pn1)
@@ -41,7 +41,7 @@ def prove(Eq):
 
     Eq << Eq[-2].this.limits[0][1].definition
 
-    Eq << algebra.all.given.suffice.apply(Eq[-1])
+    Eq << algebra.all.given.infer.apply(Eq[-1])
 
     Eq << Eq[-1].this.lhs.apply(sets.eq.imply.el.st.cup, index=n)
 
@@ -50,3 +50,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-08-04
+# updated on 2020-08-04

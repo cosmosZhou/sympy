@@ -23,13 +23,13 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.lamda.to.matrix)
 
-    Eq << Eq[-1] @ MultiplicationMatrix(n, 0, 1 / a[0])
+    Eq << Eq[-1] @ MulMatrix(n, 0, 1 / a[0])
 
-    Eq << Eq[-1] @ MultiplicationMatrix(n, n - 1, 1 / b[n - 1])
+    Eq << Eq[-1] @ MulMatrix(n, n - 1, 1 / b[n - 1])
 
-    Eq << Eq[-1] @ MultiplicationMatrix(n, n - 2, 1 / b[n - 2])
+    Eq << Eq[-1] @ MulMatrix(n, n - 2, 1 / b[n - 2])
 
-    Eq << MultiplicationMatrix(n, n - 1, b[n - 2]) @ Eq[-1]
+    Eq << MulMatrix(n, n - 1, b[n - 2]) @ Eq[-1]
 
     Eq << Eq[-1].apply(discrete.eq.imply.eq.det)
     Eq << Eq[-1].this.lhs.apply(discrete.det.to.mul)
@@ -45,3 +45,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-10-15
+# updated on 2020-10-15

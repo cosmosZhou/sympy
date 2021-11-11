@@ -21,7 +21,7 @@ def prove(Eq):
     f, g = Function(shape=(k,), real=True)
     Eq << apply(Or(Unequal(x, y) & (y > 0), Equal(f(x), g(y))))
 
-    Eq << algebra.equivalent.given.et.apply(Eq[0])
+    Eq << algebra.iff.given.et.apply(Eq[0])
 
     Eq << Eq[-2].this.lhs.apply(algebra.ou.imply.et)
 
@@ -31,3 +31,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-02-21
+# updated on 2020-02-21

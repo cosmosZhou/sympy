@@ -1,6 +1,6 @@
 from util import *
 
-from axiom.discrete.imply.is_positive.alpha import alpha
+from axiom.discrete.imply.gt_zero.alpha import alpha
 
 
 @apply
@@ -34,3 +34,5 @@ if __name__ == '__main__':
     run()
 
 
+# created on 2020-09-26
+# updated on 2020-09-26

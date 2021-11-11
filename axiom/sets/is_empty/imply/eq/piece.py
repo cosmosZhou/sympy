@@ -27,7 +27,8 @@ def apply(given, peicewise_A, peicewise_B):
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
+    from axiom import algebra
+
     A, B = Symbol(etype=dtype.integer)
     x = Symbol(integer=True)
     f, g = Function(shape=(), integer=True)
@@ -43,9 +44,9 @@ def prove(Eq):
 
     Eq << algebra.et.given.et.apply(Eq[-1])
 
-    Eq << Eq[-1].this().expr.simplify()
+    Eq <<= Eq[-2].this().expr.simplify(), Eq[-1].this().expr.simplify()
 
-    Eq << Eq[-2].this().expr.simplify()
+    
 
     Eq << Eq[-1].subs(Eq[0])
 
@@ -53,3 +54,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-07-04
+# updated on 2020-07-04

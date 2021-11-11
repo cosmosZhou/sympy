@@ -10,5 +10,6 @@ from . import all_ne
 from . import gt
 from . import ge
 from . import lt
-from . import is_nonzero, is_positive
 from . import el
+from . import gt_zero
+from . import ne_zero

@@ -43,7 +43,7 @@ def prove(Eq):
     a, b = Symbol(real=True, shape=(oo,))
     f = Function(real=True)
     n = Card(X)
-    Eq << apply(Equal(X, a[:n].set_comprehension()), Equal(X - {y}, b[:n - 1].set_comprehension()), Equal(y, a[i]), Element(i, Range(0, n)), Sum[j:Range(0, n) - {i}](f(a[j])))
+    Eq << apply(Equal(X, a[:n].set_comprehension()), Equal(X - {y}, b[:n - 1].set_comprehension()), Equal(y, a[i]), Element(i, Range(n)), Sum[j:Range(n) - {i}](f(a[j])))
 
     Eq.contains = sets.eq_cup.imply.el.apply(Eq[1])
 
@@ -74,3 +74,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2021-03-24
+# updated on 2021-03-24

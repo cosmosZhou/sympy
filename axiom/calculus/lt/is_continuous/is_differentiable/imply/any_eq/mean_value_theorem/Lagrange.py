@@ -76,9 +76,9 @@ def prove(Eq):
 
     Eq << sets.all.imply.all_et.apply(Eq[2], simplify=None)
 
-    Eq << Eq[-1].this.find(Unequal).apply(sets.interval_is_nonempty.imply.is_positive, simplify=None)
+    Eq << Eq[-1].this.find(Unequal).apply(sets.interval_ne_empty.imply.gt_zero, simplify=None)
 
-    Eq << Eq[-1].this.expr.apply(sets.is_positive.el.imply.el.mul)
+    Eq << Eq[-1].this.expr.apply(sets.gt_zero.el.imply.el.mul)
 
     Eq << calculus.lt.is_continuous.is_differentiable.eq.imply.any_eq.Rolle.apply(Eq[0], Eq.is_continuous, Eq.is_differentiable, Eq.equal)
 
@@ -91,3 +91,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-04-22
+# updated on 2020-04-22

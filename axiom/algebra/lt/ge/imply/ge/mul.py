@@ -16,12 +16,14 @@ def prove(Eq):
     a, b, x, y = Symbol(real=True)
     Eq << apply(a < b, x >= y)
 
-    Eq << algebra.lt.imply.is_positive.apply(Eq[0])
+    Eq << algebra.lt.imply.gt_zero.apply(Eq[0])
 
-    Eq << algebra.is_positive.ge.imply.ge.mul.apply(Eq[-1], Eq[1])
+    Eq << algebra.gt_zero.ge.imply.ge.mul.apply(Eq[-1], Eq[1])
 
 
 
 
 if __name__ == '__main__':
     run()
+# created on 2019-12-14
+# updated on 2019-12-14

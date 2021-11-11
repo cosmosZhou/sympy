@@ -15,7 +15,7 @@ def prove(Eq):
     n = Symbol(integer=True, positive=True)
     Eq << apply(n)
 
-    i, j = Symbol(domain=Range(0, n))
+    i, j = Symbol(domain=Range(n))
     Eq << algebra.eq.given.eq.getitem.apply(Eq[0], (i, j))
 
     Eq << Eq[-1].this.find(Max).apply(algebra.max.to.piece)
@@ -47,3 +47,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2019-10-17
+# updated on 2019-10-17

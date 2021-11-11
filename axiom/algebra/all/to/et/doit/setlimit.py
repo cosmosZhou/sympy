@@ -35,21 +35,23 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.simplify()
 
-    Eq << algebra.equivalent.equivalent.imply.equivalent.et.apply(Eq[-2], Eq[-1])
+    Eq << algebra.iff.iff.imply.iff.et.apply(Eq[-2], Eq[-1])
 
     Eq << Equivalent(All[i:{c}](x[i] > 0), x[c] > 0, plausible=True)
 
     Eq << Eq[-1].this.lhs.simplify()
 
-    Eq << algebra.equivalent.equivalent.imply.equivalent.et.apply(Eq[-2], Eq[-1])
+    Eq << algebra.iff.iff.imply.iff.et.apply(Eq[-2], Eq[-1])
 
     Eq << Equivalent(All[i:{d}](x[i] > 0), x[d] > 0, plausible=True)
 
     Eq << Eq[-1].this.lhs.simplify()
 
-    Eq << algebra.equivalent.equivalent.imply.equivalent.et.apply(Eq[-2], Eq[-1])
+    Eq << algebra.iff.iff.imply.iff.et.apply(Eq[-2], Eq[-1])
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2018-03-29
+# updated on 2018-03-29

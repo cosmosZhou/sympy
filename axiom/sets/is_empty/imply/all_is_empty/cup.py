@@ -18,13 +18,13 @@ def prove(Eq):
 
     Eq << apply(Equal(Cup[i:0:k + 1](x[i]), x[i].etype.emptySet))
 
-    j = Symbol(domain=Range(0, k + 1))
+    j = Symbol(domain=Range(k + 1))
 
     Eq << Eq[-1].limits_subs(i, j)
 
     Eq.paradox = ~Eq[-1]
 
-    Eq.positive = Eq.paradox.this.expr.apply(sets.is_nonempty.imply.is_positive)
+    Eq.positive = Eq.paradox.this.expr.apply(sets.ne_empty.imply.gt_zero)
 
     Eq.union_empty = Eq[0].apply(sets.eq.imply.eq.card)
 
@@ -42,3 +42,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-08-09
+# updated on 2020-08-09

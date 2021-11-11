@@ -20,7 +20,7 @@ def prove(Eq):
     y = Symbol(complex=True, shape=(m,))
     S = Symbol(Eq[0].lhs)
     S_quote = Symbol("S'", Eq[0].rhs)
-    Eq.suffice = Suffice(Element(y, S), Element(y, S_quote), plausible=True)
+    Eq.suffice = Infer(Element(y, S), Element(y, S_quote), plausible=True)
 
     Eq << Eq.suffice.this.lhs.rhs.definition
 
@@ -28,7 +28,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(sets.el.given.et.split.intersect, simplify=False)
 
-    Eq << Eq[-1].apply(algebra.suffice.given.et.suffice)
+    Eq << Eq[-1].apply(algebra.infer.given.et.infer)
 
     Eq << algebra.et.given.et.apply(Eq[-1])
 
@@ -36,7 +36,7 @@ def prove(Eq):
 
     Eq <<= Eq[-2].this.rhs.apply(sets.el.given.ou.split.union, simplify=False), Eq[-1].this.rhs.apply(sets.el.given.ou.split.union, simplify=False)
 
-    Eq << sets.suffice.imply.subset.apply(Eq.suffice)
+    Eq << sets.infer.imply.subset.apply(Eq.suffice)
 
     Eq << Eq[-1].this.lhs.definition
 
@@ -46,3 +46,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2021-04-26
+# updated on 2021-04-26

@@ -2252,7 +2252,7 @@ class Generator extends PyObject
     }
 }
 
-// as in the form: i for i in (1, 2, 3)
+// as in the form: i async for i in (1, 2, 3)
 class GeneratorAsync extends Generator
 {
 
@@ -2277,7 +2277,7 @@ class GeneratorAsync extends Generator
     }
 }
 
-// as in the form: i for i in (1, 2, 3)
+// as in the form: i for i in (1, 2, 3) if i
 class GeneratorIf extends Generator
 {
 
@@ -2316,7 +2316,7 @@ class GeneratorIf extends Generator
     }
 }
 
-// as in the form: i for i in (1, 2, 3)
+// as in the form: i async for i in (1, 2, 3) if i
 class GeneratorAsyncIf extends GeneratorAsync
 {
 
@@ -3202,7 +3202,7 @@ function main($offset = 0)
     // $folder = 'D:\Program Files\Python\Python36';
     // $folder = dirname(dirname(__file__));
     // $folder = dirname(__file__);
-    foreach (\std\read_all_files($folder, 'py') as $py) {
+    foreach (\std\list_all_files($folder, 'py') as $py) {
 
         // \std\println("processing:\n" . $py);
         try {

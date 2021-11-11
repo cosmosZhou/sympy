@@ -26,10 +26,12 @@ def prove(Eq):
     s = Symbol(etype=dtype.integer * k, given=True)
     Eq << apply(Card(s) >= l)
 
-    Eq << algebra.ge.imply.is_positive.apply(Eq[0])
+    Eq << algebra.ge.imply.gt_zero.apply(Eq[0])
 
-    Eq << sets.card_is_positive.imply.any_eq.apply(Eq[-1])
+    Eq << sets.card_gt_zero.imply.any_eq.apply(Eq[-1])
 
 
 if __name__ == '__main__':
     run()
+# created on 2021-03-18
+# updated on 2021-03-18

@@ -10,14 +10,16 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    
+
     x, y = Symbol(real=True)
     Eq << apply(x <= y)
-    
-    Eq << algebra.le.imply.is_nonpositive.apply(Eq[0])
-    
-    Eq << algebra.is_nonpositive.imply.eq.abs.apply(Eq[-1])
+
+    Eq << algebra.le.imply.le_zero.apply(Eq[0])
+
+    Eq << algebra.le_zero.imply.eq.abs.apply(Eq[-1])
 
 
 if __name__ == '__main__':
     run()
+# created on 2019-10-30
+# updated on 2019-10-30

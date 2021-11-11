@@ -38,7 +38,7 @@ f = Function(real=True, integrable=True)，表示一个实数抽象（在任意�
 Theorem的入参是一个表达式，出参是一个判断表达式。它以定理库的形式储存。基本用法就是Theorem.apply(...);  
 比如  
 a, b, c = Symbol(complex=True)  
-[algebra.add_is_zero.imply.et.suffice.cubic.apply](../axiom.php?module=algebra.add_is_zero.imply.et.suffice.cubic)(Equal(x ** 3 + a * x ** 2 + b * x + c, 0), x=x),  表示对一个一元三次方程在复数域内求解。  
+[algebra.poly_is_zero.imply.et.suffice.cubic.apply](../axiom.php?module=algebra.poly_is_zero.imply.et.suffice.cubic)(Equal(x ** 3 + a * x ** 2 + b * x + c, 0), x=x),  表示对一个一元三次方程在复数域内求解。  
 比较Mathematica的方程解：
 https://www.wolframcloud.com/obj/744984949/Published/cubic_root.  
 
@@ -61,14 +61,14 @@ extended_integer ⊂ extended_rational ⊂ [extended_real](https://en.wikipedia.
   
 目前积累了<label id=count>____</label>个已知数学定理用于半机械化数学推导。主要涉及：	
 	
-* [algebra](../axiom.php?module=algebra) 初等代数，主要涉及等式的恒等、换元变换、有限级数[∑裂项求和](../axiom.php?module=algebra.sum.to.add.telescope)、∏裂项求积技巧，不等式的传递性质的命题，[一元一次方程](../axiom.php?module=algebra.add_is_zero.imply.et.suffice.simple_equation)，[一元二次方程](../axiom.php?module=algebra.add_is_zero.imply.et.suffice.quadratic)，[一元三次方程](../axiom.php?module=algebra.add_is_zero.imply.et.suffice.cubic)，[一元四次方程](../axiom.php?module=algebra.add_is_zero.imply.et.suffice.quartic)的求解问题，初等函数的各种常见性质；
-[数学归纳法](../axiom.php?module=algebra.is_nonzero.suffice.imply.is_nonzero.induct)的证明；
-* [sets](../axiom.php?module=sets) 集合论, 即sets theory，集合论是整个数学分析、数学推导系统的理论核心；涉及大量用集合论术语All（任意）, Any（存在）, ‘属于’ （Element），‘包含’（Subset）描述的命题，比如
+* [algebra](../axiom.php?module=algebra) 初等代数，主要涉及等式的恒等、换元变换、有限级数[∑裂项求和](../axiom.php?module=algebra.sum.to.add.telescope)、∏裂项求积技巧，不等式的传递性质的命题，[一元一次方程](../axiom.php?module=algebra.poly_is_zero.imply.et.suffice.simple_equation)，[一元二次方程](../axiom.php?module=algebra.poly_is_zero.imply.et.suffice.quadratic)，[一元三次方程](../axiom.php?module=algebra.poly_is_zero.imply.et.suffice.cubic)，[一元四次方程](../axiom.php?module=algebra.poly_is_zero.imply.et.suffice.quartic)的求解问题，初等函数的各种常见性质；
+[数学归纳法](../axiom.php?module=algebra.ne_zero.suffice.imply.is_nonzero.induct)的证明；
+* [sets](../axiom.php?module=sets) 集合论, 即sets theory，集合论是整个数学分析、数学推导系统的理论核心；涉及大量用集合论术语ForAll（任意）, Exists（存在）, ‘属于’ （Element），‘包含’（Subset）描述的命题，比如
 [容斥原理](../axiom.php?module=sets/imply/eq/principle/inclusion_exclusion/basic)的证明。可以说，集合论是数学推理的根本语法。
 * [geometry](../axiom.php?module=geometry) 几何学，主要分为初中
 [平面几何学](../axiom.php?module=geometry/plane)，(中学三角函数学) 与高中
 [立体几何学](../axiom.php?module=geometry/solid)； 包含不少三角函数恒等式，比如
-[和差化积](../axiom.php?module=geometry/plane/trigonometry/cosine/principle/add)，积化和差，等等。
+[和差化积](../axiom.php?module=geometry.cos.to.add.principle.add)，[积化和差](../axiom.php?module=geometry.mul.to.add.sin)，等等。
 * [calculus](../axiom.php?module=calculus) 微积分，主要包含以下内容： 
 [极限定义](../axiom.php?module=calculus/eq/to/any_all/limit_definition) 及其理论，它是微积分的理论基础； 
 [无穷级数](../axiom.php?module=calculus.eq.imply.eq.series.infinite.coefficient) 的运算性质；

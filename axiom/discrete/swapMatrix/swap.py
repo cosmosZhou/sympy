@@ -17,7 +17,7 @@ def apply(w):
 def prove(Eq):
     from axiom import discrete, algebra
     n = Symbol(domain=Range(2, oo))
-    i, j = Symbol(domain=Range(0, n))
+    i, j = Symbol(domain=Range(n))
 
     assert Identity(n).is_integer
     w = Symbol(Lamda[j, i](SwapMatrix(n, i, j)))
@@ -50,3 +50,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html
+# created on 2020-08-25
+# updated on 2020-08-25

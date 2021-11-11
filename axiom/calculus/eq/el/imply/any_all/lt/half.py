@@ -28,12 +28,14 @@ def prove(Eq):
 
     Eq << algebra.any.imply.any_et.limits.single_variable.apply(Eq[-1], simplify=None)
 
-    Eq << Eq[-1].this.find(Element).apply(sets.el.imply.is_nonzero)
+    Eq << Eq[-1].this.find(Element).apply(sets.el.imply.ne_zero)
 
     Eq << algebra.any_et.imply.any.limits_absorb.apply(Eq[-1], index=0, simplify=None)
 
-    Eq << Eq[-1].this.expr.apply(calculus.is_nonzero.eq.imply.any_all.lt)
+    Eq << Eq[-1].this.expr.apply(calculus.ne_zero.eq.imply.any_all.lt)
 
 
 if __name__ == '__main__':
     run()
+# created on 2020-05-15
+# updated on 2020-05-15

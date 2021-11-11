@@ -17,3 +17,5 @@ def prove(Eq):
 # https://baike.baidu.com/item/%E5%92%8C%E8%A7%92%E5%85%AC%E5%BC%8F
 if __name__ == '__main__':
     run()
+# created on 2018-06-01
+# updated on 2018-06-01

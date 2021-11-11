@@ -11,7 +11,7 @@ def apply(self):
     i = Symbol(integer=True)
     
     condSet = conditionset(x[:k],
-                           And(Equal(Cup(x[i], (i, 0, k)), Range(0, n)),
+                           And(Equal(Cup(x[i], (i, 0, k)), Range(n)),
                                Equal(Sum(Card(x[i]), (i, 0, k)), n),
                                All(Greater(Card(x[i]), 0), (i, 0, k))))
     
@@ -27,3 +27,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2021-09-06
+# updated on 2021-09-06

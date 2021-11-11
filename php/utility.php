@@ -98,8 +98,8 @@ function println($param, $file = null)
 
 function read_all_axioms($dir)
 {
-    foreach (read_directory($dir) as $directory) {
-        foreach (read_all_files($directory, 'py') as $py) {
+    foreach (\std\list_directory($dir) as $directory) {
+        foreach (\std\list_all_files($directory, 'py') as $py) {
             if (! \std\equals(basename($py), "__init__.py")) {
                 yield [
                     $py,
@@ -246,8 +246,6 @@ function detect_axiom_given_theorem(&$theorem, &$statement)
 // input is a py file
 function yield_from_py($python_file)
 {
-    assert(file_exists($python_file), "file_exists($python_file)");
-
     $inputs = [];
     $input = [];
 
@@ -446,6 +444,25 @@ function yield_from_py($python_file)
             // error_log(\std\jsonify($yield));
             yield $yield;
         }
+
+        for (; $i < $count; ++ $i) {
+            $statement = $py[$i];
+            $statement = rtrim($statement);
+            // cope with comments starting with #
+            if (preg_match('/^\s*#(.*)/', $statement, $matches)) {
+                if (preg_match('/(created|updated) on (\d\d\d\d-\d\d-\d\d)/', $matches[1], $matches)) {
+
+                    $yield = [
+                        'line' => $i
+                    ];
+
+                    $yield['comment'] = true;
+                    $yield['statement'] = '';
+                    $yield[$matches[1]] = $matches[2];
+                    yield $yield;
+                }
+            }
+        }
     }
 }
 
@@ -639,13 +656,12 @@ function modify_codes($python_file, $_proveCodes, $applyCodes = null)
 
     $proveCodes[] = "\n";
 
-//     error_log("in modify_codes: proveCodes = " . \std\jsonify($proveCodes));
-
     $py = file($python_file);
 
+    $count = count($py);
     if ($applyCodes === null) {
         $codes = [];
-        for ($i = 0; $i < count($py); ++ $i) {
+        for ($i = 0; $i < $count; ++ $i) {
             $statement = $py[$i];
             $codes[] = $statement;
             if (preg_match("/^def prove\(/", $statement, $matches)) {
@@ -658,7 +674,7 @@ function modify_codes($python_file, $_proveCodes, $applyCodes = null)
             $applyCodes . "\n"
         ];
 
-        for ($i = 0; $i < count($py); ++ $i) {
+        for ($i = 0; $i < $count; ++ $i) {
             $statement = $py[$i];
             if (preg_match("/^@prove/", $statement, $matches)) {
                 break;
@@ -666,18 +682,24 @@ function modify_codes($python_file, $_proveCodes, $applyCodes = null)
         }
     }
 
-    for ($i; $i < count($py); ++ $i) {
+    for ($i; $i < $count; ++ $i) {
         if (preg_match("/^if __name__ == '__main__':/", $py[$i], $matches)) {
             break;
         }
     }
 
     $codesAfterProve = [];
-    for (; $i < count($py); ++ $i) {
-        $codesAfterProve[] = $py[$i];
+    for (; $i < $count; ++ $i) {
+        $comment = $py[$i];
+        if (preg_match("/ *# *updated on (\d\d\d\d-\d\d-\d\d)/i", $comment, $m)) {
+            $timestamp = date('Y-m-d', time());
+            $comment = "# updated on $timestamp";
+        }
+
+        $codesAfterProve[] = $comment;
     }
 
-//     error_log("in modify_codes: codes = " . \std\jsonify($codes));
+    // error_log("in modify_codes: codes = " . \std\jsonify($codes));
 
     array_push($codes, ...$proveCodes, ...$codesAfterProve);
 
@@ -687,8 +709,8 @@ function modify_codes($python_file, $_proveCodes, $applyCodes = null)
 
 function read_all_php($dir)
 {
-    foreach (read_directory($dir) as $directory) {
-        foreach (read_all_files($directory, 'php') as $php) {
+    foreach (\std\list_directory($dir) as $directory) {
+        foreach (\std\list_all_files($directory, 'php') as $php) {
             yield $php;
         }
     }
@@ -816,16 +838,16 @@ function run($py)
 
     array_push($logs, ...$array);
 
-//     foreach ($array as $line) {
-//         error_log($line);
-//     }
+    // foreach ($array as $line) {
+    // error_log($line);
+    // }
 
     $sql_statement = '';
     $statementsFromSQLFile = '';
     foreach ($array as &$line) {
-//         error_log("line = " . $line);
+        // error_log("line = " . $line);
         if (preg_match("/latex results are saved into: (\S+)/", $line, $m)) {
-            $sqlFileContainingLatex = $m[1];            
+            $sqlFileContainingLatex = $m[1];
             $statementsFromSQLFile = iterator_to_array(\mysql\yield_from_sql($sqlFileContainingLatex));
 
             // error_log("statementsFromSQLFile = " . \std\jsonify($statementsFromSQLFile));
@@ -867,7 +889,8 @@ function fetch_codes($module, $fetch_prove = false)
     $py = file($py);
     $apply = [];
 
-    for ($i = 1; $i < count($py); ++ $i) {
+    $count = count($py);
+    for ($i = 1; $i < $count; ++ $i) {
         $line = $py[$i];
 
         $apply[] = $line;
@@ -887,7 +910,7 @@ function fetch_codes($module, $fetch_prove = false)
             ++ $i;
         }
 
-        for (; $i < count($py); ++ $i) {
+        for (; $i < $count; ++ $i) {
             $line = $py[$i];
             if (preg_match('/^if +/', $line, $matches)) {
                 break;

@@ -23,7 +23,7 @@ def prove(Eq):
 
     Eq << apply(Piecewise((s(x), (f(x) > 0) & (g(x) > 0)), (x.emptySet, True)))
 
-    Eq << sets.eq.given.et.suffice.apply(Eq[0], wrt=t)
+    Eq << sets.eq.given.et.infer.apply(Eq[0], wrt=t)
 
     Eq <<= Eq[-2].this.find(Element).apply(sets.el_piece.imply.ou), \
     Eq[-1].this.find(Element).apply(sets.el.imply.et.el.split.intersect)
@@ -42,3 +42,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2018-09-25
+# updated on 2018-09-25

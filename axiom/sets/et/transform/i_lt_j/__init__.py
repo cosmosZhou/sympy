@@ -28,7 +28,7 @@ def prove(Eq):
 
     Eq << apply(And(Element(i, Range(a + d, j + d)), Element(j, Range(a + 1, n))))
 
-    Eq << algebra.equivalent.given.et.apply(Eq[0])
+    Eq << algebra.iff.given.et.apply(Eq[0])
 
     Eq << Eq[-2].this.lhs.apply(sets.el.el.imply.el.range.i_lt_j.i_in_j)
 
@@ -39,3 +39,5 @@ if __name__ == '__main__':
     run()
 
 from . import left_close
+# created on 2021-01-30
+# updated on 2021-01-30

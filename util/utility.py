@@ -517,8 +517,7 @@ def run():
         
         m = re.match('update tbl_axiom_py set state = "(\w+)", lapse = (\S+), latex = "([\s\S]+)" where user = "(\w+)" and axiom = "(\S+)"', sql)
         state, lapse, latex, _, axiom = m.groups()
-        timestamp = current_timestamp()
-        sql = 'insert into tbl_axiom_py values("%s", "%s", "%s", %s, "%s", "%s")' % (user, axiom, state, lapse, latex, timestamp)
+        sql = 'insert into tbl_axiom_py values("%s", "%s", "%s", %s, "%s")' % (user, axiom, state, lapse, latex)
         rowcount = MySQL.instance.execute(sql)
         assert rowcount > 0
           
@@ -640,7 +639,7 @@ def _prove(func, debug=True, **_):
                     return from_axiom_import(py, section, eqs)
             
             elif t[0].isupper():
-                kwargs = detect_error_in_invoke(py, e, messages) or detect_error_in_apply(py, e, messages) or detect_error_in_prove(py, e, messages)
+                kwargs = detect_error_in_invoke(py, messages) or detect_error_in_apply(py, messages) or detect_error_in_prove(py, messages)
                 print(json_encode(kwargs))
                 if kwargs and not kwargs['error']:
                     kwargs['error'] = str(e)    
@@ -664,13 +663,13 @@ def _prove(func, debug=True, **_):
             __line__ -= skips_in_apply(py)
             
             kwargs = {}
-            kwargs['apply'] = True
+            kwargs['func'] = 'apply'
             kwargs['line'] = __line__
             kwargs['code'] = code
             kwargs.update(get_error_info(e))        
         else:
-            kwargs = detect_error_in_prove(py, e, messages) or detect_error_in_apply(py, e, messages) or detect_error_in_sympy(py, e, messages)
-                    
+            kwargs = detect_error_in_prove(py, messages) or detect_error_in_apply(py, messages) or detect_error_in_sympy(py, messages)
+
         print(json_encode(kwargs))
             
         print(website)
@@ -678,7 +677,14 @@ def _prove(func, debug=True, **_):
     except Exception as e: 
         messages = source_error()       
         
-        kwargs = detect_error_in_prove(py, e, messages) or detect_error_in_apply(py, e, messages) or detect_error_in_imply(py, e, messages) or detect_error_in_axiom(py, e, messages) or detect_error_in_sympy(py, e, messages)
+        kwargs = detect_error_in_prove(py, messages) or detect_error_in_apply(py, messages) or detect_error_in_imply(py, messages) or detect_error_in_axiom(py, messages) or detect_error_in_sympy(py, messages)
+        if isinstance(kwargs, list):
+            kwargs[0] |= get_error_info(e)
+        elif kwargs is None:
+            print('error info is lost!')
+            kwargs = get_error_info(e)
+        else:
+            kwargs |= get_error_info(e)
         print(json_encode(kwargs))
         print(website)
         ret = RetCode.failed
@@ -698,11 +704,11 @@ def skips_in_apply(py):
 
     
 def get_error_info(e):
-    return {'error': str(e),
+    return {'info': str(e),
             'type': re.match(r"<class '([.\w]+)'>", str(type(e)))[1]}                
 
     
-def detect_error_in_prove(py, e, messages):
+def detect_error_in_prove(py, messages):
     for i, line in enumerate(messages):
         m = re.fullmatch(r'File "([^"]+\.py)", line (\d+), in prove', line)
         if m:
@@ -736,18 +742,17 @@ def detect_error_in_prove(py, e, messages):
                     break
             
             kwargs = {}
-            kwargs['prove'] = True
+            kwargs['func'] = 'prove'
             kwargs['line'] = __line__
             kwargs['code'] = code
-            kwargs.update(get_error_info(e))
-            return kwargs            
+            return kwargs 
     
 
-def detect_error_in_apply(py, e, messages, index=-3):
+def detect_error_in_apply(py, messages, index=-3):
     for i, line in enumerate(messages):
         m = re.fullmatch(r'File "([^"]+\.py)", line (\d+), in apply', line)
         if m:
-            __line__ = int(m[2]) - 1
+            __line__ = int(m[2])
             i += 1
             pyFile = m[1]
             code = messages[i]
@@ -755,56 +760,59 @@ def detect_error_in_apply(py, e, messages, index=-3):
             __line__ -= skips_in_apply(pyFile)
             
             kwargs = {}
-            kwargs['apply'] = True
+            kwargs['func'] = 'apply'
             kwargs['line'] = __line__
             kwargs['code'] = code
-            kwargs.update(get_error_info(e))
             
             if pyFile != py:
-                m = re.search(r"\baxiom[/\\](.+)\.py", pyFile)
+                m = re.search(r"\b(axiom[/\\].+)\.py", pyFile)
                 if m:
-                    kwargs['module'] = m[1].replace(os.path.sep, '.')
+                    kwargs['file'] = m[1].replace(os.path.sep, '.')
                 else:
                     messages = source_error(index)
-                    return detect_error_in_invoke(py, e, messages, index=index - 1)
+                    return detect_error_in_invoke(py, messages, index=index - 1)
             return kwargs
 
 
-def detect_error_in_imply(py, e, messages, index=-3):
+def detect_error_in_imply(py, messages, index=-3):
     for line in messages:
         m = re.fullmatch(r'File "([^"]+\.py)", line (\d+), in imply', line)
         if m:
             messages = source_error(index)
-            return detect_error_in_prove(py, e, messages) or detect_error_in_apply(py, e, messages, index=index - 1)
+            return detect_error_in_prove(py, messages) or detect_error_in_apply(py, messages, index=index - 1)
         
 
-def detect_error_in_invoke(py, e, messages, index=-3):
+def detect_error_in_invoke(py, messages, index=-3):
     for line in messages:
         m = re.fullmatch(r'File "([^"]+[\\/]invoker\.py)", line (\d+), in (\w+)', line)
         if m:
             if m[3] in ('__getattr__', 'invoke', '__call__'):
                 messages = source_error(index)
-                return detect_error_in_prove(py, e, messages) or detect_error_in_invoke(py, e, messages, index=index - 1)
+                return detect_error_in_prove(py, messages) or detect_error_in_invoke(py, messages, index=index - 1)
 
 
-def detect_error_in_sympy(py, e, messages, index=-3):
-    for line in messages:
-        m = re.fullmatch(r'File "([^"]+[\\/]sympy[\\/]([^"]+)\.py)", line (\d+), in (\w+)', line)
+def detect_error_in_sympy(py, _messages, index=-3):
+    for line in _messages:
+        m = re.fullmatch(r'File "[^"]+[\\/](sympy[\\/][^"]+\.py)", line (\d+), in (\w+)', line)
         if m:
             messages = source_error(index)
-            return detect_error_in_apply(py, e, messages) or detect_error_in_prove(py, e, messages) or detect_error_in_invoke(py, e, messages, index=index - 1) or detect_error_in_sympy(py, e, messages, index=index - 1)
+            ret = detect_error_in_apply(py, messages) or detect_error_in_prove(py, messages) or detect_error_in_invoke(py, messages, index=index - 1) or detect_error_in_sympy(py, messages, index=index - 1)
+            if ret:
+                kwargs = dict(file=m[1][:-3].replace(os.path.sep, '.'), line=m[2], func=m[3], code=_messages[1])
+                if isinstance(ret, dict):
+                    return [kwargs, ret]
+                return [kwargs, *ret]                    
 
 
-def detect_error_in_axiom(py, e, _messages, index=-3):
+def detect_error_in_axiom(py, _messages, index=-3):
     for line in _messages:
         m = re.fullmatch(r'File "([^"]+[\\/]axiom[\\/]([^"]+)\.py)", line (\d+), in (\w+)', line)
         if m:
             messages = source_error(index)
-            kwargs = detect_error_in_apply(py, e, messages) or detect_error_in_prove(py, e, messages) or detect_error_in_invoke(py, e, messages, index=index - 1)
+            kwargs = detect_error_in_apply(py, messages) or detect_error_in_prove(py, messages) or detect_error_in_invoke(py, messages, index=index - 1)
             if kwargs:
-                if isinstance(e, AssertionError):
-                    if not kwargs['error']:
-                        kwargs['error'] = _messages[1]
+                if not kwargs.get('error', None):
+                    kwargs['error'] = _messages[1]
                         
                 return kwargs
 

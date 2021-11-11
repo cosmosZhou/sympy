@@ -25,13 +25,15 @@ def prove(Eq):
 
     Eq << apply(Equal(e.set & s, A), Greater(Card(A), 0))
 
-    Eq << sets.is_positive.imply.is_nonempty.apply(Eq[1])
+    Eq << sets.gt_zero.imply.ne_empty.apply(Eq[1])
 
     Eq << Eq[-1].subs(Eq[0].reversed)
 
-    Eq << sets.is_nonempty.imply.el.apply(Eq[-1])
+    Eq << sets.ne_empty.imply.el.apply(Eq[-1])
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2021-04-01
+# updated on 2021-04-01

@@ -1,4 +1,4 @@
 from . import ge
 from . import le
-from . import is_nonnegative
-from . import is_nonpositive
+from . import ge_zero
+from . import le_zero

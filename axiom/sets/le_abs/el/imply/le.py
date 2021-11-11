@@ -25,7 +25,7 @@ def apply(le, contains):
     y = Lamda[j:m](yj).simplify()
 
     t, s = contains.of(Element)
-    assert s in Range(0, m)
+    assert s in Range(m)
     assert y[t] == yt
 
     if yt._has(i):
@@ -51,21 +51,23 @@ def prove(Eq):
     m = Symbol(domain=Range(2, oo))
     i, j = Symbol(integer=True)
     t = Symbol(integer=True, given=True)
-    Eq << apply(abs(y(t) - Sum[i:n](x(i)) / n) <= abs(y(t) - Sum[j:m](y(j)) / m), Element(t, Range(0, m)))
+    Eq << apply(abs(y(t) - Sum[i:n](x(i)) / n) <= abs(y(t) - Sum[j:m](y(j)) / m), Element(t, Range(m)))
 
-    t_ = Symbol.t(domain=Range(0, m))
+    t_ = Symbol.t(domain=Range(m))
     Eq << Eq[0]._subs(t, t_).this.apply(algebra.le_abs.imply.le.function, t_)
 
     Eq << Eq[-1].subs(t_, t)
 
-    Eq << algebra.ou.imply.suffice.apply(Eq[-1])
+    Eq << algebra.ou.imply.infer.apply(Eq[-1])
 
-    Eq << Eq[-1].this.apply(algebra.suffice.flatten)
+    Eq << Eq[-1].this.apply(algebra.infer.flatten)
 
     Eq <<= Eq[0] & Eq[1]
 
-    Eq << algebra.cond.suffice.imply.cond.transit.apply(Eq[-1], Eq[-2])
+    Eq << algebra.cond.infer.imply.cond.transit.apply(Eq[-1], Eq[-2])
 
 
 if __name__ == '__main__':
     run()
+# created on 2021-03-23
+# updated on 2021-03-23

@@ -795,3 +795,28 @@ class Operator:
 
     def __and__(self, other): 
         return BasicMeta.__and__(self.basic, other)
+
+    def __rsub__(self, lhs):
+        from sympy import sympify 
+        lhs = sympify(lhs)
+        return BasicMeta.__sub__(lhs, self.basic)
+    
+    def __radd__(self, lhs):
+        from sympy import sympify 
+        lhs = sympify(lhs)
+        return BasicMeta.__add__(lhs, self.basic)
+    
+    def __rmul__(self, lhs):
+        from sympy import sympify 
+        lhs = sympify(lhs)
+        return BasicMeta.__mul__(lhs, self.basic)
+    
+    def __rtruediv__(self, lhs):
+        from sympy import sympify 
+        lhs = sympify(lhs)
+        return BasicMeta.__truediv__(lhs, self.basic)
+    
+    def __rfloordiv__(self, lhs):
+        from sympy import sympify 
+        lhs = sympify(lhs)
+        return BasicMeta.__floordiv__(lhs, self.basic)

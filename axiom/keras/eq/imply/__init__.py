@@ -1,2 +1,2 @@
 from . import eq
-from . import suffice
+from . import infer

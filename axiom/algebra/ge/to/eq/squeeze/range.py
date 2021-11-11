@@ -19,7 +19,7 @@ def prove(Eq):
     x = Symbol(domain=Range(a, b + 1), given=True)
     Eq << apply(x >= b)
 
-    Eq << algebra.equivalent.given.et.apply(Eq[0])
+    Eq << algebra.iff.given.et.apply(Eq[0])
 
     Eq << Eq[-2].this.lhs.apply(algebra.ge.imply.eq.squeeze.range)
     Eq << Eq[-1].this.rhs.apply(algebra.eq.imply.ge)
@@ -27,3 +27,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2019-06-04
+# updated on 2019-06-04

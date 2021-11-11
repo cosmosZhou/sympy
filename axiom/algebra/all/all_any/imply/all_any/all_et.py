@@ -23,9 +23,9 @@ def prove(Eq):
     x = Symbol(shape=(oo,), etype=dtype.integer)
     n, k = Symbol(integer=True, positive=True)
     i = Symbol(integer=True)
-    j = Symbol(domain=Range(0, k + 1))
+    j = Symbol(domain=Range(k + 1))
     s = Symbol(etype=dtype.integer.set * (k + 1))
-    Eq << apply(All[i:Range(0, k + 1) - {j}, x[:k + 1]:s](Equal(x[i] & x[j], x[i].etype.emptySet)),
+    Eq << apply(All[i:Range(k + 1) - {j}, x[:k + 1]:s](Equal(x[i] & x[j], x[i].etype.emptySet)),
                 All[x[:k + 1]:s](Any[j](Subset({n}, x[j]))))
 
     Eq << Eq[-1].this.expr.expr.apply(algebra.all.given.ou)
@@ -44,3 +44,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2018-12-03
+# updated on 2018-12-03

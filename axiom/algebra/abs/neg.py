@@ -16,9 +16,11 @@ def prove(Eq):
 
     Eq << Eq[0].this.lhs.apply(algebra.abs.to.piece)
 
-    Eq << Eq[-1].this.rhs.apply(algebra.abs.to.piece.is_nonpositive)
+    Eq << Eq[-1].this.rhs.apply(algebra.abs.to.piece.le_zero)
     Eq << -Eq[-1].this.find(LessEqual)
 
 
 if __name__ == '__main__':
     run()
+# created on 2018-01-19
+# updated on 2018-01-19

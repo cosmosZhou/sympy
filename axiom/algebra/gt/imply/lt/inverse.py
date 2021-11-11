@@ -17,14 +17,16 @@ def prove(Eq):
     a = Symbol(real=True, positive=True)
     Eq << apply(x > a)
 
-    Eq << algebra.gt.imply.is_positive.transit.apply(Eq[0])
+    Eq << algebra.gt.imply.gt_zero.transit.apply(Eq[0])
 
-    Eq << algebra.is_positive.imply.is_positive.div.apply(Eq[-1])
+    Eq << algebra.gt_zero.imply.gt_zero.div.apply(Eq[-1])
 
-    Eq << algebra.is_positive.gt.imply.gt.mul.apply(Eq[-1], Eq[0])
+    Eq << algebra.gt_zero.gt.imply.gt.mul.apply(Eq[-1], Eq[0])
 
     Eq << Eq[1] * a
 
 
 if __name__ == '__main__':
     run()
+# created on 2019-07-28
+# updated on 2019-07-28

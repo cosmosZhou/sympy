@@ -56,9 +56,9 @@ createApp('console', {
     statements : {{statements|tojson}},
 });
 
-axios.post('eval', {py: {{script|tojson}}}).then(result => {
+from_post('eval', {py: {{script|tojson}}}).then(result => {
     console.log('latex = ' + result.latex);
-}).catch(fail);
+});
 
 //http://docs.mathjax.org/en/latest/web/components/combined.html    
 </script>

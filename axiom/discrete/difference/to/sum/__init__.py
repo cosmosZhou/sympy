@@ -33,12 +33,14 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(discrete.difference.to.sum.one)
 
-    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
+    Eq << Infer(Eq[0], Eq.induct, plausible=True)
 
-    Eq << algebra.eq.suffice.imply.eq.induct.apply(Eq.initial, Eq[-1], n=d, start=1)
+    Eq << algebra.eq.infer.imply.eq.induct.apply(Eq.initial, Eq[-1], n=d, start=1)
 
 
 if __name__ == '__main__':
     run()
 
 from . import one
+# created on 2020-10-11
+# updated on 2020-10-11

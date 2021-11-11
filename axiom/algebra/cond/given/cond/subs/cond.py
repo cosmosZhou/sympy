@@ -15,8 +15,10 @@ def prove(Eq):
     f = Function(integer=True)
     Eq << apply(Equal(Piecewise((f(a), Element(a, A)), (f(b), True)), 0), old=Element(a, A), new=Element(b, B))
 
-    Eq << algebra.equivalent.cond.imply.cond.subs.apply(Eq[2].reversed, Eq[1])
+    Eq << algebra.iff.cond.imply.cond.subs.apply(Eq[2].reversed, Eq[1])
 
 
 if __name__ == '__main__':
     run()
+# created on 2018-07-20
+# updated on 2018-07-20

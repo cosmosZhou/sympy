@@ -560,10 +560,10 @@ class LatexPrinter(Printer):
             return tex
 
     def _print_Not(self, e):
-        from sympy import Equivalent, Suffice
+        from sympy import Equivalent, Infer
         if isinstance(e.args[0], Equivalent):
             return self._print_Equivalent(e.args[0], r"\not\Leftrightarrow")
-        if isinstance(e.args[0], Suffice):
+        if isinstance(e.args[0], Infer):
             return self._print_Imply(e.args[0], r"\not\Rightarrow")
         if (e.args[0].is_Boolean):
             return r"\neg (%s)" % self._print(e.args[0])

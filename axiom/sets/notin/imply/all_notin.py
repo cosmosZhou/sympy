@@ -17,7 +17,7 @@ def prove(Eq):
     A = Symbol(shape=(oo,), etype=dtype.integer)
     Eq << apply(NotElement(x, Cup[k:n](A[k])))
 
-    k = Symbol(domain=Range(0, n))
+    k = Symbol(domain=Range(n))
     Eq << Eq[0].this.rhs.apply(sets.cup.to.union.split, cond=k.set)
 
     Eq << sets.notin.imply.et.split.union.apply(Eq[-1], simplify=None)
@@ -28,3 +28,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-09-09
+# updated on 2020-09-09

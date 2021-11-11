@@ -21,10 +21,12 @@ def prove(Eq):
     f, g, h = Function(real=True)
     Eq << apply(f(x) > g(x), Equal(g(x) * (f(x) - g(x)), h(x) * f(x) + x))
 
-    Eq << algebra.gt.imply.is_positive.apply(Eq[0])
+    Eq << algebra.gt.imply.gt_zero.apply(Eq[0])
 
-    Eq << algebra.is_positive.eq.imply.eq.mul.apply(Eq[-1], Eq[1])
+    Eq << algebra.gt_zero.eq.imply.eq.mul.apply(Eq[-1], Eq[1])
 
 
 if __name__ == '__main__':
     run()
+# created on 2019-04-03
+# updated on 2019-04-03

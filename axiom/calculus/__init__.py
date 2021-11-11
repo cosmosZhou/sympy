@@ -2,7 +2,7 @@ from . import integral
 from . import trigonometry
 from . import eq, gt, le, lt, ge
 from . import all_ge, all_gt
-from . import is_negative, is_positive
+from . import lt_zero, gt_zero
 from . import derivative
 from . import is_continuous
 from . import limit
@@ -12,18 +12,18 @@ from . import is_zero
 from . import add
 from . import all_eq
 
-from . import is_nonpositive
+from . import le_zero
 
-from . import is_nonnegative
+from . import ge_zero
 
-from . import all_is_positive
+from . import all_gt_zero
 
 from . import is_differentiable
 
 from . import el
 from . import subs
 from . import mul
-from . import is_nonzero
+from . import ne_zero
 from . import is_real
 from . import cos
 from . import sin
@@ -34,5 +34,5 @@ from . import mul_sum
 from . import imply
 from . import eq_limit
 from . import neg
-from . import all_is_positive_real
+from . import all_is_positive
 from . import limit_is_infinite

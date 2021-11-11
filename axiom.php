@@ -6,9 +6,6 @@
 require_once 'php/utility.php';
 require_once 'php/mysql.php';
 
-// error_log("_GET = " . \std\jsonify($_GET));
-// error_log("_POST = " . \std\jsonify($_POST));
-
 // if (! $_GET) {
 // // https://www.php.net/manual/en/function.getopt.php
 // $_GET = getopt("", [
@@ -44,6 +41,10 @@ switch (count($key)) {
             case "module":
                 $module = $_GET['module'];
                 break;
+            case "sympy":
+                $sympy = $_GET['sympy'];
+                require_once 'php/sympy.php';
+                exit();
             case "callee":
                 require_once 'php/hierarchy.php';
                 exit();
@@ -80,8 +81,6 @@ $indexOfYield = - 1;
 if (! \std\endsWith($path_info, '/')) {
 
     $py = $path_info . ".py";
-
-    // \std\println("py = $py");
 
     $statementsFromSQLFile = null;
     $sql_statement = '';
@@ -140,7 +139,11 @@ if (! \std\endsWith($path_info, '/')) {
             }
 
             $code .= "\n\nif __name__ == '__main__':\n";
-            $code .= "    run()";
+            $code .= "    run()\n";
+            
+            $timestamp = date('Y-m-d', time());
+            $code .= "# created on $timestamp\n";
+            $code .= "# updated on $timestamp\n";
 
             if (count($imports)) {
                 $code .= "\n\n";
@@ -206,14 +209,29 @@ if (! \std\endsWith($path_info, '/')) {
                 $input[] = $statement;
             }
         } else {
-            // error_log("statement: " . $statement);
-            // error_log("dict = " . \std\jsonify($dict));
-
+            unset($dict['statement']);
             if (array_key_exists('comment', $dict)) {
-                if (array_key_exists('unused', $dict))
+                unset($dict['comment']);
+                
+                if (array_key_exists('unused', $dict)){
                     $class = '"comment unused"';
-                else
+                }
+                else{
                     $class = "comment";
+                    if ($dict){
+                        foreach ($dict as $key => $value){
+                            switch($key){
+                                case "created":
+                                    $createdTime = $value;
+                                    break;
+                                case "updated":
+                                    $updatedTime = $value;
+                                    break;
+                            }
+                        }
+                    }
+                }
+                    
                 $input[] = $statement;
                 continue;
             }

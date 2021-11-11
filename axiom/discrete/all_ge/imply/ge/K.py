@@ -21,17 +21,17 @@ def prove(Eq):
 
     Eq << apply(All[i:1:n + 1](x[i] >= 1))
 
-    Eq.case2, Eq.case1 = algebra.cond.given.et.suffice.split.apply(Eq[-1], cond=n >= 2)
+    Eq.case2, Eq.case1 = algebra.cond.given.et.infer.split.apply(Eq[-1], cond=n >= 2)
 
     Eq << Eq.case1.this.lhs.apply(algebra.lt.to.eq.squeeze)
 
-    Eq << Eq[-1].this.apply(algebra.suffice.subs)
+    Eq << Eq[-1].this.apply(algebra.infer.subs)
 
     Eq << Eq[-1].this.find(K).defun()
 
     Eq << Eq[-1].this.find(K).defun()
 
-    Eq << algebra.suffice.given.cond.apply(Eq[-1])
+    Eq << algebra.infer.given.cond.apply(Eq[-1])
 
     Eq << algebra.all.imply.cond.subs.apply(Eq[0], i, 1)
 
@@ -45,9 +45,11 @@ def prove(Eq):
 
     Eq << Eq[-1].this.expr.apply(algebra.gt.imply.ge.relax)
 
-    Eq << algebra.suffice.given.all.apply(Eq.case2)
+    Eq << algebra.infer.given.all.apply(Eq.case2)
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2020-09-16
+# updated on 2020-09-16

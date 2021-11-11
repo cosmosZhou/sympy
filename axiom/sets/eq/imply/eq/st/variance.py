@@ -23,7 +23,7 @@ def prove(Eq):
     X = Symbol(etype=dtype.integer, finiteset=True, given=True)
     Eq << apply(Equal(a[y], Sum[x:X](a[x]) / Card(X)))
 
-    Eq << algebra.cond.given.et.suffice.split.apply(Eq[1], cond=Element(y, X))
+    Eq << algebra.cond.given.et.infer.split.apply(Eq[1], cond=Element(y, X))
 
     Eq << Element(y, X).this.apply(sets.el.imply.eq.union)
 
@@ -31,12 +31,14 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.et.given.et.subs.eq)
 
-    Eq << algebra.cond.imply.suffice.apply(Eq[0], cond=Eq[3].lhs)
+    Eq << algebra.cond.imply.infer.apply(Eq[0], cond=Eq[3].lhs)
 
-    Eq << algebra.suffice.imply.suffice.et.apply(Eq[-1])
+    Eq << algebra.infer.imply.infer.et.apply(Eq[-1])
 
     Eq << Eq[-1].this.rhs.apply(sets.eq.notin.imply.eq.st.variance)
 
 
 if __name__ == '__main__':
     run()
+# created on 2021-04-03
+# updated on 2021-04-03

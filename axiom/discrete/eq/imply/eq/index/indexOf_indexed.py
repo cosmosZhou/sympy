@@ -15,7 +15,7 @@ def apply(given, j=None):
     x = Lamda(x_set_comprehension.expr.arg, *x_set_comprehension.limits).simplify()
 
     if j is None:
-        j = Symbol.j(domain=Range(0, n), given=True)
+        j = Symbol.j(domain=Range(n), given=True)
 
     assert j >= 0 and j < n
 
@@ -33,11 +33,11 @@ def prove(Eq):
 
     k = Symbol(integer=True)
 
-    j = Symbol(domain=Range(0, n), given=True)
+    j = Symbol(domain=Range(n), given=True)
 
-    Eq << apply(Equal(x[:n].set_comprehension(k), Range(0, n)), j)
+    Eq << apply(Equal(x[:n].set_comprehension(k), Range(n)), j)
 
-    t, i = Symbol(domain=Range(0, n))
+    t, i = Symbol(domain=Range(n))
 
     Eq << discrete.eq.imply.et.index.apply(Eq[0], j=t)
 
@@ -87,3 +87,5 @@ if __name__ == '__main__':
 
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html
 
+# created on 2020-10-25
+# updated on 2020-10-25

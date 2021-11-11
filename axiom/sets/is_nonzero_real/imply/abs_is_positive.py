@@ -5,37 +5,24 @@ from util import *
 def apply(given):
     x, RR = given.of(Element)
     assert Element(0, RR) == False
-    return Greater(abs(x), 0)
+    return Element(abs(x), Interval(0, oo, left_open=True))
 
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
+    from axiom import sets
 
     x = Symbol(complex=True)
     Eq << apply(Element(x, Reals - {0}))
 
     Eq << sets.el.imply.ou.split.union.apply(Eq[0], simplify=None)
 
-    Eq.is_negative = Suffice(Eq[-1].args[0], Eq[1], plausible=True)
+    Eq << Eq[-1].this.args[1].apply(sets.gt_zero.imply.abs_is_positive, simplify=None)
 
-    Eq << Eq.is_negative.this.lhs.apply(sets.el.imply.is_negative)
-
-    Eq << Eq[-1].this.lhs.apply(algebra.is_negative.imply.is_nonzero)
-
-    Eq << Eq[-1].this.lhs.apply(algebra.is_nonzero.imply.abs_is_positive)
-
-    Eq.is_positive = Suffice(Eq[2].args[1], Eq[1], plausible=True)
-
-    Eq << Eq.is_positive.this.lhs.apply(sets.el.imply.is_positive)
-
-    Eq << Eq[-1].this.lhs.apply(algebra.is_positive.imply.is_nonzero)
-
-    Eq << algebra.suffice.suffice.imply.suffice.ou.apply(Eq.is_negative, Eq.is_positive)
-
-    Eq << algebra.cond.suffice.imply.cond.transit.apply(Eq[0], Eq[-1])
+    Eq << Eq[-1].this.args[0].apply(sets.is_negative.imply.abs_is_positive, simplify=None)
 
 
 if __name__ == '__main__':
     run()
-
+# created on 2020-04-16
+# updated on 2020-04-16

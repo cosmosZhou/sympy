@@ -29,7 +29,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(sigma).defun()
 
-    Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add.split, cond=CartesianSpace(Range(0, n), k))
+    Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add.split, cond=CartesianSpace(Range(n), k))
 
     Eq << Eq[-1].this.find(Complement).apply(sets.complement.to.conditionset)
 
@@ -37,3 +37,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-11-18
+# updated on 2020-11-18

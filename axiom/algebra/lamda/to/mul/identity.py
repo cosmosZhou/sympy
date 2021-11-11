@@ -25,10 +25,12 @@ def prove(Eq):
     a = Symbol(real=True, shape=(oo,))
     Eq << apply(Lamda[j:n, i:n](a[j] * KroneckerDelta(i, j)))
 
-    i = Symbol(domain=Range(0, n))
+    i = Symbol(domain=Range(n))
     Eq << algebra.eq.given.eq.getitem.apply(Eq[0], i)
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2019-10-17
+# updated on 2019-10-17

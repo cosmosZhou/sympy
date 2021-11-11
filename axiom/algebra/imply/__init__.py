@@ -5,8 +5,8 @@ from . import all_le
 from . import gt
 from . import lt
 from . import ge
-from . import is_nonnegative
-from . import suffice
+from . import infer
 from . import et
-from . import add_is_nonnegative
 from . import eq
+from . import ge_zero
+from . import add_ge_zero

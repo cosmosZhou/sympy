@@ -32,11 +32,13 @@ def prove(Eq):
 
     Eq << Eq[0] * f(-n -1) * f(n + 1)
 
-    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
+    Eq << Infer(Eq[0], Eq.induct, plausible=True)
 
-    Eq << algebra.suffice.imply.eq.induct.apply(Eq[-1], n=n, start=0)
+    Eq << algebra.infer.imply.eq.induct.apply(Eq[-1], n=n, start=0)
 
 
 if __name__ == '__main__':
     run()
 from . import infinity
+# created on 2020-02-24
+# updated on 2020-02-24

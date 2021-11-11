@@ -15,7 +15,7 @@ def prove(Eq):
     f = Function(real=True)
     Eq << apply(All[i:a:b](f(i)), i, c - i)
 
-    Eq << algebra.equivalent.given.et.apply(Eq[0])
+    Eq << algebra.iff.given.et.apply(Eq[0])
 
     Eq << Eq[-2].this.lhs.apply(algebra.all.imply.all.limits.subs.reverse, i, c - i)
     Eq << Eq[-1].this.rhs.apply(algebra.all.imply.all.limits.subs.reverse, i, c - i)
@@ -23,3 +23,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2018-06-20
+# updated on 2018-06-20

@@ -14,7 +14,7 @@ from sympy.sets.setexpr import Card, Measure
 from sympy.core.cache import cacheit
 
 PositiveIntegers = Range(1, S.Infinity)
-NonnegativeIntegers = Range(0, S.Infinity)
+NonnegativeIntegers = Range(S.Infinity)
 
 Naturals = PositiveIntegers 
 Naturals0 = NonnegativeIntegers

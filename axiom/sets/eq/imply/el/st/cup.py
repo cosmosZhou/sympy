@@ -17,7 +17,7 @@ def prove(Eq):
     n = Symbol(integer=True)
     s = Symbol.A(etype=dtype.integer)
     x = Symbol(integer=True, shape=(oo,))
-    i = Symbol(domain=Range(0, n))
+    i = Symbol(domain=Range(n))
 
     Eq << apply(Equal(x[:n].set_comprehension(), s), index=i)
 
@@ -31,3 +31,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-08-04
+# updated on 2020-08-04

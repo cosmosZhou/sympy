@@ -15,7 +15,7 @@ def prove(Eq):
     f = Function(real=True)
     Eq << apply(Any[i](f(i) >= 0))
 
-    Eq << algebra.equivalent.given.et.suffice.apply(Eq[0])
+    Eq << algebra.iff.given.et.infer.apply(Eq[0])
 
     Eq << Eq[-2].this.lhs.apply(algebra.any.imply.any.limits.negate.infinity)
 
@@ -24,3 +24,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2018-07-10
+# updated on 2018-07-10

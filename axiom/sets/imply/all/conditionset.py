@@ -14,7 +14,7 @@ def apply(P):
 def prove(Eq):
     n = Symbol(integer=True, positive=True)
     x = Symbol(shape=(oo,), integer=True, nonnegative=True)
-    P = Symbol(conditionset(x[:n], Equal(x[:n].set_comprehension(), Range(0, n))))
+    P = Symbol(conditionset(x[:n], Equal(x[:n].set_comprehension(), Range(n))))
     Eq << apply(P)
 
     Eq << All[x[:n]:P](Element(x[:n], P), plausible=True)
@@ -27,3 +27,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-07-02
+# updated on 2020-07-02

@@ -29,12 +29,14 @@ def prove(Eq):
 
     Eq << algebra.eq.eq.imply.eq.transit.apply(Eq[-2], Eq[-1])
 
-    Eq << algebra.lt.imply.is_positive.apply(Eq[0])
+    Eq << algebra.lt.imply.gt_zero.apply(Eq[0])
 
-    Eq << algebra.is_positive.eq.imply.eq.div.apply(Eq[-1], Eq[-2])
+    Eq << algebra.gt_zero.eq.imply.eq.div.apply(Eq[-1], Eq[-2])
 
     Eq << calculus.lt.eq_limit.imply.eq.Darboux.apply(Eq[0], Eq[-1])
 
 
 if __name__ == '__main__':
     run()
+# created on 2020-05-27
+# updated on 2020-05-27

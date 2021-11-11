@@ -3,7 +3,7 @@ from . import factorial, mul
 from . import binomial
 from . import det
 from . import stirling1
-from . import all_is_positive
+from . import all_gt_zero
 from . import alpha
 from . import K
 from . import H
@@ -54,4 +54,5 @@ from . import imply
 from . import det_lamda
 from . import det_add
 from . import ge
-from . import is_nonzero
+from . import ne_zero
+from . import lamda_piece

@@ -1,3 +1,3 @@
 from . import eq
-from . import is_positive
 from . import et
+from . import gt_zero

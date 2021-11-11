@@ -60,11 +60,13 @@ def prove(Eq):
 
     Eq << Eq.induct.this.rhs.expand(func=True)
 
-    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
+    Eq << Infer(Eq[0], Eq.induct, plausible=True)
 
-    Eq << algebra.eq.eq.suffice.imply.eq.induct.apply(Eq[1], Eq[2], Eq[-1], n=n, start=1)
+    Eq << algebra.eq.eq.infer.imply.eq.induct.apply(Eq[1], Eq[2], Eq[-1], n=n, start=1)
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2020-06-30
+# updated on 2020-06-30

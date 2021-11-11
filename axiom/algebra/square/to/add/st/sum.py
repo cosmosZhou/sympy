@@ -10,7 +10,7 @@ def apply(self):
         [i] = limit
         domain = xi.domain_defined(i)
         z, n = domain.of(Range)
-        
+
     assert z == 0
 
     j = self.generate_var({i}, integer=True, var='j')
@@ -46,10 +46,12 @@ def prove(Eq):
     j = Eq[0].find(Number * ~Sum).variable
     Eq << Eq[-1].this.rhs.find(Indexed * ~Sum).limits_subs(j, i)
 
-    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
+    Eq << Infer(Eq[0], Eq.induct, plausible=True)
 
-    Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq.initial, Eq[-1], n=n, start=1)
+    Eq << algebra.cond.infer.imply.cond.induct.apply(Eq.initial, Eq[-1], n=n, start=1)
 
 
 if __name__ == '__main__':
     run()
+# created on 2019-11-03
+# updated on 2019-11-03

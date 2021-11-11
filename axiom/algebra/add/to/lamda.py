@@ -30,7 +30,7 @@ def prove(Eq):
     g = Symbol(shape=(n, n), integer=True)
     Eq << apply(Lamda[i:n, j:n](f(j, i)) + g)
 
-    i, j = Symbol(domain=Range(0, n))
+    i, j = Symbol(domain=Range(n))
     Eq << algebra.eq.given.eq.getitem.apply(Eq[0], i)
 
     Eq << algebra.eq.given.eq.getitem.apply(Eq[-1], j)
@@ -38,3 +38,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2018-04-04
+# updated on 2018-04-04

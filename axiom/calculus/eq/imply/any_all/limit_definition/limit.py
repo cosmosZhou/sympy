@@ -31,10 +31,12 @@ def prove(Eq):
 
     Eq << calculus.eq.to.any_all.limit_definition.apply(Eq[0])
 
-    Eq << algebra.cond.equivalent.imply.cond.transit.apply(Eq[0], Eq[-1])
+    Eq << algebra.cond.iff.imply.cond.transit.apply(Eq[0], Eq[-1])
 
     Eq << Eq[-1].subs(Eq[0].reversed)
 
 
 if __name__ == '__main__':
     run()
+# created on 2020-04-07
+# updated on 2020-04-07

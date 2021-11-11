@@ -1,2 +1,2 @@
-from . import sum_is_nonnegative
 from . import eq
+from . import sum_ge_zero

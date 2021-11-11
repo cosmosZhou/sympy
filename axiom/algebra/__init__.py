@@ -1,5 +1,5 @@
 from . import gt
-from . import is_nonzero
+from . import ne_zero
 from . import eq
 from . import ge
 from . import lt
@@ -9,19 +9,19 @@ from . import ou
 from . import any_et, any_ou
 from . import any
 from . import le
-from . import is_nonnegative
-from . import is_nonpositive
+from . import ge_zero
+from . import le_zero
 from . import all
-from . import necessary
-from . import equivalent
+from . import assuming
+from . import iff
 from . import cond
 from . import et
 from . import imply
 from . import all_lt
 from . import all_le
 from . import all_any
-from . import is_positive
-from . import is_negative
+from . import gt_zero
+from . import lt_zero
 from . import all_gt
 from . import all_ge
 from . import any_all
@@ -43,7 +43,7 @@ from . import add, mod
 from . import bool
 from . import pow, square, abs
 from . import subs
-from . import suffice
+from . import infer
 from . import norm
 from . import slice
 from . import eq_piece
@@ -59,22 +59,21 @@ from . import kroneckerDelta
 from . import lamda_piece
 
 
-from . import suffice_et
+from . import infer_et
 
 from . import all_is_zero
 
 from . import all_any_et
 from . import eq_ceiling
 from . import eq_sum
-from . import all_is_nonnegative
-from . import all_is_positive
-from . import all_is_negative
-from . import all_is_nonpositive
+from . import all_ge_zero
+from . import all_gt_zero
+from . import all_lt_zero
+from . import all_le_zero
 from . import sum_sum
-from . import suffice_suffice
-from . import abs_is_positive
+from . import infer_infer
 from . import abs_is_zero
-from . import abs_is_nonzero
+from . import abs_ne_zero
 from . import ge_max
 from . import gt_max
 from . import lt_max
@@ -85,7 +84,7 @@ from . import le_min
 from . import gt_min
 from . import eq_max
 from . import eq_min
-from . import abs_is_nonpositive
+from . import abs_le_zero
 from . import all_ne
 from . import sum_square
 from . import le_abs
@@ -93,9 +92,9 @@ from . import abs_sum
 from . import symbol
 from . import eq_bool
 from . import et_any
-from . import add_is_zero
+from . import poly_is_zero
 from . import pow_exp
-from . import mod_is_nonzero
+from . import mod_ne_zero
 from . import expr
 from . import arg_mul
 from . import arg_pow
@@ -110,9 +109,9 @@ from . import eq_pow
 from . import ou_eq
 from . import mod_is_zero
 from . import mul_root
-from . import ceiling_is_positive
-from . import ceiling_is_negative
-from . import ceiling_is_nonzero
+from . import ceiling_gt_zero
+from . import ceiling_lt_zero
+from . import ceiling_ne_zero
 from . import gt_arg
 from . import arg_piece
 from . import ceiling_piece
@@ -122,7 +121,7 @@ from . import arg
 from . import ceiling_arg
 from . import eq_square
 from . import ou_is_zero
-from . import ou_is_nonzero
+from . import ou_ne_zero
 from . import prod
 from . import lt_piece
 from . import le_piece
@@ -138,14 +137,10 @@ from . import eq_sup
 from . import eq_inf
 from . import all_any_gt
 from . import all_any_lt
-from . import ge_sup
-from . import le_inf
-from . import mul_is_positive
-from . import add_is_positive
-from . import add_is_negative
-from . import le_sup
+from . import mul_gt_zero
+from . import add_gt_zero
+from . import add_lt_zero
 from . import inf
-from . import ge_inf
 from . import eq_reducedMin
 from . import reducedMin
 from . import eq_reducedMax
@@ -156,5 +151,18 @@ from . import le_maxima
 from . import ge_maxima
 from . import gt_maxima
 from . import lt_minima
-from . import le_minima
 from . import ge_minima
+from . import abs_le
+from . import eq_abs
+from . import abs_gt
+from . import abs_ge
+from . import abs_lt
+from . import inf_le
+from . import sup_ge
+from . import sup_le
+from . import inf_ge
+from . import sum_ge_zero
+from . import minima_le
+from . import minima_ge
+from . import oneMatrix
+from . import zeroMatrix

@@ -13,7 +13,7 @@ def prove(Eq):
     from axiom import discrete, algebra
 
     n = Symbol(integer=True, positive=True)
-    k = Symbol(domain=Range(0, n + 1))
+    k = Symbol(domain=Range(n + 1))
     Eq << apply(binomial(n, k))
 
     Eq << Eq[-1].this.find(FallingFactorial).apply(discrete.fallingFactorial.to.prod)
@@ -38,3 +38,5 @@ if __name__ == '__main__':
     run()
 
 from . import doit
+# created on 2020-02-28
+# updated on 2020-02-28

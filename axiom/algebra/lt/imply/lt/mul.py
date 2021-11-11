@@ -20,13 +20,15 @@ def prove(Eq):
 
     Eq << Eq[0] - y
 
-    Eq << algebra.is_positive.is_negative.imply.is_negative.apply(Eq[-2], Eq[-1])
+    Eq << algebra.gt_zero.lt_zero.imply.lt_zero.apply(Eq[-2], Eq[-1])
 
     Eq << Eq[-1].this.lhs.expand()
 
-    Eq << algebra.is_negative.imply.lt.apply(Eq[-1])
+    Eq << algebra.lt_zero.imply.lt.apply(Eq[-1])
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2019-12-31
+# updated on 2019-12-31

@@ -47,11 +47,13 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.sum_mul.to.add)
 
-    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
+    Eq << Infer(Eq[0], Eq.induct, plausible=True)
 
-    Eq << algebra.suffice.imply.cond.induct.apply(Eq[-1], n=n)
+    Eq << algebra.infer.imply.cond.induct.apply(Eq[-1], n=n)
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2020-10-10
+# updated on 2020-10-10

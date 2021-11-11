@@ -14,9 +14,9 @@ def apply(set_comprehension_equality, last_element_equality):
     set_comprehension, interval = set_comprehension_equality.of(Equal)
     _p = of_set_comprehension(set_comprehension)
     assert p[:n + 1] == _p
-    assert interval == Range(0, n + 1)
+    assert interval == Range(n + 1)
 
-    return Equal(p[:n].set_comprehension(), Range(0, n))
+    return Equal(p[:n].set_comprehension(), Range(n))
 
 
 @prove
@@ -25,7 +25,7 @@ def prove(Eq):
 
     n = Symbol(integer=True, positive=True, given=True)
     p = Symbol(shape=(oo,), integer=True, nonnegative=True, given=True)
-    Eq << apply(Equal(p[:n + 1].set_comprehension(), Range(0, n + 1)),
+    Eq << apply(Equal(p[:n + 1].set_comprehension(), Range(n + 1)),
                 Equal(p[n], n))
 
     Eq << Eq[0].this.lhs.apply(sets.cup.to.union.split, cond=slice(-1))
@@ -43,7 +43,7 @@ def prove(Eq):
     Eq << Eq[-1].apply(sets.el_cup.imply.any_el)
 
     i = Eq[-1].variable
-    _i = i.copy(domain=Range(0, n))
+    _i = i.copy(domain=Range(n))
     Eq << Eq[-1].limits_subs(i, _i)
 
     Eq << Eq[0].lhs.this.apply(sets.cup.to.union.split, cond={_i, n})
@@ -73,3 +73,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-07-08
+# updated on 2020-07-08

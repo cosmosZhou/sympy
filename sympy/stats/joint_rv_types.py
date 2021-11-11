@@ -526,9 +526,9 @@ class MultivariateEwensDistribution(JointDistribution):
             i = Symbol('i', integer=True, positive=True)
             return Product(Intersection(S.Naturals0, Interval(0, self.n//i)),
                                     (i, 1, self.n))
-        prod_set = Range(0, self.n + 1)
+        prod_set = Range(self.n + 1)
         for i in range(2, self.n + 1):
-            prod_set *= Range(0, self.n//i + 1)
+            prod_set *= Range(self.n//i + 1)
         return prod_set.flatten()
 
     def pdf(self, *syms):
@@ -842,7 +842,7 @@ class NegativeMultinomialDistribution(JointDistribution):
 
     @property
     def set(self):
-        return Range(0, S.Infinity)**len(self.p)
+        return Range(S.Infinity)**len(self.p)
 
     def pdf(self, *k):
         k0, p = self.k0, self.p

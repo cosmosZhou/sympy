@@ -17,7 +17,7 @@ def apply(m, d, w=None, x=None):
         x = Symbol.x(shape=(oo,), integer=True, nonnegative=True)
     x = x[:n]
 
-    P = Symbol(conditionset(x, Equal(x.set_comprehension(), Range(0, n))))
+    P = Symbol(conditionset(x, Equal(x.set_comprehension(), Range(n))))
 
     return Element(Lamda[i:n](i) @ MatProduct[i:m](w[i, d[i]]), P)
 
@@ -55,3 +55,5 @@ if __name__ == '__main__':
     run()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html
 
+# created on 2020-11-05
+# updated on 2020-11-05

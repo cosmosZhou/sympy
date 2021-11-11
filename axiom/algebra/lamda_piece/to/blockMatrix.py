@@ -33,7 +33,7 @@ def prove(Eq):
 
     i = Symbol(integer=True)
     m, n = Symbol(integer=True, positive=True)
-    k, i = Symbol(domain=Range(0, n))
+    k, i = Symbol(domain=Range(n))
     g, h = Symbol(real=True, shape=(oo, m))
     Eq << apply(Lamda[i:n](Piecewise((g[i], i < k), (h[i], True))))
 
@@ -42,3 +42,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2019-10-22
+# updated on 2019-10-22

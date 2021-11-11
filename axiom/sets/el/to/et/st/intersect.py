@@ -26,7 +26,7 @@ def prove(Eq):
 
     Eq << apply(Element(x, A & B), index=0)
 
-    Eq << algebra.equivalent.given.et.suffice.apply(Eq[-1])
+    Eq << algebra.iff.given.et.infer.apply(Eq[-1])
 
     Eq << Eq[-1].this.lhs.apply(sets.el.imply.el.split.intersect)
 
@@ -34,3 +34,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2019-10-08
+# updated on 2019-10-08

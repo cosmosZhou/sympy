@@ -29,15 +29,17 @@ def prove(Eq):
     e = Symbol(nonnegative=True)
     Eq << algebra.all.imply.all.limits.restrict.apply(Eq[1], Interval(a, b - e))
 
-    Eq << algebra.cond.imply.suffice.unbounded.apply(Eq[-1], e)
+    Eq << algebra.cond.imply.infer.unbounded.apply(Eq[-1], e)
 
     e = Eq[-1].lhs.lhs
     Eq << Eq[-1].subs(e, b - c)
 
-    Eq << algebra.le.imply.is_nonnegative.apply(Eq[0])
+    Eq << algebra.le.imply.ge_zero.apply(Eq[0])
 
-    Eq << algebra.cond.suffice.imply.cond.transit.apply(Eq[-1], Eq[-2])
+    Eq << algebra.cond.infer.imply.cond.transit.apply(Eq[-1], Eq[-2])
 
 
 if __name__ == '__main__':
     run()
+# created on 2019-10-23
+# updated on 2019-10-23

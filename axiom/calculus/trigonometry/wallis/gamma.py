@@ -57,11 +57,13 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.expand(func=True)
 
-    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
+    Eq << Infer(Eq[0], Eq.induct, plausible=True)
 
-    Eq << algebra.eq.eq.suffice.imply.eq.induct.apply(Eq.one, Eq.two, Eq[-1], n=m, start=1)
+    Eq << algebra.eq.eq.infer.imply.eq.induct.apply(Eq.one, Eq.two, Eq[-1], n=m, start=1)
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2020-07-01
+# updated on 2020-07-01

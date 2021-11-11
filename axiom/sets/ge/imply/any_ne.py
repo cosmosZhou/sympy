@@ -41,7 +41,7 @@ def prove(Eq):
 
     Eq << algebra.any_eq.cond.imply.any.subs.apply(Eq[-2].reversed, Eq[-1])
 
-    Eq << Eq[-1].this.expr.apply(sets.ge.imply.is_nonempty, simplify=False)
+    Eq << Eq[-1].this.expr.apply(sets.ge.imply.ne_empty, simplify=False)
 
     i, j = Eq[1].variables
     Eq << Any[i:S, j:S](Element(j, Eq[-1].lhs), plausible=True)
@@ -56,3 +56,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-07-15
+# updated on 2020-07-15

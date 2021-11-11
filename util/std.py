@@ -1,6 +1,20 @@
 import json
 import os
 
+
+def cstring(s):
+    return bytes(s, 'utf8')
+
+
+def is_Windows():
+    return os.sep == '\\'
+
+    
+# is Linux System
+def is_Linux():
+    return os.sep == '/'
+
+
 def json_encode(data, utf8=False): 
     s = json.dumps(data, ensure_ascii=False)
     if utf8:
@@ -41,10 +55,50 @@ def HeapPermutation(k, A):
             
             yield from HeapPermutation(k - 1, A)
 
+
 def generate_all_permutation(A):
     yield from HeapPermutation(len(A), A)        
+
         
 def skip_first_permutation(A):
     generator = HeapPermutation(len(A), A)
     next(generator)
     yield from generator
+
+
+import heapq
+
+
+class TopKHeap(object):
+
+    def __init__(self, k):
+        self.data = []
+        self.k = k
+
+    def push(self, num):
+
+        if len(self.data) < self.k:
+            heapq.heappush(self.data, num)
+        elif num > self.data[0]:
+                heapq.heapreplace(self.data, num)
+
+    def topk(self):
+        
+        arr = []
+        while self.data: 
+            a = heapq.heappop(self.data)
+            arr.append(a)
+            
+        arr.reverse()
+        return arr
+
+
+if __name__ == '__main__':
+    import random
+    heap = TopKHeap(10)
+    for i in range(100):
+        n = random.randint(0, 100)
+        # print(n,'------------')
+        heap.push(n)
+    print(heap.topk())
+    

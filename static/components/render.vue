@@ -2,8 +2,8 @@
     <div v-finish>
         <form name=form spellcheck=false enctype="multipart/form-data"
             method=post action="">
-            <renderApply v-if=apply ref=apply :apply=apply :apply-arg=applyArg></renderApply>
-            <renderProve :prove="given.py" :index=0></renderProve>
+            <renderApply v-if=applyCode ref=apply :text=applyCode></renderApply>
+            <renderProve :text="given.py" :index=0></renderProve>
             <template v-if=given.latex>
                 <hr>
                 <h3 title='callee hierarchy'>
@@ -40,12 +40,12 @@
             </h3>
 
             <template v-for="(p, index) in prove">
-                <renderProve :prove="p.py" :index="index + 1"></renderProve>
+                <renderProve :text="p.py" :index="index + 1"></renderProve>
                 <p>{{p.latex}}</p>
             </template>
 
             <template v-for="(_, i) in unused.length">
-                <renderProve :prove="unused[i]" :index="i + prove.length + 1"></renderProve>
+                <renderProve :text="unused[i]" :index="i + prove.length + 1"></renderProve>
                 <br>
             </template>
 
@@ -56,16 +56,22 @@
             <h3>debugging information is printed as follows:</h3>
         </template>
 
+        <font v-for="(err, index) of error" class=error :title=err.file @click="click_font(index, err.line)">
+            <template v-if=!index>
+            	{{err.type}}: {{err.info}}<br>
+            </template>
+            {{err.code}}<br>
+        </font>
+
         <div v-for="log in logs" v-cloak>
-            <p v-if="typeof log == 'string'">{{log}}</p>
-            <font v-else class=error :title=log.module @click=click>
-                {{log.code}}<br> {{log.type}}: {{log.error}}<br>
-            </font>
+            <p>{{log}}</p>
         </div>
         
         <div class=bottom-right>
             <p>
-                <font size=2>Created on {{timestamp.slice(0, 10)}}</font>
+                <font size=2>Created on {{createdTime}}</font>
+                <br>
+                <font size=2>Updated on {{updatedTime}}</font>
             </p>
         </div>
         
@@ -80,14 +86,17 @@ import renderApply from "./renderApply.vue"
 
 export default {
     components: {renderProve, renderApply},
-    props : [ 'prove', 'logs', 'given', 'imply', 'module', 'apply', 'applyArg', 'unused', 'where', 'timestamp'],
+    props : [ 'prove', 'logs', 'error', 'given', 'imply', 'module', 'unused', 'where', 'createdTime', 'updatedTime'],
     
-    created(){
+    async created(){
+    	if (this.hash)
+        	this.applyCode = await form_post("php/request.php", { apply: this.module });
     },
     
     data(){
         return {
         	renderProve: [],
+        	applyCode: '',
         };        
     },
     
@@ -96,14 +105,6 @@ export default {
             return sympy_user();
         },
 
-        error() {
-            for (let log of this.logs) {
-                if (typeof log == 'string')
-                    continue;
-                return log;
-            }
-        },
-        
         numOfRequisites(){
             var m = this.module.match(/([\w.]+)\.(imply|given)\./);
             if (m.length){
@@ -123,6 +124,17 @@ export default {
                 return 'imply';
             return 'given';
         },
+        
+        module(){
+        	return location.href.match(/axiom\.php\?module=([\/\w.]+)/)[1];
+        },
+        
+        hash(){
+        	var hash = location.hash;
+        	if (hash){
+        		return hash.slice(1);
+        	}
+        }
     },
 
     updated(){
@@ -132,23 +144,20 @@ export default {
     },
     
     methods: {
-        open_apply(arg){
-            if (this.apply) {
+        async open_apply(hash){
+            if (this.applyCode) {
                 this.$refs.apply.editor.focus();
             }
             else {
-                var module = location.href.match(/axiom\.php\?module=([\/\w.]+)/)[1];
-
-                form_post("php/request.php", { apply: module }).then(code => {
-                    console.log('code = ' + code);
-                    setAttribute(this, 'apply', code);
-                    setAttribute(this, 'applyArg', arg);
-                }).catch(fail);
+            	this.applyCode = await form_post("php/request.php", { apply: this.module });
             }                
         },
         
-        click(event) {
-            if (this.error.prove) {
+        click_font(index, line) {
+        	console.log(`index = ${index}, line = ${line}`);
+        	var error = this.error[index];
+        	switch(error.func){
+        	case 'prove':
                 var line = this.error.line;
                 var sum = 0;
                 
@@ -163,21 +172,30 @@ export default {
                         break;
                     }
                 }
-            }
-            else if (this.error.apply) {
-                console.log(this.error);
-                var line = this.error.line;
-
-                if (this.error.module) {
-                    var href = location.href;
-                    href = href.match(/(.+\/axiom.php\?module=).+/)[1];
-                    href += this.error.module;
-                    href += `&apply=${line}`;
-                    window.open(href);
+            	break;
+        	case 'apply':
+                console.log(error);
+                var module = error.file.match(/axiom\.([\w.]+)/)[1];
+                if (module == this.module) {
+                	this.open_apply(error.line);
                 }
                 else{
-                    this.open_apply(line);
+                    var href = location.href;
+                    href = href.match(/(.+\/axiom.php\?module=).+/)[1];                    
+                    href += `${module}#${line}`;
+                    window.open(href);
                 }
+                break;
+            default:
+            	var file = error.file;
+            	var line = error.line;
+            	var href = location.href;
+                href = href.match(/(.+\/axiom.php\?).+/)[1];
+                var index = file.indexOf('.');
+                var key = file.slice(0, index);
+                var value = file.slice(index + 1);
+                href += `${key}=${value}#${error.line}`;
+                window.open(href);
             }
         },
         
@@ -210,7 +228,7 @@ export default {
                             }
                         });
                     }
-                }).catch(fail);                    
+                });                    
             },
         },
     },

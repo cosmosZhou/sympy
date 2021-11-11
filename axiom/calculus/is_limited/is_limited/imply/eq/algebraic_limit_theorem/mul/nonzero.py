@@ -31,11 +31,13 @@ def prove(Eq):
     A = -Eq.limit_A_definition.expr.expr.lhs.arg.args[0]
     Eq << Eq[0].subs(A.this.definition.reversed)
 
-    Eq.is_positive = sets.is_nonzero_real.imply.abs_is_positive.apply(Eq[-1])
+    Eq.abs_gt_zero = sets.is_nonzero_real.imply.abs_gt_zero.apply(Eq[-1])
+
+    Eq.abs_is_positive = sets.is_nonzero_real.imply.abs_is_positive.apply(Eq[-1], simplify=None)
 
     Eq << sets.is_nonzero_real.imply.is_nonzero_real.div.apply(Eq[-1])
 
-    Eq << sets.is_nonzero_real.imply.abs_is_positive_real.apply(Eq[-1], simplify=None)
+    Eq << sets.is_nonzero_real.imply.abs_is_positive.apply(Eq[-1], simplify=None)
 
     Eq << Eq[-1].this.lhs.apply(algebra.abs.to.reciprocal, simplify=None)
 
@@ -59,12 +61,13 @@ def prove(Eq):
 
     Eq.lt_fx = Eq[-1].this.expr.expr * B
 
-    Eq << algebra.is_positive.imply.is_positive.div.apply(Eq.is_positive, ε / 2, simplify=None)
+    Eq << algebra.gt_zero.imply.gt_zero.div.apply(Eq.abs_gt_zero, ε / 2, simplify=None)
 
     Eq << Eq.limit_B_definition.subs(ε1, Eq[-1].lhs)
+
     Eq << algebra.cond.ou.imply.cond.apply(Eq.is_positive_real, Eq[-1])
 
-    Eq << Eq[-1].this.expr.expr.apply(algebra.is_positive.lt.imply.lt.mul, Eq.is_positive)
+    Eq << Eq[-1].this.expr.expr.apply(sets.lt.is_positive.imply.lt.mul, Eq.abs_is_positive)
 
     Eq << algebra.any_all.any_all.imply.any_all_et.limits_intersect.apply(Eq[-1], Eq.lt_fx)
 
@@ -74,16 +77,18 @@ def prove(Eq):
 
     Eq << Eq[-1].this.expr.expr.apply(algebra.lt.le.imply.lt.transit)
 
-    Eq << Eq[-1].this.expr.limits[0][1].args[0].apply(sets.lt.given.el.interval)
+    Eq << Eq[-1].this.expr.apply(algebra.all.imply.infer)
 
-    Eq << Eq[-1].this.expr.limits[0][1].args[0].apply(sets.lt.given.el.interval)
+    Eq << Eq[-1].this.find(Element).apply(sets.el.given.el.sub, x0)
 
-    Eq << Eq[-1].this.expr.limits[0][1].args[0].apply(sets.lt.given.el.interval)
-
-    Eq << Eq[-1].this.expr.limits[0][1].args[1].simplify()
+    Eq << Eq[-1].this.find(Add[Min]).apply(algebra.add.to.min)
 
     delta = Symbol(real=True, positive=True)
     Eq << algebra.any.imply.any.subs.apply(Eq[-1], Min(δ0, δ1, δ2), delta)
+
+    Eq << Eq[-1].this.find(Element).apply(sets.el.given.el.add, x0)
+
+    Eq << Eq[-1].this.expr.apply(algebra.infer.imply.all)
 
     Eq << calculus.any_all.imply.eq.limit_definition.apply(Eq[-1])
 
@@ -91,9 +96,14 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.args[0].definition
 
+    
+    
+
 
 if __name__ == '__main__':
     run()
 
 # https://en.wikipedia.org/wiki/Limit_of_a_function#Properties
 
+# created on 2020-04-16
+# updated on 2021-10-02

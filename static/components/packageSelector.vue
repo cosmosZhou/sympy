@@ -67,7 +67,7 @@ export default {
                     this.$parent.theorems.remove(focusedIndex);
                     //console.log('this.$parent.theorems = ' + this.$parent.theorems);
                     this.$parent.focusedIndex = -1;                        
-                }).catch(fail);
+                });
                 
                 break;
             case 'cancel':

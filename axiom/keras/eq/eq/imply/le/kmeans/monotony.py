@@ -31,14 +31,14 @@ def prove(Eq):
 
     M, n = Symbol(integer=True, positive=True)
     i = Symbol(integer=True)
-    k = Symbol(domain=Range(0, M))
+    k = Symbol(domain=Range(M))
     x = Symbol(real=True, shape=(M, n))
     w = Symbol(shape=(k,), etype=dtype.integer, empty=False)
     Eq << apply(Equal(Sum[i](Card(w[i])), M), Equal(Cup[i](w[i]), k.domain), x=x)
 
-    Eq << keras.eq.eq.imply.equivalent.kmeans.apply(Eq[0], Eq[1], x=x)
+    Eq << keras.eq.eq.imply.iff.kmeans.apply(Eq[0], Eq[1], x=x)
 
-    Eq << algebra.equivalent.imply.eq.sum.collapse.apply(Eq[-1], Eq[3].rhs.expr)
+    Eq << algebra.iff.imply.eq.sum.collapse.apply(Eq[-1], Eq[3].rhs.expr)
 
     i_ = Symbol.i(Eq[-1].find(Indexed, Sum))
     Eq << Eq[-1].subs(i_.this.definition.reversed)
@@ -47,9 +47,9 @@ def prove(Eq):
 
     Eq.plausible = Eq[3].subs(Eq[-1])
 
-    Eq << keras.eq.eq.imply.equivalent.kmeans.w_quote.apply(Eq[0], Eq[1], x=x)
+    Eq << keras.eq.eq.imply.iff.kmeans.w_quote.apply(Eq[0], Eq[1], x=x)
 
-    Eq << algebra.equivalent.imply.eq.sum.collapse.apply(Eq[-1], Eq.plausible.lhs.expr)
+    Eq << algebra.iff.imply.eq.sum.collapse.apply(Eq[-1], Eq.plausible.lhs.expr)
 
     i__ = Symbol("i'", Eq[-1].find(Indexed, ArgMin))
     Eq << Eq[-1].subs(i__.this.definition.reversed)
@@ -86,14 +86,16 @@ def prove(Eq):
 
     Eq << Eq.le.subs(Eq[-1], Eq[-3])
 
-    Eq << algebra.le.given.is_nonnegative.apply(Eq[-1])
+    Eq << algebra.le.given.ge_zero.apply(Eq[-1])
 
     Eq << Eq[-1].this.lhs.apply(algebra.add.to.sum.sub)
 
     Eq << Eq[-1].this.lhs.expr.expand()
 
-    Eq << algebra.is_nonnegative.given.is_nonnegative.st.sum.apply(Eq[-1])
+    Eq << algebra.sum_ge_zero.given.sum_ge_zero.apply(Eq[-1])
 
 
 if __name__ == '__main__':
     run()
+# created on 2020-12-26
+# updated on 2020-12-26

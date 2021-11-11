@@ -1,3 +1,3 @@
 from . import imply, given
-from . import suffice
+from . import infer
 from . import to

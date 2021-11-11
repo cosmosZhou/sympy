@@ -3,5 +3,5 @@ from . import ou
 from . import et
 from . import any_eq
 from . import subset
-from . import is_positive
-from . import is_negative
+from . import gt_zero
+from . import lt_zero

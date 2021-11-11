@@ -50,11 +50,13 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq[1].reversed)
 
-    Eq << Suffice(Eq.hypothesis, Eq.induct, plausible=True)
+    Eq << Infer(Eq.hypothesis, Eq.induct, plausible=True)
 
-    Eq << algebra.suffice.imply.cond.induct.apply(Eq[-1], n=m)
+    Eq << algebra.infer.imply.cond.induct.apply(Eq[-1], n=m)
 
 
 if __name__ == '__main__':
     run()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html
+# created on 2020-09-03
+# updated on 2020-09-03

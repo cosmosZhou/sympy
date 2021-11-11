@@ -16,7 +16,7 @@ def prove(Eq):
     A, B = Symbol(etype=dtype.integer)
     Eq << apply(All[x:A](f(x) > 0), cond=B)
 
-    Eq << algebra.equivalent.given.et.suffice.apply(Eq[0])
+    Eq << algebra.iff.given.et.infer.apply(Eq[0])
 
     Eq << Eq[-2].this.rhs.apply(algebra.all.all.given.all.limits_union)
 
@@ -26,3 +26,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2018-04-23
+# updated on 2018-04-23

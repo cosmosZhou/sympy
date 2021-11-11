@@ -15,7 +15,7 @@ def prove(Eq):
     f = Function(etype=dtype.real)
     Eq << apply(Cap[i](f(i)))
 
-    Eq << sets.eq.given.et.suffice.apply(Eq[-1])
+    Eq << sets.eq.given.et.infer.apply(Eq[-1])
 
     Eq <<= Eq[-2].this.lhs.apply(sets.el_cap.imply.all_el, simplify=None), Eq[-1].this.lhs.apply(sets.el_cap.imply.all_el, simplify=None)
 
@@ -26,3 +26,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2021-01-23
+# updated on 2021-01-23

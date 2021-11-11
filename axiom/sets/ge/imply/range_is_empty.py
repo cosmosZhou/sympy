@@ -17,10 +17,12 @@ def prove(Eq):
 
     Eq << ~Eq[1]
 
-    Eq << sets.range_is_nonempty.imply.lt.apply(Eq[-1])
+    Eq << sets.range_ne_empty.imply.lt.apply(Eq[-1])
 
     Eq << ~Eq[-1]
 
 
 if __name__ == '__main__':
     run()
+# created on 2018-10-19
+# updated on 2018-10-19

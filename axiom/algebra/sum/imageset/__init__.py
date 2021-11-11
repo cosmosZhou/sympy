@@ -42,3 +42,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 from . import proportional
+# created on 2018-05-02
+# updated on 2018-05-02

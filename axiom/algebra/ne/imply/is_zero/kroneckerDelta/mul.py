@@ -19,7 +19,7 @@ def prove(Eq):
 
     Eq << ~Eq[-1]
 
-    Eq << Eq[-1].this.expr.apply(algebra.is_nonzero.imply.et)
+    Eq << Eq[-1].this.expr.apply(algebra.ne_zero.imply.et)
 
     Eq << algebra.any_et.imply.any.limits_delete.apply(Eq[-1])
 
@@ -28,3 +28,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-02-06
+# updated on 2020-02-06

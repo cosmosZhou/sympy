@@ -2,7 +2,7 @@
 	<div>
 		packages:<br>  
 		<template v-for="module, i of packages">
-			<axiomPackage :module=module :tabindex="i + 1"></axiomPackage>
+			<axiomPackage :module=module :tabindex="i + 1" :index=i></axiomPackage>
 			<axiomContextmenu v-if='i == focusedIndex' :left=left :top=top></axiomContextmenu>
 		</template>
 		
@@ -21,14 +21,35 @@ export default {
 			focusedIndex: -1,
 			left: 0,
 			top: 0,
+			axiomPackage: [],
 		};
 	},
 
 	props : [ 'packages'],
 	
+	computed: {
+		focusedElement(){
+			return this.axiomPackage[this.focusedIndex];
+		},		
+	},
+	
 	methods: {
-		focus(){
-			this.$el.querySelector(".package").focus();
+		indexOf(element){
+			return this.packages.indexOf(element.module);	
+		},
+		
+		focus(hash){
+			if (hash){
+				for (let el of this.$el.querySelectorAll(".package")){
+					if (el.textContent.trim() == hash){
+						el.focus();
+						return true;
+					}
+				}
+			}
+
+			var el = this.$el.querySelector(".package");
+			el.focus();
 		},
 
 		remove(indexFocused){

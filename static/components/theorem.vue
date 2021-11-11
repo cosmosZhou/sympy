@@ -1,5 +1,5 @@
 <template>
-	<icon class=theorem :text=theorem :lines=5></icon>
+	<icon ref=icon class=theorem :text=theorem :lines=5 :index=index></icon>
 </template>
 
 <script>
@@ -8,7 +8,11 @@ import icon from "./icon.vue"
 export default {
 	components: {icon},
 	
-	props : [ 'theorem'],
+	props : [ 'theorem', 'index'],
+	
+	created(){
+		this.$parent.theorem[this.index] = this;	
+	},
 	
 	methods: {
 		dblclick(event) {
@@ -48,7 +52,7 @@ export default {
 			data['theorem'] = this.theorem;
 			form_post(`php/request/delete/theorem.php`, data).then(res => {
 				console.log('res = ' + res);
-			}).catch(fail);
+			});
 		},
 	}		
 }

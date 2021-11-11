@@ -7,7 +7,7 @@ def apply(n):
 
     p = Symbol(shape=(oo,), integer=True, nonnegative=True)
 
-    P = Symbol(conditionset(p[:n], Equal(p[:n].set_comprehension(), Range(0, n))))
+    P = Symbol(conditionset(p[:n], Equal(p[:n].set_comprehension(), Range(n))))
 
     b = Symbol(integer=True, shape=(oo,), nonnegative=True)
 
@@ -145,9 +145,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this.expr.expr.apply(algebra.eq.eq.imply.eq.subs, swap=True)
 
-    Eq << Suffice(Eq.hypothesis, Eq.induct, plausible=True)
+    Eq << Infer(Eq.hypothesis, Eq.induct, plausible=True)
 
-    Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq.initial, Eq[-1], n=n, start=2)
+    Eq << algebra.cond.infer.imply.cond.induct.apply(Eq.initial, Eq[-1], n=n, start=2)
 
     Eq << Eq[1].subs(Eq[0])
 
@@ -155,3 +155,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html
+# created on 2020-09-01
+# updated on 2020-09-01

@@ -18,4 +18,14 @@ But random tests sometimes find what your smartest test missed.
 The Python way is probably the right way.
 Community is more important than code."""
 
-print(s)
+print('s =', s)
+
+a = 1
+print('a =', a)
+
+b = 1
+print(b)
+
+c = 1
+print(c)
+

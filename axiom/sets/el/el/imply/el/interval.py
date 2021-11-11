@@ -21,7 +21,7 @@ def prove(Eq):
     w = Symbol(domain=Interval(0, 1))
     Eq << apply(Element(x0, domain), Element(x1, domain), w)
 
-    Eq << algebra.cond.given.et.suffice.split.apply(Eq[-1], cond=w > 0)
+    Eq << algebra.cond.given.et.infer.split.apply(Eq[-1], cond=w > 0)
 
     Eq << (w <= 0).this.apply(algebra.le.imply.eq.squeeze.interval)
 
@@ -29,13 +29,13 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.et.given.et.subs.eq)
 
-    Eq << algebra.suffice.given.et.suffice.apply(Eq[-1])
+    Eq << algebra.infer.given.et.infer.apply(Eq[-1])
 
-    Eq << algebra.cond.imply.suffice.apply(Eq[1], cond=w<=0)
+    Eq << algebra.cond.imply.infer.apply(Eq[1], cond=w<=0)
 
-    Eq << algebra.cond.given.et.suffice.split.apply(Eq[3], cond=w < 1)
+    Eq << algebra.cond.given.et.infer.split.apply(Eq[3], cond=w < 1)
 
-    Eq.open_interval, Eq.ge = Eq[-2].this.apply(algebra.suffice.flatten), Eq[-1].this.apply(algebra.suffice.flatten)
+    Eq.open_interval, Eq.ge = Eq[-2].this.apply(algebra.infer.flatten), Eq[-1].this.apply(algebra.infer.flatten)
 
     Eq << (w >= 1).this.apply(algebra.ge.imply.eq.squeeze.interval)
 
@@ -43,15 +43,15 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.et.given.et.subs.eq)
 
-    Eq << algebra.suffice.given.et.suffice.apply(Eq[-1])
+    Eq << algebra.infer.given.et.infer.apply(Eq[-1])
 
-    Eq << algebra.cond.imply.suffice.apply(Eq[0], cond=w >= 1)
+    Eq << algebra.cond.imply.infer.apply(Eq[0], cond=w >= 1)
 
     Eq << Eq.open_interval.this.lhs.apply(sets.lt.gt.imply.el.interval, simplify=None)
 
-    Eq << algebra.cond.imply.suffice.apply(Eq[0] & Eq[1], cond=Eq[-1].lhs)
+    Eq << algebra.cond.imply.infer.apply(Eq[0] & Eq[1], cond=Eq[-1].lhs)
 
-    Eq << algebra.suffice.imply.suffice.et.apply(Eq[-1])
+    Eq << algebra.infer.imply.infer.et.apply(Eq[-1])
 
     Eq << Eq[-1].this.rhs.apply(sets.el.el.el.imply.el.interval.open)
 
@@ -59,3 +59,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-05-08
+# updated on 2020-05-08

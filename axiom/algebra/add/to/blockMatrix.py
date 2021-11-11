@@ -32,11 +32,13 @@ def prove(Eq):
     A, B, C, D = Symbol(real=True, shape=(m, n))
     Eq << apply(Add(BlockMatrix(A, B), BlockMatrix(C, D)))
 
-    i = Symbol(domain=Range(0, m * 2))
-    j = Symbol(domain=Range(0, n))
+    i = Symbol(domain=Range(m * 2))
+    j = Symbol(domain=Range(n))
     Eq << algebra.eq.given.eq.getitem.apply(Eq[0], i)
     Eq << Eq[-1].this.lhs.apply(algebra.add.to.piece.st.two_pieces)
 
 
 if __name__ == '__main__':
     run()
+# created on 2018-08-04
+# updated on 2018-08-04

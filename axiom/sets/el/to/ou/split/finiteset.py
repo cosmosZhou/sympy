@@ -16,7 +16,7 @@ def prove(Eq):
     x, a, b = Symbol(real=True)
     Eq << apply(Element(x, {a, b}))
 
-    Eq << algebra.equivalent.given.et.apply(Eq[0])
+    Eq << algebra.iff.given.et.apply(Eq[0])
 
     Eq << Eq[-2].this.lhs.apply(sets.el.imply.ou.split.finiteset.two, simplify=False)
 
@@ -26,3 +26,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-08-15
+# updated on 2020-08-15

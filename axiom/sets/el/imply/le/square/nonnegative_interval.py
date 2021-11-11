@@ -23,9 +23,11 @@ def prove(Eq):
 
 
 
-    Eq << algebra.is_nonnegative.le.imply.le.square.apply(Eq[-2], Eq[-1])
+    Eq << algebra.ge_zero.le.imply.le.square.apply(Eq[-2], Eq[-1])
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2021-03-10
+# updated on 2021-03-10

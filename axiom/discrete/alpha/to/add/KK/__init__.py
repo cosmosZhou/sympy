@@ -1,8 +1,8 @@
 from util import *
 
 from axiom.discrete.K.to.add.definition import K
+from axiom.discrete.imply.gt_zero.alpha import alpha
 
-from axiom.discrete.imply.is_positive.alpha import alpha
 
 
 @apply
@@ -22,9 +22,9 @@ def prove(Eq):
 
     Eq << apply(x[:n + 1])
 
-    Eq << Eq[0].this.lhs.apply(discrete.alpha.to.mul.HK.st.is_positive)
+    Eq << Eq[0].this.lhs.apply(discrete.alpha.to.mul.HK.st.gt_zero)
 
-    Eq << Eq[-1].this.find(alpha).apply(discrete.alpha.to.mul.HK.st.is_positive)
+    Eq << Eq[-1].this.find(alpha).apply(discrete.alpha.to.mul.HK.st.gt_zero)
 
     Eq << Eq[-1] - Eq[-1].rhs.args[0]
 
@@ -37,3 +37,5 @@ if __name__ == '__main__':
     run()
 
 from . import step2
+# created on 2020-09-26
+# updated on 2020-09-26

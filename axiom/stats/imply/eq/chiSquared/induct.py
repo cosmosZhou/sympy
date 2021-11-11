@@ -84,12 +84,14 @@ def prove(Eq):
 
     Eq << Eq[-1].lhs.this.doit(evaluate=False)
 
-    Eq << Suffice(Eq[1], Eq.induct, plausible=True)
+    Eq << Infer(Eq[1], Eq.induct, plausible=True)
 
-    Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq.initial, Eq[-1], n=k, start=1)
+    Eq << algebra.cond.infer.imply.cond.induct.apply(Eq.initial, Eq[-1], n=k, start=1)
 
     #https://www.asmeurer.com/blog/
 
 
 if __name__ == '__main__':
     run()
+# created on 2021-07-17
+# updated on 2021-07-17

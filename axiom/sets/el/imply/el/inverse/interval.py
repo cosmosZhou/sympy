@@ -28,18 +28,20 @@ def prove(Eq):
 
     Eq << sets.el.imply.et.split.interval.apply(Eq[0])
 
-    Eq <<= algebra.ge.imply.le.inverse.apply(Eq[-2]), algebra.ge.imply.is_positive.apply(Eq[-2])
+    Eq <<= algebra.ge.imply.le.inverse.apply(Eq[-2]), algebra.ge.imply.gt_zero.apply(Eq[-2])
 
-    Eq << algebra.is_positive.imply.is_positive.div.apply(Eq[-1])
+    Eq << algebra.gt_zero.imply.gt_zero.div.apply(Eq[-1])
 
-    Eq <<= algebra.is_positive.le.imply.le.mul.apply(Eq[-1], Eq[3]), algebra.gt.le.imply.gt.transit.apply(Eq[-2], Eq[3])
+    Eq <<= algebra.gt_zero.le.imply.le.mul.apply(Eq[-1], Eq[3]), algebra.gt.le.imply.gt.transit.apply(Eq[-2], Eq[3])
 
-    Eq << algebra.is_positive.imply.is_positive.div.apply(Eq[-1])
+    Eq << algebra.gt_zero.imply.gt_zero.div.apply(Eq[-1])
 
-    Eq <<= algebra.is_positive.ge.imply.ge.mul.apply(Eq[-1], Eq[-3])
+    Eq <<= algebra.gt_zero.ge.imply.ge.mul.apply(Eq[-1], Eq[-3])
 
     Eq << sets.ge.le.imply.el.interval.apply(Eq[-1], Eq[4])
 
 
 if __name__ == '__main__':
     run()
+# created on 2020-06-21
+# updated on 2020-06-21

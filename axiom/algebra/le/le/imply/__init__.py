@@ -1,3 +1,3 @@
 from . import le
 from . import ge
-from . import is_nonnegative
+from . import ge_zero

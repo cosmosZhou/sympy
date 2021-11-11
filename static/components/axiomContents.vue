@@ -39,16 +39,18 @@ export default {
 	},
 	
 	mounted(){
-		if (this.theorems){
-			var hash = location.hash;			
-			if (hash){
-				hash = hash.slice(1);
-			}
-			
-			this.$refs.theorems.focus(hash);
+		var hash = location.hash;			
+		if (hash){
+			hash = hash.slice(1);
 		}
-		else if (this.packages){
-			this.$refs.packages.focus();
+		
+		var hit = false;
+		if (this.theorems.length){
+			hit = this.$refs.theorems.focus(hash);
+		}
+		
+		if (!hit && this.packages.length){
+			this.$refs.packages.focus(hash);
 		}			
 	},
 }

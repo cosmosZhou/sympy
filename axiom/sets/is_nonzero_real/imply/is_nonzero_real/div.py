@@ -17,10 +17,12 @@ def prove(Eq):
 
     Eq << sets.el.imply.ou.split.union.apply(Eq[0])
 
-    Eq << Eq[-1].this.args[0].apply(sets.is_negative_real.imply.is_negative_real.div)
+    Eq << Eq[-1].this.args[0].apply(sets.is_negative.imply.is_negative.div)
 
-    Eq << Eq[-1].this.args[1].apply(sets.is_positive_real.imply.is_positive_real.div)
+    Eq << Eq[-1].this.args[1].apply(sets.gt_zero.imply.is_positive.div)
 
 
 if __name__ == '__main__':
     run()
+# created on 2020-04-14
+# updated on 2020-04-14

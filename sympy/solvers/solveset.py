@@ -316,9 +316,7 @@ def _invert_complex(f, g_ys, symbol):
     if hasattr(f, 'inverse') and \
        not isinstance(f, TrigonometricFunction) and \
        not isinstance(f, HyperbolicFunction) and \
-       not isinstance(f, exp):
-        if len(f.args) > 1:
-            raise ValueError("Only functions with one argument are supported.")
+       not isinstance(f, exp) and len(f.args) == 1:
         return _invert_complex(f.args[0],
                                _imageset(Lambda(n, f.inverse()(n)), g_ys), symbol)
 

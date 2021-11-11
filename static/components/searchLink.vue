@@ -23,36 +23,7 @@ export default {
 		};
 	},
 	
-	props: [
-		'module',
-	],
-	/*
-	watch:{
-		module(newText, oldText){
-			if (oldText == newText){
-				return;	
-			}
-		
-			console.log('oldText = ' + oldText);
-			console.log('newText = ' + newText);			
-			
-			var sympy = sympy_user();
-			
-			var self = this.$parent;
-			form_post(`php/request/rename.php`, { old: oldText, new: newText}).then(res => {
-				console.log('res = ' + res);					
-			}).catch(fail);
-		},
-		
-		mode(newValue, oldValue){
-			if (oldValue == newValue){
-				return;
-			}
-			focusedAlready = false;
-		},
-		
-	},
-	*/
+	props: ['module'],
 	
 	computed: {
 		user(){
@@ -64,7 +35,33 @@ export default {
 		},			
 	},
 	
-	methods: {			
+	methods: {
+		set_module(module){
+			if (this.module == module){
+				return;	
+			}
+
+			console.log('oldText = ' + this.module);
+			console.log('newText = ' + module);			
+			
+			var sympy = sympy_user();
+			
+			form_post(`php/request/rename.php`, { old: this.module, new: module}).then(res => {
+				console.log('res = ' + res);					
+			});
+			
+			var modules = this.$root.modules;
+			if (!modules){
+				console.assert(this.module == this.$root.module, "this.module == this.$root.module");
+				this.$root.graph[module] = this.$root.graph[this.module];
+				delete this.$root.graph[this.module];
+				this.$root.module = module;
+			}
+			else{
+				modules[modules.indexOf(this.module)] = module;	
+			}
+		},
+		
 		contextmenu(event) {
 			//console.log("contextmenu: function(event)");
 			var self = event.target;				
@@ -85,16 +82,21 @@ export default {
 				this.mode = 'input';
 			}
 			else{
-				this.module = event.target.value;
-				this.mode = 'a';	
+				this.mode = 'a';
+				this.set_module(event.target.value);
 			}				
 		},
 		
 		keydown(event){
 			switch(event.key){
 			case 'Enter':
-				this.module = event.target.value;
-				this.mode = 'a';					
+				this.set_module(event.target.value);
+				this.mode = 'a';
+				var self = this;
+				setTimeout(()=>{
+					self.$el.focus();				
+				}, 100);
+				
 				break;
 			case 'F3':
 				console.log("F3 is pressed");
@@ -108,6 +110,7 @@ export default {
 			switch(event.key){
 			case 'F2':
 				this.mode = 'input';
+				focusedAlready = false;
 				break;
 			}				
 		},
@@ -117,11 +120,15 @@ export default {
 		focus: {
 		    // after dom is inserted into the document
 		    mounted(el, binding) {
-		    	if (!focusedAlready){
+		    	if (!focusedAlready || el.tagName == 'input'){
 		    		el.focus();
 		    		focusedAlready = true;
 		    	}
 		    },
+		    /*
+		    updated(el, binding){
+		    	el.focus();
+		    }*/
 		},
 	},
 }

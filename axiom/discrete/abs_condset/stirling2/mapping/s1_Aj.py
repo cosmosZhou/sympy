@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(n, k, s1=None, A=None):
     from sympy.functions.combinatorial.numbers import Stirling
-    j = Symbol(domain=Range(0, k + 1))
+    j = Symbol(domain=Range(k + 1))
 
     if s1 is None:
         x = Symbol(shape=(oo,), etype=dtype.integer, finiteset=True)
@@ -38,3 +38,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-10-05
+# updated on 2020-10-05

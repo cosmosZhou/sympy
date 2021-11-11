@@ -35,7 +35,7 @@ def prove(Eq):
     x, y = Function(real=True)
     m = Symbol(domain=Range(2, oo))
     i, j = Symbol(integer=True)
-    t = Symbol(domain=Range(0, m))
+    t = Symbol(domain=Range(m))
     Eq << apply(abs(y(t) - Sum[i:n](x(i)) / n) <= abs(y(t) - Sum[j:m](y(j)) / m), t)
 
     x_ = Symbol.x(Lamda[i:n](x(i)))
@@ -55,3 +55,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2019-11-28
+# updated on 2019-11-28

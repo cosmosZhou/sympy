@@ -23,18 +23,20 @@ def prove(Eq):
 
     Eq << Element(x, Interval(m, M, left_open=True, right_open=True)).this.apply(sets.el_interval.imply.lt.square)
 
-    Eq << algebra.suffice.imply.all.apply(Eq[-1])
+    Eq << algebra.infer.imply.all.apply(Eq[-1])
 
-    Eq << algebra.all_lt.imply.le_sup.apply(Eq[-1])
+    Eq << algebra.all_lt.imply.sup_le.apply(Eq[-1])
 
-    Eq << algebra.ge_sup.given.all_any_gt.apply(Eq[3], 'U')
+    Eq << algebra.sup_ge.given.all_any_gt.apply(Eq[3], 'U')
 
-    Eq << algebra.all.given.suffice.apply(Eq[-1])
+    Eq << algebra.all.given.infer.apply(Eq[-1])
 
-    Eq << algebra.cond.imply.suffice.et.apply(Eq[0], cond=Eq[-1].lhs)
+    Eq << algebra.cond.imply.infer.et.apply(Eq[0], cond=Eq[-1].lhs)
 
     Eq << Eq[-1].this.rhs.apply(algebra.lt.lt_max.imply.any_gt.square)
 
 
 if __name__ == '__main__':
     run()
+# created on 2019-09-08
+# updated on 2019-09-08

@@ -46,7 +46,7 @@ def prove(Eq):
 
     Eq << Eq.PE_definition.rhs.args[1].expr.this.arg.apply(algebra.mul.to.add)
 
-    Eq <<= Eq[-2].this.rhs.apply(geometry.sin.to.add.principle.add), Eq[-1].this.rhs.apply(geometry.cos.to.add.principle.add)
+    Eq <<= Eq[-2].this.rhs.apply(geometry.sin.to.add.principle), Eq[-1].this.rhs.apply(geometry.cos.to.add.principle)
 
     Eq.cossin = Eq.PE_definition.this.rhs.subs(Eq[-2], Eq[-1])
 
@@ -72,7 +72,7 @@ def prove(Eq):
 
     Eq << Eq.PE_quote_definition.rhs.args[1].expr.args[1].this.arg.apply(algebra.mul.to.add)
 
-    Eq <<= Eq[-2].this.rhs.apply(geometry.cos.to.add.principle.add), Eq[-1].this.rhs.apply(geometry.sin.to.add.principle.add)
+    Eq <<= Eq[-2].this.rhs.apply(geometry.cos.to.add.principle), Eq[-1].this.rhs.apply(geometry.sin.to.add.principle)
 
     Eq <<= algebra.eq.eq.imply.eq.transit.apply(Eq[-4], Eq[-2])
 
@@ -145,3 +145,5 @@ if __name__ == '__main__':
 # reference:
 # Self-Attention with Relative Position Representations.pdf
 # https://arxiv.org/abs/1803.02155
+# created on 2020-12-31
+# updated on 2020-12-31

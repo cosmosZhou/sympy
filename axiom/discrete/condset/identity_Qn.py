@@ -6,7 +6,7 @@ def apply(n, P_quote=None):
     from axiom.discrete.imply.all_et.mapping.Qu2v import predefined_symbols    
     Q, w, x = predefined_symbols(n)
     if P_quote is None:
-        P_quote = Symbol("P'", conditionset(x[:n + 1], Equal(x[:n].set_comprehension(), Range(0, n)) & Equal(x[n], n)))
+        P_quote = Symbol("P'", conditionset(x[:n + 1], Equal(x[:n].set_comprehension(), Range(n)) & Equal(x[n], n)))
 
     return Equal(Q[n], P_quote)
 
@@ -39,3 +39,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-07-09
+# updated on 2020-07-09

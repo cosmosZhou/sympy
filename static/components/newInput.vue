@@ -1,11 +1,9 @@
 <template>
 	<div>
-		<select v-if=phrases v-focus name=suggest class='non-arrowed' 
-		:style=select_style :size=select_size
-		@keydown=keydown_select>
+		<select v-if=phrases v-focus name=suggest class='non-arrowed' :style=select_style :size=select_size @keydown=keydown_select>
 			<option v-for="phrase in phrases" :value=phrase>{{phrase}}</option>
 		</select>
-		<input v-focus spellcheck=false name=module v-model=module :size=input_size @keydown=keydown />
+		<input v-focus spellcheck=false name=module :value=module :size=input_size @keydown=keydown @change=change_input />
 	</div>
 </template>
 
@@ -39,15 +37,6 @@ export default {
 	updated(){
 	},
 	
-	watch: {
-		module(newModule, oldModule){
-			if (newModule == oldModule){
-				return;	
-			}				
-			document.querySelector('title').textContent = newModule;
-		}
-	},
-	
 	data(){
 		return {
 			phrases: null,
@@ -57,7 +46,7 @@ export default {
 	
 	computed: {
 		input_size(){
-			return strlen(this.module);
+			return this.module.length;
 		},
 		
 		select_size(){
@@ -71,6 +60,10 @@ export default {
 		select_style(){
 			var offset = this.start * this.char_width;
 			return `transform: translate(${offset}px, 20px)`;
+		},
+		
+		editor(){
+			return this.$el.querySelector('input');
 		},
 	},
 	
@@ -95,7 +88,7 @@ export default {
 						this.start = start + 1;
 					}
 				}
-			}).catch(fail);				
+			});				
 		},
 		
 		keydown(event){
@@ -130,7 +123,7 @@ export default {
 					this.complete("suggest", prefix, start);
 					break;
 				case 'ArrowDown':
-					cm = this.$parent.$refs.apply.editor;
+					var cm = this.$parent.newApply.editor;
 					cm.focus();
 
 					var linesToMove = cm.getCursor().line;
@@ -229,6 +222,10 @@ export default {
 				input.selectionStart = selectionStart;
 				input.selectionEnd = selectionStart;
 			});
+		},
+		
+		change_input(event){
+			setAttribute(this, 'module', event.target.value);
 		},
 	},
 	

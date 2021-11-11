@@ -14,9 +14,11 @@ def prove(Eq):
     x, y = Symbol(real=True)
     Eq << apply(x >= y)
 
-    Eq << algebra.ge.imply.is_nonnegative.apply(Eq[0])
-    Eq << algebra.is_nonnegative.imply.eq.abs.apply(Eq[-1])
+    Eq << algebra.ge.imply.ge_zero.apply(Eq[0])
+    Eq << algebra.ge_zero.imply.eq.abs.apply(Eq[-1])
 
 
 if __name__ == '__main__':
     run()
+# created on 2019-05-25
+# updated on 2019-05-25

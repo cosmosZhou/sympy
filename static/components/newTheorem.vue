@@ -1,11 +1,11 @@
 <template>
 	<div>
 		module :
-		<new-input :module=module></new-input>
-		<form name=form enctype="multipart/form-data" method=post action="">
-			<newApply ref=apply :apply=apply></newApply>
+		<newInput ref=newInput :module=module></newInput>
+		<form name=form enctype=multipart/form-data method=post :action=action>
+			<newApply ref=newApply :text=apply></newApply>
 			<br>
-			<newProve ref=prove :prove=prove></newProve>
+			<newProve ref=newProve :text=prove></newProve>
 		</form>
 	</div>
 </template>
@@ -30,6 +30,27 @@ export default {
    			var prove = [];
    			prove.push(this.$refs.prove);
    			return prove;
+   		},
+   		
+   		newApply(){
+   			return this.$refs.newApply;
+   		},
+   		
+   		newProve(){
+   			return this.$refs.newProve;
+   		},   		
+   		
+   		newInput(){
+   			return this.$refs.newInput;
+   		},
+   		
+   		user(){
+   			return sympy_user();	
+   		},
+   		
+   		action(){
+   			var module = this.module.replace(/\./g, '/');
+   			return `/${this.user}/axiom.php?module=${module}`;
    		},
 	},
 	

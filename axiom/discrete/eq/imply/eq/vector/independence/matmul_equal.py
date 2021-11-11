@@ -64,8 +64,10 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.arg.limits_subs(j, i)
 
-    Eq << algebra.is_nonzero.eq.imply.eq.matrix.apply(Eq[-1], Eq.statement)
+    Eq << algebra.ne_zero.eq.imply.eq.matrix.apply(Eq[-1], Eq.statement)
 
 
 if __name__ == '__main__':
     run()
+# created on 2020-08-21
+# updated on 2020-08-21

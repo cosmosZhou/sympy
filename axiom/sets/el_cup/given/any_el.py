@@ -24,7 +24,7 @@ def prove(Eq):
     A = Symbol(shape=(oo,), etype=dtype.integer)
     Eq << apply(Element(x, Cup[k:n](A[k])))
 
-    i = Symbol(domain=Range(0, n))
+    i = Symbol(domain=Range(n))
     Eq << Eq[-1].limits_subs(k, i)
 
     Eq << Subset(A[i], Eq[0].rhs, plausible=True)
@@ -37,3 +37,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2018-09-28
+# updated on 2018-09-28

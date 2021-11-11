@@ -273,7 +273,7 @@ class Mul(Expr, AssocOp):
         c_part = []  # out: commutative factors
         nc_part = []  # out: non-commutative factors
 
-        nc_seq = []
+        
 
         coeff = S.One  # standalone term
                             # e.g. 3 * ...
@@ -353,8 +353,12 @@ class Mul(Expr, AssocOp):
                 neg1e += S.Half
                 continue
 
-            elif o.is_ZeroMatrix or o.is_OneMatrix:
+            elif o.is_ZeroMatrix:
                 coeff *= o
+                continue
+            elif o.is_OneMatrix:
+                if len(coeff.shape) < len(o.shape):
+                    coeff = Mul(coeff, o, evaluate=False)
                 continue
             else:
                 #      e

@@ -1,3 +1,3 @@
 from . import lt
 from . import gt
-from . import is_positive
+from . import gt_zero

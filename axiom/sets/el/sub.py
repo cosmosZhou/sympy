@@ -16,7 +16,7 @@ def prove(Eq):
 
     Eq << apply(Element(x, Interval(a, b)), t)
 
-    Eq << algebra.equivalent.given.et.apply(Eq[-1])
+    Eq << algebra.iff.given.et.apply(Eq[-1])
 
     Eq << Eq[-2].this.lhs.apply(sets.el.imply.el.sub, t)
 
@@ -26,3 +26,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2018-04-12
+# updated on 2018-04-12

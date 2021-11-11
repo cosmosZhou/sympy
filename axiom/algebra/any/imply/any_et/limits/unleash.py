@@ -51,11 +51,13 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.arg.args[2].rhs.definition
 
-    Eq << algebra.eq_bool.imply.equivalent.apply(Eq[-1])
+    Eq << algebra.eq_bool.imply.iff.apply(Eq[-1])
 
-    Eq << algebra.equivalent.cond.imply.cond.subs.apply(Eq[-1], Eq[-4])
+    Eq << algebra.iff.cond.imply.cond.subs.apply(Eq[-1], Eq[-4])
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2018-03-23
+# updated on 2018-03-23

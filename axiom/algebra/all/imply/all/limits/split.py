@@ -47,11 +47,11 @@ def prove(Eq):
 
     Eq << apply(All[x[:n + 1]:CartesianSpace(Interval(a, b), n + 1)](f(x[:n + 1]) > 0), index=n)
 
-    Eq << algebra.all.imply.suffice.apply(Eq[0])
+    Eq << algebra.all.imply.infer.apply(Eq[0])
 
     Eq << Eq[-1].this.lhs.apply(algebra.all.given.et, cond={n})
 
-    Eq << algebra.all.given.suffice.apply(Eq[1])
+    Eq << algebra.all.given.infer.apply(Eq[1])
 
     Eq << Eq[-1].this.lhs.args[0].simplify()
 
@@ -59,3 +59,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2018-12-07
+# updated on 2018-12-07

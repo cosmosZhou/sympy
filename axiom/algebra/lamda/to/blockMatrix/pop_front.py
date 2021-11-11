@@ -20,7 +20,7 @@ def prove(Eq):
     f = Function(real=True, shape=(m, m))
     Eq << apply(Lamda[i:0:n + 1](f(i)))
 
-    i = Symbol(domain=Range(0, n + 1))
+    i = Symbol(domain=Range(n + 1))
     Eq << algebra.eq.given.eq.getitem.apply(Eq[0], i)
 
     Eq << Eq[-1].this.rhs.apply(algebra.piece.to.kroneckerDelta)
@@ -28,3 +28,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2019-10-15
+# updated on 2019-10-15

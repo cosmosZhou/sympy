@@ -2,13 +2,13 @@ from util import *
 
 
 @apply
-def apply(given): 
+def apply(given):
     (xi, xj), *limits = given.of(All[Equal[Intersection, EmptySet]])
     * limits, (_, j_domain) = limits
     n_interval, i = j_domain.of(Complement)
     n = n_interval.stop
     i, *_ = i.args
-    
+
     if not xi.has(i):
         xi = xj
         assert xj.has(i)
@@ -27,7 +27,7 @@ def prove(Eq):
     i, j = Symbol(integer=True)
     n = Symbol(domain=Range(2, oo), given=False)
     x = Symbol(shape=(oo,), etype=dtype.integer, finiteset=True)
-    i_domain = Range(0, n)
+    i_domain = Range(n)
     Eq << apply(All(Equal(x[i] & x[j], x[i].etype.emptySet), (j, i_domain - {i})))
 
     Eq.initial = Eq[-1].subs(n, 2)
@@ -60,11 +60,13 @@ def prove(Eq):
 
     Eq << Eq[-2].subs(Eq[-1].reversed)
 
-    Eq << Suffice(Eq[1], Eq.induct, plausible=True)
+    Eq << Infer(Eq[1], Eq.induct, plausible=True)
 
-    Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq.initial, Eq[-1], n=n, start=2)
+    Eq << algebra.cond.infer.imply.cond.induct.apply(Eq.initial, Eq[-1], n=n, start=2)
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2020-08-05
+# updated on 2020-08-05

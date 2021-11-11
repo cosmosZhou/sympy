@@ -38,7 +38,7 @@ def prove(Eq):
     j = Eq[-1].variables[0]
     Eq << ~Eq[-1]
 
-    Eq << Eq[-1].this.expr.apply(sets.is_nonempty.imply.is_positive)
+    Eq << Eq[-1].this.expr.apply(sets.ne_empty.imply.gt_zero)
 
     Eq << sets.imply.eq.principle.inclusion_exclusion.basic.apply(x[i], x[j])
 
@@ -78,3 +78,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-07-18
+# updated on 2020-07-18

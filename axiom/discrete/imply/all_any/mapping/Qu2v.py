@@ -15,7 +15,7 @@ def prove(Eq):
     from axiom import sets, algebra, discrete
 
     n = Symbol(integer=True, positive=True)
-    u, v = Symbol(domain=Range(0, n + 1))
+    u, v = Symbol(domain=Range(n + 1))
     Eq << apply(n, u, v)
 
     w, i, j = Eq[0].lhs.args
@@ -68,3 +68,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-11-01
+# updated on 2020-11-01

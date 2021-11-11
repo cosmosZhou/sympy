@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(n):
     x = Symbol(shape=(oo,), integer=True, nonnegative=True)
-    return Equal(Card(conditionset(x[:n], Equal(x[:n].set_comprehension(), Range(0, n)))), factorial(n))
+    return Equal(Card(conditionset(x[:n], Equal(x[:n].set_comprehension(), Range(n)))), factorial(n))
 
 
 @prove
@@ -50,11 +50,13 @@ def prove(Eq):
 
     Eq << Eq.induct.subs(Eq.Pn1_definition.reversed)
 
-    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
+    Eq << Infer(Eq[0], Eq.induct, plausible=True)
 
-    Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq.initial, Eq[-1], n=n, start=1)
+    Eq << algebra.cond.infer.imply.cond.induct.apply(Eq.initial, Eq[-1], n=n, start=1)
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2020-08-07
+# updated on 2020-08-07

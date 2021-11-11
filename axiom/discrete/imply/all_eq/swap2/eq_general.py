@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(n, w=None):
-    domain = Range(0, n)
+    domain = Range(n)
     t, i, j = Symbol(domain=domain)
     assert n >= 2
     if w is None:
@@ -20,7 +20,7 @@ def prove(Eq):
     Eq << apply(n)
 
     i, _ = Eq[-1].rhs.indices
-    j = Symbol(domain=Range(0, n))
+    j = Symbol(domain=Range(n))
     w = Eq[0].lhs.base
     t = Eq[1].expr.lhs.args[0].indices[0]
     p = Symbol(complex=True)
@@ -93,3 +93,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html
+# created on 2020-08-23
+# updated on 2020-08-23

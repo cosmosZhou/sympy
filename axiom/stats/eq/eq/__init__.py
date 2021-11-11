@@ -1,2 +1,2 @@
-from . import is_nonzero
+from . import ne_zero
 from . import imply

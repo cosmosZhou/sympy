@@ -11,13 +11,13 @@ def apply(self):
 
 from axiom.discrete.H.to.add.definition import H
 from axiom.discrete.K.to.add.definition import K
-from axiom.discrete.imply.is_positive.alpha import alpha
+from axiom.discrete.imply.gt_zero.alpha import alpha
 
 
 @prove
 def prove(Eq):
     from axiom import discrete, algebra
-    from axiom.discrete.imply.is_positive.alpha import alpha
+    from axiom.discrete.imply.gt_zero.alpha import alpha
     x = Symbol(real=True, positive=True, shape=(oo,))
     n = Symbol(domain=Range(2, oo), given=False)
 
@@ -69,11 +69,13 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.mul.cancel, x[n + 1])
 
-    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
+    Eq << Infer(Eq[0], Eq.induct, plausible=True)
 
-    Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq.initial, Eq[-1], n=n, start=2)
+    Eq << algebra.cond.infer.imply.cond.induct.apply(Eq.initial, Eq[-1], n=n, start=2)
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2020-09-19
+# updated on 2020-09-19

@@ -30,15 +30,17 @@ def prove(Eq):
 
     Eq << algebra.eq.imply.et.squeeze.apply(Eq[-1])
 
-    Eq <<= algebra.le_inf.imply.all_any_lt.apply(Eq[-2]), algebra.ge_inf.imply.all_ge.apply(Eq[-1])
+    Eq <<= algebra.inf_le.imply.all_any_lt.apply(Eq[-2]), algebra.inf_ge.imply.all_ge.apply(Eq[-1])
 
     Eq << Eq[0].subs(Eq[1]).reversed
 
     Eq << algebra.eq.given.et.squeeze.apply(Eq[-1])
 
-    Eq <<= algebra.le_inf.given.all_any_lt.apply(Eq[-2]), algebra.ge_inf.given.all_ge.apply(Eq[-1])
+    Eq <<= algebra.inf_le.given.all_any_lt.apply(Eq[-2]), algebra.inf_ge.given.all_ge.apply(Eq[-1])
     Eq <<= Eq[-2].this.expr.apply(algebra.any.limits.negate), Eq[-1].this.apply(algebra.all.limits.negate)
 
 
 if __name__ == '__main__':
     run()
+# created on 2019-10-03
+# updated on 2019-10-03

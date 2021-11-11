@@ -161,7 +161,7 @@ class MatMul(MatrixExpr):
                 return ()
             * batch_size, n, k = lhs_shape 
             * _batch_size, _k, m = rhs_shape
-            assert k == _k            
+            assert k == _k, f"{lhs_shape}, {rhs_shape} are not compatible in matrix multiplication"
             assert batch_size == _batch_size
             return (*batch_size, n, m)
             
@@ -589,10 +589,10 @@ class MatMul(MatrixExpr):
         The following rules are applied.
 
         Transposition for matrix multiplied with another matrix:
-        `\\left(A B\\right)^{T} = B^{T} A^{T}`
+        \\left(A B\\right)^{T} = B^{T} A^{T}
 
         Transposition for matrix multiplied with scalar:
-        `\\left(c A\\right)^{T} = c A^{T}`
+        \\left(c A\\right)^{T} = c A^{T}
 
         References
         ==========

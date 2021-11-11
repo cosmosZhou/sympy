@@ -7,8 +7,8 @@ def apply(A):
     n = A.shape[0]
     i, j = Symbol(integer=True)
     d = Symbol(shape=(oo,), integer=True)
-    k = Symbol(domain=Range(0, n))
-    return Equal(Sum[k:1:n + 1]((-1) ** (k + 1) * Sum[d[:k]:All[j:i, i:k](d[j] < d[i]):CartesianSpace(Range(0, n), k)](Card(Cap[i:k](A[d[i]])))),
+    k = Symbol(domain=Range(n))
+    return Equal(Sum[k:1:n + 1]((-1) ** (k + 1) * Sum[d[:k]:All[j:i, i:k](d[j] < d[i]):CartesianSpace(Range(n), k)](Card(Cap[i:k](A[d[i]])))),
                     Card(Cup[i:n](A[i])))
 
 
@@ -25,3 +25,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2021-04-23
+# updated on 2021-04-23

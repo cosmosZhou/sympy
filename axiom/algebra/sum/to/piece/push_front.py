@@ -19,9 +19,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.find(Sum).apply(algebra.sum.to.add.split, cond={0})
 
-    Eq << algebra.cond.given.et.suffice.split.apply(Eq[-1], cond=n >= 1)
+    Eq << algebra.cond.given.et.infer.split.apply(Eq[-1], cond=n >= 1)
 
-    Eq <<= algebra.suffice.given.suffice.subs.bool.apply(Eq[-2]), algebra.suffice.given.suffice.subs.bool.apply(Eq[-1], invert=True)
+    Eq <<= algebra.infer.given.infer.subs.bool.apply(Eq[-2]), algebra.infer.given.infer.subs.bool.apply(Eq[-1], invert=True)
 
     Eq << Eq[-1].this.lhs.apply(algebra.lt.imply.sum_is_zero, Eq[-1].find(Sum))
 
@@ -31,8 +31,10 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(GreaterEqual).apply(algebra.ge.imply.gt.relax, lower=0)
 
-    Eq << algebra.suffice.given.suffice.subs.bool.apply(Eq[-1])
+    Eq << algebra.infer.given.infer.subs.bool.apply(Eq[-1])
 
 
 if __name__ == '__main__':
     run()
+# created on 2020-03-25
+# updated on 2020-03-25

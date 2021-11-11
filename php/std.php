@@ -6,6 +6,7 @@ namespace std;
 use Iterator, JsonSerializable, IteratorAggregate, RuntimeException;
 use curl_init, curl_setopt, curl_exec, curl_errno, curl_close;
 use mb_detect_encoding, mb_convert_encoding;
+use SplMinHeap;
 
 // implement common collections like: Set, Queue, Graph
 class QueueIterator implements Iterator
@@ -649,19 +650,19 @@ class Text implements IteratorAggregate
 
     private $file;
 
-    public function __construct($path)
+    public function __construct($path, $binary=False)
     {
         // error_log("path = " . $path);
-        if (file_exists($path)) {
-            $this->file = fopen($path, "r+");
+        if (file_exists($path)) {            
+            $this->file = fopen($path, $binary? "rb+": "r+");
         } else {
             createNewFile($path);
-            $this->file = fopen($path, "w+");
+            $this->file = fopen($path, $binary? "wb+": "w+");
         }
 
         if ($this->file === false) {
             createNewFile($path);
-            $this->file = fopen($path, "w+");
+            $this->file = fopen($path, $binary? "wb+": "w+");
 
             if ($this->file === false) {
                 throw new RuntimeException("fail to open file $path");
@@ -1025,7 +1026,7 @@ function jsonify($param)
     return json_encode($param, JSON_UNESCAPED_UNICODE);
 }
 
-function read_directory($dir)
+function list_directory($dir)
 {
     if (is_dir($dir)) {
 
@@ -1072,7 +1073,7 @@ function read_files($dir, $ext = null)
     }
 }
 
-function read_all_files($dir, $ext)
+function list_all_files($dir, $ext)
 {
     if (is_dir($dir)) {
 
@@ -1088,7 +1089,7 @@ function read_all_files($dir, $ext)
 
                 if (is_dir($temp)) {
                     // echo 'directory : ' . $temp . '<br>';
-                    yield from read_all_files($temp, $ext);
+                    yield from list_all_files($temp, $ext);
                 } else {
                     if (equals(get_extension($temp), $ext)) {
                         yield $temp;
@@ -1106,7 +1107,7 @@ function removedir($dir)
         unlink($file);
     }
 
-    foreach (read_directory($dir) as $subdir) {
+    foreach (list_directory($dir) as $subdir) {
         removedir($subdir);
     }
     rmdir($dir);
@@ -1353,4 +1354,34 @@ function str_to_utf8($str, $current_encode)
 {
     return mb_convert_encoding($str, 'UTF-8', $current_encode);
 }
+
+class TopKHeap{
+    private $heap;
+    private $k;
+    
+    public function __construct($k){
+        $this->k = $k;
+        $this->heap = new SplMinHeap();
+    }
+    
+    public function push($element){
+        if ($this->heap->count() < $this->k){
+            $this->heap->insert($element);
+        }
+        else if ($this->heap->top() < $element){            
+            $this->heap->extract();
+            $this->heap->insert($element);
+        }
+    }
+    
+    public function topk(){
+        while($this->heap->count()){
+            $element[] = $this->heap->extract();
+        }
+        
+        return array_reverse($element);
+    }
+}
+
+
 ?>

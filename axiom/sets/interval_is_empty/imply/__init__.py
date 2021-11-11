@@ -2,14 +2,14 @@ from . import gt
 
 from . import lt
 
-from . import is_positive
 
-from . import is_negative
 
 from . import ge
 
 from . import le
 
-from . import is_nonnegative
 
-from . import is_nonpositive
+from . import gt_zero
+from . import lt_zero
+from . import ge_zero
+from . import le_zero

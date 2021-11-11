@@ -42,7 +42,7 @@ f = Function(real=True, continuous=True) désigne une fonction à valeur réelle
 f = Function(real=True, differentiable=True) désigne une fonction à valeur réelle différentiable en un point donné;    
 f = Function(mesurable=True, domain=Interval(0, 1)) désigne une fonction mesurable à valeur réelle dont la valeur se trouve dans le domaine [0, 1];
 f = Function(real=True, integrable=True) désigne une fonction à valeur réelle Lebesgue-intégrable à un intervalle donné;    
-ainsi que la fonction intégrée au système, telle que [cos](../axiom.php?symbol=cos)(x), [sin](../axiom.php?symbol=sin)(x), [tan](../axiom.php?symbol=tan)(x), [log](../axiom.php?symbol=log)(x), [exp](../axiom.php?symbol=exp)(x), et quelques opérateurs plus complexes [Sum](../axiom.php?symbol=Sum)\[k:a:b\](h\[k\]), [Product](../axiom.php?symbol=Product)\[k:a:b\](h\[k\]), [All](../axiom.php?symbol=All)\[k:a:b\](h\[k\] > t\[k\]), [Any](../axiom.php?symbol=Any)\[k:a:b\](h\[k\] > t\[k\]), etc.  
+ainsi que la fonction intégrée au système, telle que [cos](../axiom.php?symbol=cos)(x), [sin](../axiom.php?symbol=sin)(x), [tan](../axiom.php?symbol=tan)(x), [log](../axiom.php?symbol=log)(x), [exp](../axiom.php?symbol=exp)(x), et quelques opérateurs plus complexes [Sum](../axiom.php?symbol=Sum)\[k:a:b\](h\[k\]), [Product](../axiom.php?symbol=Product)\[k:a:b\](h\[k\]), [ForAll](../axiom.php?symbol=All)\[k:a:b\](h\[k\] > t\[k\]), [Exists](../axiom.php?symbol=Any)\[k:a:b\](h\[k\] > t\[k\]), etc.  
 Toutes ces fonctions n’effectueront aucun calcul en virgule flottante comme d’habitude, car au cours du processus de preuve mathématique, toute implication de calculs avec des valeurs à virgule flottante entraînera une erreur logique en mathématiques pures.
 Chaque valeur dans la preuve mathématique est au sens strict une valeur mathématique, il n’y a pas de concept de valeurs approximatives comme les valeurs à virgule flottante;      
 
@@ -50,7 +50,7 @@ Chaque valeur dans la preuve mathématique est au sens strict une valeur mathém
 * Théorème désigne un théorème qui est prouvable ou un axiome qui est indémontrable ;
 Les entrées des théorèmes doivent être des expressions ou des conditions, ses sorties sont nécessairement des conditions. Il est stocké dans une base de données mysql en tant que banque de connaissances sur les théorèmes. Son utilisation principale est la suivante: Theorem.apply(...); par exemple:    
 a, b, c = Symbol(complex=True)  
-[algebra.add_is_zero.imply.et.suffice.cubic.apply](../axiom.php?module=algebra.add_is_zero.imply.et.suffice.cubic)(Equal(x ** 3 + a * x ** 2 + b * x + c, 0), x=x), désigne le processus de détermination d’une équation cubique dans le domaine des complexes.     
+[algebra.poly_is_zero.imply.et.suffice.cubic.apply](../axiom.php?module=algebra.poly_is_zero.imply.et.suffice.cubic)(Equal(x ** 3 + a * x ** 2 + b * x + c, 0), x=x), désigne le processus de détermination d’une équation cubique dans le domaine des complexes.     
 On peut le comparer à l’ensemble de résolution de Mathematica:  
 https://www.wolframcloud.com/obj/744984949/Published/cubic_root.   
 
@@ -74,14 +74,14 @@ extended_integer ⊂ extended_rational ⊂ [extended_real](https://en.wikipedia.
 Au moment d’écrire ces lignes, <label id=count>____</label> théorèmes ont été réenregistrés dans le répertoire des théorèmes, qui peuvent être appliqués dans un système axiomatisé semi-mécanisé de démonstration de théorèmes mathématiques.
 Il est principalement composé de:  
   	
-* [algebra](../axiom.php?module=algebra) fait référence à l’algèbre élémentaire, qui se penche principalement sur les techniques de transformation des équations、 substitution de symboles, séries finies [∑ telescoping](../axiom.php?module=algebra.sum.to.add.telescope)、∏ le télescopage de produit, propriété de la transitivité pour les inégalités, résolution [équations simples](../axiom.php?module=algebra.add_is_zero.imply.et.suffice.simple_equation), [équations quadratiques](../axiom.php?module=algebra.add_is_zero.imply.et.suffice.quadratic), [équations cubiques](../axiom.php?module=algebra.add_is_zero.imply.et.suffice.cubic) et [équations quartiques](../axiom.php?module=algebra.add_is_zero.imply.et.suffice.quartic), propriétés communes de certaines fonctions élémentaires, ainsi que la preuve de [méthode d’induction mathématique](../axiom.php?module=algebra.is_nonzero.suffice.imply.is_nonzero.induct);   
+* [algebra](../axiom.php?module=algebra) fait référence à l’algèbre élémentaire, qui se penche principalement sur les techniques de transformation des équations、 substitution de symboles, séries finies [∑ telescoping](../axiom.php?module=algebra.sum.to.add.telescope)、∏ le télescopage de produit, propriété de la transitivité pour les inégalités, résolution [équations simples](../axiom.php?module=algebra.poly_is_zero.imply.et.suffice.simple_equation), [équations quadratiques](../axiom.php?module=algebra.poly_is_zero.imply.et.suffice.quadratic), [équations cubiques](../axiom.php?module=algebra.poly_is_zero.imply.et.suffice.cubic) et [équations quartiques](../axiom.php?module=algebra.poly_is_zero.imply.et.suffice.quartic), propriétés communes de certaines fonctions élémentaires, ainsi que la preuve de [méthode d’induction mathématique](../axiom.php?module=algebra.ne_zero.suffice.imply.is_nonzero.induct);   
 * [sets] (.. /axiom.php?module=sets) fait référence à la théorie des ensembles, qui est le fondement des théories de la preuve et de l’analyse mathématiques entières. Cela implique beaucoup de propositions utilisant les terminologies comme
-All(forall), Any(exists), Element, Subset, par exemple : 
+ForAll, Exists, Element, Subset, par exemple : 
 la preuve du [principe d’inclusion-exclusion](../axiom.php?module=sets/imply/eq/principle/inclusion_exclusion/basic). On peut dire ainsi que : la théorie des ensembles est la grammaire fondamentale de la démonstration automatique des théorèmes.  
 * [geometry](../axiom.php?module=geometry) est composé d’une école de premier cycle et d’un collège
 [géométrie plane](../axiom.php?module=geometry/plane), trigonométrie et collège
 [géométrie solide](../axiom.php?module=geometry/solid), certaines identités trigonométriques, par exemple :
-[principe d’addition du cosinus](../axiom.php?module=geometry/plane/trigonometry/cosine/principle/add), principe de produit de la trigonométrie, et ainsi de suite.   
+[principe d’addition du cosinus](../axiom.php?module=geometry.cos.to.add.principle.add), [principe de produit de la trigonométrie](../axiom.php?module=geometry.mul.to.add.sin), et ainsi de suite.   
 * [calculus](../axiom.php?module=calculus) comprend :
 [la définition de la limite](../axiom.php?module=calculus/eq/to/any_all/limit_definition) et ses théories fondamentales qui sont la base théorique du calcul.  
 propriétés opérationnelles de [série infinie](../axiom.php?module=calculus.eq.imply.eq.series.infinite.coefficient); 

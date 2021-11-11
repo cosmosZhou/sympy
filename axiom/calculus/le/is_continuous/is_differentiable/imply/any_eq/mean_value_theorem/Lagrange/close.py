@@ -28,11 +28,11 @@ def prove(Eq):
     f = Function(real=True)
     Eq << apply(a <= b, is_continuous(f, a, b), is_differentiable(f, a, b, open=False))
 
-    Eq << algebra.cond.given.et.suffice.split.apply(Eq[-1], cond=b > a)
+    Eq << algebra.cond.given.et.infer.split.apply(Eq[-1], cond=b > a)
 
-    Eq << Suffice(b <= a, Equal(a, b), plausible=True)
+    Eq << Infer(b <= a, Equal(a, b), plausible=True)
 
-    Eq << algebra.suffice.given.ou.apply(Eq[-1]).reversed
+    Eq << algebra.infer.given.ou.apply(Eq[-1]).reversed
 
     Eq <<= Eq[-2] & Eq[-1]
 
@@ -40,9 +40,9 @@ def prove(Eq):
 
     Eq << algebra.all.imply.all.limits.restrict.apply(Eq[2], Interval(a, b, left_open=True, right_open=True))
 
-    Eq << algebra.cond.imply.suffice.apply(Eq[1] & Eq[-1], cond=b > a)
+    Eq << algebra.cond.imply.infer.apply(Eq[1] & Eq[-1], cond=b > a)
 
-    Eq << algebra.suffice.imply.suffice.et.apply(Eq[-1])
+    Eq << algebra.infer.imply.infer.et.apply(Eq[-1])
 
     Eq << Eq[-1].this.rhs.args[0].reversed
 
@@ -54,3 +54,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-04-29
+# updated on 2020-04-29

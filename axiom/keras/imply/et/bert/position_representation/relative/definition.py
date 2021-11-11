@@ -26,7 +26,7 @@ def apply(n, dx, dz):
 
     z = Symbol(s @ (V + a_V))
 
-    return Element(k + clip(j - i, -k, k), Range(0, 2 * k + 1)), \
+    return Element(k + clip(j - i, -k, k), Range(2 * k + 1)), \
         Equal(a[i, j], (x[i] @ W_Q @ (x[j] @ W_K + a_K[i, j])) / sqrt(dz)), \
         Equal(z[i], Sum[j:n](s[i, j] * (x[j] @ W_V + a_V[i, j])))
 
@@ -84,3 +84,5 @@ if __name__ == '__main__':
 # reference:
 # Self-Attention with Relative Position Representations.pdf
 # https://arxiv.org/abs/1803.02155
+# created on 2021-01-03
+# updated on 2021-01-03

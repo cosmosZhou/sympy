@@ -17,11 +17,11 @@ def prove(Eq):
     a = Symbol(real=True)
     Eq << apply(x <= a)
 
-    Eq << algebra.le.imply.is_positive.apply(Eq[0])
+    Eq << algebra.le.imply.gt_zero.apply(Eq[0])
 
-    Eq << algebra.is_positive.imply.is_positive.div.apply(Eq[-1])
+    Eq << algebra.gt_zero.imply.gt_zero.div.apply(Eq[-1])
 
-    Eq << algebra.is_positive.le.imply.le.mul.apply(Eq[-1], Eq[0])
+    Eq << algebra.gt_zero.le.imply.le.mul.apply(Eq[-1], Eq[0])
 
     Eq << Eq[1] * x
     Eq << Eq[-1].reversed
@@ -29,3 +29,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2019-10-31
+# updated on 2019-10-31

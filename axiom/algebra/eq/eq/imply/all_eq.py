@@ -24,7 +24,7 @@ def prove(Eq):
 
     n = Symbol(integer=True, positive=True)
     f, g = Symbol(integer=True, shape=(oo,))
-    k = Symbol(domain=Range(0, n))
+    k = Symbol(domain=Range(n))
     Eq << apply(Equal(f[k], g[k]), Equal(f[n], g[n]), wrt=k)
 
     Eq << algebra.all.given.et.apply(Eq[-1], cond={n})
@@ -34,3 +34,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2019-03-23
+# updated on 2019-03-23

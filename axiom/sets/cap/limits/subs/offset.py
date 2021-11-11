@@ -15,7 +15,7 @@ def prove(Eq):
     f = Function(etype=dtype.integer)
     Eq << apply(Cap[n:a:b](f(n)), d)
 
-    Eq << sets.eq.given.et.suffice.apply(Eq[0])
+    Eq << sets.eq.given.et.infer.apply(Eq[0])
 
     Eq <<= Eq[-2].this.lhs.apply(sets.el_cap.imply.all_el), Eq[-1].this.lhs.apply(sets.el_cap.imply.all_el)
 
@@ -28,3 +28,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2021-01-28
+# updated on 2021-01-28

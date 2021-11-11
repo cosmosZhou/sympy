@@ -130,7 +130,7 @@ def prove(Eq):
     Eq << Eq.p_quote_definition.lhs.this.bisect(slice(-1))
     Eq << Eq[-1].subs(Eq[-2])
     Eq << Eq[-1].subs(Eq.any_n_plausible)
-    Eq << Suffice(Eq[2], Eq.induct, plausible=True)
+    Eq << Infer(Eq[2], Eq.induct, plausible=True)
     Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq.initial, Eq[-1], n=n, start=2)
     Eq << Eq[1].subs(Eq[2])
 
@@ -138,3 +138,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html
+# created on 2020-11-01
+# updated on 2020-11-01

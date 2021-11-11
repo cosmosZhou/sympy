@@ -6,6 +6,8 @@ from os.path import basename
 from util import MySQL
 import time
 import datetime
+from sympy.utilities.misc import Text
+import re
 
 
 def read_all_axioms(dir):
@@ -60,19 +62,40 @@ def topological_sort():
         
     axiomSet -= graph.keys()
     if axiomSet:
-        for axiom in axiomSet:
-            graph[axiom] = []
+        for module in axiomSet:
+            graph[module] = []
              
     from sympy.utilities.iterables import topological_sort_depth_first
     
     G = topological_sort_depth_first(graph)
     return G
 
+
+def update_timestamp_for_axiom(module, create_time):
+    import axiom
+    module = eval('axiom.' + module)
+#     print(module, 'is created on', create_time)
+    file = module.__file__
+    original_create_time = None
+    original_update_time = None
+    for line in Text(file):
+        if m := re.match('(?:    )*#created on (\d\d\d\d-\d\d-\d\d)', line):
+            original_create_time = m[1]
+            
+        if m := re.match('(?:    )*#updated on (\d\d\d\d-\d\d-\d\d)', line):
+            original_update_time = m[1]
+            
+    if original_update_time or original_create_time:
+        return
+    
+    Text(file).append("# created on " + create_time[:10])
+    Text(file).append("# updated on " + create_time[:10])
+    # created on ...
+    # updated on ...
+
     
 def update_timestamp():
     G = topological_sort()
-    # for axiom in G:
-        # print(axiom)
 
     print(len(G))
     datetime.date(2018, 1, 1)
@@ -85,18 +108,15 @@ def update_timestamp():
         create_time = initial + delta * i
         create_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(create_time))
         create_times.append(create_time)
-        
-    seq_params = [(create_time, axiom) for axiom, create_time in zip(G, create_times)]
-        
-    print("len(seq_params) =", len(seq_params))
-    rowcount = MySQL.instance.executemany("update tbl_axiom_py set timestamp = %s where user = 'sympy' and axiom = %s", seq_params)
-    print("rowcount =", rowcount)
+    
+    for module, create_time in zip(G, create_times):
+        update_timestamp_for_axiom(module, create_time)
 
 
 # from util.hierarchy import update_timestamp
 # update_timestamp()
 if __name__ == '__main__':
-    insert_into_hierarchy()
-#     update_timestamp()    
+    # insert_into_hierarchy()
+    update_timestamp()    
 
 # exec(open('./util/hierarchy.py').read())

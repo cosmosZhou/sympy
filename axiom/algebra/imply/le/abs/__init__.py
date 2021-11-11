@@ -19,7 +19,7 @@ def prove(Eq):
 
     Eq << ~Eq[-1]
 
-    Eq << Eq[-1].this.args[0].apply(algebra.is_positive.imply.eq.abs)
+    Eq << Eq[-1].this.args[0].apply(algebra.gt_zero.imply.eq.abs)
 
     Eq << Eq[-1].apply(algebra.gt.eq.imply.gt.transit)
 
@@ -29,3 +29,5 @@ if __name__ == '__main__':
 
 from . import add
 from . import substract
+# created on 2018-06-29
+# updated on 2018-06-29

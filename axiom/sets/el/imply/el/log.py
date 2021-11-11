@@ -37,11 +37,13 @@ def prove(Eq):
 
     Eq << algebra.ge.imply.ge.log.apply(Eq[-2])
 
-    Eq << algebra.ge.imply.is_positive.apply(Eq[2])
-    Eq << algebra.is_positive.le.imply.le.log.apply(Eq[-1], Eq[3])
+    Eq << algebra.ge.imply.gt_zero.apply(Eq[2])
+    Eq << algebra.gt_zero.le.imply.le.log.apply(Eq[-1], Eq[3])
 
     Eq << sets.el.given.et.split.interval.apply(Eq[1])
 
 
 if __name__ == '__main__':
     run()
+# created on 2021-03-05
+# updated on 2021-03-05

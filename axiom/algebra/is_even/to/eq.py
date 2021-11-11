@@ -15,7 +15,7 @@ def prove(Eq):
 
     Eq << apply(Equal(n % 2, 0))
 
-    Eq << algebra.equivalent.given.et.suffice.apply(Eq[0])
+    Eq << algebra.iff.given.et.infer.apply(Eq[0])
 
     Eq << Eq[-2].this.lhs.apply(algebra.is_even.imply.eq.pow)
 
@@ -24,3 +24,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2019-10-11
+# updated on 2019-10-11

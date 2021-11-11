@@ -14,7 +14,7 @@ def prove(Eq):
     A, B = Symbol(complex=True, given=True)
     Eq << apply(Arg(A) + Arg(B) > S.Pi)
 
-    Eq << algebra.equivalent.given.et.suffice.apply(Eq[0])
+    Eq << algebra.iff.given.et.infer.apply(Eq[0])
 
     Eq << Eq[-2].this.lhs.apply(algebra.gt_arg.imply.eq_ceiling)
     Eq << Eq[-1].this.lhs.apply(algebra.eq_ceiling.imply.gt_arg)
@@ -22,3 +22,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2018-10-31
+# updated on 2018-10-31

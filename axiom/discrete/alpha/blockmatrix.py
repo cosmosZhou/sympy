@@ -1,6 +1,6 @@
 from util import *
 
-from axiom.discrete.imply.is_positive.alpha import alpha
+from axiom.discrete.imply.gt_zero.alpha import alpha
 
 
 @apply
@@ -36,14 +36,16 @@ def prove(Eq):
 
     Eq << algebra.eq.imply.eq.subs.apply(Eq[0], x[:n], x[1:n + 1])
 
-    Eq << discrete.imply.is_nonzero.alpha.apply(Eq[-1].lhs.arg)
+    Eq << discrete.imply.ne_zero.alpha.apply(Eq[-1].lhs.arg)
 
-    Eq << algebra.is_nonzero.eq.imply.eq.inverse.apply(Eq[-1], Eq[-2])
+    Eq << algebra.ne_zero.eq.imply.eq.inverse.apply(Eq[-1], Eq[-2])
 
-    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
+    Eq << Infer(Eq[0], Eq.induct, plausible=True)
 
-    Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq.initial, Eq[-1], n=n, start=1)
+    Eq << algebra.cond.infer.imply.cond.induct.apply(Eq.initial, Eq[-1], n=n, start=1)
 
 if __name__ == '__main__':
     run()
 
+# created on 2020-09-19
+# updated on 2020-09-19

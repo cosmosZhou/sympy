@@ -3,8 +3,8 @@ from util import *
 
 @apply
 def apply(x, m, n, d, delta):
-    i = Symbol(domain=Range(0, m - d))
-    j = Symbol(domain=Range(0, n))
+    i = Symbol(domain=Range(m - d))
+    j = Symbol(domain=Range(n))
     h = Symbol(integer=True)
 
     return Equal(Lamda[j:m, i](binomial(d, j - i) * (-1) ** (d + i - j)) @ Lamda[j, i:m]((i + delta) ** j * x ** i),
@@ -16,9 +16,9 @@ def prove(Eq):
     from axiom import discrete, algebra
 
     n, m = Symbol(domain=Range(1, oo))
-    d = Symbol(domain=Range(0, oo))
-    i = Symbol(domain=Range(0, m - d))
-    j = Symbol(domain=Range(0, n))
+    d = Symbol(domain=Range(oo))
+    i = Symbol(domain=Range(m - d))
+    j = Symbol(domain=Range(n))
     h = Symbol(integer=True)
     delta, x = Symbol(real=True)
     Eq << apply(x, m, n, d, delta)
@@ -48,3 +48,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2020-11-15
+# updated on 2020-11-15

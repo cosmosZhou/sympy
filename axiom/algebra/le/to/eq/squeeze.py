@@ -16,13 +16,15 @@ def prove(Eq):
 
     Eq << apply(LessEqual(x, 1))
 
-    Eq << algebra.equivalent.given.et.apply(Eq[-1])
+    Eq << algebra.iff.given.et.apply(Eq[-1])
 
-    Eq << Eq[-2].this.apply(algebra.suffice.to.ou)
+    Eq << Eq[-2].this.apply(algebra.infer.to.ou)
 
-    Eq << Eq[-1].apply(algebra.necessary.given.ou)
+    Eq << Eq[-1].apply(algebra.assuming.given.ou)
 
 
 if __name__ == '__main__':
     run()
 
+# created on 2019-11-26
+# updated on 2019-11-26

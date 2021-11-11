@@ -25,15 +25,15 @@ def prove(Eq):
 
     Eq << algebra.all.imply.all.split.apply(Eq[0], cond={n})
 
-    Eq << Eq[-1].this.expr.apply(algebra.ge.imply.is_positive)
+    Eq << Eq[-1].this.expr.apply(algebra.ge.imply.gt_zero)
 
-    Eq << discrete.all_is_positive.imply.is_positive.K.apply(Eq[-1])
+    Eq << discrete.all_gt_zero.imply.gt_zero.K.apply(Eq[-1])
 
-    Eq << algebra.is_positive.ge.imply.ge.mul.apply(Eq[-1], Eq[-4])
+    Eq << algebra.gt_zero.ge.imply.ge.mul.apply(Eq[-1], Eq[-4])
 
     Eq << algebra.all.imply.all.split.apply(Eq[-3], cond={n - 1})
 
-    Eq << discrete.all_is_positive.imply.is_positive.K.apply(Eq[-1])
+    Eq << discrete.all_gt_zero.imply.gt_zero.K.apply(Eq[-1])
 
     Eq << algebra.gt.ge.imply.gt.add.apply(Eq[-1], Eq[-4])
 
@@ -41,3 +41,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
+# created on 2020-09-16
+# updated on 2020-09-16

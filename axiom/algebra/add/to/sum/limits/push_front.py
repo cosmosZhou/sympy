@@ -16,7 +16,7 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra
     k, n = Symbol(integer=True)
-    i = Symbol(domain=Range(0, n))
+    i = Symbol(domain=Range(n))
     f = Function(integer=True)
     Eq << apply(Add(Sum[k:1 + i:n](f(k)), f(i)))
 
@@ -25,3 +25,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+# created on 2018-08-08
+# updated on 2018-08-08

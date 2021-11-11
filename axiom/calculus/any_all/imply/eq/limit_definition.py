@@ -85,6 +85,16 @@ def apply(given):
         elif domain.is_Greater:
             dir = -1
             x0 = oo
+        elif domain.is_Interval:
+            assert domain.left_open and domain.right_open
+            a, b = domain.args
+            assert delta == b - a
+            if b._has(delta):
+                x0 = a
+                dir = 1
+            elif a._has(delta):
+                x0 = b
+                dir = -1
 
         return Equal(Limit[x:x0:dir](fx).simplify(), A)
 
@@ -108,7 +118,12 @@ def prove(Eq):
 
     Eq << Eq[1].this.apply(calculus.eq.to.any_all.limit_definition)
 
+    
+    
+
 
 if __name__ == '__main__':
     run()
 
+# created on 2020-04-04
+# updated on 2021-10-02
