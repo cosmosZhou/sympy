@@ -1,7 +1,7 @@
 # What is axiom.top
   <br>
   
-[axiom.top](../axiom.php) is a website for symbolic	semi-mechanized axiomatized theorem-proving system, based on open-source symbolic computation project of [sympy](https://github.com/sympy/sympy) and 
+[axiom.top](../axiom.php) is a website for symbolic	semi-mechanized axiomatized theorem-proving system, the [github project](https://github.com/cosmosZhou/sympy) of which is based on open-source symbolic computation project of [sympy](https://github.com/sympy/sympy) and 
 [Maxima](http://maxima.sourceforge.net), its main terminology is defined according to the naming conventions of the commercial algebraic system 
 [Mathematica](https://reference.wolfram.com/language/index.html.en?source=footer). It's main ideals are: semi-mechanization, axiomatization, and the pursuit of logic correctness. At present, it can be used in conducting semi-automatic proving for theorems from mathematics textbook.  
 
@@ -49,9 +49,7 @@ Every value in mathematical proving is in strict sense mathematical value, there
 * Theorem denotes a theorem that is provable or an axiom that is unprovable ;      
 The inputs of theorems must be expression(s) or condition(s), its outputs are necessarily condition(s). It is stored in a mysql database as a theorem knowledge bank. Its main usage is as follows: Theorem.apply(...); for instance:    
 a, b, c = Symbol(complex=True)  
-[algebra.poly_is_zero.imply.et.suffice.cubic.apply](../axiom.php?module=algebra.poly_is_zero.imply.et.suffice.cubic)(Equal(x ** 3 + a * x ** 2 + b * x + c, 0), x=x), denotes the determination process of a cubic equation within the domain of Complexes.     
-One can compare it to the solve set of Mathematica:  
-https://www.wolframcloud.com/obj/744984949/Published/cubic_root.   
+[algebra.poly_is_zero.imply.et.infer.cubic.apply](../axiom.php?module=algebra.poly_is_zero.imply.et.infer.cubic)(Equal(x ** 3 + a * x ** 2 + b * x + c, 0), x=x), denotes the determination process of a cubic equation within the domain of Complexes.     
 
 The number system set is defined as  
 [prime](https://en.wikipedia.org/wiki/Prime_number) ⊂ [natural](https://en.wikipedia.org/wiki/Natural_number) ⊂ [integer](https://en.wikipedia.org/wiki/Integer) ⊂ extended_integer  
@@ -73,7 +71,7 @@ extended_integer ⊂ extended_rational ⊂ [extended_real](https://en.wikipedia.
 As of this writing, <label id=count>____</label> theorems have been recored in the theorem repertoire, which can be applied in semi-mechanized axiomatized system of mathematical theorem proving.  
 It is mainly comprising of :  	
 	
-* [algebra](../axiom.php?module=algebra) refers to elementary algebra, which mainly delves into equations transformation、symbol substitution techniques, finite series [∑ telescoping](../axiom.php?module=algebra.sum.to.add.telescope)、∏ product telescoping, the property of transitivity for inequalities, solving [simple equations](../axiom.php?module=algebra.poly_is_zero.imply.et.suffice.simple_equation), [quadratic equations](../axiom.php?module=algebra.poly_is_zero.imply.et.suffice.quadratic), [cubic equations](../axiom.php?module=algebra.poly_is_zero.imply.et.suffice.cubic) and [quartic equations](../axiom.php?module=algebra.poly_is_zero.imply.et.suffice.quartic), common properties of some elementary functions, as well as the proof of [mathematical induction method](../axiom.php?module=algebra.ne_zero.suffice.imply.is_nonzero.induct);   
+* [algebra](../axiom.php?module=algebra) refers to elementary algebra, which mainly delves into equations transformation、symbol substitution techniques, finite series [∑ telescoping](../axiom.php?module=algebra.sum.to.add.telescope)、∏ product telescoping, the property of transitivity for inequalities, solving [simple equations](../axiom.php?module=algebra.poly_is_zero.imply.et.infer.simple_equation), [quadratic equations](../axiom.php?module=algebra.poly_is_zero.imply.et.infer.quadratic), [cubic equations](../axiom.php?module=algebra.poly_is_zero.imply.et.infer.cubic) and [quartic equations](../axiom.php?module=algebra.poly_is_zero.imply.et.infer.quartic), common properties of some elementary functions, as well as the proof of [mathematical induction method](../axiom.php?module=algebra.ne_zero.infer.imply.ne_zero.induct);   
 * [sets](../axiom.php?module=sets) refers to sets theory, which is the core foundation of the theories of whole mathematical proving and analysis. It involves lots of propositions using the terminologies like 
 ForAll, Exists, Element, Subset, for example: 
 the proof of [inclusion-exclusion principle](../axiom.php?module=sets/imply/eq/principle/inclusion_exclusion/basic). It can be so said that: set theory is the fundamental grammar of automatic theorem proving.  

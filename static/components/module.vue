@@ -34,7 +34,7 @@ export default {
     },
     
     async created(){
-    	this.user = await form_get('system/user');
+    	this.user = await get('system/user');
     	for (let [line] of await form_post('mysql/select', {sql:`select line from tbl_breakpoint_py where user = '${this.user}' and module = '${this.module}'`})){
     		this.breakpoint[line] = true;	
     	}

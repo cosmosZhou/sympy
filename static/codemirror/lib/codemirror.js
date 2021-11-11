@@ -1,8 +1,5 @@
 function global_assignment(object){
 	Object.assign(globalThis, object);
-	/*for (let key in object) {
-		globalThis[key] = object[key];
-	}*/	
 }
 
 import * as browser from '../src/util/browser.js';

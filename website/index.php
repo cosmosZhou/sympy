@@ -125,7 +125,7 @@ switch ($lang) {
 
 			<div style="float:right">
 				<?php echo $languageSelect ?>
-				<select align='left' onchange="onchange_select(this)">
+				<select align='left' onchange="location.href = `index.php?lang=${this.value}`">
 					<option value=en <?php echo $lang == 'en'? 'selected': ''?>>English</option>
 					<option value=zh <?php echo $lang == 'zh'? 'selected': ''?>>简体中文</option>
 					<option value=fr <?php echo $lang == 'fr'? 'selected': ''?>>Français</option>
@@ -202,41 +202,33 @@ switch ($lang) {
 
 <script	src="https://cdn.jsdelivr.net/highlight.js/8.8.0/highlight.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qs/dist/qs.js"></script>
 <script src="/sympy/static/js/std.js"></script>
-<script>
-
-function onchange_select(self){
-	location.href = `index.php?lang=${self.value}`;
-}
+<script type=module>
 
 hljs.initHighlightingOnLoad();
 
 var url = `/sympy/website/md/<?php echo "$lang/$section.md" ?>`;
-$.ajax({
-    url: url,
-    type: "GET",
-    dataType: "text", 
-    success: function(text) {
-    	url = url.slice(0, -3);
-    	var newText = [];
-    	var start = 0;
-    	for (let m of text.matchAll(/(?<=\n)!\[(.+)\]\((.+)\)/g)){            	
-        	var title = m[1];            	
-        	var address = url + m[2].match(/[^\/]+(\/.+)/)[1];
-        	var link = `![${title}](${address})`;
-        	console.log(link);
 
-        	newText.push(text.slice(start, m.index));
-        	newText.push(link);
-        	start = m.index + m[0].length;
-        }
+var text = await get(url);
+url = url.slice(0, -3);
+var newText = [];
+var start = 0;
+for (let m of text.matchAll(/(?<=\n)!\[(.+)\]\((.+)\)/g)){            	
+	var title = m[1];            	
+	var address = url + m[2].match(/[^\/]+(\/.+)/)[1];
+	var link = `![${title}](${address})`;
+	console.log(link);
 
-    	newText.push(text.slice(start));
-    	text = newText.join('');
-    	
-        $("#content").html(marked.marked(text));
-    }
-});
+	newText.push(text.slice(start, m.index));
+	newText.push(link);
+	start = m.index + m[0].length;
+}
+
+newText.push(text.slice(start));
+text = newText.join('');
+
+$("#content").innerHTML = marked.marked(text);
 
 </script>

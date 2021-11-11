@@ -1,7 +1,7 @@
 # 什么是axiom.top  
   <br>
 
-[axiom.top](../axiom.php)是一个基于数学定理知识库、用于证明数学命题的网站，此工程主要依靠开源符号计算项目 
+[axiom.top](../axiom.php)是一个基于数学定理知识库、用于证明数学命题的网站，此[github工程](https://github.com/cosmosZhou/sympy)主要依靠开源符号计算项目 
 [sympy](https://github.com/sympy/sympy) 和 
 [Maxima](http://maxima.sourceforge.net) 改写, 其中函数命名主要参考数学软件语言
 [Mathematica](https://reference.wolfram.com/language/index.html.en?source=footer)
@@ -38,9 +38,7 @@ f = Function(real=True, integrable=True)，表示一个实数抽象（在任意�
 Theorem的入参是一个表达式，出参是一个判断表达式。它以定理库的形式储存。基本用法就是Theorem.apply(...);  
 比如  
 a, b, c = Symbol(complex=True)  
-[algebra.poly_is_zero.imply.et.suffice.cubic.apply](../axiom.php?module=algebra.poly_is_zero.imply.et.suffice.cubic)(Equal(x ** 3 + a * x ** 2 + b * x + c, 0), x=x),  表示对一个一元三次方程在复数域内求解。  
-比较Mathematica的方程解：
-https://www.wolframcloud.com/obj/744984949/Published/cubic_root.  
+[algebra.poly_is_zero.imply.et.infer.cubic.apply](../axiom.php?module=algebra.poly_is_zero.imply.et.infer.cubic)(Equal(x ** 3 + a * x ** 2 + b * x + c, 0), x=x),  表示对一个一元三次方程在复数域内求解。  
 
 其中数集的关系定义为：  
 [prime](https://en.wikipedia.org/wiki/Prime_number) ⊂ [natural](https://en.wikipedia.org/wiki/Natural_number) ⊂ [integer](https://en.wikipedia.org/wiki/Integer) ⊂ extended_integer  
@@ -61,8 +59,8 @@ extended_integer ⊂ extended_rational ⊂ [extended_real](https://en.wikipedia.
   
 目前积累了<label id=count>____</label>个已知数学定理用于半机械化数学推导。主要涉及：	
 	
-* [algebra](../axiom.php?module=algebra) 初等代数，主要涉及等式的恒等、换元变换、有限级数[∑裂项求和](../axiom.php?module=algebra.sum.to.add.telescope)、∏裂项求积技巧，不等式的传递性质的命题，[一元一次方程](../axiom.php?module=algebra.poly_is_zero.imply.et.suffice.simple_equation)，[一元二次方程](../axiom.php?module=algebra.poly_is_zero.imply.et.suffice.quadratic)，[一元三次方程](../axiom.php?module=algebra.poly_is_zero.imply.et.suffice.cubic)，[一元四次方程](../axiom.php?module=algebra.poly_is_zero.imply.et.suffice.quartic)的求解问题，初等函数的各种常见性质；
-[数学归纳法](../axiom.php?module=algebra.ne_zero.suffice.imply.is_nonzero.induct)的证明；
+* [algebra](../axiom.php?module=algebra) 初等代数，主要涉及等式的恒等、换元变换、有限级数[∑裂项求和](../axiom.php?module=algebra.sum.to.add.telescope)、∏裂项求积技巧，不等式的传递性质的命题，[一元一次方程](../axiom.php?module=algebra.poly_is_zero.imply.et.infer.simple_equation)，[一元二次方程](../axiom.php?module=algebra.poly_is_zero.imply.et.infer.quadratic)，[一元三次方程](../axiom.php?module=algebra.poly_is_zero.imply.et.infer.cubic)，[一元四次方程](../axiom.php?module=algebra.poly_is_zero.imply.et.infer.quartic)的求解问题，初等函数的各种常见性质；
+[数学归纳法](../axiom.php?module=algebra.ne_zero.infer.imply.ne_zero.induct)的证明；
 * [sets](../axiom.php?module=sets) 集合论, 即sets theory，集合论是整个数学分析、数学推导系统的理论核心；涉及大量用集合论术语ForAll（任意）, Exists（存在）, ‘属于’ （Element），‘包含’（Subset）描述的命题，比如
 [容斥原理](../axiom.php?module=sets/imply/eq/principle/inclusion_exclusion/basic)的证明。可以说，集合论是数学推理的根本语法。
 * [geometry](../axiom.php?module=geometry) 几何学，主要分为初中

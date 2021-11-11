@@ -95,7 +95,7 @@ export default {
 		},
 		
 		async updateRecentAxioms(){
-			this.recentAxioms = await form_get(`php/request/recent.php?top=${this.topk}`);;
+			this.recentAxioms = await get(`php/request/recent.php?top=${this.topk}`);;
 		},
 		
 		change_input(event){

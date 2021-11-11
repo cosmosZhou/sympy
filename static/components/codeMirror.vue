@@ -729,7 +729,7 @@ export default {
 
 <style>
 .CodeMirror {
-    overflow-y: visible;
+    //overflow-y: visible;
     height: auto !important;
     width: auto !important;
 }

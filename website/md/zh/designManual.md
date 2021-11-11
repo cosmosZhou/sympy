@@ -39,10 +39,10 @@
 根据数学定理的题设（given）和结论（imply），计算机，在人脑通过检索定理知识库，提供正确的预备已知定理的前提下，不断调用已知定理得到变换后的条件表达式，并不断逼近最终结论（imply）表达式，从而获得命题的证明。
 数学证明过程（prove）就是将题设（given）表达式不断变换成结论（imply）表达式的过程，
 这个证明过程（prove）由一系列已知定理调用命令和符号计算结果组成，一个已知定理调用命令对应一个符号计算结果。
-命题证毕后使用
+后端使用Python, C++, assembly等编程语言执行数学运算，命题证毕后使用
 [latex](https://www.latex-project.org/)，
 [mathjax.js](https://www.mathjax.org/)，
-[vue.js](https://vuejs.org/index.html/)，
+[vue.js](https://v3.vuejs.org)，
 [php](https://www.php.net)
 等前端可视化技术打印出数学命题证明的全过程，方便日后参考学习。前端编辑网页使用[CodeMirror](https://codemirror.net/)作为开发环境，如果日后发现论证过程不可以改进，在前端编辑网页上可以直接修改，并在线执行计算(Ctrl+F11)。
 <br><br>

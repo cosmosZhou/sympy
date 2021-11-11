@@ -1,7 +1,6 @@
 <template>
     <div v-finish>
-        <form name=form spellcheck=false enctype="multipart/form-data"
-            method=post action="">
+        <form name=form spellcheck=false enctype="multipart/form-data" method=post action="">
             <renderApply v-if=applyCode ref=apply :text=applyCode></renderApply>
             <renderProve :text="given.py" :index=0></renderProve>
             <template v-if=given.latex>

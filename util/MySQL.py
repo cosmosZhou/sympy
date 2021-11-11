@@ -357,3 +357,4 @@ if __name__ == '__main__':
     ...
 
 #ln -s /usr/local/mysql/mysql.sock /tmp/mysql.sock
+#mysql -uroot -p123456 -Daxiom

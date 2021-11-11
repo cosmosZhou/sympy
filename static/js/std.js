@@ -1,6 +1,10 @@
 "use strict";
 
-function form_get(url, data) {
+function $(selector){
+	return document.querySelector(selector)
+}
+
+function get(url, data) {
 	return axios.get(url, {params: data}).then(result => result.data);
 }
 

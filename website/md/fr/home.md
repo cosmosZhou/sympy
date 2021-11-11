@@ -50,10 +50,9 @@ Chaque valeur dans la preuve mathématique est au sens strict une valeur mathém
 * Théorème désigne un théorème qui est prouvable ou un axiome qui est indémontrable ;
 Les entrées des théorèmes doivent être des expressions ou des conditions, ses sorties sont nécessairement des conditions. Il est stocké dans une base de données mysql en tant que banque de connaissances sur les théorèmes. Son utilisation principale est la suivante: Theorem.apply(...); par exemple:    
 a, b, c = Symbol(complex=True)  
-[algebra.poly_is_zero.imply.et.suffice.cubic.apply](../axiom.php?module=algebra.poly_is_zero.imply.et.suffice.cubic)(Equal(x ** 3 + a * x ** 2 + b * x + c, 0), x=x), désigne le processus de détermination d’une équation cubique dans le domaine des complexes.     
-On peut le comparer à l’ensemble de résolution de Mathematica:  
-https://www.wolframcloud.com/obj/744984949/Published/cubic_root.   
-
+[algebra.poly_is_zero.imply.et.infer.cubic.apply](../axiom.php?module=algebra.poly_is_zero.imply.et.infer.cubic)(Equal(x ** 3 + a * x ** 2 + b * x + c, 0), x=x), désigne le processus de détermination d’une équation cubique dans le domaine des complexes.     
+   
+   
 L’ensemble du système de numérotation est défini comme suit :  
 [prime](https://en.wikipedia.org/wiki/Prime_number) ⊂ [natural](https://en.wikipedia.org/wiki/Natural_number) ⊂ [integer](https://en.wikipedia.org/wiki/Integer) ⊂ extended_integer  
 [rational](https://en.wikipedia.org/wiki/Rational_number) ⊂ extended_rational  
@@ -74,7 +73,7 @@ extended_integer ⊂ extended_rational ⊂ [extended_real](https://en.wikipedia.
 Au moment d’écrire ces lignes, <label id=count>____</label> théorèmes ont été réenregistrés dans le répertoire des théorèmes, qui peuvent être appliqués dans un système axiomatisé semi-mécanisé de démonstration de théorèmes mathématiques.
 Il est principalement composé de:  
   	
-* [algebra](../axiom.php?module=algebra) fait référence à l’algèbre élémentaire, qui se penche principalement sur les techniques de transformation des équations、 substitution de symboles, séries finies [∑ telescoping](../axiom.php?module=algebra.sum.to.add.telescope)、∏ le télescopage de produit, propriété de la transitivité pour les inégalités, résolution [équations simples](../axiom.php?module=algebra.poly_is_zero.imply.et.suffice.simple_equation), [équations quadratiques](../axiom.php?module=algebra.poly_is_zero.imply.et.suffice.quadratic), [équations cubiques](../axiom.php?module=algebra.poly_is_zero.imply.et.suffice.cubic) et [équations quartiques](../axiom.php?module=algebra.poly_is_zero.imply.et.suffice.quartic), propriétés communes de certaines fonctions élémentaires, ainsi que la preuve de [méthode d’induction mathématique](../axiom.php?module=algebra.ne_zero.suffice.imply.is_nonzero.induct);   
+* [algebra](../axiom.php?module=algebra) fait référence à l’algèbre élémentaire, qui se penche principalement sur les techniques de transformation des équations、 substitution de symboles, séries finies [∑ telescoping](../axiom.php?module=algebra.sum.to.add.telescope)、∏ le télescopage de produit, propriété de la transitivité pour les inégalités, résolution [équations simples](../axiom.php?module=algebra.poly_is_zero.imply.et.infer.simple_equation), [équations quadratiques](../axiom.php?module=algebra.poly_is_zero.imply.et.infer.quadratic), [équations cubiques](../axiom.php?module=algebra.poly_is_zero.imply.et.infer.cubic) et [équations quartiques](../axiom.php?module=algebra.poly_is_zero.imply.et.infer.quartic), propriétés communes de certaines fonctions élémentaires, ainsi que la preuve de [méthode d’induction mathématique](../axiom.php?module=algebra.ne_zero.infer.imply.ne_zero.induct);   
 * [sets] (.. /axiom.php?module=sets) fait référence à la théorie des ensembles, qui est le fondement des théories de la preuve et de l’analyse mathématiques entières. Cela implique beaucoup de propositions utilisant les terminologies comme
 ForAll, Exists, Element, Subset, par exemple : 
 la preuve du [principe d’inclusion-exclusion](../axiom.php?module=sets/imply/eq/principle/inclusion_exclusion/basic). On peut dire ainsi que : la théorie des ensembles est la grammaire fondamentale de la démonstration automatique des théorèmes.  
