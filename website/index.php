@@ -201,7 +201,7 @@ switch ($lang) {
 </html>
 
 <script	src="https://cdn.jsdelivr.net/highlight.js/8.8.0/highlight.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@2.1.3/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qs/dist/qs.js"></script>
 <script src="/sympy/static/js/std.js"></script>
@@ -230,6 +230,6 @@ text = text.transform(/<script( type=module)?>([\s\S]*)<\/script>/g, (m)=>{
     return '';
 });
 
-$("#content").innerHTML = marked.marked(text);
+$("#content").innerHTML = marked(text);
 
 </script>
