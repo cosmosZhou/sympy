@@ -1037,12 +1037,41 @@ class And(LatticeOp, BooleanFunction):
                         return render('ge', 'ge', a, x, b)
     
         args = []
+        is_all_eq = True
         for arg in self.args:
             if arg.is_Or or arg.is_Conditioned:
                 args.append(r"\left(%s\right)" % p._print(arg))
+                is_all_eq = False
             else:
                 args.append(p._print(arg))
+                if not arg.is_Equal:
+                    is_all_eq = False
 
+        if is_all_eq:
+            child = {}
+            parent = {}
+            for arg in self.args:
+                lhs, rhs = arg.args
+                if lhs in child:
+                    break                
+                child[lhs] = rhs
+                
+                if rhs in parent:
+                    break                
+                parent[rhs] = lhs
+            else:
+                root = lhs
+                while root in parent:
+                    root = parent[root]
+                    
+                next = root
+                children = [next]
+                while next in child:
+                    next = child[next]
+                    children.append(next)                
+                 
+                return " = ".join([p._print(next) for next in children])    
+            
         return r"\wedge ".join(args)
 
     def invert(self):
