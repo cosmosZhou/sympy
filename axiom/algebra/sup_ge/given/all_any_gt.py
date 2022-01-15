@@ -2,15 +2,15 @@ from util import *
 
 
 @apply
-def apply(given, M=None): 
+def apply(given, M=None):
     (fx, *limits), M0 = given.of(Sup >= Expr)
-    
+
     variables = {x for x, *_ in limits}
     if M is None:
         M = given.generate_var(variables, real=True, var='M')
     elif isinstance(M, str):
         M = given.generate_var(variables, real=True, var=M)
-        
+
     return All[M:Interval(-oo, M0, right_open=True)](Any(fx > M, *limits))
 
 
@@ -29,4 +29,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-04-11
-# updated on 2019-04-11

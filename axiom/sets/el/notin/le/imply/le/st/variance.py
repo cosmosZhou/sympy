@@ -4,14 +4,9 @@ from util import *
 @apply
 def apply(le, contains, notcontains):
     y_, Y = contains.of(Element)
-    ___y_, __X = notcontains.of(NotElement)
+    S[y_], X = notcontains.of(NotElement)
 
-    ((a, _y_), (((_a, _x), (x, X)), _X)), ((__a, __y_), (((___a, y), (_y, _Y)), __Y))= le.of(Abs[Indexed - Sum[Indexed] / Card] <= Abs[Indexed - Sum[Indexed] / Card])
-
-    assert a == _a == __a == ___a
-    assert X == _X == __X and x == _x
-    assert y_ == _y_ == __y_ == ___y_
-    assert Y == _Y == _Y and y == _y
+    ((a, S[y_]), (((S[a], x), (S[x], S[X])), S[X])), ((S[a], S[y_]), (((S[a], y), (S[y], Y)), S[Y]))= le.of(Abs[Indexed - Sum[Indexed] / Card] <= Abs[Indexed - Sum[Indexed] / Card])
 
     X_ = X | {y_}
     Y_ = Y - {y_}
@@ -85,4 +80,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2021-03-25
-# updated on 2021-03-25

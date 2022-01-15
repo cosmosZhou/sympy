@@ -50,7 +50,8 @@ export default {
     	};
     },
     
-    methods: {    	
+    methods: {
+    	EqVariables: codeMirror.methods.EqVariables,
     },
     
     mounted: codeMirror.mounted,

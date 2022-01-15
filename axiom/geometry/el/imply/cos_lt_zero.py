@@ -13,14 +13,13 @@ def prove(Eq):
     x = Symbol(real=True)
     Eq << apply(Element(x, Interval(S.Pi / 2, S.Pi, left_open=True)))
 
-    
 
-    
 
-    
+
+
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2018-06-22
-# updated on 2018-06-22

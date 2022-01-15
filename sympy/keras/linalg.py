@@ -3,6 +3,7 @@ from sympy.concrete.expr_with_limits import Lamda
 from sympy.functions.special.tensor_functions import Bool
 from sympy.sets.contains import Element
 from sympy import Range
+from sympy.tensor.indexed import Indexed
 
 
 # https://tensorflow.google.cn/api_docs/python/tf/linalg/band_part
@@ -13,15 +14,24 @@ def BandPart(x, *limits):
     >>> BandPart[l, u](x).this.defun()
     '''
     
-    (num_lower,), (num_upper,) = limits
+    if len(limits) == 3:
+        (num_lower,), (num_upper,), (dilation,) = limits
+    else:
+        (num_lower,), (num_upper,) = limits
+        dilation = 1
     m, n = x.shape
     excludes = num_lower.free_symbols | num_upper.free_symbols
     i = x.generate_var(excludes=excludes, var='i', integer=True)
     excludes.add(i)
     j = x.generate_var(excludes=excludes, var='j', integer=True)
     
-    return x * Lamda[j:n, i:m](Bool(Element(i - j, Range(-num_upper, num_lower + 1))))
+    return x * Lamda[j:n, i:m](Bool(Element(j - i, Range(-num_lower, num_upper + 1, step=dilation))))
 
    
-BandPart = Function.BandPart(eval=BandPart, complex=True, __doc__=BandPart.__doc__)
-band_part = BandPart
+def __getitem__(self, indices):
+    if isinstance(indices, tuple):
+        return Indexed(self, *indices)
+    return Indexed(self, indices)
+
+   
+BandPart = Function.BandPart(eval=BandPart, complex=True, __doc__=BandPart.__doc__, __getitem__=__getitem__)

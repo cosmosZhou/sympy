@@ -34,6 +34,7 @@ def cubic_root(A):
             return
     return Mul(*args)
 
+
 @apply
 def apply(eq_pow, eq_ceiling):
     A, B = eq_pow.of(Equal)
@@ -43,9 +44,9 @@ def apply(eq_pow, eq_ceiling):
 
     A_, B_ = eq_ceiling.of(Equal[Ceiling, Ceiling])
     (k, A_), b = A_.of(Expr * Arg - Expr)
-    (_k, B_), _b = B_.of(Expr * Arg - Expr)
-    assert _k == k == 3 / (S.Pi * 2)
-    assert b == _b == S.One / 2
+    (S[k], B_), S[b] = B_.of(Expr * Arg - Expr)
+    assert k == 3 / (S.Pi * 2)
+    assert b == S.One / 2
     assert A_ == Arg(A).arg
     assert B_ == Arg(B).arg
     return Equal(A, B)
@@ -88,4 +89,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-04-26
-# updated on 2019-04-26

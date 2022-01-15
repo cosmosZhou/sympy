@@ -16,17 +16,16 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import sets
-    
+
     n = Symbol(integer=True, nonnegative=True)
     k = Symbol(integer=True)
     Eq << apply(Cup[k:-n:0](Interval(k, k + 1, right_open=True)))
-    
+
     Eq << Eq[-1].this.lhs.apply(sets.cup.limits.subs.negate, k, -1 - k)
-    
+
     Eq << Eq[-1].this.lhs.apply(sets.cup.to.interval.induct.negative.right_open)
 
 
 if __name__ == '__main__':
     run()
 # created on 2021-02-19
-# updated on 2021-02-19

@@ -30,4 +30,3 @@ if __name__ == '__main__':
 
 from . import piece
 # created on 2020-07-27
-# updated on 2020-07-27

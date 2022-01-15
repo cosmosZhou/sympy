@@ -7,7 +7,7 @@ def apply(f_eq, *, cond=None, simplify=True, invert=False, assumptions={}):
     if invert:
         lhs, rhs = cond.invert(), S.false
     else:
-        lhs, rhs = cond, S.true    
+        lhs, rhs = cond, S.true
     return f_eq._subs(lhs, rhs, simplify=simplify, assumptions=assumptions), cond
 
 
@@ -28,4 +28,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-11-04
-# updated on 2018-11-04

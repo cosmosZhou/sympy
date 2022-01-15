@@ -1,3 +1,3 @@
 from . import matrix
 
-from . import blockMatrix
+from . import block

@@ -70,7 +70,7 @@
             <p>
                 <font size=2>Created on {{createdTime}}</font>
                 <br>
-                <font size=2>Updated on {{updatedTime}}</font>
+                <font v-if=updatedTime size=2>Updated on {{updatedTime}}</font>
             </p>
         </div>
         

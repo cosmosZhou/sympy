@@ -80,11 +80,16 @@ class RoundFunction(Function):
     def _eval_is_extended_real(self):
         return self.args[0].is_extended_real
 
-    def _eval_is_integer(self):
-        return self.args[0].is_real
-
     def _eval_is_extended_integer(self):
         return self.args[0].is_extended_real
+
+    @property
+    def dtype(self):
+        from sympy.core.symbol import dtype
+        if self.is_finite:
+            return dtype.integer
+        else:
+            return dtype.extended_integer
 
 
 class Floor(RoundFunction):
@@ -176,6 +181,9 @@ class Floor(RoundFunction):
         other = S(other)
         if self.args[0].is_real:
             if other.is_integer:
+                if other.is_Floor:
+                    if self.arg <= other.arg:
+                        return S.true
                 return self.args[0] < other + 1
             if other.is_number and other.is_real:
                 return self.args[0] < ceiling(other)
@@ -190,6 +198,9 @@ class Floor(RoundFunction):
         other = S(other)
         if self.args[0].is_real:
             if other.is_integer:
+                if other.is_Floor:
+                    if self.arg >= other.arg:
+                        return S.true
                 return self.args[0] >= other
             if other.is_number and other.is_real:
                 return self.args[0] >= ceiling(other)
@@ -347,6 +358,9 @@ class Ceiling(RoundFunction):
         other = S(other)
         if self.args[0].is_real:
             if other.is_integer:
+                if other.is_Ceiling:
+                    if self.arg >= other.arg:
+                        return S.true
                 return self.args[0] > other - 1
             if other.is_number and other.is_real:
                 return self.args[0] > floor(other)
@@ -361,6 +375,9 @@ class Ceiling(RoundFunction):
         other = S(other)
         if self.args[0].is_real:
             if other.is_integer:
+                if other.is_Ceiling:
+                    if self.arg <= other.arg:
+                        return S.true
                 return self.args[0] <= other
             if other.is_number and other.is_real:
                 return self.args[0] <= floor(other)

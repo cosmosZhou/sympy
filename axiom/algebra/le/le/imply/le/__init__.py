@@ -6,3 +6,4 @@ from . import quadratic
 from . import add, mul
 from . import prod
 from . import sum
+from . import abs

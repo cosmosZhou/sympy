@@ -44,7 +44,7 @@ def prove(Eq):
 
     Eq << Eq.initial.this.expr.doit(deep=True)
 
-    Eq << Eq[-1].this.find(Slice).apply(algebra.slice.to.blockMatrix)
+    Eq << Eq[-1].this.find(Sliced).apply(algebra.slice.to.block)
 
     Eq << Eq[-1].this.expr.limits[0][1].reversed
 
@@ -106,4 +106,3 @@ if __name__ == '__main__':
 from . import two
 from . import split
 # created on 2020-09-10
-# updated on 2020-09-10

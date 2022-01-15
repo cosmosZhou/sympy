@@ -6,14 +6,14 @@ def mul_to_limit(self):
     for i, limit in enumerate(args):
         if limit.is_Limit:
             del args[i]
-            function, (x, x0, dir) = limit.args            
-            
+            function, (x, x0, dir) = limit.args
+
             for arg in args:
                 assert not arg._has(x)
-                
+
             return Limit[x:x0:dir](Mul(function, *args))
-        
-    
+
+
 @apply
 def apply(self):
     assert self.is_Mul
@@ -34,4 +34,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-05-03
-# updated on 2020-05-03

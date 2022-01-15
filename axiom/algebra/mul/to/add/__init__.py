@@ -1,24 +1,31 @@
 from util import *
 
 
-def convert(self, deep=False):
+def convert(self, i=None, deep=False):
     [*args] = self.of(Mul)
-    for i, arg in enumerate(args):
-        if arg.is_Add: 
-            summand = []
-            for e in arg.args:
-                _args = [*args]
-                _args[i] = e 
-                prod = Mul(*_args)
-                if deep and prod.is_Mul:
-                    prod = convert(prod, True)
-                summand.append(prod)
-            return Add(*summand).simplify()
-    return self
-                
+    if i is None:
+        for i, arg in enumerate(args):
+            if arg.is_Add:
+                break
+        else :
+            return self
+    else :
+        arg = args[i]
+    
+    summand = []
+    for e in arg.args:
+        _args = [*args]
+        _args[i] = e
+        prod = Mul(*_args)
+        if deep and prod.is_Mul:
+            prod = convert(prod, deep=deep)
+        summand.append(prod)
+    return Add(*summand).simplify()
+    
+
 @apply
-def apply(self, deep=False):
-    rhs = convert(self, deep=deep)
+def apply(self, i=None, deep=False):
+    rhs = convert(self, i, deep=deep)
     return Equal(self, rhs, evaluate=False)
 
 
@@ -29,6 +36,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.expand()
 
+    
+    
+
 
 if __name__ == '__main__':
     run()
@@ -36,4 +46,4 @@ if __name__ == '__main__':
 from . import st, square
 from . import poly
 # created on 2018-03-01
-# updated on 2018-03-01
+# updated on 2022-01-15

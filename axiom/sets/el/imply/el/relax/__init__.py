@@ -30,4 +30,3 @@ if __name__ == '__main__':
 
 from . import interval
 # created on 2018-01-11
-# updated on 2018-01-11

@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(self):
     from axiom.algebra.all.imply.all.limits.negate import negate
-    expr, (i, *ab) = self.of(All)    
+    expr, (i, *ab) = self.of(All)
     return All(expr._subs(i, -i), negate(i, *ab))
 
 
@@ -22,4 +22,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-12-09
-# updated on 2018-12-09

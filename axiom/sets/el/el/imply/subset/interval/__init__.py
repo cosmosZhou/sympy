@@ -55,4 +55,3 @@ if __name__ == '__main__':
 from . import right_open
 from . import left_open
 # created on 2020-03-31
-# updated on 2020-03-31

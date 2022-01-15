@@ -50,4 +50,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2021-07-13
-# updated on 2021-07-13

@@ -3,15 +3,15 @@ from util import *
 
 def split(self, simplify=True):
     e, domain = self.of(Element)
-    
+
     eqs = [Element(e, s) for s in domain.of(Union)]
-        
+
     if simplify:
         eqs = [eq.simplify() for eq in eqs]
-        
+
     return Or(*eqs)
-    
-    
+
+
 @apply(simplify=False)
 def apply(self, *, simplify=True):
     return split(self, simplify=simplify)
@@ -31,4 +31,3 @@ if __name__ == '__main__':
 
 from . import two
 # created on 2018-04-25
-# updated on 2018-04-25

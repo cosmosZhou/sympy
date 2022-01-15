@@ -43,4 +43,3 @@ if __name__ == '__main__':
     run()
 from . import interval
 # created on 2020-05-25
-# updated on 2020-05-25

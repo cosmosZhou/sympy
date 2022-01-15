@@ -33,8 +33,8 @@ def summary():
  	<axiom-summary :state_count_pairs=state_count_pairs :repertoire=repertoire></axiom-summary>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qs/dist/qs.js"></script>
+<script src="static/unpkg.com/axios@0.24.0/dist/axios.min.js"></script>
+<script src="static/unpkg.com/qs@6.10.2/dist/qs.js"></script>
 
 <script src="static/js/std.js"></script>
 <script src="static/js/utility.js"></script>

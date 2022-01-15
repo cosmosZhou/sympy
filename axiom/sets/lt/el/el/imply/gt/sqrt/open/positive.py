@@ -7,9 +7,7 @@ def apply(lt, contains, contains_y):
     y, domain_y = contains_y.of(Element)
     assert domain_x in Interval(0, 1, left_open=True, right_open=True)
     assert domain_y in Interval(0, 1, left_open=True, right_open=True)
-    _x, _y = lt.of(Less)
-    assert _x == x
-    assert _y == y
+    S[x], S[y] = lt.of(Less)
     return y * sqrt(1 - x ** 2) > x * sqrt(1 - y ** 2)
 
 
@@ -59,4 +57,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-11-27
-# updated on 2020-11-27

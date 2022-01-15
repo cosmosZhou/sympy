@@ -22,14 +22,14 @@ def doit(a, b, c):
 
 @apply
 def apply(y):
-    
+
     if not isinstance(y, Integral):
         print('not isinstance(y, Integral)')
         return
-    
+
     if len(y.limits) > 1:
         return
-    
+
     (x, *ab), *_ = y.limits
 
     if ab:
@@ -78,4 +78,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2020-06-11
-# updated on 2020-06-11

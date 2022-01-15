@@ -4,9 +4,12 @@ from util import *
 @apply
 def apply(self):
     [*args], *limits = self.of(Lamda[Add])
-    rhs = Add(*(self.func(f, *limits).simplify() for f in args))
+    rhs = []
+    for f in args:
+        f = self.func(f, *limits).simplify(squeeze=True)
+        rhs.append(f)
 
-    return Equal(self, rhs, evaluate=False)
+    return Equal(self, Add(*rhs), evaluate=False)
 
 
 @prove
@@ -25,4 +28,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-10-13
-# updated on 2019-10-13

@@ -1325,11 +1325,11 @@ class MatrixBase(MatrixCommon):
 
             # Matrix(Matrix(...))
             elif isinstance(args[0], MatrixBase):
-                return args[0].rows, args[0].cols, args[0]._mat
+                return args[0].rows, args[0].cols, args[0].args
 
             # Matrix(MatrixSymbol('X', 2, 2))
             elif isinstance(args[0], Basic) and args[0].is_Matrix:
-                return args[0].rows, args[0].cols, args[0].as_explicit()._mat
+                return args[0].rows, args[0].cols, args[0].as_explicit().args
 
             # Matrix(numpy.ones((2, 2)))
             elif hasattr(args[0], "__array__"):
@@ -1716,7 +1716,7 @@ class MatrixBase(MatrixCommon):
         [3, 4]])
 
         """
-        return self._new(self.rows, self.cols, self._mat)
+        return self._new(self.rows, self.cols, self.args)
 
     def cross(self, b):
         r"""
@@ -3475,7 +3475,7 @@ class MatrixBase(MatrixCommon):
             for k in range(j + 1, n):
                 tmp -= R[j, k] * x[n - 1 - k]
             x.append(tmp / R[j, j])
-        return self._new([row._mat for row in reversed(x)])
+        return self._new([row.args for row in reversed(x)])
 
     def rank_decomposition(self, iszerofunc=_iszero, simplify=False):
         r"""Returns a pair of matrices (`C`, `F`) with matching rank
@@ -4474,7 +4474,7 @@ class MatrixBase(MatrixCommon):
 
         if has_floats:
             try:
-                max_prec = max(term._prec for term in self._mat if isinstance(term, Float))
+                max_prec = max(term._prec for term in self.args if isinstance(term, Float))
             except ValueError:
                 # if no term in the matrix is explicitly a Float calling max()
                 # will throw a error so setting max_prec to default value of 53

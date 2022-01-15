@@ -138,7 +138,7 @@ USE_CACHE = _getenv('SYMPY_USE_CACHE', 'yes').lower()
 # special cases :
 #  SYMPY_CACHE_SIZE=0    -> No caching
 #  SYMPY_CACHE_SIZE=None -> Unbounded caching
-scs = _getenv('SYMPY_CACHE_SIZE', '1000')
+scs = _getenv('SYMPY_CACHE_SIZE', '2048')
 if scs.lower() == 'none':
     SYMPY_CACHE_SIZE = None
 else:

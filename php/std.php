@@ -7,6 +7,7 @@ use Iterator, JsonSerializable, IteratorAggregate, RuntimeException;
 use curl_init, curl_setopt, curl_exec, curl_errno, curl_close;
 use mb_detect_encoding, mb_convert_encoding;
 use SplMinHeap;
+use usleep;
 
 // implement common collections like: Set, Queue, Graph
 class QueueIterator implements Iterator
@@ -577,7 +578,9 @@ function deleteDirectory($directory)
     if (! file_exists($directory)) {
         return;
     }
-
+    
+    error_log("deleting non-empty directory: $directory");
+    
     if ($dir_handle = opendir($directory)) {
 
         while ($filename = readdir($dir_handle)) {
@@ -587,8 +590,10 @@ function deleteDirectory($directory)
                 $subFile = $directory . "/" . $filename;
 
                 if (is_dir($subFile)) {
+                    error_log("deleting folder: $subFile");
                     deleteDirectory($subFile);
-                } elseif (is_file($subFile)) {
+                } elseif (is_file($subFile)) {                    
+                    error_log("deleting file: $subFile");
                     unlink($subFile);
                 }
             }
@@ -596,7 +601,9 @@ function deleteDirectory($directory)
 
         closedir($dir_handle);
 
-        rmdir($directory);
+        if (rmdir($directory) !== true){
+            echo "Warning:  rmdir($directory): Directory not empty! ";
+        }
     }
 }
 
@@ -1049,6 +1056,7 @@ function list_directory($dir)
     }
 }
 
+//for example: $ext = 'py', $ext = 'php'
 function read_files($dir, $ext = null)
 {
     if (is_dir($dir)) {
@@ -1159,11 +1167,6 @@ function need_escape($s)
         default:
             return false;
     }
-}
-
-function preg_match_u($regex, $str, &$matches)
-{
-    return preg_match($regex . "u", $str, $matches);
 }
 
 function range($start, $stop, $step = 1)

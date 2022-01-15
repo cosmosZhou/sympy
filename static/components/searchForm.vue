@@ -3,34 +3,20 @@
 		<input v-focus tabindex=1 type=text spellcheck=false name=keyword size=48 v-model=keyword placeholder='input a hint for search of a theorem/axiom'>
 		<br>
 			 
-		<input tabindex=-1 type=checkbox name=caseSensitive v-model=caseSensitive><u>C</u>ase sensitive 
+		<input tabindex=-1 type=checkbox name=caseSensitive v-model=caseSensitive><u>C</u>ase 
 			
-		<input tabindex=-1 type=checkbox name=wholeWord v-model=wholeWord><u>W</u>hole word 
+		<input tabindex=-1 type=checkbox name=wholeWord v-model=wholeWord><u>W</u>holeWord 
 		
-		<input tabindex=-1 type=checkbox name=regularExpression v-model=regularExpression>Regular e<u>x</u>pression
+		<input tabindex=-1 type=checkbox name=regularExpression v-model=regularExpression>Rege<u>x</u>
+		
+		<input tabindex=-1 type=checkbox name=nlp v-model=nlp><u>N</u>lp
 	</form>
 </template>
 
 <script>
 console.log('importing searchForm.vue');
 export default {
-	props : {
-		keyword: {
-			default: ''	
-		},
-		
-		caseSensitive : {
-			default: true
-		},
-		
-		wholeWord : {
-			default: false
-		},
-		
-		regularExpression : {
-			default: false
-		},			
-	},
+	props : ['keyword', 'caseSensitive', 'wholeWord', 'regularExpression', 'nlp'],
 
 	computed: {
 		user(){
@@ -47,13 +33,16 @@ export default {
 			if (event.altKey){
 				switch(event.key){
 				case 'c':
-					this.caseSensitive = !this.caseSensitive;
+					setAttribute(this, 'caseSensitive', !this.caseSensitive);
 					break;
 				case 'w':
-					this.wholeWord = !this.wholeWord;
+					setAttribute(this, 'wholeWord', !this.wholeWord);
 					break;
 				case 'x':
-					this.regularExpression = !this.regularExpression;
+					setAttribute(this, 'regularExpression', !this.regularExpression);
+					break;
+				case 'n':
+					setAttribute(this, 'nlp', !this.nlp);
 					break;
 				}
 			}

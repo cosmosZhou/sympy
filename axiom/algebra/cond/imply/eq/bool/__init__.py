@@ -24,4 +24,3 @@ if __name__ == '__main__':
 
 from . import invert
 # created on 2018-02-16
-# updated on 2018-02-16

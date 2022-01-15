@@ -139,11 +139,11 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Lamda).apply(discrete.lamda_matmul.to.matmul)
 
-    Eq << Eq[-1].this.rhs.args[1].args[0].expr.T
+    Eq << Eq[-1].this.rhs.find(MatMul).T
 
     Eq << Eq[-1].this.find(Lamda).apply(discrete.lamda_matmul.to.matmul)
 
-    Eq << Eq[-1].this.rhs.args[1].args[1].expr.T
+    Eq << Eq[-1].this.rhs.find(MatMul[Lamda]).T
 
     Eq << Eq[-1].this.rhs.subs(Eq.lower_part, Eq.upper_part)
 
@@ -159,7 +159,7 @@ def prove(Eq):
 
     Eq << algebra.eq.imply.eq.lamda.apply(Eq[-1], (i,))
 
-    Eq << Eq[-1].this.rhs.apply(algebra.lamda_piece.to.blockMatrix)
+    Eq << Eq[-1].this.rhs.apply(algebra.lamda_piece.to.block)
 
     Eq << Eq[-1].this.find(Lamda).apply(algebra.lamda.to.mul)
 
@@ -184,10 +184,13 @@ def prove(Eq):
     Eq << Eq[-1].this.rhs.subs(Eq[6].reversed, Eq[8].reversed, Eq[9].reversed, Eq[10].reversed)
 
 
+
+
+
 if __name__ == '__main__':
     run()
 # reference:
 # Self-Attention with Relative Position Representations.pdf
 # https://arxiv.org/abs/1803.02155
 # created on 2021-01-02
-# updated on 2021-01-02
+# updated on 2021-12-16

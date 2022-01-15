@@ -28,4 +28,3 @@ if __name__ == '__main__':
 
 from . import doit, split
 # created on 2018-12-22
-# updated on 2018-12-22

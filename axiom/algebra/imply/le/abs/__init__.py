@@ -15,13 +15,18 @@ def prove(Eq):
     x = Symbol(real=True, given=True)
     Eq << apply(x)
 
-    Eq << Eq[-1].apply(algebra.cond.given.et.ou, cond=x > 0)
-
     Eq << ~Eq[-1]
-
-    Eq << Eq[-1].this.args[0].apply(algebra.gt_zero.imply.eq.abs)
-
-    Eq << Eq[-1].apply(algebra.gt.eq.imply.gt.transit)
+    
+    Eq << GreaterEqual(abs(x), 0, plausible=True)
+    
+    Eq <<= Eq[-1] & Eq[-2]
+    
+    Eq << Eq[-1].this.apply(algebra.gt.ge.imply.gt.transit, ret=0, simplify=None)
+    
+    Eq << Eq[-1].this.args[0].apply(algebra.gt_zero.imply.eq.abs, simplify=None)
+    
+    Eq << Eq[-1].this.apply(algebra.gt.eq.imply.gt.transit)
+    
 
 
 if __name__ == '__main__':
@@ -30,4 +35,4 @@ if __name__ == '__main__':
 from . import add
 from . import substract
 # created on 2018-06-29
-# updated on 2018-06-29
+# updated on 2022-01-04

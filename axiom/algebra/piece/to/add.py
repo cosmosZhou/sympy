@@ -24,7 +24,7 @@ def apply(self, additive=None):
                 if e.is_Add:
                     e = Add(*{*e.args} - common_terms)
                 else:
-                    e = 0
+                    e = ZeroMatrix(*e.shape)
                 args.append((e, c))
             rhs = Add(*common_terms, Piecewise(*args))
 
@@ -60,16 +60,13 @@ def prove(Eq):
 
     Eq << Eq[-1].this.args[0].apply(algebra.et.given.et.subs.bool, 1, invert=True)
 
-
-
-
-
-
-
     Eq << algebra.ou.given.ou.collect.apply(Eq[-1], cond=Unequal(x, y), simplify=None)
+
+    
+    
 
 
 if __name__ == '__main__':
     run()
 # created on 2018-02-22
-# updated on 2018-02-22
+# updated on 2021-12-20

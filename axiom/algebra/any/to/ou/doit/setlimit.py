@@ -10,11 +10,8 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    k = Symbol(integer=True, positive=True)
-    x = Symbol(real=True, shape=(oo, k))
-    i, j, a, b, c, d = Symbol(integer=True)
-    f = Function(integer=True)
-
+    x = Symbol(real=True, shape=(oo,))
+    i, a, b, c, d = Symbol(integer=True)
 
     Eq << apply(Any[i:{a, b, c, d}](x[i] > 0))
 
@@ -45,4 +42,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2019-02-09
-# updated on 2019-02-09

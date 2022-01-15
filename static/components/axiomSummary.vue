@@ -2,7 +2,7 @@
 	<div tabindex=1 @keydown=keydown>
 		the whole math theory is composed of the following sections:
  
-		<search-form v-if="issearch"></search-form>		
+		<searchForm v-if="issearch" :keyword=keyword :caseSensitive=caseSensitive :wholeWord=wholeWord :regularExpression=regularExpression :nlp=nlp></searchForm>		
 		<ul>
 			<li v-for="(content, section) in repertoire">
 				<a :href="'/%s/axiom.php?module=%s'.format(user, section)">
@@ -68,6 +68,11 @@ export default {
 			issearch: false,
 			recentAxioms: [],
 			topk: 10,
+			
+			caseSensitive: false,
+			wholeWord: false, 
+			regularExpression: false,
+			nlp: false,
 		};
 	},
 

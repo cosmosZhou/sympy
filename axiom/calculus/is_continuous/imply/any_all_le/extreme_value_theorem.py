@@ -14,7 +14,7 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import calculus
-    
+
     a = Symbol(real=True)
     b = Symbol(real=True, domain=Interval(a, oo, left_open=True))
     f = Function(real=True)
@@ -25,4 +25,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-06-14
-# updated on 2020-06-14

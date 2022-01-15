@@ -2,8 +2,8 @@ from util import *
 
 
 @apply
-def apply(self):    
-    cond, given = self.of(Probability[Conditioned])    
+def apply(self):
+    cond, given = self.of(Probability[Conditioned])
     return Equal(self, Probability(cond & given) / Probability(given))
 
 
@@ -15,7 +15,6 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
-    
+
 from . import guassion
 # created on 2020-12-09
-# updated on 2020-12-09

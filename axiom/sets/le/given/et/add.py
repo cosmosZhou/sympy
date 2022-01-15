@@ -20,10 +20,9 @@ def prove(Eq):
 
     Eq << algebra.cond.any.imply.any_et.apply(Eq[1], Eq[-1], simplify=None)
     Eq << Eq[-1].this.expr.apply(algebra.eq.cond.imply.cond.subs)
-    
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2021-05-19
-# updated on 2021-05-19

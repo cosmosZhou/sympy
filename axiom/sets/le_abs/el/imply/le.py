@@ -11,16 +11,13 @@ def apply(le, contains):
 
     yt, x, i, n = dissect_distance(dx)
 
-    _yt, y_mean = dy.of(Abs[Expr - Expr])
+    S[yt], y_mean = dy.of(Abs[Expr - Expr])
 
-    assert _yt == yt
     y_sum, m = y_mean.of(Expr / Expr)
 
     yj, (j, *ab) = y_sum.of(Sum)
     if ab:
-        zero, _m = ab
-        assert zero == 0
-        assert _m == m
+        S[0], S[m] = ab
 
     y = Lamda[j:m](yj).simplify()
 
@@ -70,4 +67,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2021-03-23
-# updated on 2021-03-23

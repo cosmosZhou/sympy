@@ -2,9 +2,9 @@ from util import *
 
 
 @apply
-def apply(contains1, contains2):
-    x0, S0 = contains1.of(Element)
-    x1, S1 = contains2.of(Element)
+def apply(el1, el2):
+    x0, S0 = el1.of(Element)
+    x1, S1 = el2.of(Element)
 
     assert S0.is_Range and S1.is_Range
 
@@ -28,11 +28,9 @@ def prove(Eq):
 
     Eq <<= Eq[-1] + Eq[-4], Eq[-3] + Eq[3]
 
-
     Eq << sets.le.ge.imply.el.range.apply(Eq[-2], Eq[-1])
 
 
 if __name__ == '__main__':
     run()
 # created on 2021-02-25
-# updated on 2021-02-25

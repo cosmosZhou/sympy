@@ -10,7 +10,7 @@ def apply(self, *, simplify=True):
         db = db.simplify()
     assert ft.is_continuous(t)
     assert b.is_continuous(x)
-    
+
     return Equal(self, ft._subs(t, b) * db)
 
 
@@ -48,4 +48,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-05-05
-# updated on 2020-05-05

@@ -2,7 +2,7 @@ from util import *
 
 
 @apply
-def apply(self):    
+def apply(self):
     ((_x, a), expr), (x,) = self.of(Integral[Mul[Bool[LessEqual]]])
     assert _x == x
     return Equal(self, Integral[x:-oo:a](expr), evaluate=False)
@@ -14,10 +14,9 @@ def prove(Eq):
     f = Function(real=True)
     Eq << apply(Integral[x](f(x) * Bool(x <= a)))
 
-    
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2021-07-24
-# updated on 2021-07-24

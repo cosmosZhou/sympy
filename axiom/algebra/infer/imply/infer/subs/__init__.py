@@ -25,4 +25,3 @@ if __name__ == '__main__':
     run()
 from . import bool
 # created on 2018-11-23
-# updated on 2018-11-23

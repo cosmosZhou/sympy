@@ -25,4 +25,3 @@ if __name__ == '__main__':
 
 from . import card
 # created on 2021-09-28
-# updated on 2021-09-28

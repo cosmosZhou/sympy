@@ -27,6 +27,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(y.this.definition)
 
+    Eq << Eq[-1].this.find(Mul).apply(algebra.mul.to.add)
     Eq << Eq[-1].this.args[0].apply(algebra.eq_square.imply.ou_is_zero)
 
     Eq << Eq[-1].this.args[-1].apply(algebra.eq_square.imply.ou_is_zero)
@@ -39,7 +40,11 @@ def prove(Eq):
 
     Eq << Eq[-1].this.args[0].apply(algebra.eq.transposition)
 
+    
+    
+
 
 if __name__ == '__main__':
-    run()  # created on 2018-11-26
-# updated on 2018-11-26
+    run()  
+# created on 2018-11-26
+# updated on 2021-12-03

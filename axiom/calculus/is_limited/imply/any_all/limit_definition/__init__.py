@@ -25,7 +25,7 @@ def of_limited(given, **kwargs):
     if kwargs.get('extended_real'):
         assert R in Interval(-oo, oo, left_open=False, right_open=False)
         return (expr, *limits)
-    
+
     return (expr, *limits, R)
 
 
@@ -68,4 +68,3 @@ if __name__ == '__main__':
 
 from . import symbol_subs
 # created on 2020-04-07
-# updated on 2020-04-07

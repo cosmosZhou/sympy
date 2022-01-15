@@ -4,9 +4,9 @@ from util import *
 @apply
 def apply(given, bound):
     lhs, rhs = given.of(Less)
-    
+
     assert bound <= rhs
-    
+
     return Less(lhs, bound)
 
 
@@ -26,4 +26,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2021-09-08
-# updated on 2021-09-08

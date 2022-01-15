@@ -6,7 +6,7 @@ def apply(given, *, simplify=True):
     lhs, rhs = given.of(Equal)
     lhs, rhs = sin(lhs), sin(rhs)
     if simplify:
-        lhs, rhs = lhs.simplify(), rhs.simplify()    
+        lhs, rhs = lhs.simplify(), rhs.simplify()
     return Equal(lhs, rhs)
 
 
@@ -21,4 +21,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-07-24
-# updated on 2018-07-24

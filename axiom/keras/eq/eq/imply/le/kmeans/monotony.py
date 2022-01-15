@@ -3,14 +3,8 @@ from util import *
 
 @apply
 def apply(eq_sum, eq_union, x=None):
-    ((_w, ___i), i), M = eq_sum.of(Equal[Sum[Card[Indexed], Tuple]])
-    ((w, __i), _i), (zero, _M) = eq_union.of(Equal[Cup[Indexed, Tuple], Range])
-
-    assert _M == M
-    assert zero == 0
-
-    assert i == _i == __i == ___i
-    assert _w == w
+    ((w, i), S[i]), M = eq_sum.of(Equal[Sum[Card[Indexed], Tuple]])
+    ((S[w], i), S[i]), (S[0], S[M]) = eq_union.of(Equal[Cup[Indexed, Tuple], Range])
 
     assert x.shape[0] == M
 
@@ -68,7 +62,7 @@ def prove(Eq):
 
     Eq << sets.eq.imply.all.apply(Eq[-1])
 
-    Eq << Eq[-1].this.expr.apply(algebra.eq.imply.le.st.argmin)
+    Eq << Eq[-1].this.expr.apply(algebra.eq_argmin.imply.le)
 
     Eq << Eq[-1].this.expr.apply(algebra.le.imply.le.square)
 
@@ -94,8 +88,10 @@ def prove(Eq):
 
     Eq << algebra.sum_ge_zero.given.sum_ge_zero.apply(Eq[-1])
 
+    
+
 
 if __name__ == '__main__':
     run()
 # created on 2020-12-26
-# updated on 2020-12-26
+# updated on 2021-12-27

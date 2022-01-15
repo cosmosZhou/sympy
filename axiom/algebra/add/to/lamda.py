@@ -1,22 +1,41 @@
 from util import *
 
 
+def to_Lamda(self, expr, deep=False):
+    variables = self.variables    
+    if expr.shape:
+        size = min(len(expr.shape), len(variables))
+        variables = variables[:size]
+        expr = expr[variables[::-1]]
+        if deep and expr.is_Lamda:
+            expr = to_Lamda(expr, self.expr)
+        else:
+            expr += self.expr
+    else:
+        expr += self.expr
+        
+    return Lamda(expr, *self.limits)
+    
 @apply
-def apply(self):
-    for i, lamda in enumerate(self.of(Add)):
+def apply(self, deep=False):
+    [*args] = self.of(Add)
+    for i, lamda in enumerate(args):
         if lamda.is_Lamda:
-            variables = lamda.variables
-            args = [*self.args]
             del args[i]
-            rest = self.func(*args)
-            if rest.shape:
-                size = min(len(rest.shape), len(variables))
-                variables = variables[:size]
-                rest = rest[variables[::-1]]
-
-            rhs = Lamda(rest + lamda.expr, *lamda.limits)
+            rhs = to_Lamda(lamda, Add(*args), deep=deep)
             break
-
+    else:
+        for i, lamda in enumerate(args):
+            lamda = lamda.of(-Lamda)
+            if lamda:
+                expr, *limits = lamda
+                lamda = Lamda(-expr, *limits)
+                del args[i]
+                rhs = to_Lamda(lamda, Add(*args), deep=deep)
+                break          
+        else:
+            return
+        
     return Equal(self, rhs, evaluate=False)
 
 
@@ -35,8 +54,11 @@ def prove(Eq):
 
     Eq << algebra.eq.given.eq.getitem.apply(Eq[-1], j)
 
+    
+    
+
 
 if __name__ == '__main__':
     run()
 # created on 2018-04-04
-# updated on 2018-04-04
+# updated on 2021-11-21

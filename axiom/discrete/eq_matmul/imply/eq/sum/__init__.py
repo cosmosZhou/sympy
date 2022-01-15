@@ -37,4 +37,3 @@ if __name__ == '__main__':
 from . import square
 from . import pow
 # created on 2019-11-11
-# updated on 2019-11-11

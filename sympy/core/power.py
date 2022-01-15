@@ -312,7 +312,12 @@ class Pow(Expr):
 
     @property
     def shape(self):
-        return self.args[0].shape
+        b, e = self.args
+        if e.shape:
+            if b.shape:
+                assert b.shape == e.shape
+            return e.shape
+        return b.shape
     
     @property
     def dtype(self):
@@ -940,17 +945,18 @@ class Pow(Expr):
         if self.is_extended_real:
             return self
 
-    def _eval_transpose(self):
-        from sympy.functions.elementary.complexes import transpose
-        i, p = self.exp.is_integer, self.base.is_complex
-        if p:
-            return self.base ** self.exp
-        if i:
-            return transpose(self.base) ** self.exp
-        if i is False and p is False:
-            expanded = expand_complex(self)
-            if expanded != self:
-                return transpose(expanded)
+    def _eval_transpose(self, axis=-1):
+        if axis == self.default_axis:
+            from sympy.functions.elementary.complexes import transpose
+            i, p = self.exp.is_integer, self.base.is_complex
+            if p:
+                return self.base ** self.exp
+            if i:
+                return transpose(self.base) ** self.exp
+            if i is False and p is False:
+                expanded = expand_complex(self)
+                if expanded != self:
+                    return transpose(expanded)
 
     def _eval_expand_power_exp(self, **hints):
         """a**(n + m) -> a**n*a**m"""

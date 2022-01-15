@@ -64,6 +64,8 @@ class Determinant(Expr):
         if matrix.is_DenseMatrix:
             if len(matrix._args) == 1:
                 return matrix._args[0]
+        elif matrix.is_Transpose:
+            return self.func(matrix.arg)
             
         return self
 

@@ -20,16 +20,15 @@ def prove(Eq):
 
     Eq << algebra.le.lt.imply.lt.transit.apply(Eq[-1], Eq[0])
 
-    
 
-    
 
-    
 
-    
+
+
+
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2018-07-27
-# updated on 2018-07-27

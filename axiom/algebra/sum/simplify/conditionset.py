@@ -3,11 +3,10 @@ from util import *
 
 @apply
 def apply(self):
-    function, (x, (__x, (_x, (___x, fx)))), *limits = self.of(Sum[Tuple[Cup[FiniteSet, Tuple[Equal]]]])
-    assert x == _x == __x == ___x
+    f, (x, (S[x], (S[x], (S[x], fx)))), *limits = self.of(Sum[Tuple[Cup[FiniteSet, Tuple[Equal]]]])
 
-    function = function._subs(x, fx)
-    return Equal(self, self.func(function, *limits))
+    f = f._subs(x, fx)
+    return Equal(self, self.func(f, *limits))
 
 
 @prove
@@ -36,4 +35,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2019-09-14
-# updated on 2019-09-14

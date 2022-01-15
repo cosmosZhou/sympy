@@ -3,9 +3,9 @@ from util import *
 
 @apply
 def apply(given, sgm):
-    (y, xi), (i, n) = given.of(All[Unequal, Tuple[0]])
+    (y, xi), (i, S[0], n) = given.of(All[Unequal])
     ft, (t, s) = sgm.of(Sum)
-    xj, (j, _n) = s.of(Cup[FiniteSet, Tuple[0]])
+    xj, (j, S[0], _n) = s.of(Cup[FiniteSet])
     assert xj._subs(j, i) == xi
     assert n == _n
 
@@ -35,4 +35,3 @@ if __name__ == '__main__':
     run()
 from . import double_limits
 # created on 2019-02-04
-# updated on 2019-02-04

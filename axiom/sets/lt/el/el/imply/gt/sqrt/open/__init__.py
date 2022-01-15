@@ -7,9 +7,7 @@ def apply(lt, contains, contains_y):
     y, domain_y = contains_y.of(Element)
     assert domain_x in Interval(-1, 1, left_open=True, right_open=True)
     assert domain_y in Interval(-1, 1, left_open=True, right_open=True)
-    _x, _y = lt.of(Less)
-    assert _x == x
-    assert _y == y
+    S[x], S[y] = lt.of(Less)
     return y * sqrt(1 - x ** 2) > x * sqrt(1 - y ** 2)
 
 
@@ -80,4 +78,3 @@ from . import positive
 from . import nonpositive
 from . import nonnegative
 # created on 2020-11-29
-# updated on 2020-11-29

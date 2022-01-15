@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(is_empty, eq_complement):
-    A, B = is_empty.of(Equal[Intersection, EmptySet])    
+    A, B = is_empty.of(Equal[Intersection, EmptySet])
     (_A, _B), C = eq_complement.of(Equal[Complement])
     assert {A, B} == {_A, _B}
     return Equal(_A, C)
@@ -22,4 +22,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-09-16
-# updated on 2018-09-16

@@ -11,10 +11,9 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra
 
-    k = Symbol(integer=True, positive=True)
-    x, p = Symbol(real=True, shape=(k,), given=True)
-    A = Symbol(etype=dtype.real * k, given=True)
-    f, g = Function(shape=(k,), real=True)
+    x, p = Symbol(real=True, given=True)
+    A = Symbol(etype=dtype.real, given=True)
+    f, g = Function(real=True)
     Eq << apply(p < Piecewise((f(x), Element(x, A)), (g(x), True)))
 
     Eq << Eq[0].apply(algebra.cond.imply.et.ou, cond=Element(x, A))
@@ -29,10 +28,12 @@ def prove(Eq):
 
     Eq << algebra.et.imply.ou.apply(Eq[-1])
 
-    Eq << Eq[-1].this.args[0].apply(algebra.et.imply.ou)
+    
+
+    
 
 
 if __name__ == '__main__':
     run()
 # created on 2020-01-14
-# updated on 2020-01-14
+# updated on 2022-01-08

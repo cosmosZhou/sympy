@@ -357,6 +357,13 @@ class Exp(ExpBase):
             arg2 = -S.ImaginaryUnit * self.args[0] / S.Pi
             return arg2.is_even
 
+    def _eval_is_extended_negative(self):
+        if self.arg.is_extended_real:
+            return False
+        
+        if self.arg.is_imaginary:
+            ...
+        
     def _eval_nseries(self, x, n, logx, cdir=0):
         # NOTE Please see the comment at the beginning of this file, labelled
         #      IMPORTANT.

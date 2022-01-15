@@ -2,7 +2,7 @@ from util import *
 
 
 @apply
-def apply(given): 
+def apply(given):
     (fx, M), *limits = given.of(All[Greater])
     return Minima(fx, *limits) > M
 
@@ -17,4 +17,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-12-01
-# updated on 2019-12-01

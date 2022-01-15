@@ -12,7 +12,7 @@ from sympy.matrices.matrices import MatrixBase
 from sympy.core.logic import fuzzy_and
 
 
-class MatMul(MatrixExpr):    
+class MatMul(MatrixExpr): 
     """
     A product of matrix expressions
 
@@ -59,7 +59,7 @@ class MatMul(MatrixExpr):
                         
             args = [*generator()]
             
-        coeffs = []        
+        coeffs = []
         matrices = []
 
         def append(mat): 
@@ -151,7 +151,7 @@ class MatMul(MatrixExpr):
             * batch_size, _k, n = rhs_shape
             assert k == _k   
             if len(batch_size) == len(_batch_size):
-                assert batch_size == _batch_size
+                assert batch_size == _batch_size, "%s, %s, batch_size mismatch!" % (lhs_shape, rhs_shape)
             else:
                 assert batch_size[:-len(_batch_size)] == _batch_size
             return (*batch_size, n)                
@@ -179,7 +179,7 @@ class MatMul(MatrixExpr):
             rhs = self.func(*self.args[1:])
             if len(rhs.shape) == 3:
                 rhs = rhs[i]
-            return self.args[0][i] @ rhs            
+            return self.args[0][i] @ rhs
         if isinstance(i, slice):
             start, stop = i.start, i.stop
             if start is None:
@@ -282,6 +282,11 @@ class MatMul(MatrixExpr):
         coeff_nc = [x for x in self.args if not x.is_commutative]
         return [coeff_c, coeff_nc]
 
+    def _eval_derivative(self, x):
+        if self._has(x):
+            return
+        return MatrixExpr._eval_derivative(self, x)
+
     def _eval_derivative_matrix_lines(self, x):
         from .transpose import Transpose
         with_x_ind = [i for i, arg in enumerate(self.args) if arg.has(x)]
@@ -361,81 +366,83 @@ class MatMul(MatrixExpr):
         from sympy.concrete.summations import Sum
         if len(self.args) > 2:
             matmul = self.func(*self.args[:-1]).expand(var=var, deep=deep) @ self.args[-1]
-            if matmul.is_MatMul:
-                matmul = matmul.expand(var=var, deep=deep)            
+            # if matmul.is_MatMul:
+                # matmul = matmul.expand(var=var, deep=deep)            
             return matmul
         
         A, B = self.args
         if A.is_MatPow:
             return self
+        
         if A.is_BlockMatrix:
-            if B.is_BlockMatrix and len(A.shape) == 1:
-                if len(A.args) == len(B.args):
-                    sgm = None
-                    for a, b in zip(A.args, B.args):
-                        if a.shape:
-                            product = a @ b
-                            if product.is_MatMul and len(product.args) == 2:
-                                product = product.expand()
-                        else:
-                            product = a * b
-                        if sgm is None:
-                            sgm = product
-                        else:
-                            sgm += product
-                    return sgm
-                else:
-                    return self
-            else: 
-                args = [self.func(arg, B).simplify() for arg in A.args]
-                if deep:
-                    args = [arg.expand(deep=True) if arg.is_MatMul else arg for arg in args]
-                return A.func(*args)
+            if A.axis == 0:
+                if B.is_BlockMatrix and len(A.shape) == 1:
+                    if len(A.args) == len(B.args):
+                        sgm = None
+                        for a, b in zip(A.args, B.args):
+                            if a.shape:
+                                product = a @ b
+                                if product.is_MatMul and len(product.args) == 2:
+                                    product = product.expand()
+                            else:
+                                product = a * b
+                            if sgm is None:
+                                sgm = product
+                            else:
+                                sgm += product
+                        return sgm
+                    else:
+                        return self
+                else: 
+                    args = [self.func(arg, B).simplify() for arg in A.args]
+                    if deep:
+                        args = [arg.expand(deep=True) if arg.is_MatMul else arg for arg in args]
+                    return A.func(*args)
+            
+            elif A.axis == 1 and len(A.shape) == 2:
+                if B.is_BlockMatrix:
+                    if B.axis == 1 and len(B.shape) == 2:
+                        return (B.T @ A.T).expand().T
+                    elif B.axis == 0:
+                        A_T = A.T
+                        if len(A_T.args) == len(B.args):                                
+                            sgm = None
+                            for a, b in zip(A_T.args, B.args):
+                                if len(a.shape) == 1 and len(b.shape) == 1:
+                                    n = a.shape[0]
+                                    if b.shape[0] == n:
+                                        i = a.generate_var(b.free_symbols, integer=True)
+                                        j = a.generate_var(b.free_symbols | {i}, integer=True)                                
+                                        product = Lamda[j:n, i:n](a[i] * b[j]).simplify()
+                                    else:
+                                        return self
+                                else:
+                                    if not b.shape:
+                                        product = a * b
+                                    elif a.rows == b.shape[0]:
+                                        product = (a.T @ b).simplify()
+                                        if product.is_MatMul and len(product.args) == 2:
+                                            X = product.args[1]
+                                            if X.is_BlockMatrix and X.axis == 1 and len(X.shape) == 2:
+                                                product = product.expand()
+                                    else:
+                                        return self
+                                if sgm is None:
+                                    sgm = product
+                                else:
+                                    sgm += product
+                            return sgm
+                return self
+                
         
         if A.is_Transpose:
             if B.is_Transpose:
                 return (B.arg @ A.arg).expand().T
-            if A.arg.is_BlockMatrix and B.is_BlockMatrix:
-                A_T = A.arg
-                if len(A_T.args) == len(B.args):
-                    B_T = B._eval_transpose()
-                    if B_T is not None:
-                        # A @ B = A.T.T @ B.T.T = (B.T @ A.T).T
-                        return (B_T @ A_T).expand().T
-                        
-                    sgm = None
-                    for a, b in zip(A_T.args, B.args):
-                        if len(a.shape) == 1 and len(b.shape) == 1:
-                            n = a.shape[0]
-                            if b.shape[0] == n:
-                                i = a.generate_var(b.free_symbols, integer=True)
-                                j = a.generate_var(b.free_symbols | {i}, integer=True)                                
-                                product = Lamda[j:n, i:n](a[i] * b[j]).simplify()
-                            else:
-                                return self
-                        else:
-                            if not b.shape:
-                                product = a * b
-                            elif a.rows == b.shape[0]:
-                                product = (a.T @ b).simplify()
-                                if product.is_MatMul and len(product.args) == 2:
-                                    X = product.args[1]
-                                    if X.is_Transpose and X.arg.is_BlockMatrix:
-                                        product = product.expand()
-                            else:
-                                return self
-                        if sgm is None:
-                            sgm = product
-                        else:
-                            sgm += product
-                    return sgm
-            return self
-            
+        
         if B.is_BlockMatrix:
+            if len(B.shape) == 2 and B.axis == 1:
+                return (B.T @ A.T).expand().T
             return self     
-             
-        if B.is_Transpose and B.arg.is_BlockMatrix:
-            return (B.arg @ A.T).expand().T
               
         if A.is_MatProduct:
             return self
@@ -580,7 +587,7 @@ class MatMul(MatrixExpr):
             eq &= arg.domain_definition()        
         return eq
 
-    def _eval_transpose(self):
+    def _eval_transpose(self, axis=-1):
         """Transposition of matrix multiplication.
 
         Notes
@@ -599,15 +606,16 @@ class MatMul(MatrixExpr):
 
         .. [1] https://en.wikipedia.org/wiki/Transpose
         """
-
-        return self.func(*(arg.T for arg in self.args[::-1]))
+        if axis == self.default_axis:
+            return self.func(*(arg.T for arg in self.args[::-1]))
 
     def _subs(self, old, new, **hints):
         if old.is_MatMul:
             args = old.args
-            for i in range(len(self.args) - len(args) + 1): 
-                if all(self.args[j] == args[j - i]for j in range(i, i + len(args))):
-                    return self.func(*self.args[:i] + (new.args if new.is_MatMul else (new,)) + self.args[i + len(args):]).simplify()
+            from sympy.utilities.misc import sunday
+            i = sunday(self.args, args)
+            if i >= 0:
+                return self.func(*self.args[:i] + (new.args if new.is_MatMul else (new,)) + self.args[i + len(args):]).simplify()
         return MatrixExpr._subs(self, old, new, **hints)
 
 
@@ -751,7 +759,7 @@ def combine_powers(mul):
         else:
             current_base = arg
             current_exp = 1
-        if current_base == base:
+        if current_base == base and len(base.shape) > 1:
             exp += current_exp
         else:
             if not base is None:
@@ -759,7 +767,6 @@ def combine_powers(mul):
                     args.append(base)
                 else:
                     args.append(MatPow(base, exp))
-#                     args.append(base ** exp)
             exp = current_exp
             base = current_base
     if exp == 1:

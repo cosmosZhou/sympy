@@ -33,3 +33,6 @@ from . import piece
 from . import inf
 from . import sup_inf
 from . import solve
+from . import reducedArgMax
+from . import reducedArgMin
+from . import transpose

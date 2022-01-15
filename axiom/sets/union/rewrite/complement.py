@@ -6,9 +6,9 @@ def apply(self, index=0):
     [*args] = self.args
     A = args[index]
     del args[index]
-    
+
     return Equal(self, Union(A, *[arg - A for arg in args], evaluate=False), evaluate=False)
-    
+
 
 @prove
 def prove(Eq):
@@ -27,4 +27,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-08-08
-# updated on 2020-08-08

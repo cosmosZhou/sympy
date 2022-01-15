@@ -62,7 +62,7 @@ class MatAdd(MatrixExpr, Add):
     def _entry(self, i, j, **kwargs):
         return Add(*[arg._entry(i, j, **kwargs) for arg in self.args])
 
-    def _eval_transpose(self):
+    def _eval_transpose(self, axis=-1):
         return MatAdd(*[transpose(arg) for arg in self.args]).doit()
 
     def _eval_adjoint(self):

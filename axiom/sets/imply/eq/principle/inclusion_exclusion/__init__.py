@@ -55,4 +55,3 @@ from . import basic
 # reference
 # www.cut-the-knot.org/arithmetic/combinatorics/InclusionExclusion.shtml
 # created on 2021-04-23
-# updated on 2021-04-23

@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(self):
     from _collections import defaultdict
-    [[*args], *limits] = self.of(Sum[Mul])
+    [*args], *limits = self.of(Sum[Mul])
 
     for i, b in enumerate(args):
         if b.is_Bool:
@@ -70,9 +70,16 @@ def apply(self):
     else:
         for i, v in enumerate(self.variables):
             if cond._has(v):
-                [v] = limits[i]
+                v, *ab = limits[i]
+                if ab:                    
+                    domain = (Range if v.is_integer else Interval)(*ab)
+                else:
+                    domain = v.universalSet
+                    
                 if cond.is_Element and cond.lhs == v:
                     cond = cond.rhs
+                    cond &= domain
+                    
                 limits[i] = (v, cond)
                 break
 
@@ -104,8 +111,10 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.apply(algebra.sum.limits.swap)
 
+    
+
 
 if __name__ == '__main__':
     run()
 # created on 2018-05-01
-# updated on 2018-05-01
+# updated on 2022-01-10

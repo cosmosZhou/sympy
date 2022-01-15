@@ -6,10 +6,10 @@ def apply(is_nonnegative, self, n=None, k=None):
     fx = is_nonnegative.of(Expr >= 0)
     if n is None:
         n = self.generate_var(integer=True, var='n')
-        
+
     if k is None:
         k = self.generate_var(n, integer=True, var='k')
-    
+
     fx, (x, E) = self.of(Integral)
     assert fx.is_integrable(x, E)
     sup = Sup[x:E](fx)
@@ -31,4 +31,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-05-21
-# updated on 2020-05-21

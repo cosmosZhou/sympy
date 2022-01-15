@@ -3,11 +3,10 @@ from util import *
 
 @apply
 def apply(given, sgm):
-    e, S = given.of(NotElement)
-    fx, (x, _S) = sgm.of(Sum)
-    _e = _S.of(Union[S, FiniteSet])
-    assert _e == e
-    return Equal(Sum[x:S | {e}](fx), Sum[x:S](fx) + fx._subs(x, e))
+    e, s = given.of(NotElement)
+    fx, (x, _s) = sgm.of(Sum)
+    S[e] = _s.of(Union[s, FiniteSet])
+    return Equal(Sum[x:s | {e}](fx), Sum[x:s](fx) + fx._subs(x, e))
 
 
 @prove
@@ -30,4 +29,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2021-03-17
-# updated on 2021-03-17

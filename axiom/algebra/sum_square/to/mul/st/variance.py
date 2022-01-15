@@ -18,26 +18,20 @@ def apply(self):
     assert z == 0
     xi, x_means = x_sub_x_means.of(Expr - Expr)
 
-    x, _i = xi.of(Indexed)
-    assert _i == i
+    x, S[i] = xi.of(Indexed)
 
     x_sum = x_means * n
 
     xi, limit = x_sum.of(Sum)
 
     try:
-        j, z, _n = limit
+        j, S[0], S[n] = limit
     except:
         (j,) = limit
         domain = xi.domain_defined(j)
-        z, _n = domain.of(Range)
+        S[0], S[n] = domain.of(Range)
 
-    assert z == 0
-    assert n == _n
-    _x, _j = xi.of(Indexed)
-    assert _j == j
-
-    assert x == _x
+    S[x], S[j] = xi.of(Indexed)
 
     if j == i:
         j = self.generate_var(excludes={i}, integer=True, var='j')
@@ -99,4 +93,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2019-11-15
-# updated on 2019-11-15

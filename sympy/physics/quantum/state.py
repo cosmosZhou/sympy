@@ -761,8 +761,9 @@ class Wavefunction(Function):
     def _eval_conjugate(self):
         return Wavefunction(conjugate(self.expr), *self.args[1:])
 
-    def _eval_transpose(self):
-        return self
+    def _eval_transpose(self, axis=-1):
+        if axis == self.default_axis:
+            return self
 
     @property
     def free_symbols(self):

@@ -8,14 +8,14 @@ def try_div_add_args(self_args, factor_args):
         q = try_div(a, b)
         if q is None:
             break
-        
+
         quotient.add(q)
         if len(quotient) > 1:
             break
-    else: 
+    else:
         return quotient.pop()
-    
-    
+
+
 def try_div(self, factor):
     if self == factor:
         return 1
@@ -40,9 +40,9 @@ def try_div(self, factor):
                 quotient = try_div_add_args(self.args, factor.args)
 #                 if quotient is None:
 #                     if len(self.args) == 2:
-#                         quotient = try_div_add_args(self.args[::-1], factor.args)                        
+#                         quotient = try_div_add_args(self.args[::-1], factor.args)
                 return quotient
-            
+
         else:
             args = []
             for i, arg in enumerate(self.args):
@@ -56,6 +56,10 @@ def try_div(self, factor):
         if b == factor:
             if e >= 1:
                 return b ** (e - 1)
+        elif factor.is_Pow and b == factor.base:
+            if (diff := e - factor.exp) >= 0:
+                return b ** diff
+
     elif self.is_Integer:
         if factor.is_Integer:
             if not self % factor:
@@ -68,29 +72,29 @@ def try_div(self, factor):
                 del args[index]
                 return Mul(*args)
             except IndexError:
-                ... 
-        
-    
+                ...
+
+
 def collect(self, *factors):
     args = self.of(Add)
     additives = []
-    others = []    
+    others = []
     factor, *factors = factors
     for arg in args:
         quotient = try_div(arg, factor)
         if quotient is None:
             others.append(arg)
-        else: 
+        else:
             additives.append(quotient)
-    
+
     sgm = Add(*additives)
     if factors:
         sgm = collect(sgm, *factors)
-    
+
     sgm *= factor
     if others:
         sgm += Add(*others)
-    
+
     return sgm
 
 
@@ -99,7 +103,7 @@ def apply(self, factor=None):
     args = self.of(Add)
     common_terms = None
     others = []
-    
+
     additives = []
     if factor is None:
         muls = []
@@ -108,7 +112,7 @@ def apply(self, factor=None):
                 if common_terms is None:
                     common_terms = {*arg.args}
                 else:
-                    if common_terms & {*arg.args}: 
+                    if common_terms & {*arg.args}:
                         common_terms &= {*arg.args}
                     else:
                         others.append(arg)
@@ -116,18 +120,18 @@ def apply(self, factor=None):
                 muls.append(arg)
             else:
                 others.append(arg)
-    
-        for arg in muls: 
+
+        for arg in muls:
             arg = Mul(*{*arg.args} - common_terms)
             additives.append(arg)
-            
+
         rhs = Add(*additives) * Mul(*common_terms) + Add(*others)
     else:
         if factor.is_Mul:
             rhs = collect(self, *factor.args)
         else:
             rhs = collect(self, factor)
-        
+
     return Equal(self, rhs, evaluate=False)
 
 
@@ -144,4 +148,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-08-02
-# updated on 2018-08-02

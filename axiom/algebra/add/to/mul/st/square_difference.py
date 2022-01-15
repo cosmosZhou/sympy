@@ -6,17 +6,17 @@ def take_sqrt(x):
         b, e = x.args
         if e.is_integer and e.is_even:
             return b ** (e / 2)
-    
+
     return sqrt(x)
-    
+
 @apply
 def apply(self):
     x, y = self.of(Expr - Expr)
-    
+
     x = take_sqrt(x)
-        
+
     y = take_sqrt(y)
-    
+
     return Equal(self, (x - y) * (x + y))
 
 
@@ -31,4 +31,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-06-25
-# updated on 2019-06-25

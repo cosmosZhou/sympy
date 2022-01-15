@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given):
-    lhs, rhs = given.of(Equal)    
+    lhs, rhs = given.of(Equal)
     return Equal(sqrt(lhs), sqrt(rhs))
 
 
@@ -21,4 +21,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2020-06-10
-# updated on 2020-06-10

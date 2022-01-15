@@ -29,7 +29,7 @@ def prove(Eq):
     x = Symbol(shape=(oo,), integer=True)
     i, j = Symbol(integer=True)
     w = Symbol(Lamda[j, i](SwapMatrix(n, i, j)))
-    Eq.swap, Eq.P_definition, Eq.w_definition, Eq.axiom = apply(All[x[:n]:S](Element(w[i, j] @ x[:n], S)))
+    Eq.swap, (Eq.P_definition, Eq.w_definition), Eq.axiom = apply(All[x[:n]:S](Element(w[i, j] @ x[:n], S)))
 
     Eq << discrete.imply.all_any.factorization.apply(n)
 
@@ -67,4 +67,3 @@ if __name__ == '__main__':
     run()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html
 # created on 2020-09-03
-# updated on 2020-09-03

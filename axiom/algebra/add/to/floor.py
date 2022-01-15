@@ -2,7 +2,7 @@ from util import *
 
 
 @apply
-def apply(self):    
+def apply(self):
     t, x = self.of(Expr + Floor)
     return Equal(self, Floor(x + t), evaluate=False)
 
@@ -21,4 +21,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-05-31
-# updated on 2018-05-31

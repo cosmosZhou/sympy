@@ -22,13 +22,12 @@ def prove(Eq):
     i = Symbol(domain=Range(m))
     Eq << algebra.eq.given.eq.getitem.apply(Eq[0], i)
 
-    
 
-    
-    
+
+
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2021-10-04
-# updated on 2021-10-04

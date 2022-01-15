@@ -30,9 +30,8 @@ def apply(given, *, cond=None):
 def prove(Eq):
     from axiom import algebra
 
-    k = Symbol(integer=True, positive=True)
-    x, y = Symbol(real=True, shape=(k,), given=True)
-    f, h, g = Function(shape=(k,), real=True)
+    x, y = Symbol(real=True, given=True)
+    f, h, g = Function(real=True)
     Eq << apply(Or(Unequal(x, y) & (y > 0), Equal(f(x), g(y)) & (y > 0), Equal(h(x), g(y)) & (y > 0)), cond=y > 0)
 
     Eq << algebra.et.imply.ou.apply(Eq[1] & Eq[2], simplify=False)
@@ -42,4 +41,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2020-02-18
-# updated on 2020-02-18

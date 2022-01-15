@@ -30,11 +30,10 @@ def prove(Eq):
 
     Eq <<= Eq[-1] & Eq[-2] & Eq[2]
 
-    
+
 
 
 if __name__ == '__main__':
     run()
 
 # created on 2018-09-29
-# updated on 2018-09-29

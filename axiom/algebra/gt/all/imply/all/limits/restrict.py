@@ -3,17 +3,16 @@ from util import *
 
 @apply
 def apply(le, given):
-    c, _a = le.of(Greater)
+    c, a = le.of(Greater)
     function, (x, *ab) = given.of(All)
     if len(ab) == 2:
-        a, b = ab
+        S[a], b = ab
         limit = (x, c, b)
     else:
         [ab] = ab
-        a, b = ab.of(Interval)
+        S[a], b = ab.of(Interval)
         limit = (x, Interval(c, b, right_open=ab.right_open))
 
-    assert _a == a
 
     return All(function, limit)
 
@@ -43,4 +42,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-07-11
-# updated on 2019-07-11

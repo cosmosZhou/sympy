@@ -3,15 +3,10 @@ from util import *
 
 @apply
 def apply(le, ge, contains, notcontains):
-    ((a, _y_), (((_a, _x), (x, X)), _X)), ((__a, __y_), (((___a, y), (_y, _Y)), __Y))= le.of(Abs[Indexed - Sum[Indexed] / Card] <= Abs[Indexed - Sum[Indexed] / Card])
-    ___Y = ge.of(Card >= 2)
-    y_, Y = contains.of(Element)
-    ___y_, __X = notcontains.of(NotElement)
-
-    assert a == _a == __a == ___a
-    assert X == _X == __X and x == _x
-    assert y_ == _y_ == __y_ == ___y_
-    assert Y == _Y == __Y == ___Y and y == _y
+    ((a, y_), (((S[a], x), (S[x], X)), S[X])), ((S[a], S[y_]), (((S[a], y), (S[y], Y)), S[Y]))= le.of(Abs[Indexed - Sum[Indexed] / Card] <= Abs[Indexed - Sum[Indexed] / Card])
+    S[Y] = ge.of(Card >= 2)
+    S[y_], S[Y] = contains.of(Element)
+    S[y_], S[X] = notcontains.of(NotElement)
 
     X_ = X | {y_}
     Y_ = Y - {y_}
@@ -66,4 +61,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2021-03-25
-# updated on 2021-03-25

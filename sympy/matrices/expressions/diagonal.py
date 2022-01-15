@@ -185,8 +185,9 @@ class DiagonalizeVector(MatrixExpr):
             result *= KroneckerDelta(i, j)
         return result
 
-    def _eval_transpose(self):
-        return self
+    def _eval_transpose(self, axis=-1):
+        if axis == self.default_axis:
+            return self
 
     def as_explicit(self):
         from sympy import diag

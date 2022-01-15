@@ -31,7 +31,7 @@ def apply(x_independence_assumption, y_independence_assumption, xy_independence_
     x_quote = Symbol(-Lamda[t](log(z[t])))
     assert x_quote.shape == (n, d)
 
-    return Infer(t > 0, Equal(x_quote[t], -log(ReducedSum(exp(-x_quote[t - 1] - G))) + x[t])), \
+    return Infer(t > 0, Equal(-x_quote[t], logsumexp(-x_quote[t - 1] - G) - x[t])), \
         Equal(-log(y_given_x_probability), logsumexp(-x_quote[n - 1]) + s[n - 1])
 
 
@@ -46,7 +46,7 @@ def prove(Eq):
     x = x_probability.lhs
     n = x.shape[0]
     s, t = Eq[4].lhs.args
-    Eq.z_definition = Eq[5].apply(algebra.eq.imply.eq.lamda, (Eq[5].lhs.indices[-1],), simplify=False)
+    Eq.z_definition = Eq[5].apply(algebra.eq.imply.eq.lamda, (Eq[5].lhs.indices[-1],))
 
     Eq << keras.eq.eq.eq.ne_zero.imply.eq.crf.markov.apply(*Eq[:4])
 
@@ -110,6 +110,10 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.apply(algebra.ne_zero.given.gt_zero)
 
+    Eq << -Eq[-1].this.rhs
+
+    Eq << Eq[-1].this.find(log).apply(keras.log.to.logsumexp)
+    
     Eq.xy_joint_nonzero = stats.ne_zero.imply.ne_zero.joint_slice.apply(Eq[3], (slice(0, t + 1), slice(0, t + 1)))
 
     Eq << stats.ne_zero.imply.et.apply(Eq.xy_joint_nonzero)
@@ -144,9 +148,12 @@ def prove(Eq):
     Eq << Eq[-1] + Eq[-2]
 
     #reference: Neural Architectures for Named Entity Recognition.pdf
+    #https://spaces.ac.cn/archives/5542
+    
+    
 
 
 if __name__ == '__main__':
     run()
-# created on 2020-12-21
-# updated on 2020-12-21
+# created on 2018-12-21
+# updated on 2021-12-31

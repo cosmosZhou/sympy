@@ -2,11 +2,11 @@ from util import *
 
 
 @apply
-def apply(self): 
+def apply(self):
     print(__file__, 'is doubtable')
     expr, (x, x0, dir) = self.of(Limit)
     args = expr.of(Add)
-    
+
     return Equal(self, Add(*(Limit[x:x0:dir](arg) for arg in args)))
 
 
@@ -28,4 +28,3 @@ if __name__ == '__main__':
 
 # https://en.wikipedia.org/wiki/Limit_of_a_function#Properties
 # created on 2020-04-19
-# updated on 2020-04-19

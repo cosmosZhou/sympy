@@ -888,7 +888,7 @@ class Number(AtomicExpr):
     def shape(self):
         return ()
 
-    def _eval_transpose(self):
+    def _eval_transpose(self, axis=-1):
         return self
 
     def simplify(self, *_, **__):
@@ -3248,6 +3248,7 @@ class Infinity(with_metaclass(Singleton, Number)):
         except SympifyError:
             raise TypeError("Invalid comparison %s >= %s" % (self, other))
         if other.is_extended_real:
+            # oo >= oo has no meaning!
             return S.true
         return Expr.__ge__(self, other)
 
@@ -3441,6 +3442,7 @@ class NegativeInfinity(with_metaclass(Singleton, Number)):
         except SympifyError:
             raise TypeError("Invalid comparison %s <= %s" % (self, other))
         if other.is_extended_real:
+            # -oo <= -oo has no meaning!
             return S.true
         return Expr.__le__(self, other)
 

@@ -48,9 +48,26 @@ class BlockMatrix(MatrixExpr):
                 dtype = _dtype
         return dtype
 
+    @classmethod
+    def is_consistent(cls, mat, blocks):
+        if mat.is_BlockMatrix and len(mat.args) == len(blocks):
+            for arg, b in zip(mat.args, blocks):
+                arg_shape = arg.shape
+                if len(arg_shape) < 2:
+                    return False
+                
+                b_shape = b[0].shape
+                if len(b_shape) < 2:
+                    return False
+                
+                if arg_shape[-2] != b_shape[-2]:
+                    return False
+            
+            return True
+            
     def __new__(cls, *args, **kwargs):
         if len(args) > 1 and isinstance(args[-1], tuple):
-            *args, (axis,) = args
+            *args, [axis] = args
         elif 'axis' in kwargs:
             axis = kwargs.pop('axis')
         else:
@@ -65,13 +82,75 @@ class BlockMatrix(MatrixExpr):
         from sympy import sympify
         args = [*map(sympify, args)]
         length = max(len(arg.shape) for arg in args)
+        
+        if axis == 1:
+            hit = False
+            for i, arg in enumerate(args):
+                if isinstance(arg, BlockMatrix):
+                    if arg.axis == 0:
+                        if len(arg.shape) == length:
+                            blocks = arg.blocks
+                            if blocks is None:
+                                blocks = [(arg,) for arg in arg.args]
+
+                            for j in range(i + 1, len(args)):
+                                arg = args[j]
+                                if isinstance(arg, BlockMatrix) and arg.axis == 0:
+                                    continue
+                                else:
+                                    break
+                            else:
+                                hit = True
+                            break
+                    else:
+                        break                    
+                else:
+                    break
+                        
+            if hit:
+                former = args[:i]
+                latter = args[i + 1:]
+                
+                hit = False
+                together = former + latter
+                assert together
+                if all(cls.is_consistent(mat, blocks) for mat in together):
+                    former = [mat.args for mat in former]
+                    latter = [mat.args for mat in latter]
+                    
+                    matrix = []
+                    for args in zip(*former, blocks, *latter):
+                        
+                        arr = []
+                        for b in args:
+                            if isinstance(b, tuple):
+                                arr.extend(b)
+                            else:
+                                arr.append(b)
+                        
+                        matrix.append(arr)
+                    return BlockMatrix(matrix)
+                
+        is_DenseMatrix = True
         for arg in args: 
             if isinstance(arg, BlockMatrix) and len(arg.shape) == length and arg.axis == axis:
                 _args += arg.args
             else:
                 _args.append(arg)
-        if all(not arg.shape for arg in _args):
+                if not arg.is_DenseMatrix:
+                    is_DenseMatrix = False
+                    
+        if length == 1:
+            if is_DenseMatrix:
+                if all(not arg.shape for arg in _args):
+                    return Matrix(tuple(_args))
+            else:
+                if len(_args) == 1:
+                    return _args[0]
+                axis = 0
+        elif not length:
             return Matrix(tuple(_args))
+        
         blocks = Basic.__new__(cls, *_args, **kwargs)
         blocks.axis = sympify(axis)
         return blocks
@@ -80,43 +159,14 @@ class BlockMatrix(MatrixExpr):
     def kwargs(self):
         # return hyper parameter of this object
         return {'axis': self.axis}
-
-    @staticmethod
-    def broadcast(shapes):
-        length = 0
-        cols = 0
-        for i, shape in enumerate(shapes):
-            if not shape:
-                shapes[i] = (1,)
-                shape = shapes[i]
-            if len(shape) > 2:
-                ...
-            else:
-                if shape[-1] > cols:
-                    cols = shape[-1]
-            if len(shape) > length:
-                length = len(shape)
-                
-        if length == 1 and all(shape[0] == shapes[0][0] and len(shape) == length for shape in shapes): 
-            length += 1
-            
-        for i, shape in enumerate(shapes):
-            if len(shape) > 2:
-                ...
-            else:
-                if shape[-1] < cols and len(shape) > 1:
-                    shape = shape[:-1] + (cols,)
-            if len(shape) < length:
-                shape = (1,) * (length - len(shape)) + shape
-            shapes[i] = shape
-        return shapes
-    
+           
     def _eval_shape(self):
         if self.axis:
+            from util.std import argmax
             shapes = [arg.shape for arg in self.args]
-            max_length = {len(s) for s in shapes}
-            assert len(max_length) == 1
-            max_length, *_ = max_length            
+            len_shapes = [len(shape) for shape in shapes]
+            max_length_index = argmax(len_shapes)
+            max_length = len_shapes[max_length_index]
             assert self.axis < max_length
             
             for axis in {*range(max_length)} - {self.axis}:
@@ -124,14 +174,18 @@ class BlockMatrix(MatrixExpr):
                     print([s[axis] for s in shapes])
                 assert len({s[axis] for s in shapes}) == 1
 
-            shape = shapes[0]
+            shape = shapes[max_length_index]
             dimension_axis = 0
             for s in shapes:
-                dimension_axis += s[self.axis]
+                if self.axis < len(s):
+                    dimension_axis += s[self.axis]
+                else:
+                    dimension_axis += 1
             return shape[:self.axis] + (dimension_axis,) + shape[self.axis + 1:max_length]
         else:
             shapes = [arg.shape for arg in self.args]
-            self.broadcast(shapes)
+            from sympy.core.add import Add
+            Add.broadcast(shapes)
             rows = sum(s[0] for s in shapes)
             if len(shapes[0]) > 1:
                 return (rows, *shapes[0][1:])
@@ -252,7 +306,10 @@ class BlockMatrix(MatrixExpr):
             args[-1][-1] = True
             return Piecewise(*args)
         else:
-            return self.func(*(a[key] for a in self.args), axis=self.axis - 1)                
+            self = self.func(*(a[key] for a in self.args), axis=self.axis - 1)
+            if j is not None:
+                self = self[j]
+            return self
 
     def _eval_determinant(self):
         from sympy.concrete.products import Product
@@ -399,7 +456,7 @@ class BlockMatrix(MatrixExpr):
             start, stop = None, None
             mat = []
             for arg in self.args:
-                if arg.is_Slice or arg.is_Indexed:
+                if arg.is_Sliced or arg.is_Indexed:
                     if b is None:
                         b = arg.base
                     elif b != arg.base or len(arg.indices) > 1:
@@ -407,13 +464,13 @@ class BlockMatrix(MatrixExpr):
                         break
                                         
                     if start is None:
-                        if arg.is_Slice:
+                        if arg.is_Sliced:
                             start, stop = arg.index
                         else:
                             start = arg.index
                             stop = start + 1
                     else:
-                        if arg.is_Slice: 
+                        if arg.is_Sliced: 
                             _start, _stop = arg.index
                         else:
                             _start = arg.index
@@ -424,11 +481,22 @@ class BlockMatrix(MatrixExpr):
                             break
                         stop = _stop
                 elif arg.is_DenseMatrix:
-                    mat.append(arg)
+                    if not mat or mat[0].is_DenseMatrix:
+                        mat.append(arg)
+                elif arg.is_ZeroMatrix:
+                    if not mat or mat[0].is_ZeroMatrix:
+                        mat.append(arg)
+                    
             if b is not None:
                 return b[start:stop]
             elif len(mat) == len(self.args):
-                return self.to_DenseMatrix()
+                if mat[0].is_DenseMatrix:
+                    return self.to_DenseMatrix()
+                elif mat[0].is_ZeroMatrix:
+                    return ZeroMatrix(*self.shape)
+        elif self.axis == 1:
+            if blocks := self.blocks:
+                return self.func(blocks)
             
         return self
     
@@ -440,28 +508,50 @@ class BlockMatrix(MatrixExpr):
             
     @property
     def blocks(self):
+        if len(self.shape) != 2:
+            return
+        
         cols = None
         blocks = []
         for X in self.args: 
-            if X.is_Transpose and X.arg.is_BlockMatrix:
-                if cols is None:
-                    cols = len(X.arg.args)
-                else:
-                    if cols != len(X.arg.args):
-                        return
-                blocks.append([x.T for x in X.arg.args])
-                continue
-            if len(X.shape) == 1 and X.is_BlockMatrix:
+            if not X.is_BlockMatrix:
+                return
+            
+            if len(X.shape) == 2 and self.axis + X.axis == 1:
                 if cols is None:
                     cols = len(X.args)
                 else:
                     if cols != len(X.args):
                         return
-                blocks.append([x for x in X.args])
-                continue                
-                
-            return
+                    
+            elif len(X.shape) == 1:
+                if cols is None:
+                    cols = len(X.args)
+                else:
+                    if cols != len(X.args):
+                        return
+            else:
+                return
+            
+            blocks.append(X.args)
         
+        if self.axis == self.default_axis:
+            rows = cols
+            cols = len(blocks)
+            for row in range(rows):
+                shape_set = set()
+                for col in range(cols):    
+                    shape = blocks[col][row].shape
+                    if len(shape) >= 2:
+                        shape_set.add(shape[-2])
+                    else:
+                        break
+                    
+                    if len(shape_set) > 1:
+                        return
+                    
+            blocks = [*zip(*blocks)]
+            
         for i in range(cols):
             cols = None
             block = [block[i] for block in blocks]
@@ -480,11 +570,6 @@ class BlockMatrix(MatrixExpr):
                 vector = [b for b in block if len(b.shape) == 1]
                 if any(v.shape[0] != cols for v in vector):
                     return
-                                
-                scalar = [b for b in block if len(b.shape) == 0]
-                if scalar:
-                    print(__file__)
-                    # return
                 
         return blocks
         
@@ -496,14 +581,17 @@ class BlockMatrix(MatrixExpr):
         if blocks is not None:
             cols = len(blocks[0])
             array = (' & '.join('{%s}' % p._print(X) for X in block) for block in blocks)
-            return r"\left[\begin{array}{%s}%s\end{array}\right]" % ('c' * cols, r'\\'.join(array))
+            latex = r"\left[\begin{array}{%s}%s\end{array}\right]" % ('c' * cols, r'\\'.join(array))
+            if self.axis:
+                latex = "%s_%s" % (latex, p._print(self.axis))
+                
+            return latex
             
         array = []
         for X in self.args: 
             if X.is_Transpose and X.arg.is_BlockMatrix: 
                 X = X.arg       
-                latex = r"{\left[\begin{array}{%s}%s\end{array}\right]}" % ('c' * len(X.args),
-                                                                            ' & '.join('{%s}' % p._print(arg.T) for arg in X.args))
+                latex = r"{\left(\begin{array}{%s}%s\end{array}\right)}" % ('c' * len(X.args), ' & '.join('{%s}' % p._print(arg.T) for arg in X.args))
             else:
                 latex = '{%s}' % p._print(X)   
             array.append(latex)
@@ -539,24 +627,26 @@ class BlockMatrix(MatrixExpr):
             domain &= arg.domain_defined(x)
         return domain
 
-    def _eval_transpose(self):
-        blocks = self.blocks
-        if blocks is None:
-            if len(self.shape) == 1:
+    def _eval_transpose(self, axis=-1):
+        if axis == self.default_axis:
+            len_shape = len(self.shape)
+            
+            if len_shape == 1:
                 return self
-            return
-        rows = len(blocks)
-        cols = len(blocks[0])
-        
-        blocks_T = [[None] * rows for _ in range(cols)]
-        for i in range(rows):
-            for j in range(cols):
-                blocks_T[j][i] = blocks[i][j]
-        return self.func(*[self.func(*block).T for block in blocks_T])
+                    
+            args = [mat.T for mat in self.args]
+            if self.axis == len_shape - 1:
+                return self.func(*args, axis=len_shape - 2)
+    
+            if self.axis == len_shape - 2:
+                return self.func(*args, axis=len_shape - 1)
+            
+            return self.func(*args)
+    
 
     def __rmul__(self, other): 
         if not other.shape:
-            return self.func(*(other * arg for arg in self.args))
+            return self.func(*(other * arg for arg in self.args), **self.kwargs)
         return MatrixExpr.__rmul__(self, other)
 
     _eval_is_integer = lambda self: _fuzzy_group((a.is_integer for a in self.args), quick_exit=True)
@@ -571,8 +661,71 @@ class BlockMatrix(MatrixExpr):
     
     _eval_is_extended_negative = lambda self: _fuzzy_group((a.is_extended_negative for a in self.args), quick_exit=True)
 
-    _eval_is_finite = lambda self: _fuzzy_group((a.is_finite for a in self.args), quick_exit=True)
+    def _eval_is_finite(self):
+        ret = None
+        for arg in self.args:
+            if arg.is_finite:
+                if ret == False:
+                    return
+                ret = True
+            elif arg.is_finite == False:
+                if ret == True:
+                    return
+                ret = False
+            else:
+                return
+        return ret
+            
+    def _subs(self, old, new, **hints):
+        if old.is_BlockMatrix and self.axis == old.axis:
+            from sympy.utilities.misc import sunday
+            i = sunday(self.args, old.args)
+            if i >= 0:
+                args = self.args[:i]
+                
+                rest = self.args[i + len(old.args):]
+                if not i and not rest:
+                    return new
+                
+                if new.is_BlockMatrix and new.axis == self.axis:
+                    args += new.args
+                else:
+                    args += (new,)
+                    
+                args += rest
+                return self.func(*args, **self.kwargs).simplify()
+                
+        return MatrixExpr._subs(self, old, new, **hints)
 
+
+    def of(self, cls):
+        if cls.is_IndexedOperator:
+            if cls.func.is_BlockMatrix:
+                if len(cls.limits) == 1:
+                    [limit] = cls.limits
+                    if len(limit) == 1:
+                        [axis] = limit
+                        if axis == self.axis:
+                            return self.args
+                        
+                if self.axis == 0:
+                    return MatrixExpr.of(self, cls)
+                    
+        elif isinstance(cls, type):
+            if cls.is_BlockMatrix:
+                if not self.axis:
+                    return self.args
+            
+            elif isinstance(self, cls):
+                return self
+            
+        elif cls.is_BlockMatrix:#of Basic type
+            axis = cls.kwargs.get('axis', 0)
+            if axis == self.axis:
+                if cls.args:
+                    return MatrixExpr.of(self, cls)
+                else:
+                    return self.args
         
 class BlockDiagMatrix(MatrixExpr):
     """

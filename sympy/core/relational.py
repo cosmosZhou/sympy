@@ -434,13 +434,13 @@ class Relational(BinaryCondition, Expr, EvalfMixin):
         from sympy.sets.sets import FiniteSet
         domain = var.domain & self.domain_defined(var)
         if var.shape or var.is_set:
-            return
+            return BinaryCondition.domain_conditioned(self, var)
         
         equation = self.lhs - self.rhs
         
         p = equation.as_poly(var)
         if not p or p.degree() != 1:
-            return
+            return BinaryCondition.domain_conditioned(self, var)
          
         a = p.nth(1)
         if a.is_nonzero:
@@ -471,6 +471,24 @@ class Relational(BinaryCondition, Expr, EvalfMixin):
     def _eval_domain_defined(self, x, **_):
         return self.lhs.domain_defined(x, real=True) & self.rhs.domain_defined(x, real=True)
 
+    def invert(self):
+        lhs, rhs = self.args
+        shape = lhs.shape
+        if shape:
+            excludes = set()
+            indices = []
+            limits = []
+            for n in shape:
+                i = self.generate_var(excludes, integer=True)
+                excludes.add(i)
+                indices.append(i)
+                limits.append((i, 0, n))
+                
+            eq = Boolean.__new__(self.invert_type, lhs[indices], rhs[indices])
+            from sympy.concrete.exists import Any
+            return Any(eq, *limits[::-1])
+        
+        return BinaryCondition.invert(self)
                     
 Rel = Relational
 
@@ -563,7 +581,7 @@ class Equal(Relational):
                 return S.false  # True != False
             elif not (lhs.is_Symbol or rhs.is_Symbol) and (lhs.is_Boolean != rhs.is_Boolean):
                 return S.false  # only Booleans can equal Booleans
-            from sympy import Element
+            from sympy.sets.contains import Element
             if Element(rhs, lhs.domain).is_BooleanFalse or Element(lhs, rhs.domain).is_BooleanFalse:
                 return S.false.copy(**options)
 
@@ -727,7 +745,7 @@ class Equal(Relational):
             return Eq(lhs.lhs @ self.lhs, lhs.rhs @ self.rhs, given=[self, lhs])
         else:
             if lhs.is_invertible:
-                return Eq(lhs @ self.lhs, lhs @ self.rhs)
+                return Eq(lhs @ self.lhs, lhs @ self.rhs, equivalent=self)
             return Eq(lhs @ self.lhs, lhs @ self.rhs, given=self)
 
     def __matmul__(self, rhs):
@@ -738,7 +756,7 @@ class Equal(Relational):
 
         else: 
             if rhs.is_invertible:
-                return self.func(self.lhs @ rhs, self.rhs @ rhs)
+                return self.func(self.lhs @ rhs, self.rhs @ rhs, equivalent=self)
             return self.func(self.lhs @ rhs, self.rhs @ rhs, given=self)
 
     def __rpow__(self, other):
@@ -1048,9 +1066,11 @@ class Equal(Relational):
         if var.shape:
             if self.lhs == var:
                 return self.rhs.set
+            
             if self.rhs == var:
                 return self.lhs.set
-            return
+            
+            return BinaryCondition.domain_conditioned(self, var)
         if not self.lhs.is_set and not var.is_set:
             return Relational.domain_conditioned(self, var)
 
@@ -1077,6 +1097,7 @@ class Equal(Relational):
             
         return res 
 
+    invert = BinaryCondition.invert
     
 Eq = Equal
 
@@ -1271,9 +1292,11 @@ class Unequal(Relational):
     def domain_conditioned(self, var):
         if not self.lhs.is_set: 
             return Relational.domain_conditioned(self, var)
-
+        return BinaryCondition.domain_conditioned(self, var)
+    
     of = Equal.of
 
+    invert = BinaryCondition.invert
 
 Ne = Unequal
 Equal.invert_type = Unequal
@@ -1335,6 +1358,20 @@ class Inequality(Relational):
         else:
             return _sympify(val)
 
+    def __and__(self, other):
+        if other.is_And:
+            eqs = other.args
+            for i, eq in enumerate(eqs):
+                et = self & eq
+                if et.is_And:
+                    continue
+                
+                eqs = [*eqs]
+                del eqs[i]
+                return et & other.func(*eqs)
+                        
+        return Relational.__and__(self, other)
+
 
 class _Greater(Inequality):
     """Not intended for general use
@@ -1370,7 +1407,7 @@ class _Greater(Inequality):
                         if left >= right:
                             return S.false
                 
-        return Relational.__and__(self, other)
+        return Inequality.__and__(self, other)
 
     @property
     def gts(self):
@@ -1428,8 +1465,8 @@ class _Less(Inequality):
                         return self
                     if m is other.rhs:
                         return other
-                        
-        return Relational.__and__(self, other)
+
+        return Inequality.__and__(self, other)
 
     def limit(self, x, xlim, direction=True):
         """ Compute limit x->xlim.
@@ -1710,6 +1747,13 @@ class GreaterEqual(_Greater):
                     return Equal(*self.args)
                 if other.lhs < self.rhs:
                     return S.false
+            elif self.lhs == other.lhs:
+                # x >= a, x >= b
+                if self.rhs >= other.rhs:
+                    return self
+                if self.rhs <= other.rhs:
+                    return other
+                
         elif isinstance(other, LessEqual):
             if self.lhs == other.lhs:
                 if self.rhs == other.rhs:
@@ -1795,11 +1839,27 @@ class GreaterEqual(_Greater):
             other.rhs == self.lhs and other.lhs >= self.rhs or \
             other.rhs == self.rhs and self.lhs >= other.rhs:
                 return S.true
-        elif other.is_Less or other.is_LessEqual:
+        elif other.is_Less:
 #             x >= -1 | x < 0
             if self.lhs == other.lhs:
                 if self.rhs <= other.rhs:
                     return S.true
+                
+        elif other.is_LessEqual:
+            if self.lhs == other.lhs:
+                if self.rhs <= other.rhs:
+                    return S.true
+                # x >= 1 and x <= 0  
+                if self.lhs.is_integer and self.rhs <= other.rhs + 1:
+                    return S.true
+            
+        elif other.is_GreaterEqual:
+            if self.lhs == other.lhs:
+                # x >= a or x >= a + 1
+                if self.rhs >= other.rhs:
+                    return other
+                if self.rhs <= other.rhs:
+                    return self
             
         return Relational.__or__(self, other)
 
@@ -1938,6 +1998,14 @@ class LessEqual(_Less):
                     return Equal(self.lhs, self.rhs)
                 if other.lhs > self.rhs:
                     return S.false   
+            elif self.lhs == other.lhs:
+                # x <= a, x <= b
+                if self.rhs <= other.rhs:
+                    return self
+                
+                if self.rhs >= other.rhs:
+                    return other
+                
         elif other.is_Less:
             if self.lhs == other.lhs:
 #                 x <= 1 and x < 0                
@@ -2033,11 +2101,27 @@ class LessEqual(_Less):
             other.rhs == self.rhs and self.lhs <= other.rhs:
                 return S.true 
             
-        elif other.is_Greater or other.is_GreaterEqual:
+        elif other.is_Greater:
 #             x <= 1 | x > 0
             if self.lhs == other.lhs:
                 if self.rhs >= other.rhs:
                     return S.true
+        elif other.is_GreaterEqual:
+#             x <= 1 | x > 0
+            if self.lhs == other.lhs:
+                if self.rhs >= other.rhs:
+                    return S.true
+                # x <= 0 and x >= 1
+                if self.lhs.is_integer:
+                    if self.rhs + 1 >= other.rhs:
+                        return S.true
+        elif other.is_LessEqual:
+            if self.lhs == other.lhs:
+                # x < a or x < a + 1
+                if self.rhs <= other.rhs:
+                    return other
+                if self.rhs >= other.rhs:
+                    return self
             
         return Relational.__or__(self, other)
 
@@ -2136,8 +2220,14 @@ class Greater(_Greater):
     def __and__(self, other):
         if isinstance(other, Less):
             if self.lhs == other.lhs:
-                if other.rhs <= self.rhs or self.lhs.is_integer and other.rhs >= self.rhs + 1: 
+                if other.rhs <= self.rhs: 
                     return S.false
+#                 x > a and x < b
+                if self.lhs.is_integer:
+                    # x in (b; a)
+                    from sympy import Range
+                    if not Range(self.rhs, other.rhs, left_open=True, right_open=True):
+                        return S.false
                 
         elif isinstance(other, LessEqual):
             if self.lhs == other.lhs:
@@ -2217,9 +2307,17 @@ class Greater(_Greater):
                     return S.true
                 if other.lhs == self.rhs:
                     return Unequal(*self.args)
+                
             if self.rhs == other.lhs:
                 if self.lhs > other.rhs:
                     return S.true
+                
+            if self.lhs == other.lhs:
+                # x > a or x > a + 1
+                if self.rhs >= other.rhs:
+                    return other
+                if self.rhs <= other.rhs:
+                    return self
                 
         elif isinstance(other, LessEqual):
             if self.lhs == other.lhs:
@@ -2349,6 +2447,7 @@ class Less(_Less):
             if self.rhs == other.lhs:
                 if self.lhs <= other.rhs: 
                     return S.false
+                
         elif isinstance(other, GreaterEqual):
             if self.lhs == other.lhs:
                 if self.rhs <= other.rhs:
@@ -2356,9 +2455,16 @@ class Less(_Less):
                 if self.lhs.is_integer and self.rhs == other.rhs + 1:
                     return Equal(*other.args)                
         elif isinstance(other, Greater):
+            # x < a and x > b
             if self.lhs == other.lhs:
                 if self.rhs <= other.rhs: 
                     return S.false
+                if self.lhs.is_integer:
+                    # x in (b; a)
+                    from sympy import Range
+                    if not Range(other.rhs, self.rhs, left_open=True, right_open=True):
+                        return S.false
+                
         elif isinstance(other, Unequal):
             if set(self.args) == set(other.args):
                 return self
@@ -2427,9 +2533,17 @@ class Less(_Less):
                     return S.true
                 if other.lhs == self.rhs:
                     return Unequal(*self.args)
+                
             if self.rhs == other.lhs:
                 if other.rhs > self.lhs:
                     return S.true                            
+            
+            if self.lhs == other.lhs:
+                # x < a or x < a + 1
+                if self.rhs <= other.rhs:
+                    return other
+                if self.rhs >= other.rhs:
+                    return self
             
         elif isinstance(other, GreaterEqual):
             if self.lhs == other.lhs:

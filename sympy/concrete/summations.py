@@ -23,7 +23,6 @@ from sympy.simplify.powsimp import powsimp
 from sympy.solvers import solve
 from sympy.solvers.solveset import solveset
 import itertools
-from sympy.core.expr import Function
 
 
 class Sum(AddWithLimits, ExprWithIntLimits):
@@ -164,11 +163,16 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 return self
             i, a, b = limit
             dif = b - a
+            if dif.is_infinite:
+                return self
             if dif.is_integer and (dif < 0) == True:
                 a, b = b + 1, a - 1
                 f = -f
-
-            newf = eval_sum(f, limit)
+            
+            try:
+                newf = eval_sum(f, limit)
+            except TypeError:
+                newf = None
             if newf is None:
                 if f == self.expr:
                     zeta_function = self.eval_zeta_function(f, limit)
@@ -793,7 +797,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                         _domain = domain._subs(old, new, **hints)
                         function = self.expr._subs(old, new, **hints)
                         if _domain != domain or function != self.expr: 
-                            if x.is_Indexed or x.is_Slice:
+                            if x.is_Indexed or x.is_Sliced:
                                 indices = tuple(index._subs(old, new, **hints) for index in x.indices)
                                 if x.indices != indices:
                                     x = x.func(x.base, *indices)                
@@ -823,14 +827,14 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 function = self.expr._subs(old, new, **hints).simplify()
 
                 if ab:
-                    if x.is_Indexed or x.is_Slice:
+                    if x.is_Indexed or x.is_Sliced:
                         indices = tuple(index._subs(old, new, **hints) for index in x.indices)
                         if x.indices != indices:
                             x = x.func(x.base, *indices)                
             
                     return self.func(function, (x, a._subs(old, new, **hints), b._subs(old, new, **hints))).simplify()
 
-                if (x.is_Slice or x.is_Indexed) and x.base != old:
+                if (x.is_Sliced or x.is_Indexed) and x.base != old:
                     x = x._subs(old, new, **hints)
                 domain = self.expr.domain_defined(x)
                 _domain = function.domain_defined(x)
@@ -1022,7 +1026,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 if len(limit1) == 1 and not limits:
                     x_slice = limit0[0]
                     x = limit1[0]
-                    if x_slice.is_Slice and x.is_Indexed:
+                    if x_slice.is_Sliced and x.is_Indexed:
                         start, stop = x_slice.index
                         if len(x.indices) == 1 and x.indices[0] == stop:
                             x_slice = x_slice.base[start: stop + 1]

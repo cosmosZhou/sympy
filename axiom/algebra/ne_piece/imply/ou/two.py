@@ -29,10 +29,12 @@ def prove(Eq):
 
     Eq << algebra.et.imply.ou.apply(Eq[-1])
 
-    Eq << Eq[-1].this.args[0].apply(algebra.et.imply.ou)
+    
+
+    
 
 
 if __name__ == '__main__':
     run()
 # created on 2020-02-09
-# updated on 2020-02-09
+# updated on 2022-01-08

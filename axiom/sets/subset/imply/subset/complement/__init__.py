@@ -40,4 +40,3 @@ if __name__ == '__main__':
     run()
 from . import lhs
 # created on 2020-11-21
-# updated on 2020-11-21

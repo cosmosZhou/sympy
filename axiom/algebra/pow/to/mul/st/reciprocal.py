@@ -2,10 +2,10 @@ from util import *
 
 
 @apply
-def apply(self, factor): 
+def apply(self, factor):
     base = self.of(Basic ** -1)
     assert factor.is_nonzero
-    
+
     return Equal(self, factor / (base * factor).expand())
 
 
@@ -22,4 +22,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-09-17
-# updated on 2020-09-17

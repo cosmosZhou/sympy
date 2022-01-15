@@ -1,21 +1,14 @@
 from util import *
 
 
-
-
 @apply
 def apply(sufficient_A, necessary_B):
-
     x_in_A, x_in_B = sufficient_A.of(Infer)
 
-    _x_in_A, _x_in_B = necessary_B.of(Assuming)
-
-    assert _x_in_A == x_in_A
-    assert _x_in_B == x_in_B
+    S[x_in_A], S[x_in_B] = necessary_B.of(Assuming)
 
     x, A = x_in_A.of(Element)
-    _x, B = x_in_B.of(Element)
-    assert x == _x
+    S[x], B = x_in_B.of(Element)
     assert not x.is_given
     assert x.is_symbol
 
@@ -42,4 +35,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2018-09-19
-# updated on 2018-09-19

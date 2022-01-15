@@ -2,7 +2,7 @@ from util import *
 
 
 @apply
-def apply(lt_zero, ge_zero, lt, left_open=True, right_open=True, x=None):
+def apply(lt_zero, ge_zero, lt, x=None):
     a = lt_zero.of(Expr > 0)
     _m = ge_zero.of(Expr >= 0)
     m, M = lt.of(Less)
@@ -27,11 +27,10 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq[-2])
 
-    
-    
+
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2021-10-02
-# updated on 2021-10-02

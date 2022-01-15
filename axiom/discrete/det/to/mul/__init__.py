@@ -22,16 +22,15 @@ def prove(Eq):
     D = Symbol(A @ B)
     Eq << Eq[0].subs(D.this.definition.reversed)
 
-    Eq << Eq[-1].this.lhs.apply(discrete.det.to.mul.two)
+    Eq << Eq[-1].this.lhs.apply(discrete.det.to.mul.deux)
 
     Eq << Eq[-1].this.lhs.args[1].arg.definition
 
-    Eq << Eq[-1].this.find(Det[MatMul]).apply(discrete.det.to.mul.two)
+    Eq << Eq[-1].this.find(Det[MatMul]).apply(discrete.det.to.mul.deux)
 
 
 if __name__ == '__main__':
     run()
-from . import two
 from . import st
 # created on 2020-08-20
-# updated on 2020-08-20
+from . import deux

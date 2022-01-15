@@ -490,28 +490,9 @@ def run_with_module(*modules, debug=True):
                         continue
                 
             yield package, file, state, lapse, latex                        
-            
-    data = post_process(generator())
-    import tempfile, uuid 
-    sqlFile = "%s/%s.sql" % (tempfile.gettempdir(), uuid.uuid4())        
-    assert not os.path.exists(sqlFile)
-    
-    print("latex results are saved into:", sqlFile)
-    
-    with open(sqlFile, 'w') as file:
-        for args in data: 
-            _args = []
-            for arg in args:
-                if not isinstance(arg, str):
-                    arg = str(arg)
-                    
-                _args.append(arg)
-            
-            user, axiom, state, lapse, latex, *_ = _args
-            statement = 'update tbl_axiom_py set state = "%s", lapse = %s, latex = "%s" where user = "%s" and axiom = "%s";' % (state, lapse, latex, user, axiom)
-            statement = statement.encode(encoding='utf8')
-            # print(statement)
-            print(statement, file=file)                    
+
+    for args in post_process(generator()):
+        print('\v'.join((str(arg) for arg in args)).encode(encoding='utf8'))
     
     print_summary()
     

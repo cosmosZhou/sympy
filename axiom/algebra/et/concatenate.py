@@ -44,7 +44,7 @@ def prove(Eq):
 
     Eq << algebra.iff.given.et.apply(Eq[0])
 
-    Eq <<= algebra.infer_et.given.infer.delete.apply(Eq[-2]), Eq[-1].this.rhs.args[0].apply(algebra.eq.imply.et.eq.blockmatrix, simplify=None)
+    Eq <<= algebra.infer_et.given.infer.delete.apply(Eq[-2]), Eq[-1].this.rhs.args[0].apply(algebra.eq.imply.et.eq.block, simplify=None)
 
     Eq << Eq[-1].this.lhs.apply(algebra.eq.eq.imply.eq.concatenate, simplify=None)
 
@@ -52,4 +52,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-05-01
-# updated on 2019-05-01

@@ -5,7 +5,7 @@ from util import *
 def apply(gt, index=0):
     x, args = gt.of(Greater[Expr, Max])
     y = args[index]
-    
+
     return Greater(x, y)
 
 
@@ -23,4 +23,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-08-03
-# updated on 2019-08-03

@@ -1,15 +1,10 @@
 from util import *
 
 
-
-
 @apply
 def apply(all_A, all_B):
-    (_x, _B), (x, A) = all_A.of(All[Element])
-    (___x, _A), (__x, B) = all_B.of(All[Element])
-    assert x == _x == __x == ___x
-    assert B == _B
-    assert A == _A
+    (x, B), (S[x], A) = all_A.of(All[Element])
+    (S[x], S[A]), (S[x], S[B]) = all_B.of(All[Element])
 
     return Equal(A, B)
 
@@ -36,4 +31,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2018-04-27
-# updated on 2018-04-27

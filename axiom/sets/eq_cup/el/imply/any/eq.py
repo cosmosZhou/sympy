@@ -3,12 +3,10 @@ from util import *
 
 @apply
 def apply(eq, contains):
-    (ai, (i, n)), X = eq.of(Equal[Cup[FiniteSet, Tuple[0]]])
-    _X = n.of(Card)
-    assert X == _X
+    (ai, (i, S[0], n)), X = eq.of(Equal[Cup[FiniteSet]])
+    S[X] = n.of(Card)
 
-    x, __X = contains.of(Element)
-    assert X == _X == __X
+    x, S[X] = contains.of(Element)
 
     return Any[i:n](Equal(x, ai))
 
@@ -30,4 +28,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2021-03-22
-# updated on 2021-03-22

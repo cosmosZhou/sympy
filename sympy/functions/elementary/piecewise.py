@@ -265,7 +265,7 @@ class Piecewise(Function):
                             # that didn't match a previous condition
                             # could possibly trigger
                             if unmatching:
-                                expr = Piecewise(*(unmatching + [(e, c)]))
+                                expr = Piecewise(*unmatching, (e, True))
                             else:
                                 expr = e
                         break
@@ -311,13 +311,13 @@ class Piecewise(Function):
                 if newargs[-1].expr == expr:
                     orcond = cond | newargs[-1].cond
                     if isinstance(orcond, (And, Or)):
-                        orcond = distribute_and_over_or(orcond)
+                        orcond = distribute_and_over_or(orcond).simplify()
                     newargs[-1] = ExprCondPair(expr, orcond)
                     continue
                 elif newargs[-1].cond == cond:
                     orexpr = Or(expr, newargs[-1].expr)
                     if isinstance(orexpr, (And, Or)):
-                        orexpr = distribute_and_over_or(orexpr)
+                        orexpr = distribute_and_over_or(orexpr).simplify()
                     newargs[-1] = ExprCondPair(orexpr, cond)
                     continue
 
@@ -355,6 +355,10 @@ class Piecewise(Function):
         if other.is_Piecewise: 
             other = self.func(*((-e, c) for e, c in other.args))
             return Function.__add__(self, other)
+        
+        if other.is_Function:
+            return Function.__sub__(self, other)
+        
         newargs = []
         for e, c in self.args:
             newargs.append((e - other, c))
@@ -948,8 +952,9 @@ class Piecewise(Function):
             return self.func(*args)
         return self        
 
-    def _eval_transpose(self):
-        return self.func(*[(e.transpose(), c) for e, c in self.args])
+    def _eval_transpose(self, axis=-1):
+        if axis == self.default_axis:
+            return self.func(*[(e.transpose(), c) for e, c in self.args])
 
     def _eval_template_is_attr(self, is_attr):
         b = None
@@ -1085,8 +1090,8 @@ class Piecewise(Function):
 
     def _eval_domain_defined(self, x, **_):
         domain = x.emptySet
-        for arg in self.args:
-            domain |= arg.domain_defined(x)
+        for expr, cond in self.args:
+            domain |= expr.domain_defined(x) & cond.domain_defined(x) & cond.domain_conditioned(x)
         return domain
 
     @property
@@ -1159,6 +1164,7 @@ class Piecewise(Function):
         if not e0.is_set and lhs.is_integer and rhs.is_integer:
             e_diff = e0 - e1                   
             if lhs.is_symbol: 
+#                 precautious usage of domain_defined
                 domain_defined = e_diff.domain_defined(lhs)
                 from sympy import Element
                 if Element(rhs, domain_defined) == False:
@@ -1391,24 +1397,24 @@ class Piecewise(Function):
                             args.append((e0._subs(x, y).simplify(), Equal(x, y)))
                             e1 = e1._subs(delta, S.Zero)
                     return self.func(*args, (e1, True)).simplify()
-
-                domain = self.args[0].domain_defined(x)
-                if A.is_Complement:
-                    U, C = A.args
-                    if domain in U: 
-                        return self.func((e0, NotElement(x, C)), (e1, True)).simplify(deep=deep)
-                    complement = domain - A
-                    if complement.is_FiniteSet:
-                        return self.func((e1, Element(x, complement)), (e0, True)).simplify(deep=deep)
-                if domain in A:
-                    if e1._has(x):
-                        universe = self.domain_defined(x)
-                        if universe != domain:
-                            diff = universe - A
-                            if diff.is_FiniteSet:
-                                return self.func((e1, Element(x, diff)), (e0, True)).simplify()
-                            return self
-                    return e0     
+                
+                if x.is_symbol:
+                    domain = self.args[0].domain_defined(x)
+                    if A.is_Complement:
+                        U, C = A.args
+                        if domain in U: 
+                            return self.func((e0, NotElement(x, C)), (e1, True)).simplify(deep=deep)
+                        complement = domain - A
+                        if complement.is_FiniteSet:
+                            return self.func((e1, Element(x, complement)), (e0, True)).simplify(deep=deep)
+                    if domain in A:
+                        if e1._has(x):
+                            universe = self.domain_defined(x)
+                            if universe != domain:
+                                diff = universe - A
+                                if diff.is_FiniteSet:
+                                    return self.func((e1, Element(x, diff)), (e0, True)).simplify()
+                                return self
                 if e1.is_EmptySet:
                     if e0 == x.set:
                         return A & e0
@@ -1648,12 +1654,12 @@ class Piecewise(Function):
         return tex % r" \\".join(ecpairs)
 
     def as_multiple_terms(self, x, domain, cls):
-        universalSat = x.universalSet
+        universalSet = x.universalSet
         args = []
         union = x.emptySet 
         assert x in self.scope_variables            
         for f, condition in self.args:
-            _domain = (universalSat - union) & x.domain_conditioned(condition) & domain
+            _domain = (universalSet - union) & x.domain_conditioned(condition) & domain
             if not condition:
                 union |= _domain
     
@@ -1661,7 +1667,7 @@ class Piecewise(Function):
                 if _domain:
                     args.append(cls[x:_domain](f).simplify())
             elif _domain:
-                if _domain.is_Range:
+                if _domain.is_Range and _domain.step.is_One:
                     if x.is_integer:
                         a = _domain.start
                         b = _domain.stop
@@ -1680,6 +1686,32 @@ class Piecewise(Function):
                     args.append(cls(f, (x, _domain)).simplify())
         return cls.operator(*args)
 
+    def monotonicity(self, x):
+        monotonicity = 0
+        args = [[*args] for args in self.args]
+        for i, (expr, _) in enumerate(args):
+            if not expr._has(x):
+                continue
+            
+            args[i][0], _monotonicity = expr.monotonicity(x) 
+            if not _monotonicity:
+                return None, 0
+            
+            if not monotonicity:
+                monotonicity = _monotonicity
+            elif monotonicity != _monotonicity:
+                return None, 0
+            
+        return self.func(*args, evaluate=False), monotonicity
+
+    def check_sanctity(self):        
+        assert self.args[-1][1]
+        
+        for e, c in self.args:            
+            for expr in e.preorder_traversal():
+                if expr.is_Piecewise:
+                    expr.check_sanctity()
+         
     
 def piecewise_fold(expr):
     """

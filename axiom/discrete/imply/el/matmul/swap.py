@@ -35,19 +35,24 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(discrete.matmul.to.sum)
 
+    Eq << Eq[-1].this(i).find(Element).simplify()
+
+    Eq << Eq[-1].this(j).find(Element).simplify()
+
+    Eq << Eq[-1].this(k).find(Element).simplify()
+
+    
     Eq.element_piecewise = Eq[2].subs(Eq[-1])
-
     Eq <<= Eq[0].subs(i, j), Eq[0].subs(i, k)
-
     Eq << sets.el.el.imply.subset.finiteset.apply(Eq[-1], Eq[-2], simplify=None)
-
     Eq << sets.el.subset.imply.subset.apply(Eq[0], Eq[-1], simplify=None)
-
     Eq << sets.subset.imply.el.piece.apply(Eq[-1], piecewise=Eq.element_piecewise.lhs)
+    
+    
 
 
 if __name__ == '__main__':
     run()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html
 # created on 2020-11-04
-# updated on 2020-11-04
+# updated on 2022-01-08

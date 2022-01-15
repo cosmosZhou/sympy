@@ -36,3 +36,5 @@ from . import eq_limit
 from . import neg
 from . import all_is_positive
 from . import limit_is_infinite
+from . import sum_binom
+from . import derivative_sigmoid

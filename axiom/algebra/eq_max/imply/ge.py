@@ -2,7 +2,7 @@ from util import *
 
 
 @apply
-def apply(given, index=0): 
+def apply(given, index=0):
     args, M = given.of(Equal[Max])
     return GreaterEqual(M, args[index])
 
@@ -10,7 +10,7 @@ def apply(given, index=0):
 @prove
 def prove(Eq):
     M, x = Symbol(real=True)
-    f, g = Function(real=True)        
+    f, g = Function(real=True)
     Eq << apply(Equal(M, Max(f(x), g(x))))
 
     Eq << GreaterEqual(Max(f(x), g(x)), f(x), plausible=True)
@@ -20,4 +20,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-04-23
-# updated on 2019-04-23

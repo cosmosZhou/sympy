@@ -14,10 +14,9 @@ def prove(Eq):
 
     Eq << Eq[0] - y
 
-    
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2019-06-17
-# updated on 2019-06-17

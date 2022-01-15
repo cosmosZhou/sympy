@@ -16,7 +16,7 @@ def prove(Eq):
     i = Symbol(integer=True)
     f = Function(complex=True)
     Eq << apply(All[i:n](Equal(f(i), 0)))
-    
+
     Eq << algebra.all_eq.imply.eq.sum.apply(Eq[0])
 
 
@@ -25,4 +25,3 @@ if __name__ == '__main__':
 
 from . import mul
 # created on 2019-01-24
-# updated on 2019-01-24

@@ -32,4 +32,3 @@ if __name__ == '__main__':
 
 # https://en.wikipedia.org/wiki/Iverson_bracket
 # created on 2020-03-08
-# updated on 2020-03-08

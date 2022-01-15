@@ -113,7 +113,7 @@ class Boolean(Basic):
         return eqs
 
     def existent_symbols(self):
-        from sympy.tensor.indexed import Indexed, Slice
+        from sympy.tensor.indexed import Indexed, Sliced
         from sympy.stats.rv import RandomSymbol
         free_symbols = {*self.free_symbols}        
         for symbol in self.free_symbols:
@@ -121,7 +121,7 @@ class Boolean(Basic):
                 free_symbols.discard(symbol)
                 continue
                         
-            if isinstance(symbol, (RandomSymbol, Indexed, Slice)):
+            if isinstance(symbol, (RandomSymbol, Indexed, Sliced)):
                 free_symbols -= symbol.free_symbols
                 free_symbols.add(symbol)
 
@@ -276,7 +276,7 @@ class Boolean(Basic):
     @property
     def dtype(self):
         from sympy.core.symbol import dtype
-        return dtype.condition
+        return dtype.bool
 
     @property
     def shape(self): 
@@ -315,6 +315,13 @@ class Boolean(Basic):
             self = self.simplify()
         return self
 
+    def domain_conditioned(self, x):
+        if self._has(x):
+            from sympy.sets import conditionset       
+            return conditionset(x, self, x.domain)
+        return x.domain
+        from sympy.functions.elementary.piecewise import Piecewise
+        return Piecewise((x.domain, self), (x.emptySet, True))
         
 class BinaryCondition(Boolean):
     """Base class for all binary relation types.
@@ -403,8 +410,8 @@ class BinaryCondition(Boolean):
             return res
         
         old, new = args
-        if old.is_Slice:
-            return self._subs_slice(old, new)
+        if old.is_Sliced:
+            return self._subs_sliced(old, new)
         if not old.is_symbol:
             return self
         
@@ -985,6 +992,32 @@ class And(LatticeOp, BooleanFunction):
 #         \N{LOGICAL AND}
         return p.stringify(self.args, " & ", PRECEDENCE["BitwiseAnd"])
 
+    @classmethod
+    def connected_equations(cls, args):
+        child = {}
+        parent = {}
+        for lhs, rhs in args:
+            if lhs in child:
+                break                
+            child[lhs] = rhs
+            
+            if rhs in parent:
+                break                
+            parent[rhs] = lhs
+        else:
+            root = lhs
+            while root in parent:
+                root = parent[root]
+                
+            next = root
+            children = [next]
+            while next in child:
+                next = child[next]
+                children.append(next)
+             
+            if len(children) == len(args) + 1:
+                return children
+        
     def _latex(self, p):
         if len(self.args) == 2:
 
@@ -1048,28 +1081,8 @@ class And(LatticeOp, BooleanFunction):
                     is_all_eq = False
 
         if is_all_eq:
-            child = {}
-            parent = {}
-            for arg in self.args:
-                lhs, rhs = arg.args
-                if lhs in child:
-                    break                
-                child[lhs] = rhs
-                
-                if rhs in parent:
-                    break                
-                parent[rhs] = lhs
-            else:
-                root = lhs
-                while root in parent:
-                    root = parent[root]
-                    
-                next = root
-                children = [next]
-                while next in child:
-                    next = child[next]
-                    children.append(next)                
-                 
+            children = And.connected_equations([eq.args for eq in self.args])
+            if children:
                 return " = ".join([p._print(next) for next in children])    
             
         return r"\wedge ".join(args)
@@ -1079,7 +1092,7 @@ class And(LatticeOp, BooleanFunction):
 
     def apply(self, axiom, *args, split=True, **kwargs):
         token = axiom.__name__.split(sep='.', maxsplit=4)
-        if token[2] == 'et' or token[-2] in ('imply', 'given'):
+        if token[2] in ('et', 'et_ou', 'et_lt', 'et_le', 'et_gt', 'et_ge') or token[-2] in ('imply', 'given'):
             split = False
             
         if split: 
@@ -1269,7 +1282,7 @@ class And(LatticeOp, BooleanFunction):
         return Intersection(*[arg.as_set() for arg in self.args])
 
     def simplify(self, deep=False):
-        dict_contains = defaultdict(set)        
+        dict_contains = defaultdict(set)
         dict_notcontains = defaultdict(set)
         dict_domain = defaultdict(set)
         for eq in self._argset:
@@ -1282,6 +1295,9 @@ class And(LatticeOp, BooleanFunction):
             elif eq.is_Relational:
                 x, y = eq.args
                 dict_domain[x].add(eq)
+            elif eq.is_Or:
+                if any(arg in self._argset for arg in eq.args):
+                    return And(*self._argset - {eq}).simplify()
                 
         from sympy.sets import Intersection, Element, NotElement, Union
         for e, eqs in dict_contains.items(): 
@@ -1582,7 +1598,9 @@ class Or(LatticeOp, BooleanFunction):
         for eq in self._argset:
             if eq.is_And:
                 eqs.append(And(*eq._argset - common_terms))
-            
+            else:
+                return eq
+                
         return And(self.func(*eqs), *common_terms)
 
     def subs(self, *args, **kwargs):
@@ -1636,6 +1654,7 @@ class Or(LatticeOp, BooleanFunction):
 
     def __and__(self, other):
         this = self
+        simplify = False
         if other.is_Or:
             args_intersection = self._argset & other._argset
             if args_intersection:
@@ -1649,14 +1668,18 @@ class Or(LatticeOp, BooleanFunction):
                     args = set(self._argset)
                     args.remove(eq)
                     this = self.func(*args).simplify()
+                    simplify = True
                     break
 
         if other.is_And:
             rhs = tuple(other._argset)
         else:
             rhs = (other,)
-
-        return And(this, *rhs)
+            
+        this = And(this, *rhs)
+        if simplify:
+            this = this.simplify()
+        return this
 
     def __or__(self, other):
         if other.is_Or:

@@ -14,6 +14,8 @@ require_once 'php/mysql.php';
 // $_GET['module'] = str_replace('/', '.', $_GET['module']);
 // }
 
+//$_GET['module'] = 'keras.imply.eq.bert.position_representation.relative.band_part_mask';
+
 $key = array_keys($_GET);
 switch (count($key)) {
     case 0:
@@ -73,22 +75,50 @@ function piece_together(&$input)
     return $code;
 }
 
-$PATH_INFO = str_replace('.', '/', $module);
+//(?:\( *Eq\.\w+ *(?:, (*Eq\.\w+|\*Eq\[-\d+:\]))+ *\)
+//(?:, *(?:\( *Eq\.\w+ *(?:, *Eq\.\w+)+ *\)|Eq\.\w+|\[\*Eq\[-\d+:\]\]))
+function is_latex_print($latex, &$res)
+{
+    // Eq.first, Eq.result = ...
+    // Eq.first, result = ...
+    // Eq.first, *result = ...
+    // Eq.given, Eq.where, Eq.imply = ...
+    // Eq.given, (Eq.where, Eq.where1), Eq.imply = ...
+    // Eq[-2:], (Eq.where, *Eq[-2:]), Eq[-2:] = ...
+    
+    while (preg_match('/^(Eq\.\w+|\((Eq\.\w+|\*Eq\[-\d+:\]) *(, *Eq\.\w+)+ *\)|Eq\[-\d+:\]|\*\w+|\w+)/u', $latex, $match)){
+        $res[] = $match[0];
+        $latex = \std\slice($latex, strlen($match[0]));    
+        if (preg_match('/^ *= */', $latex, $matchEqual)){
+            return true;
+        }
+        
+        if (!preg_match('/^ *, */', $latex, $matchComma)){
+            return false;
+        }
+        
+        $latex = \std\slice($latex, strlen($matchComma[0]));
+//         return is_latex_print($latex, $res);
+    }
+    
+    return false;
+}
 
-$path_info = substr(__FILE__, 0, - 4) . "/" . $PATH_INFO;
+$module = str_replace('/', '.', $module);
+$title = str_replace('.', '/', $module);
+             
+$path_info = substr(__FILE__, 0, - 4) . "/" . $title;
 
 $indexOfYield = - 1;
 if (! \std\endsWith($path_info, '/')) {
 
     $py = $path_info . ".py";
 
-    $statementsFromSQLFile = null;
-    $sql_statement = '';
-
     if (! file_exists($py)) {
         $__init__ = substr($py, 0, - 3) . "/__init__.py";
         if (file_exists($__init__)) {
             $py = $__init__;
+            $title .= "/";
         }
     }
 
@@ -102,12 +132,12 @@ if (! \std\endsWith($path_info, '/')) {
 
         $proveCodes = insert_section($proveCodes);
         if (is_array($proveCodes)) {
-//             error_log("proveCodes = " . \std\jsonify($proveCodes));
+            // error_log("proveCodes = " . \std\jsonify($proveCodes));
 
             modify_codes($py, $proveCodes, $applyCodes);
         } else {
             error_log("create new py file = $py");
-            
+
             $base_py = dirname($py) . ".py";
             if (file_exists($base_py)) {
                 $base_init = dirname($py) . "/__init__.py";
@@ -140,10 +170,9 @@ if (! \std\endsWith($path_info, '/')) {
 
             $code .= "\n\nif __name__ == '__main__':\n";
             $code .= "    run()\n";
-            
+
             $timestamp = date('Y-m-d', time());
             $code .= "# created on $timestamp\n";
-            $code .= "# updated on $timestamp\n";
 
             if (count($imports)) {
                 $code .= "\n\n";
@@ -155,26 +184,10 @@ if (! \std\endsWith($path_info, '/')) {
             insert_into_init(py_to_module($py));
         }
 
-        list ($logs, $sql_statement, $statementsFromSQLFile) = run($py);
-
-//         error_log("logs collected from running python script:");
-//         foreach ($logs as &$line) {
-//             error_log($line);
-//         }
-
-//         error_log("sql_statement = $sql_statement");
-        
-//         error_log("statementsFromSQLFile = ");
-//         foreach ($statementsFromSQLFile as &$line) {
-//             error_log($line);
-//         }
-        
-        if (! $sql_statement) {
-            error_log("error detected in python file:");
-            error_log("python file = $py");
-
-            $logs[] = compile_python_file($py);
-        }
+        list ($logs, $data) = run($py);        
+    }
+    else{
+        $data = null;
     }
 
     $lengths = [];
@@ -183,6 +196,9 @@ if (! \std\endsWith($path_info, '/')) {
 
     $inputs = [];
     $input = [];
+
+    preg_match('/([\w.]+)\.(imply|given)\./', $module, $m);
+    $numOfRequisites = $m ? count(explode(".", $m[1])) - 1 : 0;
 
     foreach (yield_from_py($py) as $dict) {
         // error_log("dict = " . \std\jsonify($dict));
@@ -212,15 +228,14 @@ if (! \std\endsWith($path_info, '/')) {
             unset($dict['statement']);
             if (array_key_exists('comment', $dict)) {
                 unset($dict['comment']);
-                
-                if (array_key_exists('unused', $dict)){
+
+                if (array_key_exists('unused', $dict)) {
                     $class = '"comment unused"';
-                }
-                else{
+                } else {
                     $class = "comment";
-                    if ($dict){
-                        foreach ($dict as $key => $value){
-                            switch($key){
+                    if ($dict) {
+                        foreach ($dict as $key => $value) {
+                            switch ($key) {
                                 case "created":
                                     $createdTime = $value;
                                     break;
@@ -231,7 +246,7 @@ if (! \std\endsWith($path_info, '/')) {
                         }
                     }
                 }
-                    
+
                 $input[] = $statement;
                 continue;
             }
@@ -250,30 +265,69 @@ if (! \std\endsWith($path_info, '/')) {
                 $input[] = $text;
             }
         }
-
-        if (preg_match('/Eq *<< */', $statement, $matches)) {
+        
+        if (preg_match('/^Eq *(<<|\[ *(- *\d+ *)?(: *)?\] *=) */', $statement, $matches)) {
             // error_log(jsonify($input));
 
             $inputs[] = piece_together($input);
 
             ++ $counterOfLengths;
             $lengths[] = 1;
-        } else if (\std\preg_match_u('/(Eq\.\w+ *(?:, *(?:Eq\.\w+|\w+|\*\w+) *)*)= */', $statement, $matches)) {
-            $statement = $matches[1];
-            // error_log("parameter: " . $statement);
-
+        } else if (is_latex_print($statement, $matches)) {
             // https://www.php.net/manual/en/function.preg-match-all.php
-            preg_match_all('/Eq\.\w+/u', $statement, $matches, PREG_SET_ORDER);
+            $regexp = '/Eq\.\w+|Eq\[-\d+:\]/u';
+            if (array_key_exists('module', $dict)) {
+                switch (count($matches)) {
+                    case 1:
+                        break;
+                    case 2:
+                        if ($numOfRequisites) {
+                            preg_match_all($regexp, $matches[0], $matchGiven, PREG_SET_ORDER);
+                            $lengthOfGiven = count($matchGiven);
+                            $lengthOfWhere = 0;
+                        } else {
+                            preg_match_all($regexp, $matches[0], $matchWhere, PREG_SET_ORDER);
+                            $lengthOfWhere = count($matchWhere);
+                            $lengthOfGiven = 0;
+                        }
 
-            ++ $counterOfLengths;
-            $lengths[] = count($matches);
+                        preg_match_all($regexp, $matches[1], $matchImply, PREG_SET_ORDER);
+                        $lengthOfImply = count($matchImply);
+
+                        $lengths[] = $lengthOfGiven + $lengthOfWhere + $lengthOfImply;
+                        break;
+                    case 3:
+                        
+                        preg_match_all($regexp, $matches[0], $matchGiven, PREG_SET_ORDER);
+                        $lengthOfGiven = count($matchGiven);
+
+                        preg_match_all($regexp, $matches[1], $matchWhere, PREG_SET_ORDER);
+                        $lengthOfWhere = count($matchWhere);
+
+                        preg_match_all($regexp, $matches[2], $matchImply, PREG_SET_ORDER);
+                        $lengthOfImply = count($matchImply);
+                        $lengths[] = $lengthOfGiven + $lengthOfWhere + $lengthOfImply;
+                        break;
+                }
+            } else {
+                $assgnment_count = 0;
+                foreach ($matches as $text){
+                    preg_match_all($regexp, $text, $matches, PREG_SET_ORDER);
+                    $assgnment_count += count($matches);
+                }
+                
+                if (!$assgnment_count)
+                    continue;
+                
+                $lengths[] = $assgnment_count;                
+            }
 
             $inputs[] = piece_together($input);
+            ++ $counterOfLengths;
         }
     }
 }
 
-// error_log("indexOfYield = $indexOfYield");
 require_once $indexOfYield < 0 ? 'php/package.php' : 'php/theorem.php';
 ?>
 

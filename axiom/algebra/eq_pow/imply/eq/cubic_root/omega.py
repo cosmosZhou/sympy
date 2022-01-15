@@ -7,7 +7,7 @@ def apply(eq_pow):
     from axiom.algebra.eq_pow.eq_ceiling.imply.eq.cubic_root import cubic_root
     A = cubic_root(A)
     B = cubic_root(B)
-        
+
     #w = -S.One / 2 + sqrt(3) / 2 * S.ImaginaryUnit
     w = exp(S.ImaginaryUnit * 2 * S.Pi / 3)
     d = Ceiling(3 * Arg(A) / (S.Pi * 2) - S.One / 2) - Ceiling(3 * Arg(B) / (S.Pi * 2) - S.One/ 2)
@@ -60,4 +60,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-08-28
-# updated on 2018-08-28

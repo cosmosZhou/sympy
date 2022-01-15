@@ -58,6 +58,70 @@ function getParameter(name) {
 	return null;
 }
 
+function equals(obj, _obj){
+	if (obj == null){
+		return _obj == null;
+	}
+	
+	if (_obj == null){
+		return false;
+	}	
+	
+	if (Array.isArray(obj)){
+		if (Array.isArray(_obj)){
+			return obj.equals(_obj);
+		}
+		return false;
+	}
+	
+	if (Array.isArray(_obj)){
+		return false;
+	}
+	
+	if (typeof(obj) === "object"){
+		if (typeof(_obj) === "object"){
+			return dict_equals(obj, _obj);
+		}
+		return false;
+	}
+	
+	if (typeof(_obj) === "object"){
+		return false;
+	}
+	
+	return obj == _obj;	
+}
+
+function dict_equals(dict, _dict){
+	var keys = Object.keys(dict);
+	var _keys = Object.keys(_dict);
+	if (keys.length != _keys.length)
+		return false;
+	
+	for (let key of keys){
+		if (!_dict.hasOwnProperty(key))
+			return false;
+
+		if (!equals(dict[key], _dict[key])){
+			return false;
+		}
+	}
+	
+	return true;
+}
+
+Number.prototype.equals = function(rhs){
+	return this == rhs;
+};
+ 
+String.prototype.equals = function(rhs){
+	return this == rhs;
+};
+
+String.prototype.contains = function(rhs){
+	return this.indexOf(rhs) >= 0;
+};
+
 String.prototype.format = function() {
 	var args = arguments;
 	var index = 0;
@@ -93,6 +157,10 @@ String.prototype.ltrim = function() {
 
 String.prototype.rtrim = function() {
 	return this.replace(/(\s*$)/g, "");
+};
+
+String.prototype.mysqlRepresentation = function() {
+	return this.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
 };
 
 NodeList.prototype.indexOf = function(e) {
@@ -154,6 +222,10 @@ NodeList.prototype.slice = function(start, end) {
 	return [...this].slice(start, end);
 };
 
+NodeList.prototype.back = function() {
+	return this[this.length - 1];
+};
+
 HTMLCollection.prototype.slice = function(start, end) {
 	var list = [...this];
 	if (end < 0)
@@ -205,6 +277,27 @@ HTMLCollection.prototype.splice = function(index, howmany) {
 	return this;
 };
 
+HTMLCollection.prototype.map = function(f) {
+	return [...this].map(f);
+};
+
+Array.prototype.equals = function(rhs){ 
+	if (!Array.isArray(rhs))
+		return false;
+		
+	if (this.length != rhs.length){
+		return false;
+	}
+	
+	for (let i = 0; i < rhs.length; ++i){
+		if (!equals(this[i], rhs[i])){
+			return false;
+		}
+	}
+	
+	return true;
+};
+
 Array.prototype.remove = function(index, size) {
 	if (size == null)
 		size = 1;
@@ -215,7 +308,7 @@ Array.prototype.resize = function(newSize,defaultValue) {
     while(newSize > this.length)
         this.push(defaultValue);
     this.length = newSize;
-}
+};
 
 Array.prototype.insert = function(index, value) {
 	if (index == this.length)
@@ -224,9 +317,21 @@ Array.prototype.insert = function(index, value) {
 };
 
 Array.prototype.back = function(val) {
-	if (val == null)
+	if (val == null){
 		return this[this.length - 1];
+	}
+		
 	this[this.length - 1] = val;
+};
+
+Array.prototype.contains = function(val) {
+	for (let obj of this){
+		if (equals(obj, val)){
+			return true;
+		}
+	}
+	
+	return false;
 };
 
 /**
@@ -371,8 +476,6 @@ function* map(fn, generator) {
 	}
 }
 
-
-
 function cmp(x, y) {
 	// If both x and y are null or undefined and exactly the same
 	if (x === y) {
@@ -444,7 +547,7 @@ function quote(param) {
 
 function isEnglish(ch) {
 	return ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z' || ch >= 'ａ' && ch <= 'ｚ' || ch >= 'Ａ' && ch <= 'Ｚ'
-                || ch >= '0' && ch <= '9' || ch >= '０' && ch <= '９';
+		|| ch >= '0' && ch <= '9' || ch >= '０' && ch <= '９';
 }
 
 function getClass(o) {
@@ -508,14 +611,15 @@ HTMLElement.prototype.getScrollLeft = function() {
 	}
 
 	return scrollLeft;
-}
+};
 
 function binary_search(arr, value, compareTo) {
     var begin = 0, end = arr.length;
     for (;;) {
-        var mid = (begin + end) >> 1;
         if (begin == end)
-            return -1;
+            return begin;
+            
+        var mid = begin + end >> 1;
             
         var ret = compareTo(arr[mid], value);
         if (ret < 0)
@@ -527,6 +631,78 @@ function binary_search(arr, value, compareTo) {
     }
 }
 
+function equal_range(arr, value, compareTo) {
+    var begin = 0, end = arr.length;
+    for (;;) {
+        if (begin == end)
+            break;
+            
+        var mid = begin + end >> 1;
+            
+        var ret = compareTo(arr[mid], value);
+        if (ret < 0)
+            begin = mid + 1;
+        else if (ret > 0)
+            end = mid;
+        else{
+			var stop = begin - 1;
+			begin = mid;
+			for (;;){
+				var pivot = -(-begin - stop >> 1);
+				if (pivot == begin)
+					break;
+					
+				if (compareTo(arr[pivot], value))
+					stop = pivot;
+				else
+					begin = pivot;
+			}
+
+			for (;;){
+				var pivot = mid + end >> 1;
+				if (pivot == mid)
+					break;
+					
+				if (compareTo(arr[pivot], value))
+					end = pivot;
+				else
+					mid = pivot;
+			}
+
+			break;
+		}
+    }
+    return [begin, end];
+}
+
+function merge_sort(arr1, arr2, cmp, ret) {
+	if (ret == null){
+		ret = [];
+	}
+	
+    _merge_sort(arr1, arr1.length, arr2, arr2.length, cmp, ret);
+    
+    return ret;
+}
+
+// precondition: the destine array is not the same as the source arrays;
+function _merge_sort(arr1, sz1, arr2, sz2, compare, dst) {
+    var i = 0, j = 0, k = 0;
+    while (i < sz1 && j < sz2) {
+        if (compare(arr1[i], arr2[j]) < 0)
+            dst[k++] = arr1[i++];
+        else
+            dst[k++] = arr2[j++];
+    }
+    
+    while (i < sz1)
+        dst[k++] = arr1[i++];
+        
+    while (j < sz2)
+        dst[k++] = arr2[j++];
+}
+
+
 function toUnicodeDigit(digits){
     var diff = ord('０') - ord('0');
     var ret = '';
@@ -534,4 +710,8 @@ function toUnicodeDigit(digits){
         ret += chr(ord(digits[i]) + diff);
     }
     return ret;
+}
+
+function percentage(acc){
+	return Math.round(acc * 10000) / 100;
 }

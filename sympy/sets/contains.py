@@ -206,10 +206,10 @@ class Element(BinaryCondition):
                 c1 = poly.nth(1)
                 c0 = poly.nth(0)
                 if c1 == 1:
-                    interval = interval.copy(start=interval.start - c0, stop=interval.stop - c0)
+                    interval = interval.func(interval.start - c0, interval.stop - c0, interval.step, **interval.kwargs)
                     return domain & interval
                 elif c1 == -1:
-                    interval = interval.copy(start=c0 - interval.stop, stop=c0 - interval.start, left_open=interval.right_open, right_open=interval.left_open)
+                    interval = interval.func(c0 - interval.stop, c0 - interval.start, interval.step, left_open=interval.right_open, right_open=interval.left_open)
                     return domain & interval                            
       
         elif interval.is_Interval: 
@@ -223,6 +223,8 @@ class Element(BinaryCondition):
                 elif c1 < 0:
                     interval.func(start=(interval.stop - c0) / c1, stop=(interval.start - c0) / c1, left_open=interval.right_open, right_open=interval.left_open)
                     return domain & interval
+                
+        return BinaryCondition.domain_conditioned(self, x)
                                  
     @classmethod
     def simplify_ForAll(cls, self, function, *limits):
@@ -395,6 +397,7 @@ class NotElement(BinaryCondition):
         if self.lhs == x:
             domain = x.domain & self.domain_defined(x)
             return x.domain_conditioned(self.invert_type(x, domain - self.rhs))
+        return BinaryCondition.domain_conditioned(self, x)
         
     @classmethod
     def simplify_ForAll(cls, self, function, *limits):
@@ -495,7 +498,7 @@ class Contains(BinaryCondition):
         return self.func(self.lhs, self.rhs.T)
       
     def domain_conditioned(self, x):
-        ...
+        return BinaryCondition.domain_conditioned(self, x)
 
 
 class NotContains(BinaryCondition):
@@ -577,7 +580,7 @@ class NotContains(BinaryCondition):
         return self.func(self.lhs, self.rhs.T)
 
     def domain_conditioned(self, x): 
-        ...
+        return BinaryCondition.domain_conditioned(self, x)
         
         
 Contains.invert_type = NotContains

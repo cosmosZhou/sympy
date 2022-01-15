@@ -38,8 +38,8 @@ class ForAll(Quantifier):
         if all(isinstance(arg, Boolean) for arg in args):
             return Quantifier.subs(self, *args, **kwargs)
         old, new = args
-        if old.is_Slice:
-            return self._subs_slice(old, new)
+        if old.is_Sliced:
+            return self._subs_sliced(old, new)
         new = sympify(new)        
         if old in self.variables:
             wrt, *ab = self.limits[self.variables.index(old)]

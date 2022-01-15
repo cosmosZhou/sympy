@@ -360,7 +360,7 @@ class MinMaxBase(Expr, LatticeOp):
     _eval_is_hermitian = lambda s: _torf(i.is_hermitian for i in s.args)
     _eval_is_imaginary = lambda s: _torf(i.is_imaginary for i in s.args)
     _eval_is_infinite = lambda s: _torf(i.is_infinite for i in s.args)
-    _eval_is_integer = lambda s: _torf(i.is_integer for i in s.args)
+    _eval_is_extended_integer = lambda s: _torf(i.is_extended_integer for i in s.args)
     _eval_is_irrational = lambda s: _torf(i.is_irrational for i in s.args)
     _eval_is_polar = lambda s: _torf(i.is_polar for i in s.args)
     _eval_is_prime = lambda s: _torf(i.is_prime for i in s.args)
@@ -394,7 +394,67 @@ class MinMaxBase(Expr, LatticeOp):
             domain |= arg.domain
         return domain
 
+    def monotonicity(self, x):
+        monotonicity = None
+        args = [*self.args]
+        for i, arg in enumerate(args):
+            if not arg._has(x):
+                continue
+            args[i], _monotonicity = arg.monotonicity(x)
+            if not _monotonicity:
+                return None, 0
+            
+            if monotonicity is None:
+                monotonicity = _monotonicity
+            elif monotonicity != _monotonicity:
+                return None, 0
     
+        return self.func(*args, evaluate=False), monotonicity
+    
+    # min(-x, 0) + x
+    # min(-x, max(-x, 0)) + x
+    # min(-x, max(-x, 0) + y, min(-x, z)) + x
+    def merge_monotonicity_with(self, hx, var):
+        [*args] = self.args
+        for i, arg in enumerate(args):
+            fx = arg + hx
+            if arg._has(var) and fx._has(var):
+                if arg.is_MinMaxBase:
+                    fx = arg.merge_monotonicity_with(hx, var)
+                    if fx is None:
+                        return
+                elif arg.is_Add:
+                    additives = arg.args
+                    for j, f in enumerate(additives):
+                        if f.is_MinMaxBase:
+                            rest = Add(*additives[:j] + additives[j + 1:], evaluate=False)
+                            if not rest._has(var):
+                                fx = f.merge_monotonicity_with(rest + hx, var)
+                                if fx is not None:
+                                    break
+                    else:
+                        return
+                else:
+# consider the following case:
+#   -Min(l, n) + Min(l, n - Min(n, u))
+# = -Min(l, n) + Min(Min(l, n), n - Min(n, u))
+# = Min(0, n - Min(n, u) - Min(l, n))
+# this is monotonically decreasing with respect to l
+                    neg_hx = -hx
+                    if neg_hx.func is self.func:
+                        common_terms = neg_hx._argset & self._argset
+                        if common_terms:
+                            self_args = self._argset - common_terms
+                            h_args = neg_hx._argset - common_terms
+                            compare = lambda x, y : x <= y if self.func.is_Min else lambda x, y : x >= y
+                            if all(any(compare(self_arg, h_arg) for self_arg in self_args) for h_arg in h_args):
+                                return self.func(neg_hx, *self_args, evaluate=False).merge_monotonicity_with(hx, var)
+                    return
+                
+            args[i] = fx
+            
+        return self.func(*args, evaluate=False)
+
 class Max(MinMaxBase, Application):
     """
     Return, if possible, the maximum value of the list.
@@ -725,6 +785,6 @@ class Min(MinMaxBase, Application):
 
         return MinMaxBase.__mul__(self, other)
 
-
+    
 Min.negated_type = Max
 Max.negated_type = Min

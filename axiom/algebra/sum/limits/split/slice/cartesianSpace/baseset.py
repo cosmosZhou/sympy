@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(self):
-    function, ((x, (start, stop)), cond, (domain, *shape)) = self.of(Sum[Tuple[Slice, CartesianSpace]])
+    function, ((x, (start, stop)), cond, (domain, *shape)) = self.of(Sum[Tuple[Sliced, CartesianSpace]])
 
     [n] = shape
     assert start + 1 < stop
@@ -43,4 +43,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2020-03-18
-# updated on 2020-03-18

@@ -31,7 +31,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.apply(algebra.eq.rsolve.linear, y[n])
 
-    Eq << discrete.mul.binomial.fraction.apply(k + 1, i).reversed * (k + 1 - i)
+    Eq << discrete.mul.binom.fraction.apply(k + 1, i).reversed * (k + 1 - i)
 
     Eq << algebra.eq.cond.imply.cond.subs.apply(Eq[-1], Eq[-2])
 
@@ -93,4 +93,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-10-13
-# updated on 2020-10-13

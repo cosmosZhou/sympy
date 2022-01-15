@@ -131,6 +131,8 @@ class BasicMeta(type):
         from sympy.core.of import Basic, sympify
         from sympy import Add
         other = sympify(other)
+        if other.is_Number:
+            self, other = other, self
         return Basic.__new__(Add, self, other)
 
     def __radd__(self, lhs):
@@ -154,9 +156,18 @@ class BasicMeta(type):
         other = sympify(other)
         return Basic.__new__(MatMul, self, other)
     
+    def __rmatmul__(self, lhs):
+        from sympy.core.of import Basic
+        return Basic.__matmul__(lhs, self)
+    
     def __sub__(self, other):
         from sympy.core.of import Basic
         return Basic.__sub__(self, other)
+
+    def __rsub__(self, lhs):
+        from sympy.core.of import Basic, sympify
+        lhs = sympify(lhs)
+        return Basic.__sub__(lhs, self)
 
     def __neg__(self):
         from sympy.core.of import Basic
@@ -282,11 +293,16 @@ class Wanted:
         return True
 
     __add__ = BasicMeta.__add__
+    __radd__ = BasicMeta.__radd__
+    
     __sub__ = BasicMeta.__sub__
+    __rsub__ = BasicMeta.__rsub__
+    
     __neg__ = BasicMeta.__neg__
     
     __mul__ = BasicMeta.__mul__
     __rmul__ = BasicMeta.__rmul__
+    
     __truediv__ = BasicMeta.__truediv__
     __rtruediv__ = BasicMeta.__rtruediv__
     

@@ -47,4 +47,3 @@ if __name__ == '__main__':
 
 from . import domain_defined
 # created on 2018-06-26
-# updated on 2018-06-26

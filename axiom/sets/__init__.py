@@ -79,3 +79,10 @@ from . import le_zero
 from . import is_negative
 from . import abs_lt
 from . import abs_le
+from . import el_range
+from . import et_ou
+from . import subset_range
+from . import range_min
+from . import range_max
+from . import interval_min
+from . import interval_max

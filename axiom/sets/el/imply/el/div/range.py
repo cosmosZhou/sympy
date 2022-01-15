@@ -30,7 +30,7 @@ def prove(Eq):
 
     Eq <<= Eq[-3] / d, Eq[-1] / d
 
-    Eq <<= algebra.ge.imply.ge.ceiling.apply(Eq[-2]), algebra.le.imply.le.floor.apply(Eq[-1])
+    Eq <<= algebra.ge.imply.ge.ceiling.integer.apply(Eq[-2]), algebra.le.imply.le.floor.integer.apply(Eq[-1])
 
     Eq << sets.ge.le.imply.el.range.apply(Eq[-2], Eq[-1])
 
@@ -39,4 +39,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2018-05-24
-# updated on 2018-05-24

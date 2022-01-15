@@ -367,8 +367,9 @@ class Product(ExprWithIntLimits):
         from sympy.simplify.simplify import product_simplify
         return product_simplify(self)
 
-    def _eval_transpose(self): 
-        return self.func(self.expr.transpose(), *self.limits)        
+    def _eval_transpose(self, axis=-1):
+        if axis == self.default_axis: 
+            return self.func(self.expr.transpose(), *self.limits)        
 
     def _eval_is_finite(self):
         function = self.expr                
@@ -833,16 +834,17 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
         from sympy.simplify.simplify import product_simplify
         return product_simplify(self)
 
-    def _eval_transpose(self):
-        limits = self.limits
-        function = self.expr
-        for x, *ab in limits:
-            if len(ab) != 2:
-                return None
-            a, b = ab
-            function = function._subs(x, a + b - 1 - x)
-            
-        return self.func(function.T, *limits)
+    def _eval_transpose(self, axis=-1):
+        if axis == self.default_axis:
+            limits = self.limits
+            function = self.expr
+            for x, *ab in limits:
+                if len(ab) != 2:
+                    return None
+                a, b = ab
+                function = function._subs(x, a + b - 1 - x)
+                
+            return self.func(function.T, *limits)
 
     def is_convergent(self):
         r"""
@@ -1135,7 +1137,7 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
 
                 a, b = ab
 
-            if old.is_Slice and len(ab) == 2:
+            if old.is_Sliced and len(ab) == 2:
                 from sympy import Interval
                 _x = x.copy(domain=Range(*ab))
                 function = self.expr.subs(x, _x)
@@ -1152,7 +1154,7 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
                 if ab:
                     return self.func(function, (x, a.subs(old, new), b.subs(old, new))).simplify()
 
-                if x.is_Slice:
+                if x.is_Sliced:
                     x = x.subs(old, new)
                 return self.func(function, (x,))
 

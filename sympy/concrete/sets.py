@@ -1,7 +1,8 @@
 from sympy.concrete.expr_with_limits import ExprWithLimits, Minima, Maxima
-from sympy.sets.sets import Set, Union, FiniteSet, Interval, Intersection
+from sympy.sets.sets import Set, Union, FiniteSet, Interval, Intersection,\
+    conditionset
 from sympy.core.symbol import Symbol, Wild
-from sympy.tensor.indexed import Indexed, Slice
+from sympy.tensor.indexed import Indexed, Sliced
 from sympy.core.sympify import sympify
 from sympy.functions.elementary.piecewise import Piecewise
 from sympy.logic.boolalg import And
@@ -48,7 +49,7 @@ class Cup(Set, ExprWithLimits):
             return False
         limit = self.limits[0]
         x, *_ = limit
-        if not isinstance(x, (Symbol, Indexed, Slice)):
+        if not isinstance(x, (Symbol, Indexed, Sliced)):
             return False
         if not isinstance(self.expr, FiniteSet) or len(self.expr) != 1:
             return False
@@ -64,7 +65,6 @@ class Cup(Set, ExprWithLimits):
 
     def handle_finite_sets(self, unk):
         if self.is_ConditionSet:
-            from sympy.sets import conditionset                    
             return conditionset(self.variable, self.condition, self.base_set & unk)            
         else:
             match_index = self.match_index(unk)
@@ -74,7 +74,6 @@ class Cup(Set, ExprWithLimits):
             
     def intersection_sets(self, b):
         if self.is_ConditionSet:
-            from sympy.sets import conditionset
             if b.is_ConditionSet and self.variable == b.variable:
                 return conditionset(self.variable, self.condition & b.condition, self.base_set & b.base_set)
             base_set = self.variable.domain & self.base_set
@@ -158,7 +157,6 @@ class Cup(Set, ExprWithLimits):
 
             if not self.expr._has(x):
                 if domain.is_boolean:
-                    from sympy import conditionset
                     domain = conditionset(x, domain).simplify()
                 return Piecewise((self.expr, Unequal(domain, x.emptySet).simplify()), (self.expr.etype.emptySet, True)).simplify()
             
@@ -317,7 +315,6 @@ class Cup(Set, ExprWithLimits):
         if expr.func == self.func:
             if self.expr == expr.expr:
                 if self.is_ConditionSet and expr.is_ConditionSet:
-                    from sympy.sets import conditionset
                     if self.variable == expr.variable:
                         if self.base_set == expr.base_set: 
                             return conditionset(self.variable, self.condition | expr.condition, self.base_set)
@@ -328,6 +325,8 @@ class Cup(Set, ExprWithLimits):
                     return self.func(self.expr, *limits)
 
         if self.is_ConditionSet:
+            if self.base_set in expr:
+                return expr
             return
         
         if len(self.limits) == 1:
@@ -403,7 +402,6 @@ class Cup(Set, ExprWithLimits):
             if len(limit) == 3: 
                 x, a, b = limit
                 if a.is_boolean:
-                    from sympy import conditionset
                     return x, conditionset(x, a, b)
                 is_integer = limit[0].is_integer                 
                 return x, (Range if is_integer else Interval)(a, b) 
@@ -517,19 +515,16 @@ class Cup(Set, ExprWithLimits):
                 return ~self   
             if universe.is_ConditionSet:
                 if self.variable == universe.variable and universe.base_set == self.base_set:
-                    from sympy.sets import conditionset
                     return conditionset(self.variable, universe.condition & self.condition.invert(), self.base_set)                    
 
     def __invert__(self):
         assert self.is_ConditionSet
         condition = self.condition.invert()
-        from sympy.sets import conditionset
         return conditionset(self.variable, condition, self.base_set)
 
     def invert(self):
         assert self.is_ConditionSet
         condition = self.condition.invert()
-        from sympy.sets import conditionset
         return conditionset(self.variable, condition, self.base_set)
 
     @property
@@ -677,7 +672,7 @@ class Cup(Set, ExprWithLimits):
         m_ = m.doit()
         if m_ is not m:
             m = m_
-        return m        
+        return m
 
     def _eval_is_extended_integer(self):
         function = self.expr                
@@ -688,94 +683,98 @@ class Cup(Set, ExprWithLimits):
         return function.is_extended_integer
     
     def _eval_is_super_integer(self):
-        function = self.expr                
-        for x, domain in self.limits_dict.items():
-            if not isinstance(domain, list):
-                _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_super_integer
+        return self.expr_within_context.is_super_integer
     
     def _eval_is_extended_rational(self):
-        function = self.expr                
+        expr = self.expr                
         for x, domain in self.limits_dict.items():
             if not isinstance(domain, list):
                 _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_extended_rational
+                expr = expr._subs(x, _x)
+        return expr.is_extended_rational
     
     def _eval_is_hyper_rational(self):
-        function = self.expr                
+        expr = self.expr                
         for x, domain in self.limits_dict.items():
             if not isinstance(domain, list):
                 _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_hyper_rational
+                expr = expr._subs(x, _x)
+        return expr.is_hyper_rational
     
     def _eval_is_super_rational(self):
-        function = self.expr                
+        expr = self.expr                
         for x, domain in self.limits_dict.items():
             if not isinstance(domain, list):
                 _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_super_rational
+                expr = expr._subs(x, _x)
+        return expr.is_super_rational
     
     def _eval_is_extended_real(self):
-        function = self.expr                
+        expr = self.expr                
         for x, domain in self.limits_dict.items():
             if not isinstance(domain, list):
                 _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_extended_real
+                expr = expr._subs(x, _x)
+        return expr.is_extended_real
     
     def _eval_is_hyper_real(self):
-        function = self.expr                
+        expr = self.expr                
         for x, domain in self.limits_dict.items():
             if not isinstance(domain, list):
                 _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_hyper_real
+                expr = expr._subs(x, _x)
+        return expr.is_hyper_real
     
     def _eval_is_super_real(self):
-        function = self.expr                
+        expr = self.expr                
         for x, domain in self.limits_dict.items():
             if not isinstance(domain, list):
                 _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_super_real
+                expr = expr._subs(x, _x)
+        return expr.is_super_real
     
     def _eval_is_extended_complex(self):
-        function = self.expr                
+        expr = self.expr                
         for x, domain in self.limits_dict.items():
             if not isinstance(domain, list):
                 _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_extended_complex
+                expr = expr._subs(x, _x)
+        return expr.is_extended_complex
     
     def _eval_is_hyper_complex(self):
-        function = self.expr
+        expr = self.expr
         for x, domain in self.limits_dict.items():
             if not isinstance(domain, list):
                 _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_hyper_complex
+                expr = expr._subs(x, _x)
+        return expr.is_hyper_complex
     
     
     def _eval_is_finite(self):
         if self.expr.is_finite is not None:
             return self.expr.is_finite
 
-        function = self.expr                
+        expr = self.expr                
         for x, domain in self.limits_dict.items():
             if not isinstance(domain, list):
                 _x = x.copy(domain=domain, **x.assumptions0)
                 assert _x.type == x.type
-                function = function._subs(x, _x)
-        return function.is_finite
+                expr = expr._subs(x, _x)
+        return expr.is_finite
 
     def __add__(self, other):
         if other.has(*self.variables) or other.is_set:
             raise Exception("could not add %s, %s" % (self, other))
         
+        if self.is_ConditionSet:
+            cond = self.condition
+            if cond.is_boolean:
+                variable = self.variable
+                baseset = self.base_set
+                baseset += other
+                cond = cond._subs(variable, variable - other)
+                return conditionset(variable, cond, baseset)
+                
         return self.func(self.expr + other, *self.limits).simplify()
 
     @classmethod
@@ -787,8 +786,8 @@ class Cup(Set, ExprWithLimits):
                     from sympy import Element
                     cond = And(cond, Element(e, s.base_set)) 
             else: 
-                if s.variable.is_Slice:
-                    cond = s.condition._subs_slice(s.variable, e)
+                if s.variable.is_Sliced:
+                    cond = s.condition._subs_sliced(s.variable, e)
                 else:
                     cond = s.condition._subs(s.variable, e)
                 if not s.base_set.is_UniversalSet:

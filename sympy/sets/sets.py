@@ -199,7 +199,7 @@ class Set(Basic):
                 return Intersection(other, self.complement(U))
 
         elif other.is_Range:
-            if self.is_Range:
+            if self.is_Range and self.step.is_One:
                 from sympy.sets import Integers
                 return Intersection(other, self.complement(Integers))
 
@@ -813,7 +813,7 @@ class CartesianSpace(Set):
         assert tuple(self.etype.shape) == tuple(other.shape)
         if self.is_UniversalSet:
             return S.true
-        if other.is_Slice or other.is_Symbol:
+        if other.is_Sliced or other.is_Symbol:
             n = other.shape[0]
             i = Dummy('i', domain=Range(n))
             space_shape = self.space_shape[1:]
@@ -857,8 +857,16 @@ class CartesianSpace(Set):
     
     def __add__(self, other):
         if other.is_CartesianSpace:
-            assert self.space_shape == other.space_shape
-            return self.func(self.space + other.space, *self.space_shape)        
+            if len(self.space_shape) > len(other.space_shape):
+                assert self.space_shape[:len(other.space_shape)] == other.space_shape
+                shape = self.space_shape
+            elif len(self.space_shape) < len(other.space_shape):
+                assert self.space_shape == other.space_shape[:len(self.space_shape)]
+                shape = other.space_shape
+            else:
+                assert self.space_shape == other.space_shape
+                shape = self.space_shape
+            return self.func(self.space + other.space, *shape)        
         if other.is_set:
             assert len(other.etype.shape) < len(self.etype.shape)
         return self
@@ -1629,7 +1637,18 @@ class Interval(Set, EvalfMixin):
                 else:
                     start += other.start
                     stop += other.stop
-                    left_open, right_open = self.left_open or other.left_open, self.right_open or other.right_open
+                    
+                    if other.start.is_infinite and not other.left_open:
+                        left_open = False
+                    else:
+                        left_open = self.left_open or other.left_open
+                        
+                    if other.stop.is_infinite and not other.right_open:
+                        right_open = False
+                    else:
+                        right_open = self.right_open or other.right_open
+                    
+                        
             if integer:
                 from sympy import Range
                 return Range(start + 1 if left_open else start, stop if right_open else stop + 1)
@@ -1726,6 +1745,7 @@ class Interval(Set, EvalfMixin):
                 return self.func(self.stop / other, self.start / other,
                                  left_open=self.right_open, right_open=self.left_open, integer=self.is_integer)
 
+    @cacheit
     def _has(self, pattern):
         return self.start._has(pattern) or self.stop._has(pattern)
 
@@ -3356,7 +3376,7 @@ class FiniteSet(Set):
         return iter(self.args)
 
     def _complement(self, other):
-        from sympy import Reals, Range
+        from sympy import Range
         if other.is_Range:
             nums = sorted(m for m in self.args if m.is_number)            
             if False and nums != []:
@@ -3813,8 +3833,8 @@ def _imageset(*args):
     if len(args) < 2:
         raise ValueError('imageset expects at least 2 args, got: %s' % len(args))
 
-    from sympy.tensor.indexed import Slice
-    if isinstance(args[0], (Symbol, tuple, Slice)) and len(args) > 2:
+    from sympy.tensor.indexed import Sliced
+    if isinstance(args[0], (Symbol, tuple, Sliced)) and len(args) > 2:
         f = Lambda(args[0], args[1])
         set_list = args[2:]
     else:

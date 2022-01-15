@@ -1180,6 +1180,10 @@ class UndefinedFunction(FunctionClass):
             else:
                 kwargs['is_integrable'] = integrable
         
+        if kwargs.get('shape') and '__getitem__' not in kwargs:
+            from sympy.tensor.indexed import Indexed
+            kwargs['__getitem__'] = lambda self, index: Indexed(self, *index) if isinstance(index, tuple) else Indexed(self, index)
+                
         __dict__.update(kwargs)
         # add back the sanitized assumptions without the is_ prefix
         # Save these for __eq__
@@ -1521,7 +1525,7 @@ class Derivative(Expr):
         from sympy.matrices.common import MatrixCommon
         from sympy import Integer, MatrixExpr
         from sympy.tensor.array import NDimArray
-        from sympy.utilities.misc import filldedent
+        
 
         expr = sympify(expr)
         symbols_or_none = getattr(expr, "free_symbols", None)
@@ -1587,7 +1591,10 @@ class Derivative(Expr):
                     else:
                         if len(v) == 1:
                             v = v[0]
-                            count = 1
+                            if v.is_Pow:
+                                v, count = v.args
+                            else:
+                                count = 1
                         else:
                             v, count = v
                     if count == 0:
@@ -1917,6 +1924,9 @@ class Derivative(Expr):
 
     def doit(self, **hints):
         expr = self.expr
+        if expr.is_AppliedUndef:
+            return self
+        
         if hints.get('deep', True):
             expr = expr.doit(**hints)
         hints['evaluate'] = True
@@ -2262,13 +2272,6 @@ class Derivative(Expr):
          
         return Expr.__new__(self.func, dependent, *self.variable_count) * independent
 
-    @classmethod
-    def simplify_Equal(cls, self, lhs, rhs):
-        if isinstance(rhs, cls):
-            if lhs.variable_count == rhs.variable_count:
-                C = self.generate_var(real=True, given=True, var="C")
-                return self.func(lhs.expr, rhs.expr + C)
-
     @property
     def dtype(self):
         from sympy.core.symbol import dtype
@@ -2276,9 +2279,9 @@ class Derivative(Expr):
 
     @property
     def shape(self):
-        shape = ()
-        for x, _ in self.variable_count:
-            shape += x.shape
+        shape = self.expr.shape
+        for x, n in self.variable_count:
+            shape += x.shape * n
         return shape
 
     def _sympystr(self, p):
@@ -2302,24 +2305,40 @@ class Derivative(Expr):
 
     def _latex(self, p):
         from sympy.printing.conventions import requires_partial
-        if requires_partial(self):
-            diff_symbol = r'\partial'
-        else:
-            diff_symbol = r'd'
-
         tex = ""
         dim = 0
-        for x, num in reversed(self.variable_count):
-            dim += num
-            if num == 1:
-                tex += r"%s %s" % (diff_symbol, p._print(x))
-            else:
-                tex += r"%s %s^{%s}" % (diff_symbol, p._print(x), num)
+        
+        if self.variable.shape:
+            diff_symbol = r'\nabla'
+            
+            for x, num in reversed(self.variable_count):
+                dim += num
 
-        if dim == 1:
-            tex = r"\frac{%s}{%s}" % (diff_symbol, tex)
+                if num == 1:
+                    tex += p._print(x)
+                else:
+                    tex += r"%s^{%s}" % (p._print(x), num)
+    
+            tex = r"%s_{%s}" % (diff_symbol, tex)
+            
         else:
-            tex = r"\frac{%s^{%s}}{%s}" % (diff_symbol, dim, tex)
+            if requires_partial(self):
+                diff_symbol = r'\partial'
+            else:
+                diff_symbol = r'd'
+            
+
+            for x, num in reversed(self.variable_count):
+                dim += num
+                if num == 1:
+                    tex += r"%s %s" % (diff_symbol, p._print(x))
+                else:
+                    tex += r"%s %s^{%s}" % (diff_symbol, p._print(x), num)
+    
+            if dim == 1:
+                tex = r"\frac{%s}{%s}" % (diff_symbol, tex)
+            else:
+                tex = r"\frac{%s^{%s}}{%s}" % (diff_symbol, dim, tex)
 
         if self.expr.is_Mul or self.expr.is_Add:
             expr = r"\left(%s\right)" % p._print(self.expr)
@@ -2329,7 +2348,83 @@ class Derivative(Expr):
             
         return r"%s %s" % (tex, expr)
 
+    def __iter__(self):
+        raise TypeError
 
+    def __getitem__(self, indices):
+        if (indices := Symbol.simplify_slice(indices)) is None:
+            return self 
+        
+        expr = self.expr
+        if isinstance(indices, tuple):
+            if expr.shape:
+                ...
+#                 expr = expr[indices]
+#                 return self.func(expr, *self.variable_count, evaluate=False)
+            else:
+                sizeRequired = len(indices)
+                sgm = 0
+                for i, (x, n) in enumerate(self.variable_count):                    
+                    sgm += len(x.shape) * n
+                    if sgm >= sizeRequired:
+                        i += 1
+                        break
+                else:
+                    return
+                
+                variableWanted = self.variable_count[:i]
+                [*variableUnwanted] = self.variable_count[i:]
+                if diff := sgm - sizeRequired:
+                    *variableWanted, last = variableWanted
+                    
+                    i = 0
+                    x_var_cnt = []
+                    for x, n in variableWanted:
+                        n *= len(x.shape)
+                        x_var_cnt.append((x[indices[i: i + n]], 1))
+                        i += n 
+                        
+                    x, n = last
+                    n *= len(x.shape)
+                    n -= diff
+                    x_var_cnt.append((x[indices[i: i + n]], 1))
+                    variableUnwanted = [(x, 1)] + variableUnwanted
+                    variable_count = x_var_cnt + variableUnwanted
+                    return self.func(expr, *variable_count, evaluate=False)
+                else:
+                    i = 0
+                    x_var_cnt = []
+                    for x, n in variableWanted:
+                        n *= len(x.shape)
+                        x_var_cnt.append((x[indices[i: i + n]], 1))
+                        i += n 
+                        
+                    variable_count = x_var_cnt + variableUnwanted
+                    return self.func(expr, *variable_count, evaluate=False)
+        else:
+            
+            if expr.shape:
+                expr = expr[indices]
+                return self.func(expr, *self.variable_count, evaluate=False)
+            else:
+                x_var_cnt = []
+                for i, (x, n) in enumerate(self.variable_count):
+                    if x.shape:
+                        break
+                    x_var_cnt.append((x, n))
+                else:
+                    return
+                        
+                (x, n), *variable_count = self.variable_count[i:]
+                n -= 1
+                if n:
+                    x_var_cnt += [(x[indices], 1), (x, n)]
+                else:
+                    x_var_cnt += [(x[indices], 1)]
+                    
+                variable_count = x_var_cnt + variable_count
+                return self.func(expr, *variable_count, evaluate=False)
+            
 def _derivative_dispatch(expr, *variables, **kwargs):
     from sympy.matrices.common import MatrixCommon
     from sympy import MatrixExpr
@@ -2393,8 +2488,8 @@ class Lambda(Expr):
             v = v[0]
             if v == expr:
                 return S.IdentityFunction
-            from sympy.tensor.indexed import Slice
-            if isinstance(v, Slice):
+            from sympy.tensor.indexed import Sliced
+            if isinstance(v, Sliced):
                 shape = v.shape
                 if len(shape) > 1:
                     raise TypeError('multidimentional variables is not supported: %s, with shape' % (v, shape))
@@ -4033,7 +4128,10 @@ class Difference(Expr):
 
     def __new__(cls, expr, variable, count=S.One, **kwargs):
 #         assert count >= 0
-        assert isinstance(count, int) or count.is_integer
+        if isinstance(count, int):
+            count = sympify(count)
+            
+        assert count.is_integer
         from sympy.matrices.common import MatrixCommon
         from sympy.tensor.array import NDimArray
 

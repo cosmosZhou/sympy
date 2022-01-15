@@ -5,8 +5,7 @@ from util import *
 def apply(lt, contains_y):
     y, domain_y = contains_y.of(Element)
     a, b = domain_y.of(Interval)
-    x, _y = lt.of(Less)
-    assert _y == y
+    x, S[y] = lt.of(Less)
     return x < b
 
 
@@ -25,4 +24,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-11-25
-# updated on 2020-11-25

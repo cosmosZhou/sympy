@@ -2,7 +2,7 @@ from util import *
 
 
 @apply
-def apply(given): 
+def apply(given):
     (fx, *limits), M = given.of(Equal[Maxima])
     return All(M >= fx, *limits)
 
@@ -18,4 +18,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2019-01-14
-# updated on 2019-01-14

@@ -38,4 +38,3 @@ if __name__ == '__main__':
 
 from . import lhs
 # created on 2020-08-02
-# updated on 2020-08-02

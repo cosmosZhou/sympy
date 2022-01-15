@@ -1,9 +1,11 @@
-from util.search import read_all_py
+from util.search import read_all_py, axiom_directory
 from run import project_directory
 
 from util.cpp import instance as lib, vector
 from ctypes import c_char_p, c_void_p
 from _ctypes import Structure
+from sympy.utilities.misc import Text
+import re
 
 
 class CodeBlock(Structure):
@@ -13,14 +15,33 @@ class CodeBlock(Structure):
         lib.delete_CodeBlock(self)
 
     
-lib.compile[c_char_p] = vector(CodeBlock)
-lib.delete_CodeBlock[CodeBlock] = None
-
-if __name__ == '__main__':
+def test():
     for py in read_all_py(project_directory()):
         print(py)
         with open(py, 'r') as file:
             text = file.read()
             print(text)
             break
+
+if __name__ == '__main__':
+    
+    for py in read_all_py(axiom_directory()):
         
+        [*lines] = Text(py)
+        
+        timestamp = {}
+        for i, line in enumerate(lines):
+            if m := re.match(r' *# *(created|updated) on (\d\d\d\d-\d\d-\d\d)', line):
+                timestamp[m[1]] = (i, m[2])
+        
+        if len(timestamp) == 2:
+            if timestamp['created'][1] == timestamp['updated'][1]:
+                print('processing', py)
+                print(timestamp)
+                print('line to be deleted:', timestamp['updated'][0])
+                print()
+                
+                index = timestamp['updated'][0]
+                
+                del lines[index]
+                Text(py).writelines(lines)

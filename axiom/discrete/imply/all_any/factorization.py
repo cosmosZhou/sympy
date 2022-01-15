@@ -28,11 +28,11 @@ def prove(Eq):
 
     Eq << Eq.initial.doit(deep=True)
 
-    Eq << Eq[-1].this.find(Slice).apply(algebra.slice.to.matrix)
+    Eq << Eq[-1].this.find(Sliced).apply(algebra.slice.to.matrix)
 
-    Eq << Eq[-1].this.find(Slice).apply(algebra.slice.to.matrix)
+    Eq << Eq[-1].this.find(Sliced).apply(algebra.slice.to.matrix)
 
-    Eq << Eq[-1].this.find(Slice).apply(algebra.slice.to.matrix)
+    Eq << Eq[-1].this.find(Sliced).apply(algebra.slice.to.matrix)
 
     p0 = Eq[-1].variable
     Eq << Eq[-1].this.expr.apply(algebra.any.given.cond.subs, b[:2], Matrix((0, KroneckerDelta(p0, 0))))
@@ -71,15 +71,15 @@ def prove(Eq):
 
     Eq << Eq.induct.expr.expr.rhs.args[1].this.apply(discrete.matProd.to.matmul.pop_back)
 
-    Eq << discrete.blockMatrix.to.matProd.apply(n, n, b)
+    Eq << discrete.block.to.matProd.apply(n, n, b)
 
     Eq << Eq[-2].subs(Eq[-1].reversed)
 
     Eq << Eq.induct.subs(Eq[-1])
 
-    Eq << Eq[-1].this.expr.expr.rhs.args[0].apply(algebra.lamda.to.blockMatrix.pop_back)
+    Eq << Eq[-1].this.expr.expr.rhs.args[0].apply(algebra.lamda.to.block.pop_back)
 
-    Eq << MatMul(*Eq[-1].expr.expr.rhs.args[:2]).this.expand()
+    Eq << MatMul(*Eq[-1].expr.expr.rhs.args[:2]).this.apply(discrete.matmul.to.block, deep=True)
 
     Eq << Eq[-1].subs(Eq[-1].rhs.args[0].this.T)
 
@@ -133,7 +133,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.expr.apply(algebra.any.ou.imply.cond, simplify=None)
 
-    Eq << Eq.p_quote_definition.lhs.this.apply(algebra.symbol.to.blockmatrix)
+    Eq << Eq.p_quote_definition.lhs.this.apply(algebra.symbol.to.block)
 
     Eq << algebra.cond.all_any.imply.all_any_et.apply(Eq[-1], Eq[-2])
 
@@ -152,8 +152,11 @@ def prove(Eq):
     Eq << Eq[1].subs(Eq[0])
 
 
+
+
+
 if __name__ == '__main__':
     run()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html
 # created on 2020-09-01
-# updated on 2020-09-01
+# updated on 2021-12-14

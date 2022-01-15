@@ -35,4 +35,3 @@ if __name__ == '__main__':
 
 from . import square
 # created on 2019-03-06
-# updated on 2019-03-06

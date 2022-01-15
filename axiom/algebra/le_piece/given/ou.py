@@ -11,10 +11,9 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra
 
-    k = Symbol(integer=True, positive=True)
-    x, p = Symbol(real=True, shape=(k,), given=True)
-    A, B = Symbol(etype=dtype.real * k, given=True)
-    f, g, h = Function(shape=(k,), real=True)
+    x, p = Symbol(real=True, shape=(), given=True)
+    A, B = Symbol(etype=dtype.real, given=True)
+    f, g, h = Function(shape=(), real=True)
     Eq << apply(p <= Piecewise((f(x), Element(x, A)), (g(x), Element(x, B)), (h(x), True)))
 
     Eq << Eq[1].this.find(LessEqual).reversed
@@ -29,4 +28,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-12-03
-# updated on 2019-12-03

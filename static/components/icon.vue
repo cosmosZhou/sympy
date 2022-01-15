@@ -344,4 +344,9 @@ div>input {
 	font-weight: inherit;
 	font-family: inherit;
 }
+
+div {
+	cursor: pointer;
+	caret-color: transparent;
+}
 </style>

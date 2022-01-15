@@ -5,8 +5,8 @@ from util import *
 def apply(M_is_positive, lt, x=None):
     M = M_is_positive.of(Expr > 0)
     U, m2 = lt.of(Less)
-    _M = m2.of(Expr ** 2)
-    assert _M == M
+    S[M] = m2.of(Expr ** 2)
+
     if x is None:
         x = lt.generate_var(real=True)
     return Any[x:Interval(-M, M, left_open=True, right_open=True)](x ** 2 > U)
@@ -66,4 +66,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-08-26
-# updated on 2019-08-26

@@ -116,7 +116,7 @@ def update_timestamp():
 # from util.hierarchy import update_timestamp
 # update_timestamp()
 if __name__ == '__main__':
-    # insert_into_hierarchy()
-    update_timestamp()    
+    insert_into_hierarchy()
+    # update_timestamp()    
 
 # exec(open('./util/hierarchy.py').read())

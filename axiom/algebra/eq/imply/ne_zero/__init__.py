@@ -28,4 +28,3 @@ if __name__ == '__main__':
 
 from . import domain_definition
 # created on 2018-04-02
-# updated on 2018-04-02

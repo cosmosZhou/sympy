@@ -58,7 +58,7 @@ def prove(Eq):
 
     Eq <<= Eq[1] & Eq[-1]
 
-    Eq <<= Eq[-1].this.expr.apply(algebra.et.given.et.subs.eq)
+    Eq << Eq[-1].this.expr.apply(algebra.et.given.et.subs.eq)
 
     Eq << algebra.all_et.given.et.all.apply(Eq[-1])
 
@@ -92,4 +92,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-04-22
-# updated on 2020-04-22

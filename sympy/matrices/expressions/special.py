@@ -39,8 +39,9 @@ class ZeroMatrix(MatrixExpr):
             raise NonInvertibleMatrixError("Matrix det == 0; not invertible")
         return self
 
-    def _eval_transpose(self):
-        return ZeroMatrix(self.cols, self.rows)
+    def _eval_transpose(self, axis=-1):
+        if axis == self.default_axis:
+            return ZeroMatrix(self.cols, self.rows)
 
     def _eval_trace(self):
         return S.Zero
@@ -131,7 +132,7 @@ class Identity(MatrixExpr):
     def is_square(self):
         return True
 
-    def _eval_transpose(self):
+    def _eval_transpose(self, axis=-1):
         return self
 
     def _eval_trace(self):
@@ -238,8 +239,9 @@ class OneMatrix(MatrixExpr):
             return self.shape[0] ** (exp - 1) * OneMatrix(*self.shape)
         return super()._eval_power(exp)
 
-    def _eval_transpose(self):
-        return OneMatrix(self.cols, self.rows)
+    def _eval_transpose(self, axis=-1):
+        if axis == self.default_axis:
+            return OneMatrix(self.cols, self.rows)
 
     def _eval_trace(self):
         return S.One*self.rows

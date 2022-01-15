@@ -29,11 +29,10 @@ def prove(Eq):
 
     Eq << Eq[-1].this.expr.apply(algebra.eq.cond.imply.cond.subs, reverse=True)
 
-    
-    
+
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2021-10-02
-# updated on 2021-10-02

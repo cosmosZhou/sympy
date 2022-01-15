@@ -1,1 +1,1 @@
-from . import binomial
+from . import binom

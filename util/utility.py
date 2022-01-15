@@ -11,11 +11,13 @@ from util.std import json_encode, skip_first_permutation
 from datetime import datetime
 import time
 
+
 def current_timestamp(strftime=True):
     current_timestamp = datetime.fromtimestamp(time.time())
     if strftime:
         return current_timestamp.strftime("%Y-%m-%d %H:%M:%S")
     return current_timestamp
+
 
 def init(func):
 
@@ -216,6 +218,28 @@ class Eq:
             return self.list[index]
         return self.__dict__[index]
 
+    def __setitem__(self, index, rhs):
+        if index == -1:
+            self.process(rhs)
+            return
+                    
+        if isinstance(index, slice):
+            start = index.start
+            if start is None:
+                if isinstance(rhs, (list, tuple)):
+                    ...
+                else:
+                    self.process(rhs)
+                    return
+            else:            
+                assert start < 0
+                assert -start == len(rhs), f"{-start} == {len(rhs)}, lengths are not compatible! suggested codes are Eq[-{len(rhs)}:] = ..."
+                 
+            assert not index.stop and index.step is None
+            self.latex.append(''.join(self.yield_from(rhs))) 
+            return
+            
+    
     def process(self, rhs, index=None, flush=True): 
         latex = rhs.latex
     
@@ -370,7 +394,8 @@ class Eq:
                                                 lhs_plausible.equivalent = [*rhs_plausibles]
                                             else: 
                                                 assert lhs_plausible not in rhs_plausibles, 'cyclic proof detected'
-                                                lhs_plausible.given = [*rhs_plausibles]
+                                                if rhs_plausibles:
+                                                    lhs_plausible.given = [*rhs_plausibles]
                                         else: 
                                             lhs_plausible.imply = rhs_equivalent
                         else:
@@ -408,39 +433,32 @@ class Eq:
             self.__dict__[index] = rhs
         return index
         
+    def yield_from(self, container):
+        for e in container:
+            if isinstance(e, (list, tuple)):
+                yield from self.yield_from(e)
+            else:
+                yield self.process(e, flush=False)
+        
     def __lshift__(self, rhs):
-        if isinstance(rhs, (list, tuple)): 
-
-            def yield_from(container):
-                for e in container:
-                    if isinstance(e, (list, tuple)):
-                        yield from yield_from(e)
-                    else:
-                        yield self.process(e, flush=False)
-
-            self.latex.append(''.join(yield_from(rhs)))
+        if isinstance(rhs, list):
+            # input is a matrix:
+            arr = []
+            for v in rhs:
+                if isinstance(v, tuple):
+                    latex = ''.join(self.yield_from(v))
+                else:
+                    latex = self.process(v, flush=False)
+                arr.append(latex)
+            self.latex.append('\t'.join(arr))
+        elif isinstance(rhs, tuple):
+            self.latex.append(''.join(self.yield_from(rhs)))
         else:
             self.process(rhs)
         return self
 
     def __ilshift__(self, rhs):
         return self << rhs
-
-
-def show_latex():
-    import matplotlib.pyplot as plt
-    ax = plt.subplot(111)
-#     defaultFamily
-    ax.text(0.1, 0.8, r"$\int_a^b f(x)\mathrm{d}x$", fontsize=30, color="red")
-    ax.text(0.1, 0.3, r"$\sum_{n=1}^\infty\frac{-e^{i\pi}}{2^n}!$", fontsize=30)
-    plt.show()
-# https://www.cnblogs.com/chaosimple/p/4031421.html
-
-
-def test_latex_parser():
-    from sympy.parsing.latex import parse_latex
-    expr = parse_latex(r"\frac {1 + \sqrt {\a}} {\b}")  # doctest: +SKIP
-    print(expr)
 
 
 def topological_sort(graph):
@@ -529,19 +547,12 @@ def run():
 def analyze_results_from_run(lines, latex=True):
     for line in lines:
         line = line.rstrip()
-        m = re.match(r'latex results are saved into: (\S+)', line)
+        m = re.match(r'b(".+")', line)
         if m:
-            sqlFile = m[1]                        
+            package, file, state, lapse, latex = eval(m[1])
         print(line)
 
-    file = Text(sqlFile)
-
-    sql, *_ = file
-    
-    file.file.close()
 # PermissionError: [WinError 32]
-    os.unlink(sqlFile)
-       
     if latex: 
         m = re.match('exit_code = (\S+)', line)
         assert m, line                
@@ -553,12 +564,10 @@ def analyze_results_from_run(lines, latex=True):
         else:
             ret = RetCode.plausible
             
-        re.match('update tbl_axiom_py set state = "\w+", lapse = \S+, latex = ("[\s\S]+") where user = "\w+" and axiom = "\S+"', sql)
-        assert m, sql
         latex = eval(m[1])
         return ret, latex
     else:
-        return sql[:-1]
+        return state, latex
     
 
 from sympy.utilities.misc import Text
@@ -611,7 +620,7 @@ def _prove(func, debug=True, **_):
     except AttributeError as e:
         messages = source_error()
         
-        m = re.match("^module 'sympy(?:\.\w+)*\.(algebra|sets|calculus|discrete|geometry|keras|stats)(?:\.\w+)*' has no attribute '(\w+)'$", str(e))
+        m = re.match("^module 'sympy(?:\.\w+)*\.(algebra|sets|calculus|discrete|geometry|keras|stats|patent)(?:\.\w+)*' has no attribute '(\w+)'$", str(e))
         if m: 
             import_axiom = False
             if m[2] == 'func':
@@ -633,7 +642,7 @@ def _prove(func, debug=True, **_):
             if t == 'function':
                 * _, statement = messages            
                 statement = statement.strip()
-                m = re.search('(?:algebra|sets|calculus|discrete|geometry|keras|stats)(?:\.\w+)+', statement)
+                m = re.search('(?:algebra|sets|calculus|discrete|geometry|keras|stats|patent)(?:\.\w+)+', statement)
                 if m:
                     section, *_ = m[0].split('.')
                     return from_axiom_import(py, section, eqs)
@@ -641,7 +650,7 @@ def _prove(func, debug=True, **_):
             elif t[0].isupper():
                 kwargs = detect_error_in_invoke(py, messages) or detect_error_in_apply(py, messages) or detect_error_in_prove(py, messages)
                 print(json_encode(kwargs))
-                if kwargs and not kwargs['error']:
+                if kwargs and not kwargs.get('error'):
                     kwargs['error'] = str(e)    
 
         if str(e) == "'NoneType' object has no attribute 'definition_set'":
@@ -675,7 +684,7 @@ def _prove(func, debug=True, **_):
         print(website)
         ret = RetCode.failed
     except Exception as e: 
-        messages = source_error()       
+        messages = source_error()
         
         kwargs = detect_error_in_prove(py, messages) or detect_error_in_apply(py, messages) or detect_error_in_imply(py, messages) or detect_error_in_axiom(py, messages) or detect_error_in_sympy(py, messages)
         if isinstance(kwargs, list):
@@ -755,6 +764,10 @@ def detect_error_in_apply(py, messages, index=-3):
             __line__ = int(m[2])
             i += 1
             pyFile = m[1]
+            
+            if i == len(messages):
+                continue
+            
             code = messages[i]
             
             __line__ -= skips_in_apply(pyFile)
@@ -767,7 +780,9 @@ def detect_error_in_apply(py, messages, index=-3):
             if pyFile != py:
                 m = re.search(r"\b(axiom[/\\].+)\.py", pyFile)
                 if m:
-                    kwargs['file'] = m[1].replace(os.path.sep, '.')
+                    file = m[1].replace(os.path.sep, '.')
+                    file = file.replace(".__init__", '')
+                    kwargs['file'] = file
                 else:
                     messages = source_error(index)
                     return detect_error_in_invoke(py, messages, index=index - 1)
@@ -817,18 +832,19 @@ def detect_error_in_axiom(py, _messages, index=-3):
                 return kwargs
 
 
-def remove_annotation(func, state):    
+def remove_annotation(func, state): 
     py = func.__code__.co_filename
     print(py, "has been proved already!")
     [*lines] = Text(py)
     for i, line in enumerate(lines):
-        if re.match(f"@prove\({state}=False\)", line):                    
+        if re.match(f"@prove\({state}=False\)", line): 
             print(i, line)
             line = '@prove'
             lines[i] = line
             Text(py).writelines(lines)
             return True
     print(f"{state}=False not detected!")
+
     
 def unprovable(func):
 
@@ -953,7 +969,7 @@ def imply(apply, **kwargs):
             else:
                 ...
                 
-        else:            
+        else: 
             _simplify = simplify
             
         ret = kwargs.pop('ret', None)
@@ -991,7 +1007,7 @@ def imply(apply, **kwargs):
             elif not given:
                 given = None        
         else:
-            given = None            
+            given = None
              
         if apply.__code__.co_filename != traceback.extract_stack()[-2][0]:
             
@@ -1053,9 +1069,20 @@ def imply(apply, **kwargs):
         G = topological_sort_depth_first(dependency)
         if G:
             definition = tuple(s.equality_defined() for s in G)
-            statement = add(definition, statement)
-                 
-        return add(given, statement)
+            if len(definition) == 1:
+                [definition] = definition
+        else:
+            definition = None
+            
+        if definition is None:
+            if given is None:
+                return statement
+            return [given, statement]                
+        else:
+            if given is None:
+                return [definition, statement]    
+            return [given, definition, statement]
+        
 
     return imply
 
@@ -1076,7 +1103,7 @@ def given(apply, **kwargs):
         is_applying = apply.__code__.co_filename != traceback.extract_stack()[-2][0]        
         __kwdefaults__ = apply.__kwdefaults__
 
-        assert not __kwdefaults__ or 'given' not in __kwdefaults__,  apply.__code__.co_filename
+        assert not __kwdefaults__ or 'given' not in __kwdefaults__, apply.__code__.co_filename
 
         _simplify = kwargs.pop('simplify', True) and simplify
         if __kwdefaults__ and 'simplify' in __kwdefaults__ and _simplify != __kwdefaults__['simplify']:
@@ -1161,10 +1188,12 @@ def given(apply, **kwargs):
         if G:
             definition = tuple(s.equality_defined() for s in G)
         else:
-            definition = ()
+            definition = None
             
-        statement = add(definition, statement)
-        return add(imply, statement)
+        if definition is None:
+            return [imply, statement]                
+        else:
+            return [imply, definition, statement]
 
     return given
 

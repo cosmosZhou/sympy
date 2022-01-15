@@ -36,8 +36,6 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
-from . import identity
 from . import max
 from . import min
 # created on 2019-10-18
-# updated on 2019-10-18

@@ -3,10 +3,9 @@ from util import *
 
 @apply
 def apply(eq, sgm):
-    (ai, (i, n)), X = eq.of(Equal[Cup[FiniteSet, Tuple[0]]])
-    _X = n.of(Card)
-    fx, (x, __X) = sgm.of(Sum)
-    assert X == _X == __X
+    (ai, (i, S[0], n)), X = eq.of(Equal[Cup[FiniteSet]])
+    S[X] = n.of(Card)
+    fx, (x, S[X]) = sgm.of(Sum)
 
     return Equal(sgm, Sum[i:n](fx._subs(x, ai)))
 
@@ -34,4 +33,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2021-03-21
-# updated on 2021-03-21

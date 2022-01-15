@@ -27,10 +27,9 @@ def prove(Eq):
     Eq << algebra.any.imply.any.limits.relax.apply(Eq[-1], domain=Reals)
     m = Eq[1].variable
     Eq << algebra.any.given.any.subs.apply(Eq[1], m, f(Eq[-1].variable))
-    
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2020-06-13
-# updated on 2020-06-13

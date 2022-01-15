@@ -3,7 +3,15 @@ from util import *
 
 @apply
 def apply(self):
-    (base, exponent), *limits = self.of(Lamda[Pow])
+    p, *limits = self.of(Lamda)
+    if p.is_Mul:
+        one, p = p.args
+        assert one.is_OneMatrix
+        base, exponent = p.of(Pow)
+        base *= one
+    else:
+        base, exponent = p.of(Pow)
+    assert not exponent.shape
     variables = [v for v, *_ in limits]
     if exponent.has(*variables):
         if base.has(*variables):
@@ -29,8 +37,11 @@ def prove(Eq):
     _j = Symbol.j(domain=Range(n))
     Eq << algebra.eq.given.eq.getitem.apply(Eq[0], _j)
 
+    
+    
+
 
 if __name__ == '__main__':
     run()
 # created on 2019-10-19
-# updated on 2019-10-19
+# updated on 2021-12-19

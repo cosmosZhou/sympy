@@ -14,14 +14,13 @@ def prove(Eq):
     f = Function(real=True)
     Eq << apply(Maxima[x:a:b](f(x)) > M)
 
-    
 
-    
 
-    
+
+
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2018-12-31
-# updated on 2018-12-31

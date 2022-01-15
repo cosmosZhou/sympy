@@ -430,7 +430,7 @@ class NDimArray(object):
     __truediv__ = __div__
     __rtruediv__ = __rdiv__
 
-    def _eval_transpose(self):
+    def _eval_transpose(self, axis=-1):
         if self.rank() != 2:
             raise ValueError("array rank not 2")
         from .arrayop import permutedims

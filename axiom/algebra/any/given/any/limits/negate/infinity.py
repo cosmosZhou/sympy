@@ -17,14 +17,13 @@ def prove(Eq):
 
     Eq << algebra.any.imply.any.limits.negate.infinity.apply(Eq[-1])
 
-    
 
-    
 
-    
+
+
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2019-02-13
-# updated on 2019-02-13

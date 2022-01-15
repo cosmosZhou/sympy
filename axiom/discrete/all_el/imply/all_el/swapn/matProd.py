@@ -59,4 +59,3 @@ if __name__ == '__main__':
     run()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html
 # created on 2020-09-03
-# updated on 2020-09-03

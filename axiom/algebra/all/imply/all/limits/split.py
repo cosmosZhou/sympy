@@ -6,7 +6,7 @@ def split(given, index=-1):
 
     domain, size = s.of(CartesianSpace)
 
-    x, indices = x.of(Slice)
+    x, indices = x.of(Sliced)
 
     start, stop = indices
     assert size == stop - start
@@ -60,4 +60,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2018-12-07
-# updated on 2018-12-07

@@ -10,10 +10,9 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    n = Symbol(integer=True, positive=True)
-    x = Symbol(real=True, shape=(n,))
+    x = Symbol(real=True)
     a = Symbol(real=True)
-    b = Symbol(real=True, shape=(n,), zero=False)
+    b = Symbol(real=True, zero=False)
     Eq << apply(Equal(x * a, b))
 
     Eq << Eq[-1].subs(Eq[0])
@@ -24,4 +23,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2021-08-16
-# updated on 2021-08-16

@@ -636,6 +636,11 @@ class Abs(Function):
         else:
             return tex
 
+    def __iter__(self):
+        raise TypeError
+
+    def __getitem__(self, index):
+        return self.func(self.arg[index])
 
 class Norm(Function):
     """
@@ -875,8 +880,9 @@ class Conjugate(Function):
         elif x.is_imaginary:
             return -conjugate(Derivative(self.args[0], x, evaluate=True))
 
-    def _eval_transpose(self):
-        return adjoint(self.args[0])
+    def _eval_transpose(self, axis=-1):
+        if axis == self.default_axis:
+            return adjoint(self.args[0])
 
     def _eval_is_algebraic(self):
         return self.args[0].is_algebraic
@@ -959,8 +965,9 @@ class transpose(Function):
     def _eval_conjugate(self):
         return adjoint(self.args[0])
 
-    def _eval_transpose(self):
-        return self.args[0]
+    def _eval_transpose(self, axis=-1):
+        if axis == self.default_axis:
+            return self.args[0]
 
 
 class adjoint(Function):
@@ -983,8 +990,9 @@ class adjoint(Function):
     def _eval_conjugate(self):
         return transpose(self.args[0])
 
-    def _eval_transpose(self):
-        return conjugate(self.args[0])
+    def _eval_transpose(self, axis=-1):
+        if axis == self.default_axis:
+            return conjugate(self.args[0])
 
     def _latex(self, printer, exp=None, *args):
         arg = printer._print(self.args[0])

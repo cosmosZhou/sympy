@@ -170,7 +170,9 @@ class Invoker:
                     if len(ab) == 1:
                         domain, *_ = ab
                         if domain.is_Boolean:
-                            domain = x.domain_conditioned(domain)                                                    
+                            domain = x.domain_conditioned(domain)
+                        elif domain.is_ConditionSet:
+                            domain = domain.base_set
                     else:
                         for i, t in enumerate(ab):
                             for outer_var in outer_context:
@@ -195,13 +197,7 @@ class Invoker:
             
             obj = getattr(this, self.callable.__name__)(*args, **kwargs)
             if obj.is_BooleanAtom:
-                if obj:
-                    parent = self.parent
-                    if parent.is_ExprCondPair:
-                        if self.target is parent.cond:
-                            return obj
-                            return self.target
-                return obj                
+                return obj
             
             reps.reverse()
             for x, _x in reps:
@@ -250,7 +246,7 @@ class Invoker:
         return target
     
     def find(self, *query): 
-        from sympy import Basic        
+        from sympy import Basic
         query, struct = Basic.make_query(*query)
         
         return self.target.yield_one([(q, []) for q in query],
@@ -282,11 +278,24 @@ class Invoker:
                     if not target._has(AppliedUndef):
                         target._domain_defined[key] = None
                         print(target.domain_defined(key))
+                        
                         obj._domain_defined[key] = None
                         print(obj.domain_defined(key))
+                                            
+                        print('error occurred in', __file__)
+                        
                     assert target._has(AppliedUndef)
 #                             print(original_domain)
 #                             print(altered_domain)
+                    if altered_domain not in original_domain:
+                        target._domain_defined[key] = None
+                        print(target.domain_defined(key))
+                        
+                        obj._domain_defined[key] = None
+                        print(obj.domain_defined(key))
+                                            
+                        print('error occurred in', __file__)
+                        
                     assert altered_domain in original_domain
                     target._domain_defined[key] = altered_domain
                     original_domain = altered_domain
@@ -408,11 +417,10 @@ class Invoker:
 
     def enter(self, *args, **kwargs):
         target = self.target
-        limits = ()
+        limits = []
         
         if target.is_ExprWithLimits: 
             if not args and not kwargs:
-                limits = []
                 for limit in target.limits:
                     x, *ab = limit
                     if not ab and x.is_integer:
@@ -420,7 +428,7 @@ class Invoker:
                     limits.append(limit)
                 limits.reverse()      
             else:
-                limits = target.limits
+                limits = [*target.limits]
             
         elif target.is_ExprCondPair:
             piecewise = self.parent
@@ -431,11 +439,22 @@ class Invoker:
                 cond &= c.invert()
                 
             if cond.is_And:
-                limits = tuple((eq.wrt, eq) for eq in cond.args)
+                limits = [(eq.wrt, eq) for eq in cond.args]
             else: 
-                limits = ((cond.wrt, cond),)
+                limits = [(cond.wrt, cond)]
+                
         if args:
-            limits += tuple((x, target.domain_defined(x)) for x in args)
+            for x in args:
+                if target.is_ExprWithLimits and x in target.variables:
+                    if target.is_Lamda:
+                        continue
+                    else:
+                        expr = target.expr
+                else:
+                    expr = target
+                    
+                limits.append((x, expr.domain_defined(x)))
+                            
         if kwargs: 
             if 'shape' in kwargs:
                 shape = kwargs['shape']
@@ -465,7 +484,7 @@ class Identity(Invoker):
             this = self._objs[i - 1]
             args = [*this.args]
             args[self.index[i]] = obj
-            obj = this.func(*args).simplify()            
+            obj = this.func(*args, **this.kwargs).simplify()            
 
         return Equal(self.source, obj, evaluate=False, plausible=None)            
         

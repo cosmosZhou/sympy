@@ -60,7 +60,7 @@ def prove(Eq):
 
     Eq << Eq[-1] + Eq[-3]
 
-    Eq << Eq[-1].this.rhs.apply(algebra.add.to.piece.st.two_pieces)
+    Eq << Eq[-1].this.rhs.apply(algebra.add_piece.to.piece)
 
     Eq << algebra.eq.eq.imply.eq.transit.apply(Eq.cossin, Eq[-1])
 
@@ -90,7 +90,7 @@ def prove(Eq):
 
     Eq << Eq[-1] - Eq[-3]
 
-    Eq << Eq[-1].this.rhs.apply(algebra.add.to.piece.st.two_pieces)
+    Eq << Eq[-1].this.rhs.apply(algebra.add_piece.to.piece)
 
     Eq << algebra.eq.eq.imply.eq.transit.apply(Eq.coscos, Eq[-1])
 
@@ -146,4 +146,3 @@ if __name__ == '__main__':
 # Self-Attention with Relative Position Representations.pdf
 # https://arxiv.org/abs/1803.02155
 # created on 2020-12-31
-# updated on 2020-12-31

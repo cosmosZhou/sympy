@@ -1,6 +1,5 @@
 from . import difference
 from . import factorial, mul
-from . import binomial
 from . import det
 from . import stirling1
 from . import all_gt_zero
@@ -22,7 +21,6 @@ from . import lamda_reducedSum
 
 from . import reducedSum
 
-from . import det_blockMatrix
 
 from . import det_mul
 
@@ -34,7 +32,6 @@ from . import all_el
 from . import all_eq
 from . import stirling2
 from . import indexed
-from . import pow
 from . import add
 from . import cup
 from . import condset
@@ -46,13 +43,20 @@ from . import eq
 from . import all_ge
 from . import set_comprehension
 from . import matProd
-from . import blockMatrix
+from . import matmul_lamda
+from . import mul_matmul
+from . import block
+from . import det_block
+from . import det_add
+from . import pow
+from . import sum_binom
+from . import ne_zero
+from . import binom
 from . import swapMatrix
 from . import matpow
 from . import lamda_indexed
-from . import imply
-from . import det_lamda
-from . import det_add
 from . import ge
-from . import ne_zero
-from . import lamda_piece
+from . import det_lamda
+from . import lt
+from . import det_matmul_lamda
+from . import prod

@@ -130,9 +130,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this.args[1].apply(sets.notin.given.ou.interval)
 
-    Eq << calculus.pow.to.sum.binomial.apply(S.One / 2, x=-4 * x, n=n)
+    Eq << calculus.pow.to.sum.binom.apply((1 - 4 * x) ** (S.One / 2), n=n)
 
-    Eq << discrete.binomial.to.mul.half.apply(n)
+    Eq << discrete.binom.to.mul.half.apply(n)
 
     Eq << algebra.eq.cond.imply.cond.subs.apply(Eq[-1], Eq[-2])
 
@@ -152,9 +152,9 @@ def prove(Eq):
 
     Eq.g_series = Eq[-1].this.find(Mul).apply(algebra.mul.cancel, 2)
 
-    Eq << discrete.mul.binomial.fraction.apply(2 * n + 2, n + 1)
+    Eq << discrete.mul.binom.fraction.apply(2 * n + 2, n + 1)
 
-    Eq << Eq[-1].this.rhs.args[-1].apply(discrete.binomial.to.mul.expand) * (2 * n + 2)
+    Eq << Eq[-1].this.rhs.args[-1].apply(discrete.binom.to.mul.binom) * (2 * n + 2)
 
     Eq << algebra.eq.cond.imply.cond.subs.apply(Eq[-1], Eq.g_series)
 
@@ -167,8 +167,11 @@ def prove(Eq):
     Eq << calculus.eq.imply.eq.series.infinite.coefficient.apply(Eq[-1].reversed, x=x)
 
 
+
+
+
 if __name__ == '__main__':
     run()
 
 # created on 2020-10-21
-# updated on 2020-10-21
+# updated on 2021-11-25

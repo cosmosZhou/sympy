@@ -24,4 +24,3 @@ if __name__ == '__main__':
     run()
 from . import expansion_by_minors
 # created on 2021-09-26
-# updated on 2021-09-26

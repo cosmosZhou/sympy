@@ -21,7 +21,7 @@ def limits_subs(cls, self, offset, simplify=True):
             domain -= offset
         limit = (x, domain)
     else:
-        limit = (x,)    
+        limit = (x,)
     self = cls(fx, limit, *limits)
     if simplify:
         self = self.simplify()
@@ -44,4 +44,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-04-28
-# updated on 2018-04-28

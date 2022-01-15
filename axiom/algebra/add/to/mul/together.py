@@ -5,7 +5,7 @@ from util import *
 def apply(self):
     [*args] = self.of(Add)
     factors = []
-    
+
     for arg in args:
         if arg.is_Mul:
             factor = []
@@ -20,13 +20,13 @@ def apply(self):
                 factors.append(arg.base)
     assert factors
     factor = Mul(*factors)
-    
+
     for i in range(len(args)):
         args[i] *= factor
-    
+
     num = Add(*args)
     rhs = Mul(num, 1 / factor)
-        
+
     return Equal(self, rhs, evaluate=False)
 
 
@@ -41,4 +41,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-07-21
-# updated on 2018-07-21

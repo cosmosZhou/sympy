@@ -49,4 +49,3 @@ if __name__ == '__main__':
 
 from . import bool
 # created on 2018-02-06
-# updated on 2018-02-06

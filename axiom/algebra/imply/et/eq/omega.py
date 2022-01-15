@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(w='w'):
     cubic_root = -S.One / 2 + S.ImaginaryUnit * sqrt(3) / 2
-    if isinstance(w, str):        
+    if isinstance(w, str):
         w = Symbol(w, cubic_root)
     else:
         assert w.definition == cubic_root
@@ -40,4 +40,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-08-18
-# updated on 2018-08-18

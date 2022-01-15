@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(self):
-    function, (i, a, b) = self.of(Product[Tuple])
+    function, (i, a, b) = self.of(Product)
 
     assert i.is_integer
     back = function._subs(i, b)
@@ -28,4 +28,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2020-03-09
-# updated on 2020-03-09

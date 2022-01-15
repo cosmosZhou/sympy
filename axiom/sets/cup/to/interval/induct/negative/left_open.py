@@ -34,4 +34,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-10-07
-# updated on 2018-10-07

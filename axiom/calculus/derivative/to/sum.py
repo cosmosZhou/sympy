@@ -4,9 +4,18 @@ from util import *
 
 @apply
 def apply(self):
-    function, *limits_d = self.of(Derivative)
-    f, *limits_s = function.of(Sum)
-    
+    sgm, *limits_d = self.of(Derivative)
+    f, *limits_s = sgm.of(Sum)
+    for var, *_ in limits_s:
+        for x, n in limits_d:
+            if x._has(var):
+                break
+        else:
+            continue
+        print(sgm)
+        print(self)
+        raise "var in summation should not appear in derivative"
+
     return Equal(self, Sum(Derivative(f, *limits_d).doit(), *limits_s))
 
 
@@ -22,4 +31,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2020-10-17
-# updated on 2020-10-17

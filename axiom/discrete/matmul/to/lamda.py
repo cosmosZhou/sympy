@@ -21,13 +21,13 @@ def generate_k_limit(A, B, excludes=None, **kwargs):
 def apply(self, var=None):
 
     kwargs = {'var': var, 'generator': self}
-    
+
     A, B = self.of(MatMul)
     if len(A.shape) > 1:
         i_limit = A.generate_int_limit(1, **kwargs)
         i, *_ = i_limit
         if len(B.shape) > 1:
-    
+
             j_limit = B.generate_int_limit(0, {i}, **kwargs)
             j, *_ = j_limit
 
@@ -39,7 +39,7 @@ def apply(self, var=None):
         else:
             k_limit = generate_k_limit(A, B, {i}, **kwargs)
             k, *_ = k_limit
-                
+
             assert i != k
             rhs = Lamda(Sum(A[i, k] * B[k], k_limit).simplify(), i_limit).simplify()
     else:
@@ -52,7 +52,7 @@ def apply(self, var=None):
 
         assert k != j
         rhs = Lamda(Sum(A[k] * B[k, j], k_limit).simplify(), j_limit).simplify()
-        
+
 
     return Equal(self, rhs, evaluate=False)
 
@@ -72,4 +72,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-04-02
-# updated on 2018-04-02

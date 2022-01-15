@@ -39,6 +39,7 @@ export default {
 	},
 	
 	methods: {
+		EqVariables: codeMirror.methods.EqVariables,
 	},
 
 	mounted: codeMirror.mounted,

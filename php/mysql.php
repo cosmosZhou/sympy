@@ -416,7 +416,7 @@ class ConnectMysqli
 function select_axiom_by_state($state)
 {
     global $user;
-    $result = select("select axiom from tbl_axiom_py where user = '$user' and state = '$state'");
+    $result = select("select axiom from tbl_axiom_py where user = '$user' and state = '$state' order by axiom");
     $array = [];
     foreach ($result as &$value) {
         $array[] = $value[0];
@@ -497,30 +497,6 @@ function yield_from_mysql($axiom)
 
     foreach (select("select latex from tbl_axiom_py where user = '$user' and axiom = '$axiom'") as list ($latex,)) {
         return explode("\n", $latex);
-    }
-}
-
-function yield_from_sql($sqlFile)
-{
-    // error_log("function yield_from_sql($sqlFile)");
-    // error_log(file_get_contents($sqlFile));
-    // error_log(\std\jsonify(explode(';', file_get_contents($sqlFile))));
-    $text = new Text($sqlFile);
-
-    foreach ($text as $line) {
-        if (! $line) {
-            continue;
-        }
-
-        if (\std\startsWith($line, 'b'))
-            $line = substr($line, 2, - 1);
-
-        // error_log("line = " . $line);
-        preg_match("/update tbl_axiom_py set state = \"\w+\", lapse = \S+, latex = (\"[\s\S]+\") where user = \"\w+\" and axiom = \"\S+\"/", $line, $matches);
-        $latex = $matches[1];
-        $latex = eval("return $latex;");
-        $latex = str_replace("\\'", "'", $latex);
-        yield from explode("\n", $latex);
     }
 }
 

@@ -117,6 +117,29 @@ class SingletonRegistry(Registry):
 
     def __repr__(self):
         return "S"
+    
+    def __setitem__(self, lhs, rhs):
+        try:
+            assert lhs == rhs
+        except:
+            assert isinstance(lhs, slice), "%s != %s" % (lhs, rhs)
+            
+            key = lhs.start
+            assert key == rhs
+            
+            value = lhs.stop
+            if value is not None:
+                try:
+                    assert value == rhs
+                except:
+                    assert isinstance(value, bool) or value.is_Boolean
+                    assert value
+                
+            cond = lhs.step
+            if cond is not None:            
+                assert cond
+            
+
 
 S = SingletonRegistry()
 
@@ -178,4 +201,5 @@ class Singleton(ManagedProperties):
         # Inject pickling support.
         def __getnewargs__(self):
             return ()
+
         self.__getnewargs__ = __getnewargs__

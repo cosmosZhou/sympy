@@ -21,12 +21,13 @@ def prove(Eq):
     from axiom import algebra
 
     e = Symbol(positive=True)
-    f = Function(shape=(), integer=True)
+    f = Function(integer=True)
     Eq << apply(f(e) > 0)
 
     Eq << algebra.all.given.ou.apply(Eq[1])
 
-
+    
+    
 
 
 if __name__ == '__main__':
@@ -36,4 +37,4 @@ from . import restrict
 from . import subs
 from . import domain_defined
 # created on 2018-02-18
-# updated on 2018-02-18
+# updated on 2021-12-01

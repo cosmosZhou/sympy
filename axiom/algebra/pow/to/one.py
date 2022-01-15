@@ -28,7 +28,7 @@ def prove(Eq):
 
     Eq << algebra.eq.imply.eq.pow.apply(Eq[1], base=-1)
 
-    Eq << Eq[1].this.find(Binomial).apply(discrete.binomial.to.mul.fallingFactorial.doit)
+    Eq << Eq[1].this.find(Binomial).apply(discrete.binom.to.mul.fallingFactorial.doit)
 
     Eq << Eq[-1].this.rhs.apply(algebra.mul.to.add, deep=True)
 
@@ -40,4 +40,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-02-29
-# updated on 2020-02-29

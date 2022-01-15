@@ -14,13 +14,10 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     a, b, c, d = Symbol(integer=True, given=True)
-
-
     x, y = Symbol(real=True, given=True)
-
     f, g = Function(real=True)
-
     Eq << apply(And((a < b) | (c < d), (f(x) < g(y))))
 
     Eq << ~Eq[-1]
@@ -32,10 +29,9 @@ def prove(Eq):
     Eq <<= Eq[-1] & Eq[-3]
 
 
-
 if __name__ == '__main__':
     run()
 
 from . import collect
 # created on 2018-01-06
-# updated on 2018-01-06
+# updated on 2021-11-20

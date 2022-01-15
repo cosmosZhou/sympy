@@ -4,8 +4,7 @@ from util import *
 @apply
 def apply(is_nonnegative, lt, k=None):
     a = is_nonnegative.of(Expr >= 0)
-    _a, b = lt.of(Less)
-    assert _a == a
+    S[a], b = lt.of(Less)
 
     assert a.is_integer and b.is_integer
     if k is None:
@@ -86,4 +85,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-09-17
-# updated on 2018-09-17

@@ -3,23 +3,17 @@ from util import *
 
 @apply
 def apply(eq_cup, eq_cup_union, notcontains, sgm, *, assumptions=None):
-    ((a, i), (_i, n)), X = eq_cup.of(Equal[Cup[FiniteSet[Indexed], Tuple[0]]])
-    assert _i == i
-    ((b, __i), (___i, n1)), X_union = eq_cup_union.of(Equal[Cup[FiniteSet[Indexed], Tuple[0]]])
-    assert i == _i == __i == ___i
-    assert n1 == n + 1
+    ((a, i), (S[i], S[0], n)), X = eq_cup.of(Equal[Cup[FiniteSet[Indexed]]])
 
-    y, _X = X_union.of(Union[FiniteSet, Basic])
-    assert _X == X
-    fbi, (i, n1) = sgm.of(Sum[Tuple[0]])
-    assert n1 == n + 1
+    ((b, S[i]), (S[i], S[0], S[n + 1])), X_union = eq_cup_union.of(Equal[Cup[FiniteSet[Indexed]]])
 
-    _X = n.of(Card)
-    assert _X == X
+    y, S[X] = X_union.of(Union[FiniteSet, Basic])
 
-    _y, _X = notcontains.of(NotElement)
-    assert _X == X
-    assert _y == y
+    fbi, (i, S[0], S[n + 1]) = sgm.of(Sum)
+
+    S[X] = n.of(Card)
+
+    S[y], S[X] = notcontains.of(NotElement)
 
     if assumptions is None:
         assumptions = {}
@@ -65,4 +59,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2021-03-23
-# updated on 2021-03-23

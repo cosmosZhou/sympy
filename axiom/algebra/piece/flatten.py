@@ -24,7 +24,10 @@ def flatten(piecewise, index=None):
         index += len(piecewise.args)
 
     ec_after = piecewise.args[index + 1:]
-    return piecewise.func(*ec_before + _ec + ec_after)
+    [*args] = ec_before + _ec + ec_after
+    if not args[-1][1]:
+        args[-1] = (args[-1][0], True)
+    return piecewise.func(*args)
 
 
 @apply
@@ -65,4 +68,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2018-01-20
-# updated on 2018-01-20

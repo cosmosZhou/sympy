@@ -17,7 +17,7 @@ def apply(x0, x1):
 
 @prove
 def prove(Eq):
-    from axiom import discrete
+    from axiom import algebra, discrete
 
     lamda0, lamda1 = Symbol(positive=True)
     x0 = Symbol(distribution=PoissonDistribution(lamda0))
@@ -31,14 +31,12 @@ def prove(Eq):
     y = Eq[0].lhs.arg.rhs
     Eq << Eq[-1] * factorial(y)
 
-    Eq << discrete.pow.to.sum.binomial.theorem.apply(lamda0, lamda1, y)
+    Eq << Eq[-1].this.rhs.apply(discrete.pow.to.sum.binom.Newton)
 
-    Eq << Eq[-2].subs(Eq[-1])
-
-    Eq << Eq[-1].this.find(binomial).apply(discrete.binomial.to.mul)
+    Eq << Eq[-1].this.find(binomial).apply(discrete.binom.to.mul)
 
 
 if __name__ == '__main__':
     run()
 # created on 2021-07-18
-# updated on 2021-07-18
+# updated on 2021-11-25

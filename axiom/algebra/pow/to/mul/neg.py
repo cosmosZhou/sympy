@@ -4,8 +4,7 @@ from util import *
 @apply
 def apply(self):
     x, n = self.of(Expr ** Expr)
-    assert n.is_odd
-    return Equal(self, -(-x) ** n)
+    return Equal(self, (-1) ** n * (-x) ** n)
 
 
 @prove
@@ -19,8 +18,11 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.args[1].apply(algebra.pow.to.add)
 
+    
+    
+
 
 if __name__ == '__main__':
     run()
 # created on 2018-11-14
-# updated on 2018-11-14
+# updated on 2021-11-25

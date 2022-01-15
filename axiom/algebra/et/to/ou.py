@@ -1,15 +1,18 @@
 from util import *
 
 
-
 @apply(given=None)
 def apply(self):
     for i, eq in enumerate(self.args):
         if isinstance(eq, Or):
-            args = [*self.args]
-            del args[i]
-            this = self.func(*args)
-            return Equivalent(self, Or(*((arg & this).simplify() for arg in eq.args)))
+            break
+    else:
+        return
+    
+    args = [*self.args]
+    del args[i]
+    this = self.func(*args)
+    return Equivalent(self, Or(*((arg & this).simplify() for arg in eq.args)))
 
 
 @prove
@@ -35,4 +38,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2018-01-21
-# updated on 2018-01-21

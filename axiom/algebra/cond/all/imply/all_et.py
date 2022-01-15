@@ -5,7 +5,7 @@ from util import *
 def apply(cond, forall):
     if cond.is_Quantifier:
         assert not cond.variables_set & forall.variables_set
-        
+
     fn, *limits = forall.of(All)
     return All(cond & fn, *limits)
 
@@ -28,4 +28,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2018-12-24
-# updated on 2018-12-24

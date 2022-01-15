@@ -63,4 +63,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-08-15
-# updated on 2018-08-15

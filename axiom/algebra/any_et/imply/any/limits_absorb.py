@@ -35,7 +35,7 @@ def limits_absorb(given, index):
         if x_slice.is_Indexed:
             x_slice, x_index = x_index, x_slice
 
-        if x_slice.is_Slice and x_index.is_Indexed:
+        if x_slice.is_Sliced and x_index.is_Indexed:
             start, stop = x_slice.index
             assert len(x_index.indices) == 1
             assert x_index.indices[0] == stop
@@ -80,7 +80,7 @@ def prove(Eq):
 
     n = Symbol(integer=True, positive=True)
     x = Symbol(real=True, shape=(oo,))
-    f_quote, f, g, h = Function(integer=True)
+    f_quote, f, g, h = Function(integer=True, shape=())
     Eq << apply(Any[x[:n]:f(x[:n]) > 0, x[n]]((g(x[n]) > f_quote(x[:n])) & (h(x[:n + 1]) > 0)), index=0)
 
     S = Symbol(conditionset(x[:n + 1], (g(x[n]) > f_quote(x[:n])) & (f(x[:n]) > 0)))
@@ -99,4 +99,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2018-03-24
-# updated on 2018-03-24

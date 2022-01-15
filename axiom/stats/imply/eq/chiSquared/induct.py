@@ -7,8 +7,7 @@ def apply(_Y, Y):
 
     X_squared_Sum, [k] = X_squared_Sum.of(Lamda)
 
-    function, (i, _k) = X_squared_Sum.of(Sum[Tuple[0, Expr]])
-    assert _k == k
+    function, (i, S[k]) = X_squared_Sum.of(Sum[Tuple[0, Expr]])
 
     X = pspace(X_squared_Sum).value.base
 
@@ -94,4 +93,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2021-07-17
-# updated on 2021-07-17

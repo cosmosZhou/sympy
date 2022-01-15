@@ -2,7 +2,7 @@ from util import *
 
 
 def convert(self):
-    base, *indices = self.of(Slice)
+    base, *indices = self.of(Sliced)
     if len(indices) == 1:
         start, stop = self.index
         size = stop - start
@@ -47,4 +47,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2020-03-12
-# updated on 2020-03-12

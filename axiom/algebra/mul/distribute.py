@@ -2,10 +2,10 @@ from util import *
 
 
 @apply(simplify=False)
-def apply(self, index=0): 
+def apply(self, index=0):
     [*args] = self.of(Mul)
     factor = args.pop(index)
-    
+
     for i, plus in enumerate(args):
         if plus.is_Add:
             plus = Add(*(arg * factor for arg in plus.args))
@@ -26,4 +26,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-08-19
-# updated on 2018-08-19

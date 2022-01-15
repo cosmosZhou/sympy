@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given):
-    (xi, y), (i, n) = given.of(All[Unequal, Tuple[0]])
+    (xi, y), (i, S[0], n) = given.of(All[Unequal])
     if not xi._has(i):
         xi, y = y, xi
 
@@ -31,4 +31,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-02-03
-# updated on 2019-02-03

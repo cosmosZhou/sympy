@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(contains, sgm):
-    fi, (i, m) = sgm.of(Sum[Tuple[0]])
+    fi, (i, S[0], m) = sgm.of(Sum)
     t, s = contains.of(Element)
     assert s in Range(m)
 
@@ -27,4 +27,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2021-03-09
-# updated on 2021-03-09

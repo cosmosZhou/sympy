@@ -10,8 +10,7 @@ def apply(is_nonzero, fy, y):
     beta = is_nonzero.of(Unequal[0])
 
     from axiom.algebra.poly_is_zero.imply.et.infer.cubic import cubic_coefficient
-    _1, a, b, c = cubic_coefficient(fy, y)
-    assert _1 == 1
+    S[1], a, b, c = cubic_coefficient(fy, y)
 
     alpha = -2 * a
     gamma = -b
@@ -44,4 +43,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-11-11
-# updated on 2018-11-11

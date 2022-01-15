@@ -11,7 +11,7 @@ def apply(self):
             y = arg.arg
         else:
             coeff *= arg
-            
+
     return Equal(self, (sin(x + y) + sin(x - y)) * coeff / 2)
 
 
@@ -30,4 +30,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-12-02
-# updated on 2020-12-02

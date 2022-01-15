@@ -24,12 +24,11 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq[0])
 
-    
 
-    
+
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2020-01-19
-# updated on 2020-01-19

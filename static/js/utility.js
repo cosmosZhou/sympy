@@ -38,7 +38,7 @@ function underline_all_theorems() {
 		// console.log('statement = ' + statement);
 		var index = 0;
 		var previousTheoremLength = 0;
-		for (let theorem of statement.matchAll(/(?:algebra|sets|calculus|discrete|geometry|keras|stats)(?:\.\w+)+/g)) {
+		for (let theorem of statement.matchAll(/(?:algebra|sets|calculus|discrete|geometry|keras|stats|patent)(?:\.\w+)+/g)) {
 			theorem = theorem[0];
 			if (theorem.endsWith('.apply')) {
 				theorem = theorem.substring(0, theorem.length - 6);
@@ -471,7 +471,7 @@ async function createApp(component, data, id) {
 	
 			if (!res.ok)
 				throw Object.assign(new Error(res.statusText + ' ' + url), { res });
-				
+			
 			if (url.endsWith(".js")) {
 				return res.text().then(text => {
                     return {
@@ -481,7 +481,7 @@ async function createApp(component, data, id) {
 						type: ".mjs"
 					};
                 });
-            }		
+            }	
 			
 			return res.text();
 		},
@@ -498,6 +498,10 @@ async function createApp(component, data, id) {
 	id ||= 'root';
 	var div = document.createElement('div');
 	div.setAttribute('id', id);
+	
+	if (document.body == null){
+		document.body = document.createElement('body');
+	}
 	document.body.appendChild(div);
 	
 	var components = {};

@@ -2,9 +2,8 @@ from util import *
 
 
 @apply
-def apply(given):
-    abs_x, a = given.of(Less)
-    x = abs_x.of(Abs)
+def apply(lt):
+    x, a = lt.of(Abs < Expr)    
     assert x.is_extended_real
     return Less(x, a), Greater(x, -a)
 
@@ -17,15 +16,8 @@ def prove(Eq):
     Eq << apply(abs(x) < a)
 
     Eq << algebra.lt_abs.imply.lt.apply(Eq[0])
+
     Eq << algebra.lt_abs.imply.gt.apply(Eq[0])
-
-    
-
-    
-
-    
-
-    
 
     
 
@@ -33,4 +25,4 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-07-28
-# updated on 2018-07-28
+# updated on 2022-01-07

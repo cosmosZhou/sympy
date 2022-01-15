@@ -25,11 +25,10 @@ def prove(Eq):
     j = Symbol(domain=Range(n))
     Eq << algebra.eq.given.eq.getitem.apply(Eq[-1], j)
 
-    
-    
+
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2021-10-04
-# updated on 2021-10-04

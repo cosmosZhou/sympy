@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(self):
     function, (x, space) = self.of(Sum)
-    x, *indices = x.of(Slice)
+    x, *indices = x.of(Sliced)
 
     assert len(indices) == 1
     domain, *shape = space.of(CartesianSpace)
@@ -51,4 +51,3 @@ if __name__ == '__main__':
 
 from . import baseset
 # created on 2020-03-19
-# updated on 2020-03-19

@@ -3,8 +3,7 @@ from util import *
 
 @apply
 def apply(imply):
-    x, (_x, cond, *baseset) = imply.of(Unequal[Cup[FiniteSet], EmptySet])
-    assert _x == x
+    x, (S[x], cond, *baseset) = imply.of(Unequal[Cup[FiniteSet], EmptySet])
     if baseset:
         [baseset] = baseset
         return Any[x:baseset](cond)
@@ -37,4 +36,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2020-11-07
-# updated on 2020-11-07

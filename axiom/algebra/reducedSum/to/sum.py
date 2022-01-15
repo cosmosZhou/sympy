@@ -6,7 +6,7 @@ def apply(self, i=None):
     if i is None:
         i = self.arg.generate_var(integer=True)
 
-    [n] = self.arg.shape
+    n = self.arg.shape[-1]
     rhs = Sum[i:n](self.arg[i])
 
     return Equal(self, rhs, evaluate=False)
@@ -23,4 +23,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-11-10
-# updated on 2019-11-10

@@ -21,4 +21,3 @@ if __name__ == '__main__':
 
 from . import average
 # created on 2019-07-28
-# updated on 2019-07-28

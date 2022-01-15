@@ -232,8 +232,8 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         return self == other
 
     def structurally_equal(self, other):
-        from sympy.tensor.indexed import Slice, Indexed
-        if isinstance(other, (Symbol, Indexed, Slice)):
+        from sympy.tensor.indexed import Sliced, Indexed
+        if isinstance(other, (Symbol, Indexed, Sliced)):
             return self.shape == other.shape
         return False
 
@@ -422,7 +422,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         if name is None:
             import traceback, re
             line = traceback.extract_stack()[-2].line
-            name = re.match('(.+?) *= *Symbol\(.+\) *$', line)[1]
+            name = re.match('(.+?) *= *Symbol\(.+ *$', line)[1]
             if ',' in name:
                 return (Symbol(name.strip(), **assumptions) for name in name.split(','))
             
@@ -724,7 +724,8 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
                 return dtype.hyper_complex            
             else:
                 return dtype.super_complex
-
+            
+    @cacheit
     def _has(self, pattern):
         """Helper for .has()"""
         if Expr._has(self, pattern):
@@ -741,7 +742,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
                     return False
                 domain = self._assumptions['domain']
                 return domain._has(pattern)
-        if pattern.is_Slice:
+        if pattern.is_Sliced:
             if pattern.base == self:
                 return True
         return False
@@ -766,7 +767,8 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         from sympy.concrete.expr_with_limits import Lamda
         definition = self.definition
         if definition.is_Lamda:
-            return Equal(self[tuple(var for var, *_ in definition.limits[::-1])], definition.expr, evaluate=False, plausible=None)
+            vars = definition.variables[::-1]
+            return Equal(self[vars], definition[vars], evaluate=False, plausible=None)
         elif definition.is_Mul:
             args = []
             ref = None
@@ -812,35 +814,89 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
             return self.shape[-2]
         return 1
 
+    @classmethod
+    def is_default_slice(cls, index):
+        return isinstance(index, slice) and index.start is None and index.stop is None and index.step is None
+
+    @classmethod
+    def simplify_slice(cls, indices):
+        if isinstance(indices, tuple):
+            while True:
+                if not indices:
+                    return    
+                if cls.is_default_slice(indices[-1]):
+                    indices = indices[:-1]
+                else:
+                    break
+
+            hit = False
+            arr = {}
+            for i, index in enumerate(indices):
+                if isinstance(index, Tuple): 
+                    arr[i] = slice(*index)
+                    hit = True
+                    
+            if hit:
+                indices = [*indices]
+                for k, v in arr.items():
+                    indices[k] = v
+                 
+            if len(indices) == 1:
+                [indices] = indices
+        elif cls.is_default_slice(indices):
+            return
+ 
+        return indices
+
     def __iter__(self):
         raise TypeError
 
     def __getitem__(self, indices, **kw_args):
-        from sympy.tensor.indexed import Indexed, Slice
+        if (indices := self.simplify_slice(indices)) is None:
+            return self 
+        
+        from sympy.tensor.indexed import Indexed, Sliced, SlicedIndexed
         if is_sequence(indices):
-            # Special case needed because M[*my_tuple] is a syntax error.
-#             if self.shape and len(self.shape) != len(indices):
-#                 raise IndexException("Rank mismatch.")
+# Special case needed because M[*my_tuple] is a syntax error.
             if indices:
                 if isinstance(indices[0], slice):
-                    if len(indices) == 2:
-                        start, stop = indices[0].start, indices[0].stop
+                    if len(indices) >= 2:
+                        start, stop, step = indices[0].start, indices[0].stop, indices[0].step
                         if start is None:
                             if stop is None:
                                 if self.is_Symbol:
                                     if isinstance(indices[1], slice):
-                                        return Slice(self, (0, self.shape[0]), indices[1])
-                                    else:
-                                        from sympy.tensor.indexed import SliceIndexed
-                                        return SliceIndexed(self, (0, self.shape[0]), indices[1])
+                                        return Sliced(self, (0, self.shape[0]), indices[1])
+                                    else:                                        
+                                        return SlicedIndexed(self, (0, self.shape[0]), indices[1])
                                 return self.T[indices[1]]
                             start = 0
-                        if stop is None:
-                            stop = self.shape[0]                
-                        return self[start:stop].T[indices[1]]
-                    if len(indices) == 1:
-                        return Slice(self, *indices, **kw_args)
-                    raise Exception('unknown indices!')
+                        elif stop is None:
+                            stop = self.shape[0]
+                            
+                        if step is None:
+                            step = S.One
+                            
+                        if isinstance(indices[1], slice):
+                            start1, stop1 = indices[1].start, indices[1].stop
+                            if start1 is None:
+                                start1 = S.Zero
+                                
+                            if stop1 is None:
+                                stop = self.shape[1]
+                                
+                            return Sliced(self, (start, stop), (start1, stop1))
+                        else:
+                            if len(indices) > 2:
+                                return SlicedIndexed(self, indices[:2])[indices[2:]]
+                            else:
+                                from sympy.matrices.expressions.transpose import Transpose
+                                if step == 1:
+                                    return Transpose[1](self[start:stop])[indices[1]]
+                                else:
+                                    return Transpose[1](self[start:stop:step])[indices[1]]
+                    else:
+                        return Sliced(self, *indices, **kw_args)                    
                 elif isinstance(indices[0], Tuple):
                     if len(indices) == 2:
                         start, stop = indices[0]
@@ -852,12 +908,23 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
                             stop = self.shape[0]                
                         return self[start:stop].T[indices[1]]
                     if len(indices) == 1:
-                        return Slice(self, *indices, **kw_args)
+                        return Sliced(self, *indices, **kw_args)
                     raise Exception('unknown indices!')
-                    
+                else:
+                    hit = False
+                    for j in range(1, len(indices)):
+                        index = indices[j]
+                        if isinstance(index, slice):
+                            hit = True
+                            break
+                        
+                    if hit:
+                        self = Indexed(self, *indices[:j])
+                        return self[indices[j:]]
+                        
             return Indexed(self, *indices, **kw_args)
         elif isinstance(indices, slice):
-            start, stop = indices.start, indices.stop
+            start, stop, step = indices.start, indices.stop, indices.step
             if start is None:
                 start = 0
             if stop is None:
@@ -869,15 +936,18 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
             if start == 0 and stop == self.shape[0]:
                 return self
             
-            return Slice(self, (start, stop), **kw_args)
+            if step is None or step == 1:
+                return Sliced(self, (start, stop), **kw_args)
+            from sympy.sets.fancysets import Range
+            return Sliced(self, Range(start, stop, step), **kw_args)
         else:
-            if self.definition is not None:
+            definition = self.definition
+            if definition is not None:
                 from sympy.concrete.expr_with_limits import Lamda
-                if isinstance(self.definition, Lamda):
-                    ref = self.definition
+                if isinstance(definition, Lamda):
                     from sympy.stats.rv import RandomSymbol
-                    if len(ref.limits) == 1 and isinstance(ref.expr, RandomSymbol):
-                        return ref[indices]
+                    if len(definition.limits) == 1 and isinstance(definition.expr, RandomSymbol):
+                        return definition[indices]
             boolean = indices < self.shape[0]
             assert boolean is True or not boolean.is_BooleanFalse
             return Indexed(self, indices, **kw_args)
@@ -886,6 +956,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         from sympy import Conjugate
         return Conjugate(self)
     
+    #return exp._has(self)
     def has_match(self, exp):
         if exp == self:
             return True 
@@ -896,21 +967,41 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         
         if exp.is_Indexed and exp.base == self:
             return True
-        if exp.is_Slice and exp.base == self:
-            for index_start, index_stop in exp.indices: 
-                start, stop = 0, self.shape[-1]
-    
-                if index_stop <= start:
-                    return False  # index < start
-                if index_start >= stop:
-                    return False  # index >= stop
-        # it is possible for them to be equal!
-                return True
+        if exp.is_Sliced:
+            base = exp.base
+            if base == self:
+                for index in exp.indices:
+                    if index.is_Tuple:
+                        index_start, index_stop = index
+                        start, stop = 0, self.shape[-1]
+            
+                        if index_stop <= start:
+                            return False  # index < start
+                        if index_start >= stop:
+                            return False  # index >= stop
+                # it is possible for them to be equal!
+                        return True
+                    else:
+                        index_start, index_stop, index_step = index.args
+                        start, stop = 0, self.shape[-1]
+            
+                        if index_stop <= start:
+                            return False  # index < start
+                        if index_start >= stop:
+                            return False  # index >= stop
+                # it is possible for them to be equal!
+                        return True
+            elif base.is_Indexed:
+                base = base.base
+                if base == self:
+                    return True
+                
         return False
     
-    def _eval_transpose(self):
-        if len(self.shape) < 2:
-            return self
+    def _eval_transpose(self, axis=-1):
+        if axis == self.default_axis:
+            if len(self.shape) < 2:
+                return self
 
     @staticmethod
     def ascii2greek(x):
@@ -1189,7 +1280,15 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         if self.name != other.name:
             return False
         
-        nonboolean_attributes = {'domain', 'definition', 'shape', 'etype', 'distribution'}
+        definition = self.definition
+        _definition = other.definition
+        if definition != _definition:
+            return False
+        
+        if definition is not None:
+            return True
+                
+        nonboolean_attributes = {'domain', 'shape', 'etype', 'distribution'}
         for attr in nonboolean_attributes:
             if (attr in self._assumptions) != (attr in other._assumptions):
                 return False
@@ -1200,12 +1299,10 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
 
         for fact in self._assumptions.keys() - other._assumptions.keys() - nonboolean_attributes: 
             if other._ask(fact) != self._assumptions[fact]:
-#                 other._mhash = None
                 return False
             
         for fact in other._assumptions.keys() - self._assumptions.keys() - nonboolean_attributes:
             if self._ask(fact) != other._assumptions[fact]:
-#                 self._mhash = None
                 return False
 
         return True
@@ -1265,12 +1362,44 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         
     def of(self, cls):
         from sympy import Set
-        if cls is Set:
-            if self.is_set:
-                return self
-            
+        if cls is Set and self.is_set:
+            return self
+        
         return AtomicExpr.of(self, cls)
+    
+    def of_simple_poly(self, x):
+        '''
+        extract the coefficients of a simple polynomial
+        (a * x + b).of_simple_poly(x) = [b, a]
+        '''
+        if self == x:
+            return S.Zero, S.One
+        
+        return AtomicExpr.of_simple_poly(self, x)
+    
+    def monotonicity(self, x):
+        if self == x:
+            return self, 1
+        
+        return Expr.monotonicity(self, x)
+    
+    def min(self):
+        definition = self.definition
+        if definition is None:
+            if self.is_set:
+                from sympy import ReducedMin
+                return ReducedMin(self)
+            return self
+        return definition.min()
 
+    def max(self):
+        definition = self.definition
+        if definition is None:
+            if self.is_set:
+                from sympy import ReducedMax
+                return ReducedMax(self)
+            return self
+        return definition.min()
     
 class Dummy(Symbol):
     """Dummy symbols are each unique, even if they have the same name:
@@ -1912,8 +2041,8 @@ class Dtype:
         return DtypeSet(self)
 
     @property
-    def condition(self):
-        return DtypeCondition()
+    def bool(self):
+        return DtypeBoolean()
 
     @property
     def distribution(self):
@@ -2800,18 +2929,18 @@ class DtypeMatrix(Dtype):
         return self
 
 
-class DtypeCondition(Dtype):
-    is_condition = True
+class DtypeBoolean(Dtype):
+    is_boolean = True
     
     def __str__(self):
-        return 'condition'
+        return 'bool'
     
     @property
     def dict(self):
-        return {'condition': True}
+        return {'bool': True}
 
     def __eq__(self, other):
-        return isinstance(other, DtypeCondition)
+        return isinstance(other, DtypeBoolean)
 
     def __hash__(self):
         return hash(type(self).__name__)

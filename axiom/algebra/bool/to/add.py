@@ -22,13 +22,13 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.find(Bool).apply(algebra.bool.to.piece)
 
-    Eq << Eq[-1].this.rhs.apply(algebra.add.to.piece.st.two_pieces)
+    Eq << Eq[-1].this.rhs.apply(algebra.add_piece.to.piece)
 
     Eq << Bool(Element(x, A & B)).this.apply(algebra.bool.to.piece)
 
     Eq << Eq[-2] - Eq[-1]
 
-    Eq << Eq[-1].this.rhs.apply(algebra.add.to.piece.st.two_pieces)
+    Eq << Eq[-1].this.rhs.apply(algebra.add_piece.to.piece)
 
     Eq << Eq[1].subs(Eq[-1])
 
@@ -39,4 +39,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2018-02-24
-# updated on 2018-02-24

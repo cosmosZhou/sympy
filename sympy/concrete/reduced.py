@@ -215,6 +215,7 @@ class ReducedMin(Function):
                 return coeff * self.func(function)
         return self
 
+
 class ReducedMax(Function):
     r"""Represents unevaluated reduced maximize.
     input must be a multi-dimensional tensor
@@ -322,3 +323,69 @@ class ReducedMax(Function):
                 return coeff * self.func(function)
         return self
 
+
+class ReducedArgMinMaxBase(Function):
+    r"""Represents unevaluated reduced ArgMax.
+    input must be a multi-dimensional tensor
+    """
+    
+    is_integer = True
+    
+    @property
+    def shape(self):
+        return self.arg.shape[:-1]
+
+    @property
+    def dtype(self):
+        from sympy.core.symbol import dtype
+        return dtype.integer
+
+    def _sympystr(self, p):
+        return '%s(%s)' % (self.__class__.__name__, p._print(self.arg))
+
+    def _latex(self, p, exp=None):
+        name = self.__class__.__name__.lower()[-3:]
+        tex = r'\mathop{{\rm %s}^{-1}}' % name
+        
+        if self.arg.is_Add:
+            tex += r"\left(%s\right)" % p._print(self.arg)
+        else:
+            tex += p._print(self.arg)
+
+        return tex
+    
+    def _eval_is_finite(self):
+        return True
+
+    def _eval_is_extended_real(self):
+        return True
+
+    def _eval_is_extended_positive(self):
+        ...
+    
+    def _eval_is_extended_negative(self):
+        ...
+
+    def _eval_is_extended_nonnegative(self):
+        return True
+        
+    def __iter__(self):
+        raise TypeError
+
+    def __getitem__(self, indices):
+        return self.func(self.arg[indices])
+        
+    def simplify(self, deep=False, **kwargs):
+        return self
+
+
+class ReducedArgMax(ReducedArgMinMaxBase):
+    r"""Represents unevaluated reduced ArgMax.
+    input must be a multi-dimensional tensor
+    """
+    
+class ReducedArgMin(ReducedArgMinMaxBase):
+    r"""Represents unevaluated reduced ArgMin.
+    input must be a multi-dimensional tensor
+    """
+    

@@ -50,4 +50,3 @@ if __name__ == '__main__':
 
 from . import collapse
 # created on 2019-09-13
-# updated on 2019-09-13

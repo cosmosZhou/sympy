@@ -50,4 +50,3 @@ if __name__ == '__main__':
 
 from . import double
 # created on 2018-04-17
-# updated on 2018-04-17

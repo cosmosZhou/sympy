@@ -19,10 +19,9 @@ def prove(Eq):
 
     Eq << Eq[0].subs(Eq[1])
 
-    
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2018-07-26
-# updated on 2018-07-26

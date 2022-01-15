@@ -4,3 +4,4 @@ from . import delete
 from . import split
 from . import merge
 from . import negate
+from . import domain_defined

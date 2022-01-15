@@ -40,7 +40,7 @@ export default {
 		remove(){
 			console.log("this.theorem = " + this.theorem);
 			var href = location.href;
-			var m = href.match(/\/([^\/]+)\/axiom\.php\?module=(.+)/);
+			var m = href.match(/\/([^\/]+)\/axiom\.php\?module=([^#]+)/);
 			var user = m[1];
 			var module = m[2];
 			if (module.endsWith('.')){

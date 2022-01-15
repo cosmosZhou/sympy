@@ -13,7 +13,7 @@ def negate(i, *ab):
         return (i, -domain)
     else:
         return (i,)
-    
+
 @apply
 def apply(self):
     expr, (i, *ab) = self.of(All)
@@ -40,4 +40,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-12-08
-# updated on 2018-12-08

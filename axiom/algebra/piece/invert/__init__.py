@@ -2,7 +2,7 @@ from util import *
 
 
 @apply
-def apply(piecewise, i=0, offset=1):
+def apply(piecewise, i=0, offset=1, evaluate=False):
     [*ec] = piecewise.of(Piecewise)
 
     _, cond = ec[i]
@@ -19,7 +19,7 @@ def apply(piecewise, i=0, offset=1):
     else:
         ec[-1][1] = True
 
-    return Equal(piecewise, piecewise.func(*ec))
+    return Equal(piecewise, piecewise.func(*ec, evaluate=evaluate))
 
 
 @prove
@@ -49,4 +49,3 @@ if __name__ == '__main__':
 
 from . import delete
 # created on 2018-01-30
-# updated on 2018-01-30

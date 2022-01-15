@@ -3,7 +3,7 @@ import traceback
 
 
 @apply
-def apply(self): 
+def apply(self):
     try:
         (fx, (x, *xab)), (fy, (y, *yab)) = self.of(Integral * Integral)
     except Exception as e:
@@ -12,10 +12,10 @@ def apply(self):
         print("self.of(Integral * Integral) =", self.of(Integral * Integral))
         print('Integral.__subclasses__() =', Integral.__subclasses__())
         print('Integral.is_abstract =', Integral.is_abstract)
-        
-        
+
+
         traceback.print_exc()
-    
+
     if x == y:
         _y = self.generate_var(excludes=x, **y.type.dict)
         fy = fy._subs(y, _y)
@@ -40,4 +40,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-06-09
-# updated on 2020-06-09

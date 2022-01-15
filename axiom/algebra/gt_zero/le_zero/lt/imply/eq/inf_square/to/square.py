@@ -28,11 +28,10 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq[-2])
 
-    
-    
+
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2021-10-02
-# updated on 2021-10-02

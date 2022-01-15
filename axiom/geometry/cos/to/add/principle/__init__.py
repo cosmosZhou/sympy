@@ -40,4 +40,3 @@ if __name__ == '__main__':
 
 from . import sub
 # created on 2018-06-15
-# updated on 2018-06-15

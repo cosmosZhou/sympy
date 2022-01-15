@@ -5,7 +5,7 @@ from util import *
 def apply(contains):
     x, domain = contains.of(Element)
     a, b = domain.of(Interval)
-    assert b <= 1 and a >= -1    
+    assert b <= 1 and a >= -1
     return Element(asin(x), Interval(asin(a), asin(b)))
 
 
@@ -18,4 +18,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-06-25
-# updated on 2018-06-25

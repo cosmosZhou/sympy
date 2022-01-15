@@ -4,9 +4,9 @@ from util import *
 @apply
 def apply(self):
     [*args], *limits = self.of(Integral[Add])
-    
+
     rhs = Add(*(Integral(arg, *limits) for arg in args))
-        
+
     return Equal(self, rhs, evaluate=False)
 
 
@@ -21,4 +21,3 @@ if __name__ == '__main__':
     run()
 from . import by_parts
 # created on 2020-06-05
-# updated on 2020-06-05

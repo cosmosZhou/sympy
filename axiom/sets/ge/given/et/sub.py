@@ -11,13 +11,13 @@ def apply(given, t):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
-    
+
     a, b = Symbol(real=True, given=True)
     t = Symbol(hyper_real=True, given=True)
     Eq << apply(a >= b, t)
-    
+
     Eq << sets.el.imply.any_eq.apply(Eq[2])
-    
+
     Eq << algebra.cond.any.imply.any_et.apply(Eq[1], Eq[-1], simplify=None)
     Eq << Eq[-1].this.expr.apply(algebra.eq.cond.imply.cond.subs)
 
@@ -25,4 +25,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2021-04-08
-# updated on 2021-04-08

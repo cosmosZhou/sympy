@@ -30,10 +30,9 @@ def prove(Eq):
     f, g = Function(real=True)
     Eq << apply(Equal(Lamda[k:n](f(k)), Lamda[k:n](g(k))), Equal(f(n), g(n)))
 
-    Eq << algebra.eq.given.et.eq.blockmatrix.apply(Eq[-1], simplify=None)
+    Eq << algebra.eq.given.et.eq.block.apply(Eq[-1], simplify=None)
 
 
 if __name__ == '__main__':
     run()
 # created on 2019-03-24
-# updated on 2019-03-24

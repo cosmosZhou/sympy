@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(self, offset):
-    from axiom.algebra.sum.limits.subs.offset import limits_subs    
+    from axiom.algebra.sum.limits.subs.offset import limits_subs
     return limits_subs(All, self, offset)
 
 
@@ -25,4 +25,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-07-11
-# updated on 2018-07-11

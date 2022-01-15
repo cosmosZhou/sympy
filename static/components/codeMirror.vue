@@ -91,7 +91,31 @@ export default {
     		
     		if (previousPoint >= 0)
     			this.editor.removeLineClass(previousPoint, "class", "executionPoint");
-		},		
+		},
+		
+		EqVariables(phrase){
+			var list = new Set();
+			for (let editor of this.$parent.renderProve) {
+				var text = editor.editor.getValue();
+				for (var text of text.split("\n")) {
+					console.log(text);
+					for (let m of text.matchAll(/\bEq\.(\w+)/g)) {
+						var word = m[1];
+						if (phrase && !word.startsWith(phrase)){
+							continue;
+						}
+						
+						list.add(word);
+					}
+				}
+			}
+
+			list = Array.from(list);
+			list.sort();
+			console.log('list = ' + list);
+			return list;			
+		},
+		
 	},
 	
     mounted() {
@@ -347,8 +371,12 @@ export default {
 			},
 
             'Ctrl-O': function(cm) {
-                console.log("'Ctrl-O' is pressed!");
-                var href = `/${self.user}/axiom.php?new=${self.module}`;
+                console.log("'Ctrl-O' is pressed! self.module = ", self.module);
+                var module = self.module;
+                if (module.match(/\W$/))
+                	module = module.slice(0, -1);
+                
+                var href = `/${self.user}/axiom.php?new=${module}`;
                 window.open(href);
             },
 
@@ -553,22 +581,8 @@ export default {
 
                 			switch (prefix) {
                 				case 'Eq.':
-                					var list = new Set();
-                					for (let editor of self.$parent.renderProve) {
-                						var text = editor.editor.getValue();
-                						for (var text of text.split("\n")) {
-                							console.log(text);
-                							for (let m of text.matchAll(/\bEq\.(\w+)/g)) {
-                								list.add(m[1]);
-                							}
-                						}
-                					}
-
-                					list = Array.from(list);
-                					list.sort();
-                					console.log('list = ' + list);
                 					return accept({
-                						list: list,
+                						list: self.EqVariables(),
                 						from: Pos(cur.line, token.start),
                 						to: Pos(cur.line, token.end)
                 					});
@@ -656,6 +670,12 @@ export default {
                 						case 'stats':
                 							url += `suggest.php`;
                 							break;
+                						case 'Eq':
+                        					return accept({
+                        						list: self.EqVariables(phrase),
+                        						from: Pos(cur.line, token.start),
+                        						to: Pos(cur.line, token.end)
+                        					});                							
                 						default:
                 							kwargs = { prefix: phrase };
                 							url += `hint.php`;

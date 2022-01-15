@@ -3,10 +3,9 @@ from util import *
 
 @apply
 def apply(eq, forall):
-    wi, (i, n) = eq.of(Equal[Sum[Tuple[0]], 1])
-    (_wi, (xi, domain)), (_i, _n) = forall.of(All[And[Expr >= 0, Element], Tuple[0]])
-    assert i == _i and _n == n
-    assert _wi == wi
+    wi, i_limit = eq.of(Equal[Sum, 1])
+    (S[wi], (xi, domain)), S[i_limit] = forall.of(All[And[Expr >= 0, Element]])
+    i, S[0], n = i_limit
 
     return Element(Sum[i:n](wi * xi), domain)
 
@@ -30,4 +29,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-05-31
-# updated on 2020-05-31

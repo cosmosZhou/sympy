@@ -11,6 +11,7 @@ from sympy.series.order import Order
 from sympy.simplify.ratsimp import ratsimp
 from sympy.simplify.simplify import together
 from .gruntz import gruntz
+from sympy.core.cache import cacheit
 
 
 def limit(e, z, z0, direction=1):
@@ -395,7 +396,7 @@ class Limit(Expr):
             
         return self
 
-
+    @cacheit
     def _has(self, pattern):
         """Helper for .has()"""        
         from sympy.core.assumptions import BasicMeta
@@ -403,8 +404,8 @@ class Limit(Expr):
         if isinstance(pattern, (BasicMeta, UndefinedFunction)):
             return Expr._has(self, pattern)
         
-        from sympy.tensor.indexed import Indexed, Slice
-        if not isinstance(pattern, (Symbol, Indexed, Slice)):
+        from sympy.tensor.indexed import Indexed, Sliced
+        if not isinstance(pattern, (Symbol, Indexed, Sliced)):
             return Expr._has(self, pattern)
 
         expr = self.expr

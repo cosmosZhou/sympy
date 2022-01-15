@@ -10,6 +10,7 @@ from sympy.core.basic import Basic
 
 class Inference:
     is_Inference = True
+    _op_priority = 20
     
     def __init__(self, cond, **_assumptions):
         self.cond = cond.cond if cond.is_Inference else cond
@@ -458,7 +459,7 @@ class Inference:
                 function = self.expr._subs(old, new, **kwargs)
                 limits = []
                 for x, *ab in self.limits:
-                    if x.is_Indexed or x.is_Slice:
+                    if x.is_Indexed or x.is_Sliced:
                         indices = tuple(index._subs(old, new, **kwargs) for index in x.indices)
                         if x.indices != indices:
                             x = x.func(x.base, *indices)
@@ -626,9 +627,24 @@ class Inference:
         else: 
             assert not rhs.is_boolean
             if rhs.is_invertible:
-                return self.func(self.lhs @ rhs, self.rhs @ rhs, equivalent=(self, rhs))
+                return self.func(self.lhs @ rhs, self.rhs @ rhs, equivalent=self)
             return self.func(self.lhs @ rhs, self.rhs @ rhs, given=self)
             
+    def __rmatmul__(self, lhs):
+        if self.is_Quantifier:
+            return lhs @ self.this.expr
+        
+        if lhs.is_Equal:
+            if lhs.lhs.is_invertible or lhs.rhs.is_invertible:
+                return self.func(lhs.lhs @ self.lhs, lhs.rhs @ self.rhs, equivalent=(lhs, self))
+            return self.func(lhs.lhs @ self.lhs, lhs.rhs @ self.rhs, given=(lhs, self))
+
+        else: 
+            assert not lhs.is_boolean
+            if lhs.is_invertible:
+                return self.func(lhs @ self.lhs, lhs @ self.rhs, equivalent=self)
+            return self.func(lhs @ self.lhs, lhs @ self.rhs, given=self)
+        
     def __truediv__(self, other):
         if self.is_Quantifier:
             return self.this.expr / other
@@ -655,46 +671,30 @@ class Inference:
             if other.is_negative:
                 return Inference(self.func.reversed_type(self.lhs / other, self.rhs / other), equivalent=self)
         
+    def __rtruediv__(self, other):
+        if isinstance(other, int):
+            other = sympify(other)
+                    
+        if self.is_Equal:
+            lhs = (other / self.lhs).ratsimp().simplify()
+            rhs = (other / self.rhs).ratsimp().simplify()
+
+            if other.is_nonzero:
+                return self.func(lhs, rhs, equivalent=self)
+            from sympy import Or
+            return Or(self.func(other, 0), self.func(lhs, rhs), equivalent=self)
+        
     def __iter__(self):
         raise TypeError
             
     def __getitem__(self, indices):
         if self.is_Equal: 
             if isinstance(indices, slice):
-                x, *args = indices.start, indices.stop, indices.step
-                if x is None or not x.is_symbol or args[1] is None and args[0].is_integer:
-                    assert indices.step is None
-                    start, stop = indices.start, indices.stop
-                    size = self.lhs.shape[0]
-                    assert self.lhs.shape == self.rhs.shape
-                    assert start is None or start >= 0, "try to prove %s >= 0" % start
-                    
-                    if stop <= size:
-                        ...
-                    elif stop.is_symbol:
-                        _stop = stop.definition
-                        assert _stop is not None and _stop <= size, "try to prove %s <= %s" % (stop, size)
-                    else:
-                        raise Exception("try to prove %s <= %s" % (stop, size))
-                    
-                    return self.func(self.lhs[indices], self.rhs[indices], given=self)
-                else:
-                    if x.is_bounded:
-                        x = x.unbounded
-                    m = self.lhs.shape[0]
-                    is_equivalent = False
-                    if len(args) == 2:
-                        if args[0] == 0 and args[1] == m:
-                            is_equivalent = True
-                    else:
-                        assert len(args) == 1
-                        if args[0] == m:
-                            is_equivalent = True
-                    if is_equivalent:
-                        return self.func(self.lhs[x], self.rhs[x], equivalent=self)
-                    else:
-                        from sympy import All
-                        return All(self.func(self.lhs[x], self.rhs[x]), (x, *args), given=self)
+                size = self.rhs.shape[0]
+                start, stop, step = indices.start, indices.stop, indices.step
+                if stop is not None:
+                    assert self.bound_check(stop, upper=size), "try to prove %s <= %s" % (stop, size)         
+            
             return self.func(self.lhs[indices], self.rhs[indices], given=self)
         elif self.is_Quantifier:
             return self.this.expr[indices]
@@ -792,8 +792,8 @@ from sympy.core.sympify import converter, sympify
 
 converter[Inference] = lambda infer: infer.cond 
 
-from sympy.core.assumptions import Operator
-converter[Operator] = lambda op: op.basic
+from sympy.core.assumptions import IndexedOperator
+converter[IndexedOperator] = lambda op: op.basic
 
 from sympy.core.core import Wanted
 converter[Wanted] = lambda wanted: wanted

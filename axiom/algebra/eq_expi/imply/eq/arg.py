@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(self):
-    x, z = self.of(Equal[Exp[ImaginaryUnit * Expr]])    
+    x, z = self.of(Equal[Exp[ImaginaryUnit * Expr]])
     return Equal(x, Arg(z) + Ceiling(x / (S.Pi * 2) - S.One / 2) * S.Pi * 2)
 
 
@@ -23,4 +23,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-04-22
-# updated on 2019-04-22

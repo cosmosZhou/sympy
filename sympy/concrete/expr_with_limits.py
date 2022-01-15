@@ -12,13 +12,14 @@ from sympy.functions.elementary.piecewise import (piecewise_fold,
 from sympy.logic.boolalg import BooleanFunction, Boolean, And, Or
     
 from sympy.matrices import Matrix
-from sympy.tensor.indexed import Idx, Indexed, Slice
+from sympy.tensor.indexed import Idx, Indexed, Sliced
 from sympy.sets.sets import Interval, FiniteSet
 from sympy.sets.fancysets import Range
 from sympy.utilities import flatten
 from sympy.utilities.iterables import sift, postorder_traversal
 from sympy.functions.elementary.miscellaneous import Min, Max
 from sympy.matrices.expressions.blockmatrix import BlockMatrix
+from sympy.core.cache import cacheit
 
 
 def _common_new(cls, function, *symbols, **assumptions):
@@ -125,7 +126,7 @@ def _process_limits(*symbols):
                         limits.append(Tuple(*V))
                     continue            
                 if len(V) == 2:
-                    if isinstance(V[1], Range):
+                    if isinstance(V[1], Range) and V[1].step.is_One:
                         V = V[0], V[1].start, V[1].stop
                     elif isinstance(V[1], set):
                         V = V[0], FiniteSet(*V[1])
@@ -142,7 +143,7 @@ def _process_limits(*symbols):
                             if start <= stop:
                                 V[1:] = start, stop
                                 
-                    elif V[1].is_Range:  # 2 -> 3
+                    elif V[1].is_Range and V[1].step.is_One:  # 2 -> 3
                         V[1:] = V[1].start, V[1].stop
                         if not newsymbol.is_integer:
                             symbolModified = Symbol(newsymbol.name, integer=True)
@@ -258,8 +259,7 @@ class ExprWithLimits(Expr):
             
             if isinstance(sym, Tuple):
                 x, *ab = sym 
-                
-                if isinstance(x, (Symbol, Indexed, Slice)):
+                if x.is_symbol:
                     if len(sym) == 2:
                         [domain] = ab
                         if domain.is_set:
@@ -269,7 +269,7 @@ class ExprWithLimits(Expr):
                                 _x = x.unbounded
                                 sym = _x, domain
                                 function = function._subs(x, _x)                            
-                            elif domain.is_Range:
+                            elif domain.is_Range and domain.step.is_One:
                                 if domain.is_UniversalSet:
                                     sym = (x,)
                                 else:
@@ -402,7 +402,7 @@ class ExprWithLimits(Expr):
         if not limits and symbols:
             return function.copy(**assumptions)
         
-        args = [function] + limits       
+        args = [function] + limits
         
         if cls.is_Boolean:
             obj = Boolean.__new__(cls, *args, **assumptions)
@@ -629,7 +629,7 @@ class ExprWithLimits(Expr):
     def _subs_limits(self, x, domain, new, simplify=True):
 
         def subs(function, x, domain, new):
-            if x.is_Slice:
+            if x.is_Sliced:
                 indexed_set = x.detect_indexed(function)
                 if indexed_set:
                     reps = {}
@@ -771,7 +771,7 @@ class ExprWithLimits(Expr):
             p = old.as_poly(x)
 
             if p is None or p.degree() != 1:
-                if x.is_Slice:
+                if x.is_Sliced:
                     x = x.subs(old, new)
                     self = self.func(self.expr.subs(old, new), (x,))
                     return self.simplify() if simplify else self
@@ -954,7 +954,7 @@ class ExprWithLimits(Expr):
                     self = self.simplify()
             return self
             
-        intersect = self._if_new_has_variables(old, new)            
+        intersect = self._if_new_has_variables(old, new)
         if intersect: 
             return self._subs_if_new_has_variables(old, new, intersect)
         
@@ -990,7 +990,7 @@ class ExprWithLimits(Expr):
                 break
             return self
             
-    def _subs_slice_utility(self, old, new, **hints):
+    def _subs_sliced_utility(self, old, new, **hints):
         if old.is_symbol and not self.expr._has(old):
             if not any(limit._has(old) for limit in self.limits):
                 return self
@@ -1015,7 +1015,7 @@ class ExprWithLimits(Expr):
                 _var = self.generate_var(excludes, integer=True)
                 this = this.limits_subs(var, _var)
                 excludes.add(_var) 
-            _this = this._subs_slice(old, new)
+            _this = this._subs_sliced(old, new)
             if _this == this:
                 return self
             return _this
@@ -1098,8 +1098,8 @@ class ExprWithLimits(Expr):
             return rv
         return self
 
-    def _subs_slice(self, old, new, **hints):
-        this = self._subs_slice_utility(old, new, **hints)
+    def _subs_sliced(self, old, new, **hints):
+        this = self._subs_sliced_utility(old, new, **hints)
         if this is not None:
             return this
         
@@ -1121,14 +1121,15 @@ class ExprWithLimits(Expr):
             return rv
         return self    
     
+    @cacheit
     def _has(self, pattern):
         """Helper for .has()"""
-#         from sympy.tensor.indexed import Indexed, Slice
+#         from sympy.tensor.indexed import Indexed, Sliced
         from sympy.core.assumptions import BasicMeta
         from sympy.core.function import UndefinedFunction
         if isinstance(pattern, (BasicMeta, UndefinedFunction)):
             return Expr._has(self, pattern)
-        if not isinstance(pattern, (Symbol, Indexed, Slice)):
+        if not isinstance(pattern, (Symbol, Indexed, Sliced)):
             return Expr._has(self, pattern)
 
         function = self.expr
@@ -1150,7 +1151,7 @@ class ExprWithLimits(Expr):
                             return True
                     return False
 
-                if x.is_Slice and pattern.is_Slice and x.base == pattern.base:
+                if x.is_Sliced and pattern.is_Sliced and x.base == pattern.base:
                     if x.index_contains(pattern):
                         return False
                     if pattern.index_contains(x):
@@ -1170,7 +1171,7 @@ class ExprWithLimits(Expr):
                             return True
                     return False
                 
-                if (pattern.is_Slice or pattern.is_Indexed) and len(args) == 2 and args[0].is_integer:
+                if (pattern.is_Sliced or pattern.is_Indexed) and len(args) == 2 and args[0].is_integer:
                     assert args[1].is_extended_integer, "self = %s, args = %s" % (self, args)
                     _x = x.copy(domain=Range(*args))
                     function = function._subs(x, _x)
@@ -1201,7 +1202,7 @@ class ExprWithLimits(Expr):
                     
         for limit in self.limits:
             var, *ab = limit
-            if var.is_Slice:
+            if var.is_Sliced:
                 domain &= var._eval_domain_defined(x, allow_empty=allow_empty)
             else:
                 domain &= var.domain_defined(x)
@@ -1212,10 +1213,14 @@ class ExprWithLimits(Expr):
 #                 domain &= x.domain_conditioned(a <= b)
 
         if self.expr._has(x):
-            domain &= self.expr.domain_defined(x)
+            bound_domain = self.expr.domain_defined(x)
+            for var in self.variables:
+                bound_domain = bound_domain.delete_from_domain(var)
+                
+            domain &= bound_domain
             if x not in self.expr.free_symbols:
                 v = self.variable
-                if not v.is_Slice:
+                if not v.is_Sliced:
                     v_domain = self.limits_dict[v]
                     for var in self.expr.free_symbols:
                         if not var._has(v) or not var.is_Indexed:
@@ -1251,7 +1256,7 @@ class ExprWithLimits(Expr):
                 domain = domain[0]
                 if domain.is_set:
                     continue
-            if not var.is_Slice:
+            if not var.is_Sliced:
                 continue
             
             start, stop = var.index
@@ -1281,7 +1286,7 @@ class ExprWithLimits(Expr):
                 
                 validDomain = S.Zero.emptySet
                 for p in self.expr.preorder_traversal():
-                    if p.is_Slice and p.base == var.base:
+                    if p.is_Sliced and p.base == var.base:
                         if len(p.indices) == 1:
                             validDomain |= Range(*p.indices[0])
                     elif p.is_Indexed and p.base == var.base:
@@ -1313,6 +1318,32 @@ class ExprWithLimits(Expr):
     @classmethod
     def identity(cls, self, **assumptions):
         return cls.operator.identity.copy(**assumptions)
+
+    @property
+    def expr_within_context(self):
+        expr = self.expr
+        for x, domain in self.limits_dict.items():
+            if not isinstance(domain, list) and domain.is_set:
+                expr = expr._subs(x, x.copy(domain=domain))
+        return expr
+
+    @property
+    def limits_shape(self):
+        from sympy.functions.elementary.integers import Ceiling
+        shape = []
+        for x, *ab in self.limits:
+            if not ab:
+                domain = self.expr.domain_defined(x)
+                shape.append(domain.size)
+            elif len(ab) == 2:
+                a, b = ab
+                shape.append(b - a)
+            else:
+                [domain] = ab
+                start, stop, step = domain.args 
+                shape.append(Ceiling((stop - start) / step))
+        shape.reverse()
+        return tuple(shape)
 
 
 class AddWithLimits(ExprWithLimits):
@@ -1351,10 +1382,10 @@ class AddWithLimits(ExprWithLimits):
             return self.func(self.expr.conjugate(), *self.limits)
         return None
 
-    def _eval_transpose(self):
-        if all([x.is_real for x in flatten(self.limits)]):
-            return self.func(self.expr.transpose(), *self.limits)
-        return None
+    def _eval_transpose(self, axis=-1):
+        if axis == self.default_axis:
+            if all([x.is_real for x in flatten(self.limits)]):
+                return self.func(self.expr.transpose(), *self.limits)
 
     def _eval_factor(self, **hints):
         if 1 == len(self.limits):
@@ -1560,7 +1591,7 @@ class MINMAXBase(ExprWithLimits):
             return self
 
         if not domain:
-            domain = x.domain             
+            domain = x.domain
             if domain.is_CartesianSpace:
                 return self
             
@@ -1584,61 +1615,37 @@ class Minima(MINMAXBase):
         return ExprWithLimits.__new__(cls, function, *symbols, **assumptions)
 
     def _eval_is_zero(self):
-        # a Sum is only zero if its function is zero or if all terms
-        # cancel out. This only answers whether the summand is zero; if
-        # not then None is returned since we don't analyze whether all
-        # terms cancel out.
         if self.expr.is_zero:
             return True
 
     def doit(self, **hints):
-        x, *domain = self.limits[0]        
+        x, *domain = self.limits[0]
         if len(self.limits) != 1 or x.is_set:
-            return MINMAXBase.doit(self, **hints)
+            return self
         
         if len(domain) == 1:
             [domain] = domain  
         elif len(domain) == 2: 
-            domain = (Range if x.is_integer else Interval)(*domain)
+            if domain[-1].is_set: 
+                return self
+            else:
+                domain = (Range if x.is_integer else Interval)(*domain)
         else:
             domain = x.domain
                          
         if domain.is_CartesianSpace or not domain.etype.is_extended_real:
-            return MINMAXBase.doit(self, **hints)
+            return self
 
         if self.expr.is_infinitesimal is not None:
             function, epsilon = self.expr.clear_infinitesimal()
             return self.func(function, *self.limits).doit() + epsilon
         
-        p = self.expr.as_poly(x)
-
-        if p is not None:
-            if p.degree() == 1:
-                a = p.coeff_monomial(x)
-                b = p.nth(0)
-                if a.is_positive:
-                    return a * domain.min() + b
-                elif a.is_negative:
-                    return a * domain.max() + b
-            elif p.degree() == 0:
-                return p.nth(0)
-            elif p.degree() < 0:
-                return self.expr
-        elif self.expr.is_MinMaxBase:
-            return self.expr.func(*(self.func(arg, *self.limits).doit() for arg in self.expr.args))
-        # elif self.expr.is_Add:
-        #     maxmin = []
-        #     args = self.expr.args
-        #     for i, arg in enumerate(args):
-        #         if arg.is_MinMaxBase:
-        #             maxmin.append(arg)
-        #             index = i
-        #     if len(maxmin) == 1:
-        #         [maxmin] = maxmin                
-        #         [*args] = args
-        #         del args[index]
-        #         const = Add(*args)
-        #         return maxmin.func(*(self.func(arg + const, *self.limits).doit() for arg in maxmin.args))    
+        expr, monotonicity = self.expr.monotonicity(x)
+        if monotonicity > 0:
+            return expr._subs(x, domain.min())
+        elif monotonicity < 0:
+            return expr._subs(x, domain.max())
+                
         return self
     
     def _eval_summation(self, f, x):
@@ -1678,67 +1685,42 @@ class Maxima(MINMAXBase):
         return ExprWithLimits.__new__(cls, function, *symbols, **assumptions)
 
     def _eval_is_zero(self):
-        # a Sum is only zero if its function is zero or if all terms
-        # cancel out. This only answers whether the summand is zero; if
-        # not then None is returned since we don't analyze whether all
-        # terms cancel out.
         if self.expr.is_zero:
             return True
 
     def doit(self, **hints):
-        x, *domain = self.limits[0]        
+        x, *domain = self.limits[0]
         if len(self.limits) != 1 or x.is_set:
-            return MINMAXBase.doit(self, **hints)
+            return self
             
         if len(domain) == 1:
             [domain] = domain  
-        elif len(domain) == 2: 
-            domain = (Range if x.is_integer else Interval)(*domain)
+        elif len(domain) == 2:
+            if domain[-1].is_set: 
+                return self
+            else:
+                domain = (Range if x.is_integer else Interval)(*domain)
         else:
             domain = x.domain
             
         if domain.is_CartesianSpace or not domain.etype.is_extended_real:
-            return MINMAXBase.doit(self, **hints)
+            return self
 
         if self.expr.is_infinitesimal is not None:
             function, epsilon = self.expr.clear_infinitesimal()
             return self.func(function, *self.limits).doit() + epsilon
         
-        p = self.expr.as_poly(x)
-
-        if p is not None:
-            if p.degree() == 1: 
-                a = p.coeff_monomial(x)       
-                b = p.nth(0)         
-                if a.is_extended_positive:
-                    return a * domain.max() + b
-                elif a.is_extended_negative:
-                    return a * domain.min() + b
-            elif p.degree() == 0:
-                return p.nth(0)
-            elif p.degree() < 0:
-                return self.expr
-        elif self.expr.is_MinMaxBase:
-            return self.expr.func(*(self.func(arg, *self.limits).doit() for arg in self.expr.args))
-        # elif self.expr.is_Add:
-        #     maxmin = []
-        #     args = self.expr.args
-        #     for i, arg in enumerate(args):
-        #         if arg.is_MinMaxBase:
-        #             maxmin.append(arg)
-        #             index = i
-        #     if len(maxmin) == 1:
-        #         [maxmin] = maxmin                
-        #         [*args] = args
-        #         del args[index]
-        #         const = Add(*args)
-        #         return maxmin.func(*(self.func(arg + const, *self.limits).doit() for arg in maxmin.args))    
+        expr, monotonicity = self.expr.monotonicity(x)
+        if monotonicity > 0:
+            return expr._subs(x, domain.max())
+        elif monotonicity < 0:
+            return expr._subs(x, domain.min())
                 
         return self
     
     def separate(self):
         (x, *_), *_ = self.limits
-        if x.is_Slice:
+        if x.is_Sliced:
             z, x = x.pop()
             return self.func(self.func(self.expr, (x,)).simplify(), (z,))
         return self
@@ -1874,7 +1856,10 @@ class ArgMin(ArgMinMaxBase):
         if len(domain) == 1:
             [domain] = domain  
         elif len(domain) == 2: 
-            domain = (Range if x.is_integer else Interval)(*domain)
+            if domain[-1].is_set: 
+                return self
+            else:
+                domain = (Range if x.is_integer else Interval)(*domain)
         else:
             domain = x.domain        
             if domain.is_CartesianSpace:
@@ -1920,7 +1905,10 @@ class ArgMax(ArgMinMaxBase):
         if len(domain) == 1:
             [domain] = domain  
         elif len(domain) == 2: 
-            domain = (Range if x.is_integer else Interval)(*domain)
+            if domain[-1].is_set: 
+                return self
+            else:
+                domain = (Range if x.is_integer else Interval)(*domain)
         else:
             domain = x.domain
             if domain.is_CartesianSpace:
@@ -2118,10 +2106,6 @@ class Inf(INFSUPBase):
         return ExprWithLimits.__new__(cls, function, *symbols, **assumptions)
 
     def _eval_is_zero(self):
-        # a Sum is only zero if its function is zero or if all terms
-        # cancel out. This only answers whether the summand is zero; if
-        # not then None is returned since we don't analyze whether all
-        # terms cancel out.
         if self.expr.is_zero:
             return True
 
@@ -2133,7 +2117,10 @@ class Inf(INFSUPBase):
         if len(domain) == 1:
             [domain] = domain  
         elif len(domain) == 2: 
-            domain = (Range if x.is_integer else Interval)(*domain)
+            if domain[-1].is_set: 
+                return self
+            else:
+                domain = (Range if x.is_integer else Interval)(*domain)
         else:
             domain = x.domain
                          
@@ -2160,19 +2147,6 @@ class Inf(INFSUPBase):
                 return self.expr
         elif self.expr.is_MinMaxBase:
             return self.expr.func(*(self.func(arg, *self.limits).doit() for arg in self.expr.args))
-        # elif self.expr.is_Add:
-        #     maxmin = []
-        #     args = self.expr.args
-        #     for i, arg in enumerate(args):
-        #         if arg.is_MinMaxBase:
-        #             maxmin.append(arg)
-        #             index = i
-        #     if len(maxmin) == 1:
-        #         [maxmin] = maxmin                
-        #         [*args] = args
-        #         del args[index]
-        #         const = Add(*args)
-        #         return maxmin.func(*(self.func(arg + const, *self.limits).doit() for arg in maxmin.args))    
         return self
     
     def _eval_summation(self, f, x):
@@ -2213,10 +2187,6 @@ class Sup(INFSUPBase):
         return ExprWithLimits.__new__(cls, function, *symbols, **assumptions)
 
     def _eval_is_zero(self):
-        # a Sum is only zero if its function is zero or if all terms
-        # cancel out. This only answers whether the summand is zero; if
-        # not then None is returned since we don't analyze whether all
-        # terms cancel out.
         if self.expr.is_zero:
             return True
 
@@ -2228,7 +2198,10 @@ class Sup(INFSUPBase):
         if len(domain) == 1:
             [domain] = domain  
         elif len(domain) == 2: 
-            domain = (Range if x.is_integer else Interval)(*domain)
+            if domain[-1].is_set: 
+                return self
+            else:
+                domain = (Range if x.is_integer else Interval)(*domain)
         else:
             domain = x.domain
             
@@ -2255,25 +2228,11 @@ class Sup(INFSUPBase):
                 return self.expr
         elif self.expr.is_MinMaxBase:
             return self.expr.func(*(self.func(arg, *self.limits).doit() for arg in self.expr.args))
-        # elif self.expr.is_Add:
-        #     maxmin = []
-        #     args = self.expr.args
-        #     for i, arg in enumerate(args):
-        #         if arg.is_MinMaxBase:
-        #             maxmin.append(arg)
-        #             index = i
-        #     if len(maxmin) == 1:
-        #         [maxmin] = maxmin                
-        #         [*args] = args
-        #         del args[index]
-        #         const = Add(*args)
-        #         return maxmin.func(*(self.func(arg + const, *self.limits).doit() for arg in maxmin.args))    
-                
         return self
     
     def separate(self):
         (x, *_), *_ = self.limits
-        if x.is_Slice:
+        if x.is_Sliced:
             z, x = x.pop()
             return self.func(self.func(self.expr, (x,)).simplify(), (z,))
         return self
@@ -2330,12 +2289,13 @@ class Lamda(ExprWithLimits):
 
                     function = function._subs(x, _x)
                 if len(domain) == 1:
-                    domain, *_ = domain
+                    [domain] = domain
                     assert domain.is_Range
-                    mini = domain.min()
-                    symbols[i] = (x, 0, domain.max() - mini + 1)
-                    if mini != S.Zero:
-                        function = function._subs(x, x + mini)
+                    if domain.step == 1:
+                        mini = domain.min()
+                        symbols[i] = (x, 0, domain.max() - mini + 1)
+                        if mini != S.Zero:
+                            function = function._subs(x, x + mini)
 
         return ExprWithLimits.__new__(cls, function, *symbols, **assumptions)
 
@@ -2386,7 +2346,7 @@ class Lamda(ExprWithLimits):
                 return All(self.func(lhs.expr, rhs.expr), *lhs.limits).simplify()        
 
     def simplify(self, deep=False, squeeze=False, **kwargs):
-        from sympy import Element
+        from sympy.sets.contains import Element
         limits_dict = self.limits_dict
         if deep:
             function = self.expr
@@ -2456,16 +2416,14 @@ class Lamda(ExprWithLimits):
                 if second is not None:
                     this += self.func(second, *self.limits).simplify(squeeze=squeeze)
                 return this
-                    
-        from sympy import Transpose
-        from sympy.matrices.expressions.matmul import MatMul
-        
+
         if self.expr.is_set:
             independent, dependent = self.simplify_Set(self.expr)
             if independent is not None:
                 return independent
             return self
         
+        from sympy.matrices.expressions.matmul import MatMul
         if self.expr.is_Sum and not self.expr.limits and self.expr.expr.is_Mul:
             (x, *_), *_ = self.limits
             independent, dependent = [], []
@@ -2479,14 +2437,16 @@ class Lamda(ExprWithLimits):
                 return Mul(*independent)
             if not independent:
                 return self
-
+            
             dependent = Mul(*dependent)
             dependent = self.func(dependent, *self.limits)
             dependent = dependent.simplify()
+            
+            from sympy.matrices.expressions.transpose import Transpose
             dependent = Transpose(dependent)
             dependent = dependent.simplify()
 
-            independent = Mul(*independent)
+            independent = Mul(*independent)            
             return MatMul(independent, dependent)
 
         if self.expr.is_Derivative:
@@ -2508,7 +2468,7 @@ class Lamda(ExprWithLimits):
 
         for i, limit in enumerate(self.limits):
             x, *ab = limit
-            if ab:
+            if ab and len(ab) == 2: 
                 a, b = ab
                 if a == b:
                     function = self.expr._subs(x, a)                    
@@ -2527,6 +2487,11 @@ class Lamda(ExprWithLimits):
             this = self.func(self.expr, self.limits[0])
             this_simplified = this.simplify()
             if this == this_simplified:
+                if squeeze:
+                    *limits, (i, *ab) = self.limits[1:]
+                    this = self.func(this, *limits)                    
+                    if not this._has(i):
+                        return this.simplify(squeeze=True)
                 return self
             return self.func(this_simplified, *self.limits[1:]).simplify(squeeze=squeeze)
         
@@ -2538,64 +2503,203 @@ class Lamda(ExprWithLimits):
                     simplified = self.func(self.expr.args[0], *self.limits).simplify()
                     if not isinstance(simplified, Lamda):
                         return self.expr.func(simplified)
-                    
-                if squeeze:
-                    return self.squeeze()
-                
+
                 dependent, independent = self.simplify_MatMul(self.expr)
+                
                 if dependent is None: 
                     return independent
+                                
+                if independent is not None: 
+                    self = MatMul(self.func(dependent, *self.limits).simplify(), independent)
                 
-                if independent is None: 
-                    return self
-                
-                return MatMul(self.func(dependent, *self.limits).simplify(), independent)
+                if dependent.is_SlicedIndexed:
+                    slices, indices = dependent.slices_indices()
+                    if len(indices) == 1:
+                        [var] = indices
+                        _var, *ab = self.limits[0]
+                        if var == _var:
+                            base = dependent.base
+                            if not ab or ab == [0, base.shape[-1]]:
+                                if slices[-1].is_Tuple:
+                                    start, stop, *_ = slices[-1]
+                                    if start == 0 and stop == base.shape[-2]:
+                                        expr = base[slices[:-1]].T
+                                        if limits := self.limits[1:]:
+                                            expr = self.func(expr, *limits)
+                                        return expr
+                                else:
+                                    start, stop, step = slices[-1].args
+                                    if step.is_One and start == 0 and stop == base.shape[-2]:
+                                        expr = base[slices[:-1]].T
+                                        if limits := self.limits[1:]:
+                                            expr = self.func(expr, *limits)
+                                        return expr
+                        
+                if squeeze:
+                    self = self.squeeze()
+                    
+                return self
+
             
             if second is None:
                 return first
-
+            
+            if first.shape != second.shape:
+                if first.shape == self.shape:
+                    ...
+                else:
+                    return self
+            
             return Mul(first, self.func(second, *self.limits).simplify(squeeze=True))
 
         if second is None:
             if squeeze or first.shape == self.shape:
                 return first
+            
+            from sympy.matrices.expressions.matexpr import OneMatrix, ZeroMatrix
             if first.is_zero:
-                from sympy import ZeroMatrix
                 return ZeroMatrix(*self.shape)
+            
             if first.is_Number:
-                from sympy import OneMatrix
-                return OneMatrix(*self.shape) * first            
+                return OneMatrix(*self.shape) * first
+            if first.is_OneMatrix:
+                return OneMatrix(*self.shape)
+            
+            if first.is_Sliced:
+                base = first.base
+                if base.is_Indexed:
+                    this = self.func(base, *self.limits)
+                    _this = this.simplify()
+                    if this != _this:
+                        indices = (slice(None),) * len(self.limits)
+                        indices += first.indices
+                        return _this[indices]
+                    
             return self
         return first + self.func(second, *self.limits).simplify(squeeze=squeeze)
 
     def simplify_Indexed(self, expr):
-        variables = tuple(x for x, *_ in self.limits[::-1])        
+        variables = tuple(x for x, *_ in self.limits[::-1])
+        
+        indices = expr.indices
         if len(variables) == 1:
             var = variables[0]
-            index = expr.args[-1]
-            if index == var:
+            try:
+                i = indices.index(var)
                 _, *ab = self.limits[0]
-                if ab:
-                    indexed = expr.base[expr.indices[:-1]]
-                    zero, b = ab
-                    assert zero.is_zero
-                    shape = b
-                    if expr.base.shape[0] != shape:
-                        return indexed[:shape], None
-                    return indexed, None                        
-            else:
-                h = index - var
-                if not h._has(var):
+                if ab :
+                    if len(ab) == 2:
+                        if i == len(indices) - 1:
+                            indexed = expr.base[indices[:-1]]
+                            zero, b = ab
+                            assert zero.is_zero
+                            shape = b
+                            if expr.base.shape[0] != shape:
+                                return indexed[:shape], None
+                            return indexed, None
+                        else:
+                            indexed = expr.base[indices[:i]]
+                            zero, b = ab
+                            assert zero.is_zero
+                            shape = b
+                            
+                            rest_indices = indices[i + 1:]
+                            return indexed[(slice(0, shape),) + rest_indices], None
+                                                        
+                    else:
+                        [domain] = ab
+                        if i == len(indices) - 1:
+                            indexed = expr.base[indices[:-1]]
+                            start, stop, step = domain.args
+                            if start.is_zero:
+                                if step.is_One:
+                                    if expr.base.shape[0] != stop:
+                                        return indexed[:stop], None
+                                    return indexed, None
+                                else:
+                                    return indexed[:stop:step], None
+                            else:
+                                if step.is_One:
+                                    return indexed[start:stop], None
+                                else:
+                                    return indexed[start:stop:step], None
+                        else:
+                            indexed = expr.base[indices[:i]]
+                            rest_indices = indices[i + 1:]
+                            start, stop, step = domain.args
+                            if start.is_zero:
+                                if step.is_One:
+                                    return indexed[(slice(0, stop),) + rest_indices], None
+                                else:
+                                    return indexed[(slice(0, stop, step),) + rest_indices], None
+                            else:
+                                if step.is_One:
+                                    return indexed[(slice(start, stop),) + rest_indices], None
+                                else:
+                                    return indexed[(slice(start, stop, step),) + rest_indices], None
+                            
+                
+            except ValueError:
+                index = expr.args[-1]
+                # index = step * var + start
+                start, step = index.of_simple_poly(var)
+                if step == 1:
                     _, *ab = self.limits[0]
                     if ab:
-                        zero, b = ab
-                        assert zero.is_zero
-                        shape = b
-                        return expr.base[expr.indices[:-1]][h:shape + h], None
+                        if len(ab) == 2:
+                            zero, shape = ab
+                            assert zero.is_zero
+                            return expr.base[indices[:-1]][start:shape + start], None
+                        else:
+                            [domain] = ab
+                            zero, shape, step = domain.args
+                            return expr.base[indices[:-1]][start:shape + start:step], None
+                elif step:
+                    _, *ab = self.limits[0]
+                    if ab:
+                        if len(ab) == 2:
+                            zero, shape = ab
+                            assert zero.is_zero
+                            if shape.is_Ceiling:
+                                stop = shape.arg * step + start
+                                if not stop._has(var):
+                                    return expr.base[indices[:-1]][start:stop:step], None
+                            
+            
             
         if expr.args[-len(variables):] == variables:
-            return expr.base[expr.indices[:-len(variables)]], None
+            return expr.base[indices[:-len(variables)]], None
 
+        [*indices] = indices
+        j = len(indices)
+        
+        hit = False
+        for i, var in enumerate(self.variables):
+            for j in range(j - 1, -1, -1):
+                if indices[j] == var:
+                    break
+            else:
+                break
+            
+            hit = True
+            ab = self.limits[i][1:]
+            if len(ab) == 2:
+                a, b = ab
+                if a == 0:
+                    indices[j] = slice(b)
+                else:
+                    indices[j] = slice(*ab)
+            elif not ab:
+                indices[j] = slice(self.shape[-i - 1])
+            else:
+                [domain] = ab
+                indices[j] = slice(*domain.args)
+        else:
+            i += 1
+            
+        if hit:
+            return expr.base[indices], None
+            
         return None, expr
         
     def simplify_Plus(self, expr):
@@ -2606,10 +2710,10 @@ class Lamda(ExprWithLimits):
                 return None, expr
             return expr, None
 
-        if isinstance(expr, Indexed):
+        if expr.is_Indexed:
             return self.simplify_Indexed(expr)
 
-        if isinstance(expr, Add):
+        if expr.is_Add:
             argsNonSimplified = []
             argsSimplified = []
             for arg in expr.args:
@@ -2679,14 +2783,6 @@ class Lamda(ExprWithLimits):
 
         if expr.is_Indexed:
             return self.simplify_Indexed(expr)
-            if expr.args[-1] == x:
-                if not ab:
-                    return expr.base[expr.indices[:-1]], None
-                else:
-                    a, b = ab
-                    return expr.base[expr.indices[:-1]][:b], None
-
-            return None, expr
         
         if expr.is_Mul:
             argsNonSimplified = []
@@ -2733,20 +2829,25 @@ class Lamda(ExprWithLimits):
             last = self.func(expr.args[-1], self.limits[0])
             _last = last.simplify()
             if last != _last:
+                if len(_last.shape) > 1:
+                    _last = _last.T
                 independent = expr.func(*expr.args[:-1], _last).simplify()
                 limits = self.limits[1:]
                 if limits:
                     independent = self.func(independent, *limits)
                 return None, independent
-            
-            first = self.func(expr.args[0], self.limits[-1])
-            _first = first.simplify()
-            if first != _first:
-                independent = expr.func(_first, *expr.args[1:]).simplify()
-                limits = self.limits[:-1]
-                if limits:
-                    independent = self.func(independent, *limits)
-                return None, independent
+            var = self.limits[-1][0]
+            if expr.args[0]._has(var) and not any(arg._has(var) for arg in expr.args[1:]):
+# consider the complex case:
+# [i:n - Min(l, n) + 1](Q[i + Min(l, n) - 1] @ W @ K[i:i + Min(l, n)].T)
+                first = self.func(expr.args[0], self.limits[-1])
+                _first = first.simplify()
+                if first != _first:
+                    independent = expr.func(_first, *expr.args[1:]).simplify()
+                    limits = self.limits[:-1]
+                    if limits:
+                        independent = self.func(independent, *limits)
+                    return None, independent
 
             index_simplified = None
             for i, arg in enumerate(expr.args):
@@ -2763,24 +2864,24 @@ class Lamda(ExprWithLimits):
             return expr.func(*expr.args[:index_simplified]), expr.func(*expr.args[index_simplified:])
         
         if len(self.shape) < 2:
-            return expr, None                
+            return expr, None
         
         independent, dependent = expr.as_independent(*self.variables, as_Add=False)
         if independent == S.One:
             return dependent, None 
         if dependent == S.One:
-            dependent = None
+            return independent, None
         return dependent, independent 
 
     def __getitem__(self, indices, **_):
-        function = self.expr
+        expr = self.expr
         if isinstance(indices, (tuple, list)):
             variables_set = self.variables_set
-            reps = {}     
+            reps = {}
             
             limits = []
             for limit, index in zip(self.limits[::-1], indices):
-                if isinstance(index, slice):                    
+                if isinstance(index, slice):
                     assert index.step is None, "cases for %s is not implemented" % index
                     assert index.start is None, "cases for %s is not implemented" % index
                     assert index.stop is None, "cases for %s is not implemented" % index
@@ -2791,6 +2892,11 @@ class Lamda(ExprWithLimits):
                 index = sympify(index)
                 variables_set.remove(x)
                 if x == index:
+                    if len(domain) == 1:
+                        [domain] = domain
+                        start, stop, step = domain.args
+                        if step != 1:
+                            expr = expr. _subs(x, start + index * step)
                     continue
 
                 for v in variables_set:
@@ -2806,93 +2912,117 @@ class Lamda(ExprWithLimits):
                     reps[_v] = v
                     assert not index._has(v)
                     
-                function = function._subs(x, index)  # .simplify() will result in prolonged process
+                expr = expr._subs(x, index)  # .simplify() will result in prolonged process
                 if not index._has(x): 
-                    if function._has(x):
-                        for var in postorder_traversal(function):
+                    if expr._has(x):
+                        for var in postorder_traversal(expr):
                             if var._has(x):
                                 break
-                        function = function._subs(var, var.definition)
-                        function = function._subs(x, index)
-                        assert not function._has(x)
+                        expr = expr._subs(var, var.definition)
+                        expr = expr._subs(x, index)
+                        assert not expr._has(x)
 
             if len(indices) > len(self.limits):
-                function = function[indices[len(self.limits):]]
+                expr = expr[indices[len(self.limits):]]
             elif len(indices) < len(self.limits): 
-                if function.is_zero:
+                if expr.is_zero:
                     shape = self.shape[len(indices):]
                     from sympy import ZeroMatrix
                     return ZeroMatrix(*shape)
-                function = self.func(function, *self.limits[:-len(indices)])
+                expr = self.func(expr, *self.limits[:-len(indices)])
                 
             for k, v in reps.items():
-                function = function._subs(k, v)
+                expr = expr._subs(k, v)
                     
             if limits:
                 limits.reverse()
-                return self.func(function, *limits)
+                return self.func(expr, *limits)
             
-            return function
+            return expr
         
         if isinstance(indices, slice):
-            start, stop = indices.start, indices.stop
+            start, stop, step = indices.start, indices.stop, indices.step
             if start is None:
                 start = 0
+                
+            if step is None:
+                step = 1
+                
+            if stop is None:
+                stop = self.shape[0]
+                
             x, *domain = self.limits[-1]
             if len(domain) == 2:
-                n = domain[1]
+                S[0], n = domain
+                self_step = 1
+            elif len(domain) == 1:
+                [domain] = domain
+                self_start, self_stop, self_step = domain.args
+                from sympy.functions.elementary.integers import Ceiling
+                n = Ceiling((self_stop - self_start) / self_step)
             else:
                 n = S.Infinity
+                self_step = 1
 
-            if start > 0:
-                function = function._subs(x, x + start)
-                if stop is None:
-                    stop = self.shape[0]
-                
+            assert not start < 0, "out of bound exception: negative starting index"
+            if start != 0:
+                expr = expr._subs(x, x + start)
                 stop -= start
 
-                if stop >= n:
-                    stop = n
+                assert not stop > n, "out of bound exception!"
+                start = 0
             else:
-                if stop >= n:
+                if stop >= n and step == 1:
                     return self
                 
-            limits = [*self.limits]            
-            limits[-1] = x, 0, stop
-            return self.func(function, *limits)
+            limits = [*self.limits]
+            
+            if step == 1:
+                if start != 0:
+                    expr = expr._subs(x, start + x * self_step)                    
+                    stop -= start
+                    start = 0
+                    
+                limits[-1] = x, 0, stop
+                
+                if self_step != 1:
+                    expr = expr._subs(x, start + x * self_step)
+            else:
+                limits[-1] = x, Range(start, stop, step)
+            return self.func(expr, *limits)
 
-        * limits, (x, *_) = self.limits
+        * limits, (x, *ab) = self.limits
+        
+        if len(ab) == 1:
+            [domain] = ab
+            start, stop, step = domain.args
+            if step != 1 or start != 0:
+                expr = expr._subs(x, start + x * step)
+                
+        elif len(ab) == 2:
+            start, stop = ab
+            if start != 0:
+                expr = expr._subs(x, start + x)
+        
         if x != indices:
-            indices = sympify(indices)
-            function = function._subs(x, indices)
-            if not indices._has(x) and function._has(x):
-                for var in postorder_traversal(function):
+            indices = sympify(indices)    
+            expr = expr._subs(x, indices)
+            if not indices._has(x) and expr._has(x):
+                for var in postorder_traversal(expr):
                     if var._has(x):
                         break
-                function = function._subs(var, var.definition)
-                function = function._subs(x, indices)
-                assert not function._has(x)
+                expr = expr._subs(var, var.definition)
+                expr = expr._subs(x, indices)
+                assert not expr._has(x)
+                
         if limits:
-            return self.func(function, *limits)
-        return function
+            return self.func(expr, *limits)
+        return expr
 
     @property
     def dtype(self):
         return self.expr.dtype
-    
-    @property
-    def limits_shape(self):
-        shape = []
-        for x, *ab in self.limits:
-            if not ab:
-                domain = self.expr.domain_defined(x)
-                shape.append(domain.size)
-            else:
-                a, b = ab
-                shape.append(b - a)
-        shape.reverse()
-        return tuple(shape)
-        
+            
     @property
     def shape(self):
         return self.limits_shape + self.expr.shape
@@ -3048,13 +3178,24 @@ class Lamda(ExprWithLimits):
         for limit in self.limits:
             if len(limit) == 1:
                 args.append(p._print(limit[0]))
-#             elif len(limit) == 2:
-#                 args.append(r"%s:%s" % (p._print(limit[0]), p._print(limit[1])))
-            elif len(limit) == 3:
+            elif len(limit) == 2:
+                var, domain = limit
+                if domain.step == 1:
+                    if domain.start == 0:
+                        parmas = [var, domain.stop]
+                    else:
+                        parmas = [var, domain.start, domain.stop]
+                else:
+                    if domain.start == 0:
+                        parmas = [var, '', domain.stop, domain.step]
+                    else:
+                        parmas = [var, *domain.args]
+                args.append(":".join((p._print(e) for e in parmas)))
+            elif len(limit) == 3:                
                 if limit[1] == 0:
                     args.append(r"%s:%s" % (p._print(limit[0]), p._print(limit[2])))
                 else:
-                    args.append(r"%s:%s:%s" % (p._print(limit[1]), p._print(limit[0]), p._print(limit[2])))
+                    args.append(r"%s:%s:%s" % (p._print(limit[0]), p._print(limit[1]), p._print(limit[2])))
 
         tex = r"[%s]" % ','.join(args)
 
@@ -3071,12 +3212,12 @@ class Lamda(ExprWithLimits):
         return '[%s](%s)' % (limits, p._print(self.expr))
 
     def _eval_is_finite(self):
-        function = self.expr                
+        expr = self.expr
         for x, domain in self.limits_dict.items():
             if not isinstance(domain, list):
                 _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_finite
+                expr = expr._subs(x, _x)
+        return expr.is_finite
 
     def _eval_is_extended_integer(self):
         return self.expr.is_extended_integer
@@ -3094,12 +3235,12 @@ class Lamda(ExprWithLimits):
         return self.expr.is_super_rational
     
     def _eval_is_extended_real(self):
-        function = self.expr                
+        expr = self.expr
         for x, domain in self.limits_dict.items():
             if not isinstance(domain, list):
                 _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_extended_real
+                expr = expr._subs(x, _x)
+        return expr.is_extended_real
 
     def _eval_is_hyper_real(self):
         return self.expr.is_hyper_real
@@ -3114,31 +3255,48 @@ class Lamda(ExprWithLimits):
         return self.expr.is_hyper_complex
     
     def _eval_is_extended_positive(self):
-        function = self.expr                
+        expr = self.expr                
         for x, domain in self.limits_dict.items():
             if not isinstance(domain, list):
                 _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_extended_positive
+                expr = expr._subs(x, _x)
+        return expr.is_extended_positive
 
     def _eval_is_extended_negative(self):
-        function = self.expr                
+        expr = self.expr                
         for x, domain in self.limits_dict.items():
             if not isinstance(domain, list):
                 _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_extended_negative
+                expr = expr._subs(x, _x)
+        return expr.is_extended_negative
     
-    def _eval_transpose(self):
-        if len(self.shape) < 2:
-            return self
-        if len(self.expr.shape) >= 2:
-            return self.func(self.expr.T, *self.limits)
-        if len(self.expr.shape) == 1:
-            return 
-        limits = [*self.limits]
-        limits[-1], limits[-2] = limits[-2], limits[-1]
-        return self.func(self.expr, *limits).simplify()
+    def _eval_transpose(self, axis=-1):
+        if axis == self.default_axis:
+            if len(self.shape) < 2:
+                return self
+            expr = self.expr
+            if len(expr.shape) >= 2:
+                return self.func(expr.T, *self.limits)
+            if len(expr.shape) == 1:
+                if expr.is_SlicedIndexed:
+                    limit = self.limits[0]
+                    if len(self.limits) == 1 and len(limit) == 3:
+                        var, z, size = limit
+                        if z == 0:
+                            slices, indices = expr.slices_indices()
+                            if len(indices) == 1:
+                                [index] = indices
+                                if index == var:
+                                    slices = [slice(*s) for s in slices]
+                                    slices.append(slice(size))
+                                    return expr.base[tuple(slices)]
+                    
+                return 
+
+        if axis < len(self.limits):
+            [*limits] = self.limits
+            limits[axis], limits[axis - 1] = limits[axis - 1], limits[axis] 
+            return self.func(self.expr, *limits).simplify()
 
     def generate_int_limit(self, index=-1, excludes=None, generator=None, var=None):
         if self.expr.shape:

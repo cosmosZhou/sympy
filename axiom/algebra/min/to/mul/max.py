@@ -19,7 +19,7 @@ def apply(self, factor=None):
 
         if common_factors:
             factor = Mul(*common_factors)
-            
+
     assert factor < 0
     args = [arg / factor for arg in args]
     return Equal(self, factor * Max(*args))
@@ -45,4 +45,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-01-26
-# updated on 2020-01-26

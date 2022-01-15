@@ -8,10 +8,10 @@ Special - gamma, zeta,spherical harmonics...
 from sympy.functions.combinatorial.factorials import (factorial, factorial2,
         rf, ff, binomial, RisingFactorial, FallingFactorial, subfactorial, Factorial)
 
-from sympy.functions.combinatorial.factorials import Binomial  # , Factorial, Factorial2, 
+from sympy.functions.combinatorial.factorials import Binomial 
 
 from sympy.functions.combinatorial.numbers import (carmichael, fibonacci, lucas, tribonacci,
-        harmonic, bernoulli, bell, euler, catalan, genocchi, partition)
+        harmonic, bernoulli, bell, euler, catalan, genocchi, partition, Stirling)
 from sympy.core.power import sqrt, cbrt, root, real_root
 from sympy.functions.elementary.miscellaneous import (Min, Max, Id)
 from sympy.functions.elementary.complexes import (Re, Im, sign, Abs, Norm,

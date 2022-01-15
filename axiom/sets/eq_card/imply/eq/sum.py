@@ -4,11 +4,10 @@ from util import *
 @apply
 def apply(eq, sgm):
     X, n = eq.of(Equal[Card])
-    fx, (x, _X) = sgm.of(Sum)
-    assert X == _X
-    (a, i), (_i, _n) = X.of(Cup[FiniteSet[Indexed], Tuple[0]])
-    assert _i == i and _n == n
-
+    fx, (x, S[X]) = sgm.of(Sum)
+    (a, i), (S[i], S[0], S[n]) = X.of(Cup[FiniteSet[Indexed]])
+    if fx._has(i):
+        i = sgm.generate_var({i}, integer=True)
     return Equal(sgm, Sum[i:n](fx._subs(x, a[i])))
 
 
@@ -29,8 +28,10 @@ def prove(Eq):
 
     Eq << algebra.cond.infer.imply.cond.transit.apply(Eq[2], Eq[-1])
 
+    
+
 
 if __name__ == '__main__':
     run()
 # created on 2021-03-20
-# updated on 2021-03-20
+# updated on 2022-01-10

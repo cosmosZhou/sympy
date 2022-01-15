@@ -8,10 +8,11 @@ def apply(M_is_nonnegative, is_negative, lt, x=None):
     m = mM - M
 
     U, m2 = lt.of(Less)
-    _m = m2.of(Expr ** 2)
-    assert _m == m
+    S[m] = m2.of(Expr ** 2)
+
     if x is None:
         x = lt.generate_var(real=True)
+
     return Any[x:Interval(m, M, left_open=True, right_open=True)](x ** 2 > U)
 
 
@@ -36,4 +37,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-07-11
-# updated on 2019-07-11

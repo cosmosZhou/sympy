@@ -4,8 +4,7 @@ from axiom.discrete.imply.gt_zero.alpha import alpha
 
 @apply
 def apply(given):
-    (x, _j), (j, n) = given.of(All[Indexed > 0, Tuple[0, Expr]])
-    assert _j == j
+    (x, j), (S[j], S[0], n) = given.of(All[Indexed > 0])
     return Unequal(alpha(x[:n]), 0)
 
 
@@ -34,4 +33,3 @@ if __name__ == '__main__':
 
 from . import offset
 # created on 2020-09-22
-# updated on 2020-09-22

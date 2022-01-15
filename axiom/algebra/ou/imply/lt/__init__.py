@@ -13,11 +13,10 @@ def apply(given, wrt=None):
 def prove(Eq):
     from axiom import sets, algebra
 
-    k = Symbol(integer=True, positive=True)
-    x = Symbol(real=True, shape=(k,), given=True)
-    A, B = Symbol(etype=dtype.real * k, given=True)
-    f, g, h = Function(shape=(k,), real=True)
-    p = Symbol(shape=(k,), real=True, given=True)
+    x = Symbol(real=True, given=True)
+    A, B = Symbol(etype=dtype.real, given=True)
+    f, g, h = Function(real=True)
+    p = Symbol(real=True, given=True)
     Eq << apply(Less(f(x), p) & Element(x, A) | Less(g(x), p) & Element(x, B - A) | Less(h(x), p) & NotElement(x, A | B), wrt=p)
 
     Eq << Eq[0].this.args[1].args[1].apply(sets.el.imply.et.split.complement, simplify=None)
@@ -36,4 +35,3 @@ if __name__ == '__main__':
 
 from . import two
 # created on 2019-08-06
-# updated on 2019-08-06

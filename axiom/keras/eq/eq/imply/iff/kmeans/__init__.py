@@ -48,4 +48,3 @@ if __name__ == '__main__':
 
 from . import w_quote
 # created on 2020-12-24
-# updated on 2020-12-24

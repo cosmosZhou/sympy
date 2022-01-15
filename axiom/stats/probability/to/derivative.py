@@ -4,7 +4,7 @@ from util import *
 def compute_density(condition):
     ps = pspace(condition)
     fx, y = condition.args
-    
+
     prod = S.One
     limits = []
     for var, sym in ps.values2symbols().items():
@@ -14,13 +14,13 @@ def compute_density(condition):
         limits.append((sym,))
 
     assert not random_symbols(fx)
-    
+
     if y.is_given or not y.is_symbol:
         y = condition.generate_var(real=True)
-    
+
     return Derivative[y](Integral(prod * Bool(LessEqual(fx, y)), *limits))
 
-    
+
 @apply
 def apply(self):
     condition = self.of(Probability)
@@ -38,4 +38,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2021-07-24
-# updated on 2021-07-24

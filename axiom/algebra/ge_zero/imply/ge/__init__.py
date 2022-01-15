@@ -23,4 +23,3 @@ if __name__ == '__main__':
     run()
 from . import scale
 # created on 2019-05-28
-# updated on 2019-05-28

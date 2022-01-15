@@ -4,8 +4,7 @@ from util import *
 @apply
 def apply(eq_mod, contains):
     (x, m), d = eq_mod.of(Equal[Mod])
-    _x, args = contains.of(Element[FiniteSet])
-    assert _x == x
+    S[x], args = contains.of(Element[FiniteSet])
 
     deletes = set()
     for a in args:
@@ -44,4 +43,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-11-19
-# updated on 2018-11-19

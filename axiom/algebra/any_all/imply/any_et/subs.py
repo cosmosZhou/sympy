@@ -30,10 +30,9 @@ def prove(Eq):
 
     Eq << Eq[0].this.expr.apply(algebra.all.imply.cond.subs, x, x0, ret=0)
 
-    
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2019-02-25
-# updated on 2019-02-25

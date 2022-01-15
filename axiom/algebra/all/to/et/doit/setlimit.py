@@ -20,8 +20,7 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    k = Symbol(integer=True, positive=True)
-    x = Symbol(real=True, shape=(oo, k))
+    x = Symbol(real=True, shape=(oo,))
     i, a, b, c, d = Symbol(integer=True)
 
 
@@ -54,4 +53,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2018-03-29
-# updated on 2018-03-29

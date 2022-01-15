@@ -3,44 +3,26 @@ from util import *
 
 @apply
 def apply(eq_cup_X, eq_cup_Y, eq_cup_X_union, eq_cup_Y_complement, le, notcontains):
-    ((t, y_), (((_t, _x), (x, X)), _X)), ((__t, _y_), (((___t, y), (_y, _Y)), Y))= le.of(Abs[Indexed - Sum[Indexed] / Card] <= Abs[Indexed - Sum[Indexed] / Card])
-    assert t == _t == __t == ___t
-    assert X == _X and x == _x
-    assert y_ ==  _y_
-    assert Y == _Y and y == _y
+    ((t, y_), (((S[t], x), (S[x], X)), S[X])), ((S[t], S[y_]), (((S[t], y), (S[y], Y)), S[Y]))= le.of(Abs[Indexed - Sum[Indexed] / Card] <= Abs[Indexed - Sum[Indexed] / Card])
 
-    _y_, X = notcontains.of(NotElement)
-    assert _y_ == y_
+    S[y_], S[X] = notcontains.of(NotElement)
 
-    ((a, i), (_i, n)), X = eq_cup_X.of(Equal[Cup[FiniteSet[Indexed], Tuple[0]]])
-    assert _i == i
+    ((a, i), (S[i], S[0], n)), S[X] = eq_cup_X.of(Equal[Cup[FiniteSet[Indexed]]])
 
-    ((a_, i), (_i, n1)), X_union = eq_cup_X_union.of(Equal[Cup[FiniteSet[Indexed], Tuple[0]]])
-    assert i == _i
+    ((a_, i), (S[i], S[0], S[n + 1])), X_union = eq_cup_X_union.of(Equal[Cup[FiniteSet[Indexed]]])
 
-    ((b, i), (_i, m)), Y = eq_cup_Y.of(Equal[Cup[FiniteSet[Indexed], Tuple[0]]])
-    assert _i == i
+    ((b, i), (S[i], S[0], m)), S[Y] = eq_cup_Y.of(Equal[Cup[FiniteSet[Indexed]]])
 
-    ((b_, i), (_i, m1)), Y_complement = eq_cup_Y_complement.of(Equal[Cup[FiniteSet[Indexed], Tuple[0]]])
-    assert i == _i
+    ((b_, i), (S[i], S[0], S[m - 1])), Y_complement = eq_cup_Y_complement.of(Equal[Cup[FiniteSet[Indexed]]])
 
     if not X_union.is_Union:
         eq_cup_Y, eq_cup_X_union = eq_cup_X_union, eq_cup_Y
-        ((a_, i), (_i, n1)), X_union = eq_cup_X_union.of(Equal[Cup[FiniteSet[Indexed], Tuple[0]]])
-        assert i == _i
-        ((b, i), (_i, m)), Y = eq_cup_Y.of(Equal[Cup[FiniteSet[Indexed], Tuple[0]]])
-        assert _i == i
+        ((S[a_], i), (S[i], S[0], S[n + 1])), S[X_union] = eq_cup_X_union.of(Equal[Cup[FiniteSet[Indexed]]])
+        ((S[b], i), (S[i], S[0], S[m])), S[Y] = eq_cup_Y.of(Equal[Cup[FiniteSet[Indexed]]])
 
-    assert n1 == n + 1
-    assert m1 == m - 1
+    S[y_], S[X] = X_union.of(Union[FiniteSet, Basic])
 
-    y__, _X = X_union.of(Union[FiniteSet, Basic])
-    assert _X == X
-    assert y__ == y_
-
-    _Y, y__ = Y_complement.of(Complement[Basic, FiniteSet])
-    assert _Y == Y
-    assert y__ == y_
+    S[Y], S[y_] = Y_complement.of(Complement[Basic, FiniteSet])
 
     X_ = X | {y_}
     Y_ = Y - {y_}
@@ -161,4 +143,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2021-03-24
-# updated on 2021-03-24

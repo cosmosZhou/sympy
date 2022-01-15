@@ -13,8 +13,9 @@ def prove(Eq):
     x, y, z = Symbol(real=True, given=True)
     Eq << apply(x, y, z)
 
-    Eq << Eq[0].this.lhs.args[1].defun()
+    Eq << Eq[0].this.find(relu).defun()
 
+    
     Eq << Eq[-1].this.lhs.args[0].apply(algebra.max.to.piece)
 
     Eq << Eq[-1].this.lhs.apply(algebra.add.to.piece)
@@ -37,8 +38,11 @@ def prove(Eq):
 
     Eq << Eq[-2].this.args[1].apply(algebra.le.imply.le.min, z)
 
+    
+    
+
 
 if __name__ == '__main__':
     run()
 # created on 2020-12-27
-# updated on 2020-12-27
+# updated on 2022-01-08

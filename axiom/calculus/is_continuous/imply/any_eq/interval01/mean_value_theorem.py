@@ -7,12 +7,12 @@ def apply(given, epsilon=None):
     assert direction == 0
     assert xi == _xi
     assert _f == f._subs(z, xi)
-    
+
     if not isinstance(epsilon, Basic):
         if epsilon is None:
             epsilon = 'epsilon'
         epsilon = given.generate_var(real=True, var=epsilon)
-    
+
     return Any[epsilon:0:1](Equal(Integral(f, (z, a, b)), (b - a) * f._subs(z, a * epsilon + b * (1 - epsilon))))
 
 
@@ -29,4 +29,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-05-02
-# updated on 2020-05-02

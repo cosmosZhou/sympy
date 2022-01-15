@@ -83,11 +83,11 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(-Floor).apply(algebra.mul.to.ceiling).this.find(-Floor).apply(algebra.mul.to.ceiling).this.find(-Floor).apply(algebra.mul.to.ceiling)
 
-    Eq << Eq[-1].this.find(-Add).apply(algebra.mul.distribute).this.find(-Add).apply(algebra.mul.distribute).this.find(-Add).apply(algebra.mul.distribute)
+    
 
-    Eq << Eq[-1].this.find(Max[Ceiling]).apply(algebra.max.to.ceiling).this.find(Max[Ceiling]).apply(algebra.max.to.ceiling).this.find(Max[Ceiling]).apply(algebra.max.to.ceiling)
+    
 
-    Eq << Eq[-1].this.find(Ceiling[Max]).apply(algebra.ceiling.to.max).this.find(Ceiling[Max]).apply(algebra.ceiling.to.max).this.find(Ceiling[Max]).apply(algebra.ceiling.to.max)
+    
 
     Eq << Eq[-1].this.find(~Indexed * Sum).definition
 
@@ -128,8 +128,11 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(C.this.definition, C_quote.this.definition)
 
+    
+    
+
 
 if __name__ == '__main__':
     run()
 # created on 2021-01-02
-# updated on 2021-01-02
+# updated on 2022-01-01

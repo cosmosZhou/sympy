@@ -4,9 +4,9 @@ from util import *
 @apply
 def apply(self, var=None):
     i = self.arg.generate_var(integer=True, var=var)
-    *shape, n = self.arg.shape    
+    *shape, n = self.arg.shape
     assert shape
-    
+
     excludes = {i}
     limits = []
     vars = []
@@ -15,12 +15,12 @@ def apply(self, var=None):
         limits.append((j, 0, m))
         vars.append(j)
         excludes.add(j)
-    
+
     limits.reverse()
     vars.append(i)
-    
+
     rhs = Lamda(Sum[i:n](self.arg[tuple(vars)]), *limits)
-        
+
     return Equal(self, rhs, evaluate=False)
 
 
@@ -50,4 +50,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-03-11
-# updated on 2020-03-11

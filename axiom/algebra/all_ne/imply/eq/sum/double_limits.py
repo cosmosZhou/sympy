@@ -3,17 +3,16 @@ from util import *
 
 @apply
 def apply(all_ne, sgm):
-    (ai, aj), (j, _zero, i_), (i, zero, n) = all_ne.of(All[Unequal])
+    (ai, aj), (j, S[0], i_), (i, S[0], n) = all_ne.of(All[Unequal])
     if ai._has(j):
         ai, xj = aj, ai
 
-    assert zero == _zero == 0
     assert i == i_
     assert ai._subs(i, j) == aj
 
     fx, (x, X) = sgm.of(Sum)
 
-    _ai, (_i, n) = X.of(Cup[FiniteSet, Tuple[0]])
+    _ai, (_i, S[0], n) = X.of(Cup[FiniteSet])
     assert _ai._subs(_i, i) == ai
 
     return Equal(sgm, Sum[i:n](fx._subs(x, ai)))
@@ -46,4 +45,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-02-05
-# updated on 2019-02-05

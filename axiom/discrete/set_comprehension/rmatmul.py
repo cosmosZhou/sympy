@@ -34,6 +34,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(discrete.matmul.to.sum)
 
+    Eq << Eq[-1].this(i).find(Element).simplify()
+    Eq << Eq[-1].this(j).find(Element).simplify()
+    
     Eq << Eq[-1].apply(sets.eq.imply.eq.set_comprehension, (k, 0, n))
 
     Eq << Eq[-1].this.find(Complement[Complement]).apply(sets.complement.to.union.intersect)
@@ -54,10 +57,12 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(sets.cup.limits.domain_defined.insert)
 
+    
+
 
 if __name__ == '__main__':
     run()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html
 
 # created on 2020-07-25
-# updated on 2020-07-25
+# updated on 2022-01-08

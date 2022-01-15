@@ -6,7 +6,7 @@ def apply(given):
     x_union, A = given.of(Equal[Intersection, EmptySet])
     if not x_union.is_Cup:
         x_union, A = A, x_union
-        
+
     expr, *limits = x_union.of(Cup)
     return All(Equal(expr & A, A.etype.emptySet), *limits)
 
@@ -34,4 +34,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2020-08-10
-# updated on 2020-08-10

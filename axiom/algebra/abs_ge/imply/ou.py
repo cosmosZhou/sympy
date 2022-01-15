@@ -10,18 +10,17 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    
+
     x, a = Symbol(real=True, given=True)
     Eq << apply(abs(x) >= a)
-    
+
     Eq << ~Eq[1]
-    
+
     Eq << Eq[-1].this.apply(algebra.lt.gt.imply.lt.abs)
-    
+
     Eq <<= Eq[-1] & Eq[0]
 
 
 if __name__ == '__main__':
     run()
 # created on 2018-07-29
-# updated on 2018-07-29

@@ -4,12 +4,12 @@ from util import *
 @apply
 def apply(all0, all1):
 
-    (ref, _S), (j, a, n_munis_1), (x, S) = all0.of(All[Element])
+    (ref, s), (j, a, n_munis_1), (x, S[s]) = all0.of(All[Element])
     assert a == 1
 
-    piecewise, (i, _n_munis_1) = ref.of(Lamda[Tuple[0]])
-    assert S == _S and S.is_set
-    dtype = S.etype
+    piecewise, (i, S[0], _n_munis_1) = ref.of(Lamda)
+    assert s.is_set
+    dtype = s.etype
     assert _n_munis_1 == n_munis_1
 
     (x0, condition0), (xj, conditionj), (xi, conditioni) = piecewise.of(Piecewise)
@@ -21,11 +21,11 @@ def apply(all0, all1):
 
     assert x[j] == xj and x[i] == xi and x[0] == x0 and dtype == x.type
 
-    equality, (_x, _S) = all1.of(All)
-    assert x == _x and S == _S
+    equality, (_x, S[s]) = all1.of(All)
+    assert x == _x
     assert equality.is_Equal and {*equality.args} == {Card(x.set_comprehension()), n}
 
-    return Equal(Card(S), factorial(n) * Card(Cup[x:S]({x.set_comprehension()})))
+    return Equal(Card(s), factorial(n) * Card(Cup[x:s]({x.set_comprehension()})))
 
 
 @prove(proved=False)
@@ -89,4 +89,3 @@ if __name__ == '__main__':
     run()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html
 # created on 2020-09-14
-# updated on 2020-09-14

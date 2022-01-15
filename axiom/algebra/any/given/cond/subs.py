@@ -6,8 +6,8 @@ def apply(self, old, new):
     assert not old.is_given
     if isinstance(new, int):
         new = sympify(new)
-        
-    exists = self.limits_dict        
+
+    exists = self.limits_dict
     if old in exists:
         domain = exists[old]
         if not domain:
@@ -31,32 +31,32 @@ def apply(self, old, new):
                 eqs.append(equation.subs(old, new))
         else:
             eqs.append(self.expr._subs(old, new))
-            
+
         assert not self.limits_delete(old)
-        
+
         if new.is_symbol and new.definition is None and not new.is_given:
             return
 
         return And(*eqs)
-        
-    if old.is_Slice:
-        from axiom.algebra.slice.to.matrix import convert   
+
+    if old.is_Sliced:
+        from axiom.algebra.slice.to.matrix import convert
         old = convert(old)
         if old.is_DenseMatrix:
-            old = Tuple(*old._args)                    
+            old = Tuple(*old._args)
             if old in exists or all(sym in exists for sym in old):
                 ...
             else:
-                return 
+                return
 
-    if old.is_Tuple and all(sym in exists for sym in old): 
+    if old.is_Tuple and all(sym in exists for sym in old):
         domains = [exists[sym] for sym in old]
         eqs = []
 
         for domain in domains:
             if not isinstance(domain, list):
                 if not domain.is_set:
-                    domain = old.domain_conditioned(domain)                    
+                    domain = old.domain_conditioned(domain)
                 eqs.append(Element(new, domain))
 
         if self.expr.is_And:
@@ -70,7 +70,7 @@ def apply(self, old, new):
                 eqs.append(function)
             else:
                 eqs.append(self.expr._subs(old, new))
-                
+
         assert not self.limits_delete(old)
         assert not new.is_symbol
         return And(*eqs)
@@ -95,4 +95,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-05-02
-# updated on 2018-05-02

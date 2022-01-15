@@ -117,8 +117,8 @@ class Add(Expr, AssocOp):
         order_factors = []
 
         infinitesimal = None
-
-        for o in seq:
+        from sympy.matrices.expressions.matexpr import OneMatrix, ZeroMatrix
+        for i, o in enumerate(seq):
 
             # O(x)
             if o.is_Order:
@@ -173,7 +173,11 @@ class Add(Expr, AssocOp):
             # Mul([...])
             elif o.is_Mul:
                 c, s = o.as_coeff_Mul()
-
+                if not c.shape and s.is_OneMatrix:
+                    shape = Add.broadcast_from_sequence(seq[:i] + seq[i + 1:])
+                    if len(shape) >= len(s.shape):
+                        s = S.One
+                        
             # check for unevaluated Pow, e.g. 2**3 or 2**(-1/2)
             elif o.is_Pow:
                 b, e = o.as_base_exp()
@@ -185,7 +189,6 @@ class Add(Expr, AssocOp):
 
             elif o.is_zero:
                 if o.shape:
-                    from sympy import OneMatrix
                     coeff *= OneMatrix(*o.shape) 
                 # skipping any zero values
                 continue
@@ -214,11 +217,19 @@ class Add(Expr, AssocOp):
         newseq = []
         noncommutative = False
         for s, c in terms.items():
+            if s.is_OneMatrix:
+                if coeff.is_zero or coeff.is_infinite:
+                    ...
+                else:
+                    c += coeff
+                    coeff = S.Zero
+            
             # 0*s
             if c is S.Zero:
                 continue
             # 1*s
             elif c is S.One:
+                
                 newseq.append(s)
             # c*s
             else:
@@ -233,8 +244,6 @@ class Add(Expr, AssocOp):
                 else:
                     # alternatively we have to call all Mul's machinery (slow)
                     newseq.append(Mul(c, s))
-
-#             noncommutative = noncommutative or not s.is_commutative
 
         # oo, -oo
         if coeff is S.Infinity:
@@ -254,8 +263,7 @@ class Add(Expr, AssocOp):
             # change the zoo nature; adding an infinite qualtity would result
             # in a NaN condition if it had sign opposite of the infinite
             # portion of zoo, e.g., infinite_real - infinite_real.
-            newseq = [c for c in newseq if not (c.is_finite and
-                                                c.is_extended_real is not None)]
+            newseq = [c for c in newseq if not (c.is_finite and c.is_extended_real is not None)]
             infinitesimal = None
 
         # process O(x)
@@ -281,13 +289,7 @@ class Add(Expr, AssocOp):
         _addsort(newseq)
 
         # current code expects coeff to be first
-        if coeff.is_zero:
-            if coeff.shape:
-                if len(coeff.shape) > max((len(arg.shape) for arg in newseq)):
-                    ones = OneMatrix(*coeff.shape)
-#                     expand dimensions here
-                    newseq = [arg * ones for arg in newseq]
-        else: 
+        if not coeff.is_zero:
             newseq.insert(0, coeff)
         
         if infinitesimal is not None:
@@ -298,21 +300,56 @@ class Add(Expr, AssocOp):
             return [], newseq, None
 
         if not newseq:
-            from sympy import ZeroMatrix
-            from sympy.matrices.expressions.blockmatrix import BlockMatrix
-
-            shapes = [mat.shape for mat in seq if mat.shape]
-            if shapes:
-                BlockMatrix.broadcast(shapes)
-                for shape in shapes:
-                    if shape[0] > 1:
-                        break
-                if shape[0] == 1:
-                    shape = shape[1:]
+            shape = Add.broadcast_from_sequence(seq)
+            if shape:
                 newseq.append(ZeroMatrix(*shape))
         
         return newseq, [], None
 
+    
+    @staticmethod
+    def broadcast_from_sequence(args):
+        shapes = [mat.shape for mat in args if mat.shape]
+        if shapes:
+            Add.broadcast(shapes)
+            for shape in shapes:
+                if shape[0] > 1:
+                    break
+            if shape[0] == 1:
+                shape = shape[1:]
+            return shape
+        return ()
+    
+    @staticmethod
+    def broadcast(shapes):
+        length = 0
+        cols = 0
+        for i, shape in enumerate(shapes):
+            if not shape:
+                shapes[i] = (1,)
+                shape = shapes[i]
+            if len(shape) > 2:
+                ...
+            else:
+                if shape[-1] > cols:
+                    cols = shape[-1]
+            if len(shape) > length:
+                length = len(shape)
+                
+        if length == 1 and all(shape[0] == shapes[0][0] and len(shape) == length for shape in shapes): 
+            length += 1
+            
+        for i, shape in enumerate(shapes):
+            if len(shape) > 2:
+                ...
+            else:
+                if shape[-1] < cols and len(shape) > 1:
+                    shape = shape[:-1] + (cols,)
+            if len(shape) < length:
+                shape = (1,) * (length - len(shape)) + shape
+            shapes[i] = shape
+        return shapes
+    
     @classmethod
     def class_key(cls):
         """Nice order of classes"""
@@ -631,8 +668,24 @@ class Add(Expr, AssocOp):
         elif b.is_zero == False:
             return False
 
+    def _eval_is_nonzero(self):
+        if self.shape:
+            if all(arg.is_extended_positive for arg in self.args):
+                return True
+                
+            if all(arg.is_extended_negative for arg in self.args):
+                return True
+            
+        return super(Add, self)._eval_is_nonzero()
+         
     def _eval_is_zero(self):
         if self.shape:
+            if all(arg.is_extended_positive for arg in self.args):
+                return False
+                
+            if all(arg.is_extended_negative for arg in self.args):
+                return False
+            
             return 
         
         if len(self.args) == 2:
@@ -674,7 +727,10 @@ class Add(Expr, AssocOp):
         
         if all(arg.is_extended_nonnegative for arg in self.args):
             if any(arg.is_extended_positive for arg in self.args):
-                return True            
+                return True    
+            
+        if all(arg.is_extended_nonpositive for arg in self.args):
+            return False
     
     def _eval_is_extended_negative(self):
         is_infinitesimal = self.is_infinitesimal
@@ -696,6 +752,9 @@ class Add(Expr, AssocOp):
         if all(arg.is_extended_nonpositive for arg in self.args):
             if any(arg.is_extended_negative for arg in self.args):
                 return True            
+
+        if all(arg.is_extended_nonnegative for arg in self.args):
+            return False
 
     def _eval_subs(self, old, new, **hint):
         if not old.is_Add:
@@ -843,8 +902,9 @@ class Add(Expr, AssocOp):
     def _eval_conjugate(self):
         return self.func(*[t.conjugate() for t in self.args])
 
-    def _eval_transpose(self):
-        return self.func(*[t.T for t in self.args])
+    def _eval_transpose(self, axis=-1):
+        if axis == self.default_axis:
+            return self.func(*[t.T for t in self.args])
 
     def __neg__(self):
         return self * (-1)
@@ -1554,7 +1614,7 @@ class Add(Expr, AssocOp):
                     if len(common_terms) > 1:
                         return         
                 [c] = common_terms
-                return Add(*args), c                    
+                return Add(*args), c
                     
         elif isinstance(res, tuple):
             if isinstance(cls, Basic) and len(res) > 2:
@@ -1574,6 +1634,122 @@ class Add(Expr, AssocOp):
                 
         return res
 
+    def of_simple_poly(self, x):
+        '''
+        extract the coefficients of a simple polynomial
+        (a * x + b).of_simple_poly(x) = [b, a]
+        '''
+        B = None
+        A = None
+        
+        for arg in self.args:
+            b, a = arg.of_simple_poly(x)
+            if b is None:
+                return None, None
+            if B is None:
+                B = b
+                A = a
+            else:
+                B += b
+                A += a
+            
+        return B, A
+
+    def monotonicity(self, x):
+        '''
+        determine the Monotonicity of a function wrt to x
+        (-l + Min(l, n - Min(n, u))).monotonicity(x) = -1 
+        (x ** 2).monotonicity(x) = 0
+        (a * x + b).monotonicity(x) = 1 if a > 0
+        (a * x + b).monotonicity(x) = -1 if a < 0
+        '''
+        
+        monotonic_increasing = []
+        monotonic_decreasing = []
+        from sympy.functions.elementary.miscellaneous import Max, Min
+        coeff = []
+        for i, fx in enumerate(self.args):
+            if fx._has(x):
+                expr, monotonicity = fx.monotonicity(x)
+                if monotonicity > 0:
+                    monotonic_increasing.append(expr)
+                elif monotonicity < 0:
+                    monotonic_decreasing.append(expr)
+                else:
+                    if fx.is_Min and fx._has(Max) or fx.is_Max and fx._has(Min):
+# deal with special case :
+# k + Min(k, Max(-k, -i + j))
+                        const = Add(*self.args[:i] + self.args[i + 1:], evaluate=False)
+                        return fx.func(*(arg + const for arg in fx.args), evaluate=False).monotonicity(x)
+                        
+                    return None, 0
+            else:
+                coeff.append(fx)
+        
+        i = 0
+        j = 0
+        while i < len(monotonic_increasing) and j < len(monotonic_decreasing):
+            fx = monotonic_increasing[i]
+            hx = monotonic_decreasing[j]
+            if fx.is_MinMaxBase:
+                if ret := fx.merge_monotonicity_with(hx, x):
+                    monotonic_decreasing[j] = ret
+                    del monotonic_increasing[i]
+                    i = 0
+                    continue
+                
+                if hx.is_MinMaxBase:
+                    if ret := hx.merge_monotonicity_with(fx, x):
+                        monotonic_increasing[i] = ret
+                        del monotonic_decreasing[j]
+                        j = 0
+                        continue
+
+                    j += 1
+                else:
+                    i += 1
+            
+            elif hx.is_MinMaxBase:
+                if ret := hx.merge_monotonicity_with(fx, x):
+                    monotonic_increasing[i] = ret
+                    del monotonic_decreasing[j]
+                    j = 0
+                    continue
+                
+                j += 1
+            else:
+                hx_neg = -hx
+                if hx_neg.is_MinMaxBase:
+                    if ret := hx_neg.merge_monotonicity_with(-fx, x):
+                        monotonic_increasing[i] = -ret
+                        del monotonic_decreasing[j]
+                        j = 0
+                    else:
+                        j += 1
+                        
+                    continue
+                
+                fx_neg = -fx
+                if fx_neg.is_MinMaxBase:
+                    if ret := fx_neg.merge_monotonicity_with(-hx, x):
+                        monotonic_decreasing[j] = -ret
+                        del monotonic_increasing[i]
+                        i = 0
+                    else:
+                        i += 1
+                        
+                    continue
+                
+                i += 1                
+                
+        if not monotonic_decreasing:
+            return Add(*coeff, *monotonic_increasing, evaluate=False), 1
+        
+        if not monotonic_increasing:
+            return Add(*coeff, *monotonic_decreasing, evaluate=False), -1
+        
+        return None, 0
+
     __invert__ = _eval_conjugate
     
     def __call__(self, other):
@@ -1582,6 +1758,13 @@ class Add(Expr, AssocOp):
     def is_continuous(self, *args):
         from sympy.core.logic import fuzzy_and
         return fuzzy_and(x.is_continuous(*args) for x in self.args)
+
+    def as_coeff_Mul(self, rational=False):
+        if all(arg._coeff_isneg() for arg in self.args):
+            return S.NegativeOne, self.func(*[-arg for arg in self.args], evaluate=False)
+            
+        return S.One, self
+        
 
 
 from .mul import Mul, _keep_coeff, prod

@@ -5,18 +5,18 @@ from util import *
 def apply(nonoverlapping, x_equal, i=None, j=None):
     a_set_comprehension, n = nonoverlapping.of(Equal[Card])
     (xk, limit), _a_set_comprehension = x_equal.of(Equal[Cup[FiniteSet]])
-    x = Lamda(xk, limit).simplify()    
+    x = Lamda(xk, limit).simplify()
     [_n] = x.shape
     assert n == _n
-    
+
     assert _a_set_comprehension == a_set_comprehension
-        
+
     ak, limit = a_set_comprehension.of(Cup[FiniteSet])
     a = Lamda(ak, limit).simplify()
     [_n] = a.shape
     assert n == _n
-    
-    
+
+
     if j is None:
         j = Symbol(domain=Range(n), given=True)
 
@@ -48,4 +48,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2021-09-25
-# updated on 2021-09-25

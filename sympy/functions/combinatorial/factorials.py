@@ -618,7 +618,7 @@ class RisingFactorial(CombinatorialFunction):
     def _latex(self, p, exp=None):
         n, k = self.args        
         if n.is_Add or n.is_Mul:
-            base = r"\left%s\right" % p._print(n)
+            base = r"\left(%s\right)" % p._print(n)
         else:
             base = p._print(n)
 
@@ -1139,5 +1139,12 @@ class Binomial(CombinatorialFunction):
         else:
             return tex
         
+    def simplify(self, deep=False, **kwargs):
+        n, k = self.args
+        if k.is_Add:
+            if n in k.args:
+                k = n - k
+                return self.func(n, k)
+        return CombinatorialFunction.simplify(self, deep=deep, **kwargs)
     
 binomial = binom = Binomial

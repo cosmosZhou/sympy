@@ -44,7 +44,7 @@ def prove(Eq):
 
     Eq << algebra.cond.imply.all.apply(Eq[-1], i)
 
-    Eq << Eq[-1].this.expr.apply(algebra.eq.imply.eq.lamda, *Eq[-1].limits, simplify=False)
+    Eq << algebra.all_eq.imply.eq.lamda.apply(Eq[-1])
 
     Eq << Eq[-1].this.lhs.apply(discrete.lamda_matmul.to.matmul)
 
@@ -53,7 +53,8 @@ def prove(Eq):
     Eq.statement = Eq[-1].T
 
     i, k = Eq.statement.lhs.args[1].variables
-    Eq << discrete.det.to.prod.matrix.vandermonde.apply(Lamda[i:n](i + 1))
+    j = Symbol(integer=True)
+    Eq << discrete.det_lamda.to.prod.vandermonde.st.linear.apply(Det(Lamda[j:n, i:n]((j + 1) ** i)))
 
     Eq << Unequal(Eq[-1].rhs, 0, plausible=True)
 
@@ -66,8 +67,11 @@ def prove(Eq):
 
     Eq << algebra.ne_zero.eq.imply.eq.matrix.apply(Eq[-1], Eq.statement)
 
+    
+    
+
 
 if __name__ == '__main__':
     run()
 # created on 2020-08-21
-# updated on 2020-08-21
+# updated on 2022-01-15

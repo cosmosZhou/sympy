@@ -117,7 +117,8 @@ class MatrixExpr(Expr):
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__pow__')
     def __rpow__(self, other):
-        raise NotImplementedError("Matrix Power not defined")
+        from sympy.core.power import Pow
+        return Pow(other, self, evaluate=False)
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rdiv__')
@@ -158,7 +159,7 @@ class MatrixExpr(Expr):
         from sympy.matrices.expressions.inverse import Inverse
         return Inverse(self)
 
-    def _eval_transpose(self):
+    def _eval_transpose(self, axis=-1):
         ...
 
     def _eval_power(self, exp):
@@ -782,6 +783,7 @@ class Identity(MatrixExpr):
     is_lower = True
     is_singular = False
     is_Identity = True
+    is_finite = True
 #     is_zero = False
 #     def __new__(cls, *args):
 #         return super(Identity, cls).__new__(cls, args)
@@ -817,8 +819,9 @@ class Identity(MatrixExpr):
     def is_square(self):
         return True
 
-    def _eval_transpose(self):
-        return self
+    def _eval_transpose(self, axis=-1):
+        if axis == self.default_axis:
+            return self
 
     def _eval_trace(self):
         return self.rows
@@ -851,9 +854,15 @@ class Identity(MatrixExpr):
     def _eval_determinant(self):
         return S.One
 
-    def _eval_is_integer(self):
+    def _eval_is_extended_integer(self):
         return True
 
+    def _eval_is_extended_positive(self):
+        ...
+        
+    def _eval_is_extended_negative(self):
+        return False
+    
     
 class GenericIdentity(Identity):
     """
@@ -891,6 +900,17 @@ class GenericIdentity(Identity):
         return super(GenericIdentity, self).__hash__()
 
 
+def simplify_shape(shape):
+    while shape:
+        if shape[0] == 1:
+            shape = shape[1:]
+        elif shape[-1] == 1:
+            shape = shape[:-1]
+        else:
+            break
+            
+    return shape
+    
 class ZeroMatrix(MatrixExpr):
     """The Matrix Zero 0 - additive identity
 
@@ -908,6 +928,7 @@ class ZeroMatrix(MatrixExpr):
     is_zero = True
     
     def __new__(cls, *shape):
+        shape = simplify_shape(shape)
         if not shape:
             return S.Zero
         return super(ZeroMatrix, cls).__new__(cls, shape=shape)
@@ -923,10 +944,12 @@ class ZeroMatrix(MatrixExpr):
             raise ValueError("Matrix det == 0; not invertible.")
         return self
 
-    def _eval_transpose(self):
-        if self.rows == 1:
-            return self
-        return ZeroMatrix(self.cols, self.rows)
+    def _eval_transpose(self, axis=-1):
+        if axis == self.default_axis:
+            if len(self.shape) <= 1:
+                return self
+            *shape, rows, cols = self.shape
+            return ZeroMatrix(cols, rows, *shape)
 
     def _eval_trace(self):
         return S.Zero
@@ -940,7 +963,20 @@ class ZeroMatrix(MatrixExpr):
     def _entry(self, i, j=None, **kwargs):
         if j is None:
             if len(self.shape) > 1:
-                return self.func(*self.shape[1:])
+                if isinstance(i, slice):
+                    start, stop, step = i.start, i.stop, i.step
+                    if start is None:
+                        start = 0
+                    if stop is None:
+                        stop = self.shape[0]
+                    size = stop - start
+                    if step is None:
+                        step = 1
+                        
+                    from sympy.functions.elementary.integers import Ceiling
+                    return self.func(Ceiling(size / step), *self.shape[1:])
+                else:
+                    return self.func(*self.shape[1:])
             else:
                 return S.Zero
         elif isinstance(i, slice):
@@ -1009,6 +1045,10 @@ class ZeroMatrix(MatrixExpr):
             return self.func(*shape)
         return self
 
+    @property
+    def kwargs(self):
+        return dict(shape=self.shape)
+    
     
 class GenericZeroMatrix(ZeroMatrix):
     """
@@ -1050,26 +1090,27 @@ class OneMatrix(MatrixExpr):
     """
     Matrix whose all entries are ones.
     """
-
-    def __new__(cls, *shape):        
+    is_integer = True
+    is_extended_positive = True
+    is_extended_negative = False
+    is_finite = True
+    
+    def __new__(cls, *shape):
+        shape = simplify_shape(shape)
         if not shape:
             return S.One
-        while shape[0] == 1:
-            shape = shape[1:]
-            if not shape:
-                return S.One
-        return super(OneMatrix, cls).__new__(cls, *shape)
-
-    @property
-    def shape(self):
-        return self._args
+        return super(OneMatrix, cls).__new__(cls, shape=shape)
 
     def as_explicit(self):
         from sympy import ImmutableDenseMatrix
         return ImmutableDenseMatrix.ones(*self.shape)
 
-    def _eval_transpose(self):
-        return OneMatrix(self.cols, self.rows)
+    def _eval_transpose(self, axis=-1):
+        if axis == self.default_axis:
+            if len(self.shape) <= 1:
+                return self
+            *shape, rows, cols = self.shape
+            return OneMatrix(cols, rows, *shape)
 
     def _eval_trace(self):
         return S.One * self.rows
@@ -1126,6 +1167,28 @@ class OneMatrix(MatrixExpr):
     
     def doit(self, **hints):
         return self
+
+    def _subs(self, old, new, **hints):
+        shape = [*self.shape]
+        hit = False
+        for i, s in enumerate(shape):
+            _s = s._subs(old, new)
+            hit |= _s != s
+            shape[i] = _s
+            
+        if hit:
+            return self.func(*shape)
+        return self
+    
+    @property
+    def kwargs(self):
+        return dict(shape=self.shape)
+    
+    def _hashable_content(self):
+        return self.shape
+
+    def _eval_is_extended_integer(self):
+        return True
 
     
 def matrix_symbols(expr):
@@ -1346,8 +1409,9 @@ class SwapMatrix(Identity):
         
         return 2 * KroneckerDelta(self.i, self.j) - 1
 
-    def _eval_transpose(self): 
-        return self
+    def _eval_transpose(self, axis=-1):
+        if axis == self.default_axis: 
+            return self
 
     def _eval_inverse(self):
         return self
@@ -1373,19 +1437,20 @@ class SwapMatrix(Identity):
     @call_highest_priority('__rmatmul__')
     def __matmul__(self, other):
         if other.is_BlockMatrix:
-            other_i = other[self.i]
-            other_j = other[self.j]
-            
-            try:
-                args = other.args
-                i_ = args.index(other_i)
-                j_ = args.index(other_j)
+            if other.axis == 0:
+                other_i = other[self.i]
+                other_j = other[self.j]
                 
-                args = [*args]
-                args[i_], args[j_] = args[j_], args[i_]
-                return other.func(*args)
-            except ValueError:
-                return MatrixExpr.__matmul__(self, other)  
+                try:
+                    args = other.args
+                    i_ = args.index(other_i)
+                    j_ = args.index(other_j)
+                    
+                    args = [*args]
+                    args[i_], args[j_] = args[j_], args[i_]
+                    return other.func(*args)
+                except ValueError:
+                    return MatrixExpr.__matmul__(self, other)  
         elif other.is_DenseMatrix:
             rows = [other[i]._args for i in range(other.rows)]
             rows[self.i], rows[self.j] = rows[self.j], rows[self.i]
@@ -1411,8 +1476,9 @@ class MulMatrix(Identity):
     def multiplier(self):
         return self.args[-1]
 
-    def _eval_transpose(self):
-        return self
+    def _eval_transpose(self, axis=-1):
+        if axis == self.default_axis:
+            return self
 
     def _eval_inverse(self):
         return self.func(self.n, self.i, 1 / self.multiplier)
@@ -1448,22 +1514,33 @@ class MulMatrix(Identity):
             return Lamda[j:self.n](piecewise)
         return piecewise
 
+    @call_highest_priority('__rmatmul__')
     def __matmul__(self, rhs):
         if rhs.is_BlockMatrix:
-            other_i = rhs[self.i]
-            if not other_i.is_Indexed:
-                args = []
-                if self.i != 0:
-                    args.append(rhs[:self.i])
-                if other_i.is_BlockMatrix:
-                    other_i = other_i.func(*[arg * self.multiplier for arg in other_i.args])
+            if rhs.axis == 1:
+                if blocks := rhs.blocks:
+                    rhs = rhs.func(blocks)
                 else:
-                    other_i *= self.multiplier
-                args.append(other_i)
-                if self.i + 1 != self.shape[0]:
-                    args.append(rhs[self.i + 1:])
-                
-                return rhs.func(*args)  
+                    return MatrixExpr.__matmul__(self, rhs)  
+            
+            if rhs.axis == 0:
+                other_i = rhs[self.i]
+                if not other_i.is_Indexed:
+                    args = []
+                    if self.i != 0:
+                        args.append(rhs[:self.i])
+                    if other_i.is_BlockMatrix:
+                        other_i = other_i.func(*[arg * self.multiplier for arg in other_i.args])
+                    else:
+                        other_i *= self.multiplier
+                    args.append(other_i)
+                    if self.i + 1 != self.shape[0]:
+                        args.append(rhs[self.i + 1:])
+                    
+                    return rhs.func(*args)
+            elif rhs.axis == 1:
+                if blocks := rhs.blocks:
+                    rhs = rhs.func(blocks)  
         elif rhs.is_DenseMatrix:
             d = rhs.shape[0]
             _args = [*rhs._args]
@@ -1506,8 +1583,9 @@ class AddMatrix(MulMatrix):
     def j(self):
         return self.args[2]
 
-    def _eval_transpose(self):
-        return self.func(self.n, self.j, self.i, self.multiplier)
+    def _eval_transpose(self, axis=-1):
+        if axis == self.default_axis:
+            return self.func(self.n, self.j, self.i, self.multiplier)
 
     def _eval_inverse(self):
         return self.func(self.n, self.i, self.j, -self.multiplier)
@@ -1605,8 +1683,8 @@ class AddMatrix(MulMatrix):
     
 class ShiftMatrix(Identity):
     '''
-    shift the ith row to the jth row
-    or shift the jth column to the ith column
+    shift the ith row beyond the jth row
+    or shift the jth column beyond the ith column
     '''
 
     def _latex(self, p):
@@ -1628,8 +1706,9 @@ class ShiftMatrix(Identity):
     def _eval_determinant(self):
         return (-1) ** (self.j - self.i)
 
-    def _eval_transpose(self):
-        return ShiftMatrix(self.n, self.j, self.i)
+    def _eval_transpose(self, axis=-1):
+        if axis == self.default_axis:
+            return ShiftMatrix(self.n, self.j, self.i)
 
     def _eval_inverse(self):
         return self.T
@@ -1646,14 +1725,14 @@ class ShiftMatrix(Identity):
             return_reference = False                        
 #     1   0   0   0   0   0
 #     0   1   0   0   0   0
-#     0   0   0   1   0   0    <-----self.i    th row        
-#     0   0   0   0   1   0    
-#     0   0   1   0   0   0    <-----self.j    th row                    
+#     0   0   0   1   0   0    <-----self.i th row        
+#     0   0   0   0   1   0    delete i th row and insert after j th row
+#     0   0   1   0   0   0    <-----self.j th row                    
 #     0   0   0   0   0   1  
 #             ^       ^
 #             |       |
 #            i col    j col      
-# delete i th row insert into after j th row        
+#         
         piecewise_ij = Piecewise((KroneckerDelta(self.i, j), Equal(i, self.j)),
                                  (KroneckerDelta(i + 1, j), Element(i, Range(self.i, self.j))),
                                  (KroneckerDelta(i, j), True))
@@ -1661,13 +1740,13 @@ class ShiftMatrix(Identity):
 #     1   0   0   0   0   0
 #     0   1   0   0   0   0
 #     0   0   0   0   1   0    <-----self.j th row
-#     0   0   1   0   0   0    
+#     0   0   1   0   0   0    delete i th row and insert before j th row
 #     0   0   0   1   0   0    <-----self.i th row
 #     0   0   0   0   0   1  
 #             ^       ^
 #             |       |
 #            j col    i col      
-# delete i th row insert into before j th row        
+        
         piecewise_ji = Piecewise((KroneckerDelta(i, self.j), Equal(j, self.i)),
                                  (KroneckerDelta(i, j + 1), Element(j, Range(self.j, self.i))),
                                  (KroneckerDelta(i, j), True))
@@ -1688,22 +1767,23 @@ class ShiftMatrix(Identity):
 
         if other.is_BlockMatrix:
             if self.j > self.i:
-                A = other[self.i]
-                B = other[self.i + 1:self.j + 1]
-
                 args = []
-                if B.is_BlockMatrix:
-                    args += B.args
-                else:
-                    args.append(B)
-                args.append(A)
-
                 if self.i > 0:
                     C = other[:self.i]
                     if C.is_BlockMatrix:
                         args += C.args
                     else:
                         args.append(C)
+                
+                A = other[self.i]
+                B = other[self.i + 1:self.j + 1]
+                
+                if B.is_BlockMatrix:
+                    args += B.args
+                else:
+                    args.append(B)
+                args.append(A)
+
                 if self.j + 1 < self.n:
                     C = other[self.j + 1:]
                     if C.is_BlockMatrix:

@@ -67,7 +67,7 @@ def prove(Eq):
 
     Eq << algebra.cond.imply.cond.subs.apply(Eq[0], x[:n + 1], BlockMatrix(x[:n], x[n] + 1 / x[n + 1]))
 
-    Eq << Eq[-1].this.rhs.lhs.apply(discrete.alpha.blockmatrix)
+    Eq << Eq[-1].this.rhs.lhs.apply(discrete.alpha.block)
 
     Eq << Eq[-1].this.lhs.apply(algebra.all.given.et, cond={n})
 
@@ -110,4 +110,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2020-09-23
-# updated on 2020-09-23

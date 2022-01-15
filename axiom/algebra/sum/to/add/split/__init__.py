@@ -2,7 +2,7 @@ from util import *
 
 
 def split(cls, self, indices, wrt=None, simplify=True, evaluate=False):
-    from axiom.algebra.symbol.to.blockmatrix import process_slice
+    from axiom.algebra.symbol.to.block import process_slice
     function, *limits = self.of(cls)
     if len(limits) > 1:
         if wrt is None:
@@ -49,7 +49,7 @@ def split(cls, self, indices, wrt=None, simplify=True, evaluate=False):
         return self
 
     (x, *ab), *_ = limits
-    if x.is_Slice:
+    if x.is_Sliced:
         if not ab:
             x, z = x.bisect(indices, allow_empty=True).args
             return cls(cls(function, (x,)).simplify(), (z,))
@@ -135,4 +135,3 @@ if __name__ == '__main__':
 
 from . import complement
 # created on 2018-02-24
-# updated on 2018-02-24

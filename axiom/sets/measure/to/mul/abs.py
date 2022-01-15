@@ -13,7 +13,7 @@ def apply(self):
             coeff.append(arg)
     f = Mul(*f)
     coeff = Mul(*coeff)
-    shape = fx.shape    
+    shape = fx.shape
     if shape:
         if len(shape) == 1:
             [m] = shape
@@ -36,7 +36,7 @@ def apply(self):
                 ...
         else:
             scale = abs(coeff)
-        
+
     return Equal(self, scale * Measure(imageset(x, f, S)))
 
 
@@ -51,4 +51,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2021-09-07
-# updated on 2021-09-07

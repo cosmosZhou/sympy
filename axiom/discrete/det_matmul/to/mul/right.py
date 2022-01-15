@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(self):
-    A, (I0, I1) = self.of(Determinant[Expr @ BlockMatrix[Transpose[BlockMatrix[ZeroMatrix, Expr]], Transpose[BlockMatrix[Expr, ZeroMatrix]]]])
+    A, (I0, I1) = self.of(Determinant[Expr @ BlockMatrix[BlockMatrix[1][ZeroMatrix, Expr], BlockMatrix[1][Expr, ZeroMatrix]]])
     assert I0.is_Identity
     assert I1.is_Identity
 
@@ -20,4 +20,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-08-19
-# updated on 2020-08-19

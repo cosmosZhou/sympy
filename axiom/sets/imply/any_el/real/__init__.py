@@ -28,7 +28,6 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
-    
+
 from . import left_open
 # created on 2019-12-04
-# updated on 2019-12-04

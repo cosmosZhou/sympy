@@ -16,14 +16,13 @@ def apply(A):
 def prove(Eq):
     n = Symbol(domain=Range(2, oo))
     A = Symbol(etype=dtype.integer, shape=(n,))
-    
+
     Eq << apply(A)
-    
+
     Eq << Eq[0].subs(n, 2)
 
-    
+
 if __name__ == '__main__':
     run()
 
 # created on 2021-04-23
-# updated on 2021-04-23

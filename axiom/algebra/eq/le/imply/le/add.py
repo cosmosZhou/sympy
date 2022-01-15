@@ -5,7 +5,7 @@ from util import *
 def apply(eq, x_less_than_b):
     if not eq.is_Equal:
         eq, x_less_than_b = x_less_than_b, eq
-    a, x = eq.of(Equal)    
+    a, x = eq.of(Equal)
     b, y = x_less_than_b.of(LessEqual)
 
     return LessEqual(a + b, x + y)
@@ -24,4 +24,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-10-29
-# updated on 2018-10-29

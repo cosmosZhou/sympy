@@ -22,4 +22,3 @@ if __name__ == '__main__':
 
 from . import infer
 # created on 2018-01-21
-# updated on 2018-01-21

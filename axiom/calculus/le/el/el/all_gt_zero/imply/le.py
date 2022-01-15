@@ -60,8 +60,11 @@ def prove(Eq):
 
     Eq << algebra.ge_zero.imply.le.apply(Eq[-2])
 
+    
+    
+
 
 if __name__ == '__main__':
     run()
 # created on 2020-05-10
-# updated on 2020-05-10
+# updated on 2021-11-21

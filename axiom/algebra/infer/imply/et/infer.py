@@ -1,7 +1,7 @@
 from util import *
 
 
-def new(p, q, simplify=True):    
+def new(p, q, simplify=True):
     if simplify:
         if q.is_Infer:
             _p, q = q.args
@@ -16,16 +16,16 @@ def new(p, q, simplify=True):
 def apply(given, index=-1, *, simplify=True):
     fx, fy = given.of(Infer)
     eqs = fy.of(And)
-    
-    
+
+
     if index is not None:
         first = eqs[:index]
         second = eqs[index:]
-    
+
         first = And(*(new(fx, eq, simplify) for eq in first))
         second = And(*(new(fx, eq, simplify) for eq in second))
         return first, second
-    
+
     return tuple(new(fx, eq, simplify) for eq in eqs)
 
 
@@ -45,4 +45,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-08-16
-# updated on 2018-08-16

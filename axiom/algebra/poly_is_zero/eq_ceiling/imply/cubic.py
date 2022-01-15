@@ -5,12 +5,11 @@ from util import *
 def apply(is_zero, eq, x=None):
     from axiom.algebra.poly_is_zero.imply.et.infer.cubic import cubic_coefficient
     fx = is_zero.of(Equal[0])
-    _1, _0, p, q = cubic_coefficient(fx, x=x)
-    assert _0 == 0 and _1 == 1
+    S[1], S[0], p, q = cubic_coefficient(fx, x=x)
 
-    (((arg_p, _coeff), half), ((arg_AB, coeff), _half)), d = eq.of(Equal[Ceiling[Arg * Expr - Expr] - Ceiling[Arg * Expr - Expr]])
-    assert coeff == _coeff == 3 / (S.Pi * 2)
-    assert half == _half == S.One / 2
+    (((arg_p, coeff), half), ((arg_AB, S[coeff]), S[half])), d = eq.of(Equal[Ceiling[Arg * Expr - Expr] - Ceiling[Arg * Expr - Expr]])
+    assert coeff == 3 / (S.Pi * 2)
+    assert half == S.One / 2
 
     delta = 4 * p ** 3 / 27 + q ** 2
 
@@ -64,7 +63,7 @@ def prove(Eq):
 
     Eq.expand = Eq[-1].subs(Eq.mul_ww)
 
-    Eq << Eq.expand.rhs.args[1].args[1].this.args[0].apply(algebra.mul.to.add, deep=True)
+    Eq << Eq.expand.find(Symbol * ~Add).this.args[0].apply(algebra.mul.to.add, deep=True)
 
     Eq << Eq[-1].this.rhs.find(Mul[Add]).apply(algebra.mul.to.add, deep=True, simplify=None)
 
@@ -84,7 +83,7 @@ def prove(Eq):
 
     Eq.expand = Eq.expand.subs(Eq[-1])
 
-    Eq << Eq.expand.rhs.args[1].args[2].this.apply(algebra.add.collect, factor=A)
+    Eq << Eq.expand.find(Symbol ** 2 * ~Add).this.apply(algebra.add.collect, factor=A)
 
     Eq << Eq[-1].this.rhs.apply(algebra.add.collect, factor=B)
 
@@ -150,8 +149,11 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq.A_def, Eq.B_def, Eq.w, Eq.w_conj)
 
+    
+    
+
 
 if __name__ == '__main__':
     run()
 # created on 2018-11-15
-# updated on 2018-11-15
+# updated on 2022-01-15

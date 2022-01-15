@@ -6,28 +6,17 @@ def apply(eq_cup, eq_cup_complement, eq, contains, sgm):
     if contains.is_Equal:
         eq, contains = contains, eq
 
-    ((a, i), (_i, n)), X = eq_cup.of(Equal[Cup[FiniteSet[Indexed], Tuple[0]]])
-    assert _i == i
-    ((b, k), (_k, n1)), X_complement = eq_cup_complement.of(Equal[Cup[FiniteSet[Indexed], Tuple[0]]])
-    assert k == _k
-    assert n1 == n - 1
+    ((a, i), (S[i], S[0], n)), X = eq_cup.of(Equal[Cup[FiniteSet[Indexed]]])
+    ((b, k), (S[k], S[0], S[n - 1])), X_complement = eq_cup_complement.of(Equal[Cup[FiniteSet[Indexed]]])
+    S[X], y = X_complement.of(Complement[Basic, FiniteSet])
 
-    _X, y = X_complement.of(Complement[Basic, FiniteSet])
-    assert _X == X
+    (S[a], i), S[y] = eq.of(Equal[Indexed])
 
-    (a, i), _y = eq.of(Equal[Indexed])
-    assert _y == y
+    faj, (j, (S[n], S[i])) = sgm.of(Sum[Tuple[Complement[Range[0], FiniteSet]]])
 
-    faj, (j, (_n, _i)) = sgm.of(Sum[Tuple[Complement[Range[0], FiniteSet]]])
-    assert _n == n
-    assert _i == i
+    S[X] = n.of(Card)
 
-    _X = n.of(Card)
-    assert _X == X
-
-    _i, _n = contains.of(Element[Range[0]])
-    assert _n == n
-    assert _i == i
+    S[i], S[n] = contains.of(Element[Range[0]])
 
     return Equal(sgm, Sum[k:n - 1](faj._subs(a[j], b[k])))
 
@@ -75,4 +64,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2021-03-24
-# updated on 2021-03-24

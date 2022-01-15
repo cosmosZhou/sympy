@@ -33,19 +33,18 @@ def apply(x_independence_assumption, y_independence_assumption, xy_independence_
 def prove(Eq):
     from axiom import keras, algebra, sets
 
-    from axiom.keras.eq.eq.eq.ne_zero.imply.eq.crf.markov import assumptions
-    Eq << apply(*assumptions())
+    Eq[-4:], (*Eq[-3:], Eq.G_definition), Eq[-2:] = apply(*keras.eq.eq.eq.ne_zero.imply.eq.crf.markov.assumptions())
 
     x_probability = Eq[3].lhs.arg.args[0]
     x = x_probability.lhs
     n = x.shape[0]
     s, t = Eq[4].lhs.args
-    Eq.x_quote_definition = Eq[5].apply(algebra.eq.imply.eq.lamda, (Eq[5].lhs.indices[-1],), simplify=False)
+    Eq.x_quote_definition = Eq[5].apply(algebra.eq.imply.eq.lamda, (Eq[5].lhs.indices[-1],))
 
     y = Eq.x_quote_definition.rhs.variable.base
     Eq << keras.eq.eq.eq.ne_zero.imply.eq.crf.markov.apply(*Eq[:4])
 
-    Eq << keras.eq.imply.infer.crf.logits.apply(Eq[-1], Eq[7].lhs.base, Eq[6].lhs.base, s)
+    Eq << keras.eq.imply.infer.crf.logits.apply(Eq[-1], Eq.G_definition.lhs.base, Eq[6].lhs.base, s)
 
     Eq << Eq[-1].subs(t, t + 1)
 
@@ -95,8 +94,11 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(t, n - 1)
 
+    
+    
+
 
 if __name__ == '__main__':
     run()
 # created on 2020-12-20
-# updated on 2020-12-20
+# updated on 2021-12-31

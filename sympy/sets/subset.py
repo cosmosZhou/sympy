@@ -144,6 +144,8 @@ class Subset(BinaryCondition):
                 if x in self.lhs:
                     from sympy import Element
                     return Element(x, self.rhs).domain_conditioned(x)
+                
+        return BinaryCondition.domain_conditioned(self, x)
 
     @classmethod
     def simplify_ForAll(cls, self, function, *limits):

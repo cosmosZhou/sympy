@@ -6,7 +6,7 @@ def apply(self):
     args = []
     for arg in self.of(Mul):
         args.append(arg.of(Exp))
-        
+
     return Equal(self, Exp(Add(*args)), evaluate=False)
 
 
@@ -23,4 +23,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-10-25
-# updated on 2018-10-25

@@ -10,8 +10,7 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    k = Symbol(integer=True, positive=True)
-    x = Symbol(real=True, shape=(oo, k))
+    x = Symbol(real=True, shape=(oo,))
     i = Symbol(integer=True)
 
     n = 5
@@ -35,4 +34,3 @@ if __name__ == '__main__':
 from . import outer
 from . import setlimit
 # created on 2018-04-24
-# updated on 2018-04-24

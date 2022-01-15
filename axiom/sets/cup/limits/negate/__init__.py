@@ -36,4 +36,3 @@ if __name__ == '__main__':
 
 from . import infinity
 # created on 2021-02-08
-# updated on 2021-02-08

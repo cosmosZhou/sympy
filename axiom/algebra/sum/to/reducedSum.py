@@ -3,11 +3,11 @@ from util import *
 
 @apply
 def apply(self):
-    function, limit, *limits = self.of(Sum)
+    expr, limit, *limits = self.of(Sum)
 
     assert limit[0].is_integer
 
-    rhs = ReducedSum(Lamda(self.expr, limit).simplify())
+    rhs = ReducedSum(Lamda(expr, limit).simplify())
     if limits:
         rhs = Sum(rhs, *limits)
 
@@ -28,4 +28,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-03-26
-# updated on 2020-03-26

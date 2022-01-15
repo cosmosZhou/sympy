@@ -5,7 +5,7 @@ from util import *
 def apply(self, *, simplify=True):
     function, *limits_d = self.of(Derivative)
     f, *limits_s = function.of(Integral)
-    
+
     f = Derivative(f, *limits_d)
     if simplify:
         f = f.simplify()
@@ -22,4 +22,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2021-07-25
-# updated on 2021-07-25

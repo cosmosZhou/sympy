@@ -6,19 +6,14 @@ def apply(all_historic, all_n):
     if len(all_historic.limits) == 1:
         all_historic, all_n = all_n, all_historic
 
-    (lhs, rhs), (j, _zero, i_1), (_i, zero, n_1) = all_historic.of(All[Unequal])
+    (lhs, rhs), (j, S[0], i), (_i, S[0], n_1) = all_historic.of(All[Unequal])
     if lhs._has(j):
         lhs, rhs = rhs, lhs
 
-    assert zero == _zero == 0
-
-    (_lhs, _rhs), (i, zero, _n_1) = all_n.of(All[Unequal])
+    (_lhs, _rhs), (S[i], S[0], S[n_1]) = all_n.of(All[Unequal])
     if _lhs._has(i):
         _lhs, _rhs = _rhs, _lhs
 
-    assert i == i_1
-    assert zero == 0
-    assert _n_1 == n_1
     n = n_1
 
     x = Lamda[i:n + 1](lhs)
@@ -49,4 +44,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2020-09-09
-# updated on 2020-09-09

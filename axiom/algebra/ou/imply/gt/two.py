@@ -13,10 +13,9 @@ def apply(given, wrt=None):
 def prove(Eq):
     from axiom import algebra
 
-    k = Symbol(integer=True, positive=True)
-    x, p = Symbol(real=True, shape=(k,), given=True)
-    A = Symbol(etype=dtype.real * k, given=True)
-    f, g, h = Function(shape=(k,), real=True)
+    x, p = Symbol(real=True, given=True)
+    A = Symbol(etype=dtype.real, given=True)
+    f, g = Function(real=True)
     Eq << apply(Greater(f(x), p) & Element(x, A) | Greater(g(x), p) & NotElement(x, A), wrt=p)
 
     Eq << Eq[1].apply(algebra.cond.given.et.ou, cond=Element(x, A))
@@ -38,4 +37,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2020-01-12
-# updated on 2020-01-12

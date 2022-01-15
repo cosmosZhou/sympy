@@ -9,7 +9,7 @@ def generate_combination(n, k):
     while True:
         if x[i] <= n - (k - i):
             if i == k - 1:
-                yield [*x]                
+                yield [*x]
             else:
                 i += 1
                 x[i] = x[i - 1]
@@ -43,11 +43,11 @@ def apply(self, x):
         assert _1 == 1
         t = -t
         y.append(t)
-    
+
     f = 0
     for k in range(0, n + 1):
         f += sigmar(y, k) * x ** (n - k) * (-1) ** k
-        
+
     return Equal(self, f)
 
 
@@ -75,4 +75,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-11-15
-# updated on 2018-11-15

@@ -95,10 +95,12 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.apply(algebra.piece.swap, 2)
 
-    Eq << Eq[-1].this.find(Or).simplify()
+    
+
+    
 
 
 if __name__ == '__main__':
     run()
 # created on 2018-07-24
-# updated on 2018-07-24
+# updated on 2022-01-08

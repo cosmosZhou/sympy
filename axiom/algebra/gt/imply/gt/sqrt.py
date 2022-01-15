@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(given):
     lhs, rhs = given.of(Greater)
-    assert rhs >= 0    
+    assert rhs >= 0
     return Greater(sqrt(lhs), sqrt(rhs))
 
 
@@ -24,4 +24,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2019-07-01
-# updated on 2019-07-01

@@ -8,11 +8,11 @@ def apply(given, lhs=0, rhs=None):
     if lhs is not None:
         if LHS.is_Mul:
             divisor = LHS.args[lhs]
-        
+
     else:
         if RHS.is_Mul:
             divisor = RHS.args[rhs]
-            
+
     return Equal(LHS / divisor, RHS / divisor)
 
 
@@ -33,10 +33,9 @@ def prove(Eq):
     Eq << algebra.ne_zero.imply.ne_zero.reciprocal.apply(Eq[-2])
 
     Eq << algebra.ne_zero.eq.imply.eq.mul.apply(Eq[-1], Eq[0])
-    
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2021-11-09
-# updated on 2021-11-09

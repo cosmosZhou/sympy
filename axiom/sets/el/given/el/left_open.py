@@ -12,7 +12,7 @@ def apply(imply):
 @prove
 def prove(Eq):
     from axiom import sets
-    
+
     x, a, b = Symbol(real=True)
     Eq << apply(Element(x, Interval(a, b, right_open=True)))
     Eq << sets.el.imply.el.left_close.apply(Eq[1])
@@ -21,4 +21,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2021-02-28
-# updated on 2021-02-28

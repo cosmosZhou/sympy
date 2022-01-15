@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(given, *, cond=None):
     assert cond.is_boolean
-    return Or(given, cond) 
+    return Or(given, cond)
 
 
 @prove
@@ -24,4 +24,3 @@ if __name__ == '__main__':
 from . import split
 from . import subs
 # created on 2018-09-12
-# updated on 2018-09-12

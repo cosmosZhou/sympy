@@ -1685,8 +1685,9 @@ class MatrixOperations(MatrixRequired):
     def _eval_trace(self):
         return sum(self[i, i] for i in range(self.rows))
 
-    def _eval_transpose(self):
-        return self._new(self.cols, self.rows, lambda i, j: self[j, i])
+    def _eval_transpose(self, axis=-1):
+        if axis == self.default_axis:
+            return self._new(self.cols, self.rows, lambda i, j: self[j, i])
 
     def adjoint(self):
         """Conjugate transpose or Hermitian conjugation."""
@@ -2197,8 +2198,7 @@ class MatrixArithmetic(MatrixRequired):
                 return self._eval_scalar_mul(other)
             except TypeError:
                 pass
-
-        return NotImplemented
+        return MatrixRequired.__matmul__(self, other)
 
     def __mod__(self, other):
         return self.applyfunc(lambda x: x % other)
@@ -2299,7 +2299,7 @@ class MatrixArithmetic(MatrixRequired):
     def __rmatmul__(self, other):
         other = _matrixify(other)
         if not getattr(other, 'is_Matrix', False) and not getattr(other, 'is_MatrixLike', False):
-            return NotImplemented
+            return MatrixRequired.__rmatmul__(self, other)
 
         return self.__rmul__(other)
 

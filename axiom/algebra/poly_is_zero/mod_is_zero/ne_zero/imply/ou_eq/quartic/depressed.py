@@ -12,16 +12,13 @@ def apply(fx, mod_is_zero, is_nonzero, x=None):
 
     from axiom.algebra.poly_is_zero.imply.et.infer.quartic.one_leaded import quartic_coefficient
     fx = fx.of(Equal[0])
-    _1, _0, alpha, beta, gamma = quartic_coefficient(fx, x=x)
-    assert _0 == 0 and _1 == 1
+    S[1], S[0], alpha, beta, gamma = quartic_coefficient(fx, x=x)
 
-    __d, d = mod_is_zero.of(Equal[Expr % 3])
+    _d, d = mod_is_zero.of(Equal[Expr % 3])
     y_delta = cubic_delta(x, alpha, beta, gamma)
-    _d, y0 = cubic_solve(y_delta, x, d)
+    S[_d], y0 = cubic_solve(y_delta, x, d)
 
-    assert __d == _d
-    _beta = is_nonzero.of(Unequal[0])
-    assert _beta == beta
+    S[beta] = is_nonzero.of(Unequal[0])
 
     delta = -(alpha ** 2 / 3 + 4 * gamma) ** 3 / 27 + (-alpha ** 3 / 27 + 4 * alpha * gamma / 3 - beta ** 2 / 2) ** 2
 
@@ -146,4 +143,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-11-26
-# updated on 2018-11-26

@@ -3,9 +3,8 @@ from util import *
 
 @apply
 def apply(ge, sgm):
-    _a, _b = ge.of(GreaterEqual)
-    expr, (k, a, b) = sgm.of(Sum)
-    assert _a == a and _b == b
+    a, b = ge.of(GreaterEqual)
+    expr, (k, S[a], S[b]) = sgm.of(Sum)
     return Equal(sgm, 0)
 
 
@@ -28,4 +27,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-06-03
-# updated on 2019-06-03

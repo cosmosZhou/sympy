@@ -8,7 +8,7 @@ def apply(given, scale, div=False):
         gt = lhs / scale > rhs / scale
     else:
         gt = lhs * scale > rhs * scale
-    return gt, scale > 0        
+    return gt, scale > 0
 
 
 @prove
@@ -24,4 +24,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-07-16
-# updated on 2019-07-16

@@ -14,12 +14,11 @@ def prove(Eq):
 
     Eq << Eq[1].simplify()
 
-    
 
-    
+
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2018-10-23
-# updated on 2018-10-23

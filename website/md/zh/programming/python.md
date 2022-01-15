@@ -308,6 +308,9 @@ source ~/.bash_profile
 find / -name _sqlite*.so  
 Goto section 3.1 to recompile and install python!  
 cp /usr/lib/python3.6/lib-dynload/_sqlite3.cpython-36m-x86_64-linux-gnu.so /home/zhoulizhi/python3/lib/python3.6/lib-dynload/_sqlite3.so  
+
+when upgrating python3.6 to python3.9:  
+cp ./python/lib/python3.6/lib-dynload/_sqlite3.so ./python3/lib/python3.9/lib-dynload/_sqlite3.so  
 Reference:  
 https://www.jianshu.com/p/dd4532457b9f  
 Pytorch download sites:  

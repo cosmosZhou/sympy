@@ -6,10 +6,10 @@ def apply(lt, self, n=None, k=None):
     a, b = lt.of(Less)
     if n is None:
         n = self.generate_var(integer=True, var='n')
-        
+
     if k is None:
         k = self.generate_var(n, integer=True, var='k')
-    
+
     fx, (x, _a, _b) = self.of(Integral)
     assert _a == a and _b == b
     assert fx.is_continuous(x)
@@ -27,4 +27,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-05-26
-# updated on 2020-05-26

@@ -12,7 +12,7 @@ def apply(self, offset=None):
         offset = -Add(*offset)
     else:
         assert not offset._has(x)
-    
+
     if len(ab) == 2:
         a, b = ab
         assert a.is_boolean
@@ -32,4 +32,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-05-22
-# updated on 2020-05-22

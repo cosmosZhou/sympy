@@ -549,7 +549,7 @@ class Expr(Basic, EvalfMixin):
             if any(bools):
                 return S.false            
             
-            return Less(self, other, evaluate=False)
+#             return Less(self, other, evaluate=False)
 
         try:
             other = _sympify(other)
@@ -1211,14 +1211,15 @@ class Expr(Basic, EvalfMixin):
         from sympy.functions.elementary.complexes import conjugate as c
         return c(self)
 
-    def _eval_transpose(self):
-        from sympy.functions.elementary.complexes import conjugate
-        if self.is_complex and not self.shape:
-            return self
-        elif self.is_hermitian:
-            return conjugate(self)
-        elif self.is_antihermitian:
-            return -conjugate(self)
+    def _eval_transpose(self, axis=-1):
+        if axis == self.default_axis:
+            from sympy.functions.elementary.complexes import conjugate
+            if self.is_complex and not self.shape:
+                return self
+            elif self.is_hermitian:
+                return conjugate(self)
+            elif self.is_antihermitian:
+                return -conjugate(self)
 
     @property
     def T(self):
@@ -3784,7 +3785,8 @@ class Expr(Basic, EvalfMixin):
     def max(self):
         from sympy.concrete.expr_with_limits import Maxima
         return self.aggregate(Maxima)
-
+    
+    @cacheit
     def aggregate(self, aggregate):
         free_symbols = self.free_symbols
         for symbol in {*free_symbols}:
@@ -3825,12 +3827,12 @@ class Expr(Basic, EvalfMixin):
 
         f = self
         for x in G:
-            if x not in f.free_symbols:
+            if not f._has(x):
                 continue
             M = aggregate(f, (x,))
             _f = M.doit()
             if _f is M:
-                return f
+                continue
             f = _f
 
         return f
@@ -4058,16 +4060,28 @@ class Expr(Basic, EvalfMixin):
         assert condition.is_boolean
         if not condition._has(self):
             return self.domain
-        
-        domain = condition.domain_conditioned(self)
-        if domain is None:
-            from sympy.sets import conditionset       
-            return conditionset(self, condition, self.domain)
-        return domain
+        return condition.domain_conditioned(self)
         
     def is_continuous(self, *args):
         ...
 
+    def of_simple_poly(self, x):
+        '''
+        extract the coefficients of a simple polynomial
+        (a * x + b).of_simple_poly(x) = [b, a]
+        '''
+        if self._has(x):            
+            return None, None
+        
+        return self, S.Zero
+        
+    def monotonicity(self, x):
+        return None, 0
+
+    @property
+    def default_axis(self):
+        return len(self.shape) - 1
+        
         
 class AtomicExpr(Atom, Expr):
     """
@@ -4083,6 +4097,24 @@ class AtomicExpr(Atom, Expr):
 
     def _eval_derivative(self, s):
         if self == s:
+            if self.shape:
+                if len(self.shape) == 1:
+                    from sympy.matrices.expressions.matexpr import Identity
+                    return Identity(*self.shape)
+                else:
+                    from sympy import Lamda, KroneckerDelta
+                    excludes = set()
+                    limits_f = []
+                    limits_d = []
+                    prod = 1
+                    for n in self.shape:
+                        i = self.generate_var(excludes, integer=True)
+                        j = self.generate_var(excludes, integer=True)
+                        limits_f.append((i, 0, n))
+                        limits_d.append((j, 0, n))
+                        prod *= KroneckerDelta(i, j)
+                    return Lamda(prod, *limits_f, limits_d)
+                
             return S.One
         return S.Zero
 

@@ -24,10 +24,9 @@ def prove(Eq):
     Eq << Eq[-1] - Eq[0]
 
     Eq << Eq[-1] / 2
-    
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2021-11-09
-# updated on 2021-11-09

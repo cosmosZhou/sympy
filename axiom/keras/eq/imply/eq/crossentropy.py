@@ -67,10 +67,12 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq[0])
 
-    Eq << algebra.eq.imply.eq.lamda.apply(Eq[-1], (i,), simplify=False)
+    Eq << algebra.eq.imply.eq.lamda.apply(Eq[-1], (i,))
+
+    
 
 
 if __name__ == '__main__':
     run()
 # created on 2020-12-27
-# updated on 2020-12-27
+# updated on 2022-01-01

@@ -200,10 +200,10 @@ switch ($lang) {
 </body>
 </html>
 
-<script	src="https://cdn.jsdelivr.net/highlight.js/8.8.0/highlight.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/marked@2.1.3/marked.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qs/dist/qs.js"></script>
+<script	src="/sympy/static/unpkg.com/highlight.js/8.8.0/highlight.min.js"></script>
+<script src="/sympy/static/unpkg.com/marked@2.1.3/marked.min.js"></script>
+<script src="/sympy/static/unpkg.com/axios@0.24.0/dist/axios.min.js"></script>
+<script src="/sympy/static/unpkg.com/qs@6.10.2/dist/qs.js"></script>
 <script src="/sympy/static/js/std.js"></script>
 <script type=module>
 

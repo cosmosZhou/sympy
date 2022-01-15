@@ -23,4 +23,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-05-15
-# updated on 2019-05-15

@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(self):
     function, (x,) = self.of(Sum)
-    x, (start, stop) = x.of(Slice)
+    x, (start, stop) = x.of(Sliced)
     assert start + 1 < stop
     return Equal(self, Sum[x[start], x[start + 1:stop]](function))
 
@@ -22,4 +22,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2020-03-18
-# updated on 2020-03-18

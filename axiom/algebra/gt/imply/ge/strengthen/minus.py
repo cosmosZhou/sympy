@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(given):
     lhs, rhs = given.of(Greater)
-    
+
     assert lhs.is_integer and rhs.is_integer
     return GreaterEqual(lhs - 1, rhs)
 
@@ -22,4 +22,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-07-23
-# updated on 2019-07-23

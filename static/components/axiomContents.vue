@@ -1,6 +1,6 @@
 <template>
 	<div tabindex=1 class=contents @keydown=keydown>
-		<search-form v-if=issearch></search-form>
+		<searchForm v-if="issearch" :keyword=keyword :caseSensitive=caseSensitive :wholeWord=wholeWord :regularExpression=regularExpression :nlp=nlp></searchForm>
 		<packages ref=packages :packages=packages></packages>
 		<br>
 		<hr>
@@ -22,6 +22,11 @@ export default {
 	data(){
 		return {
 			issearch: false,
+			
+			caseSensitive: false,
+			wholeWord: false, 
+			regularExpression: false,
+			nlp: false,			
 		};		
 	},
 	

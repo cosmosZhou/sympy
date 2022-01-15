@@ -3,17 +3,12 @@ from util import *
 
 @apply
 def apply(eq_sum, ge, all_is_nonnegative):
-    (xi, (i, _0, n)), a = eq_sum.of(Equal[Sum])
-    xn, _a = ge.of(GreaterEqual)
-    assert a == _a
-    assert _0 == 0
+    (xi, (i, S[0], n)), a = eq_sum.of(Equal[Sum])
+    xn, S[a] = ge.of(GreaterEqual)
 
     assert n > 0
     assert xn == xi._subs(i, n - 1)
-    _xi, (_i, _0, _n) = all_is_nonnegative.of(All[Expr >= 0])
-    assert _0 == 0
-    assert n == _n
-    assert _xi == xi and _i == i
+    S[xi], (S[i], S[0], S[n]) = all_is_nonnegative.of(All[Expr >= 0])
 
     return Equal(xn, a), All[i:n - 1](Equal(xi, 0))
 
@@ -68,4 +63,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-04-27
-# updated on 2019-04-27

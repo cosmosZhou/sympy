@@ -7,7 +7,7 @@ def apply(self, k=None):
     assert self.left_open and not self.right_open
     assert a.is_integer and b.is_integer
     if k is None:
-        k = self.generate_var(integer=True)    
+        k = self.generate_var(integer=True)
     return Equal(self, Cup[k:a:b](Interval(k, k + 1, left_open=True)))
 
 
@@ -20,10 +20,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(sets.cup.to.interval.left_open)
 
-    
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2018-10-20
-# updated on 2018-10-20

@@ -48,4 +48,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-07-06
-# updated on 2018-07-06

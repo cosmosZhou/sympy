@@ -30,4 +30,3 @@ if __name__ == '__main__':
 from . import rhs
 from . import lhs
 # created on 2018-04-12
-# updated on 2018-04-12

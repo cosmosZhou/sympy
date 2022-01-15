@@ -3,13 +3,11 @@ from util import *
 
 @apply
 def apply(eq_cup):
-    ((b, k), (_k, n)), X_complement = eq_cup.of(Equal[Cup[FiniteSet[Indexed], Tuple[0]]])
-    assert k == _k
+    ((b, k), (S[k], S[0], n)), X_complement = eq_cup.of(Equal[Cup[FiniteSet[Indexed]]])
     n += 1
     X = n.of(Card)
 
-    _X, y = X_complement.of(Complement[Basic, FiniteSet])
-    assert _X == X
+    S[X], y = X_complement.of(Complement[Basic, FiniteSet])
     assert X.is_finiteset
     return Element(y, X)
 
@@ -40,4 +38,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2021-03-22
-# updated on 2021-03-22

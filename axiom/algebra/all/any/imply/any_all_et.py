@@ -7,7 +7,7 @@ def limits_dependent(limits_x, limits_y, dir=None):
     dict_y = limits_dict(limits_y)
     if dict_x.keys() & dict_y.keys():
         return True
-    
+
     for x, domain_x in dict_x.items():
         for y, domain_y in dict_y.items():
             if isinstance(domain_y, list):
@@ -16,17 +16,17 @@ def limits_dependent(limits_x, limits_y, dir=None):
             elif domain_y.is_set:
                 if domain_y._has(x):
                     return True
-                
+
             if dir:
                 continue
-            
+
             if isinstance(domain_x, list):
                 if any(d._has(x) for d in domain_x):
-                    return True                
+                    return True
             elif domain_x.is_set:
                 if domain_x._has(y):
-                    return True                                   
-    
+                    return True
+
     return False
 
 @apply
@@ -57,4 +57,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2018-12-04
-# updated on 2018-12-04

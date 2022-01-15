@@ -5,8 +5,7 @@ from util import *
 def apply(is_zero, x=None, d=0):
     from axiom.algebra.poly_is_zero.imply.et.infer.cubic import cubic_coefficient
     fx = is_zero.of(Equal[0])
-    _1, _0, p, q = cubic_coefficient(fx, x=x)
-    assert _0 == 0 and _1 == 1
+    S[1], S[0], p, q = cubic_coefficient(fx, x=x)
 
     delta = 4 * p ** 3 / 27 + q ** 2
     U = sqrt(delta) - q
@@ -97,4 +96,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-11-10
-# updated on 2018-11-10

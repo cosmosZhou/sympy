@@ -25,4 +25,3 @@ if __name__ == '__main__':
 
 from . import min
 # created on 2019-06-16
-# updated on 2019-06-16

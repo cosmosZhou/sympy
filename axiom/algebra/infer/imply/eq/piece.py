@@ -2,9 +2,12 @@ from util import *
 
 
 @apply
-def apply(given, piecewise, index=None):
+def apply(given, piecewise, index=None, reverse=False):
     cond, q = given.of(Infer)
     old, new = q.of(Equal)
+    if reverse:
+        old, new = new, old
+
     [*ecs] = piecewise.of(Piecewise)
     if index is None:
         hit = False
@@ -35,9 +38,9 @@ def prove(Eq):
 
     Eq << Eq[1] - Eq[1].rhs
 
-    Eq << Eq[-1].this.lhs.apply(algebra.add.to.piece.st.two_pieces)
+    Eq << Eq[-1].this.lhs.apply(algebra.add_piece.to.piece)
 
-    Eq << Eq[-1].this.rhs.apply(algebra.add.to.piece.st.two_pieces)
+    Eq << Eq[-1].this.rhs.apply(algebra.add_piece.to.piece)
 
     Eq << algebra.eq.given.ou.apply(Eq[-1])
 
@@ -51,4 +54,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-07-23
-# updated on 2018-07-23

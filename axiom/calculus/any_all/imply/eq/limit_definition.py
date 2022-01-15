@@ -45,12 +45,10 @@ def apply(given):
         
         if domain.is_set:
             N1 = domain.of(Range[Infinity])
-            _delta = N1 - 1
+            S[delta] = N1 - 1
         else:
-            _x, _delta = domain.of(Greater)
-            assert x == _x
+            S[x], S[delta] = domain.of(Greater)
             
-        assert delta == _delta
         return Equal(Limit[x:oo](fx), A)
     else:
         assert x.is_real
@@ -58,16 +56,12 @@ def apply(given):
 
         if domain.is_And:
             lt, gt = domain.args
-            xx0, _delta = lt.of(Less)
-            assert _delta == delta
+            xx0, S[delta] = lt.of(Less)
             if xx0.is_Abs:
-                _x, x0 = xx0.of(Abs[Expr - Expr])
-                assert x == _x
+                S[x], x0 = xx0.of(Abs[Expr - Expr])
                 assert x0.is_real
 
-                _xx0, zero = gt.of(Greater)
-                assert zero == 0
-                assert _xx0 == xx0
+                S[xx0], S[0] = gt.of(Greater)
                 dir = 0
             else:
                 [*args] = xx0.of(Add)

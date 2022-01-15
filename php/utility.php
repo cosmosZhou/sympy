@@ -2,7 +2,6 @@
 // use the following regex to remove error_log prints:
 // ^ *error_log
 require_once 'std.php';
-require_once 'python.php';
 use std\Set, std\Text, std\Queue;
 
 // to speed up the .php page rendering, disable error_log!!
@@ -136,14 +135,6 @@ function retrieve_all_dependency()
     }
 }
 
-function is_latex($latex, &$matches)
-{
-    if (preg_match_all('/\\\\\[.+?\\\\\]/', $latex, $matches, PREG_SET_ORDER)) {
-        return true;
-    }
-    return false;
-}
-
 function is_def_start($funcname, $statement, &$matches)
 {
     return preg_match("/^def +$funcname\([^)]*\) *: */", $statement, $matches);
@@ -151,8 +142,6 @@ function is_def_start($funcname, $statement, &$matches)
 
 function analyze_apply($py, &$i)
 {
-    // ++ $i;
-    $numOfYields = 0;
     $count = count($py);
     $provability = null;
     for (; $i < $count; ++ $i) {
@@ -169,47 +158,9 @@ function analyze_apply($py, &$i)
             }
             continue;
         }
-
-        if (preg_match('/^from/', $statement, $matches)) {
-            continue;
-        }
-
-        if (preg_match('/^ *$/', $statement, $matches)) {
-            continue;
-        }
-
-        if (preg_match('/^(?:    )+return(?=\W)\s*(.+?)\s*$/', $statement, $matches)) {
-            if ($numOfYields)
-                continue;
-            // error_log('return statement: ' . $statement);
-            $yield = $matches[1];
-            // error_log('yield = ' . $yield);
-
-            if (\std\equals($yield, 'None') || strlen(trim($yield)) == 0)
-                continue;
-
-            $result = null;
-
-            do {
-                $result = \python\len_args($yield, $result);
-
-                if (is_int($result)) {
-                    $numOfYields = $result;
-                    break;
-                }
-
-                ++ $i;
-                if ($i >= $count)
-                    break;
-                $yield = $py[$i];
-            } while (true);
-        }
     }
 
-    return [
-        $numOfYields,
-        $provability
-    ];
+    return $provability;
 }
 
 function detect_axiom(&$statement)
@@ -308,10 +259,9 @@ function yield_from_py($python_file)
             ];
 
             // error_log('given begins: ' . $statement);
-            list ($numOfYields, $provability) = analyze_apply($py, $i);
+            $provability = analyze_apply($py, $i);
             // error_log('given ended: ' . $statement);
             yield [
-                'numOfYields' => $numOfYields,
                 'line' => $i + 1,
                 'provability' => $provability
             ];
@@ -418,7 +368,13 @@ function yield_from_py($python_file)
 
             $yield['statement'] = $statement;
 
-            if (match_section($statement, $matches)) {
+            if (preg_match('/(=|<<) *apply\(/', $statement, $matches)) {
+                // error_log('yield statement: ' . $statement);
+                // error_log("php = $php");
+                
+                $yield['module'] = py_to_module($python_file);
+            }            
+            else if (match_section($statement, $matches)) {
                 $index = 0;
 
                 $dict = [];
@@ -435,12 +391,7 @@ function yield_from_py($python_file)
                 }
                 // error_log("dict = " . jsonify($dict));
                 $yield['a'] = $dict;
-            } else if (preg_match('/(=|<<) *apply\(/', $statement, $matches)) {
-                // error_log('yield statement: ' . $statement);
-                // error_log("php = $php");
-
-                $yield['module'] = py_to_module($python_file);
-            }
+            }             
             // error_log(\std\jsonify($yield));
             yield $yield;
         }
@@ -468,7 +419,7 @@ function yield_from_py($python_file)
 
 function match_section($statement, &$matches)
 {
-    return preg_match_all('/\b(?:algebra|sets|calculus|discrete|geometry|keras|stats)(?:\.\w+)+/', $statement, $matches, PREG_SET_ORDER);
+    return preg_match_all('/\b(?:algebra|sets|calculus|discrete|geometry|keras|stats|patent)(?:\.\w+)+/', $statement, $matches, PREG_SET_ORDER);
 }
 
 function insert_section(&$proveCodes)
@@ -583,7 +534,7 @@ function delete_from_init($package, $theorem = null)
 
     $folder = module_to_path($package);
 
-    error_log("theorem = $theorem");
+    error_log("package = $package, theorem = $theorem");
     $initPy = $folder . "/__init__.py";
 
     $lineNum = - 1;
@@ -594,6 +545,7 @@ function delete_from_init($package, $theorem = null)
     $content = null;
     $emptyLines = 0;
 
+    if (file_exists($initPy))
     {
         $__init__ = new Text($initPy);
         foreach ($__init__ as $line) {
@@ -635,6 +587,21 @@ function delete_from_init($package, $theorem = null)
 
     if ($imports == 1) {
         error_log("imports = 1");
+        
+        error_log("folder = $folder");
+        $subFolder = "$folder/$theorem";
+        foreach (\std\list_all_files($folder, 'py') as list ($pyFile, $php)) {
+//             if (\std\startsWith($subFolder)){
+//                 error_log("detect py file $pyFile within the deleted $subFolder, so continue the process!");
+//                 continue;
+//             }
+            
+//             if (file_exists($pyFile)){
+                error_log("detect py file $pyFile within the folder $folder, so cease the deleting process!");
+                return;            
+//             }
+        }
+        
         $lineNum -= $emptyLines;
         if ($lineNum > 0) {
             rename($initPy, "$folder.py");
@@ -644,6 +611,8 @@ function delete_from_init($package, $theorem = null)
             delete_from_init($package);
         }
     }
+    
+    return;
 }
 
 // input is a py file
@@ -688,18 +657,33 @@ function modify_codes($python_file, $_proveCodes, $applyCodes = null)
         }
     }
 
+    $updatedTime = null;
     $codesAfterProve = [];
     for (; $i < $count; ++ $i) {
         $comment = $py[$i];
-        if (preg_match("/ *# *updated on (\d\d\d\d-\d\d-\d\d)/i", $comment, $m)) {
-            $timestamp = date('Y-m-d', time());
-            $comment = "# updated on $timestamp";
+        if (preg_match("/ *# *(updated|created) on (\d\d\d\d-\d\d-\d\d)/i", $comment, $m)) {
+            switch ($m[1]){
+                case "updated":
+                    $timestamp = date('Y-m-d', time());
+                    $comment = "# updated on $timestamp\n";
+                    $updatedTime = "$timestamp";
+                    break;
+                case "created":
+                    $createdTime = $m[2];
+                    break;
+            }
         }
 
         $codesAfterProve[] = $comment;
     }
 
-    // error_log("in modify_codes: codes = " . \std\jsonify($codes));
+    if (!$updatedTime){
+        $timestamp = date('Y-m-d', time());
+        $updatedTime = "$timestamp";
+        if ($updatedTime != $createdTime){
+            $codesAfterProve[] = "# updated on $timestamp\n";            
+        }
+    }
 
     array_push($codes, ...$proveCodes, ...$codesAfterProve);
 
@@ -836,33 +820,30 @@ function run($py)
         $array = explode("\r\n", $array);
     }
 
-    array_push($logs, ...$array);
-
-    // foreach ($array as $line) {
-    // error_log($line);
-    // }
-
-    $sql_statement = '';
-    $statementsFromSQLFile = '';
+    $data = null;
     foreach ($array as &$line) {
-        // error_log("line = " . $line);
-        if (preg_match("/latex results are saved into: (\S+)/", $line, $m)) {
-            $sqlFileContainingLatex = $m[1];
-            $statementsFromSQLFile = iterator_to_array(\mysql\yield_from_sql($sqlFileContainingLatex));
-
-            // error_log("statementsFromSQLFile = " . \std\jsonify($statementsFromSQLFile));
-
-            $sql_statement = str_replace('\\', '/', $sqlFileContainingLatex);
-
-            // error_log("sql_statement = $sql_statement");
+//         error_log("line = " . $line);
+        if (preg_match('/^b([\'"])(.+)\1$/', $line, $m)) {
+            $line = $m[2];
+            if ($m[1] == "'"){
+                $line = str_replace('"', '\\"', $line);
+                $data = explode("\v", eval("return \"$line\";"));
+                $index = count($data) - 1;
+                $data[$index] = str_replace("\\'", "'", $data[$index]);
+            }
+            else{
+                $data = explode("\v", eval("return \"$line\";"));
+            }
             break;
+        }
+        else{
+            $logs[] = $line;
         }
     }
 
     return [
         $logs,
-        $sql_statement,
-        $statementsFromSQLFile
+        $data
     ];
 }
 

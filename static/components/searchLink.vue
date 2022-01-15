@@ -1,9 +1,14 @@
 <template>
-	<input v-if="mode != 'a'" v-focus spellcheck=false :size='module.length + 1' :value=module @blur=blur @keydown=keydown>
-	<a v-else v-focus tabindex=2 :href=href @contextmenu.prevent=contextmenu @keydown=keydown_a>
+	
+	<a v-if="mode == 'a'" v-focus tabindex=2 :href=href @contextmenu.prevent=contextmenu @keydown=keydown_a>
        	{{module}}
        	<search-contextmenu v-if='showContextmenu' :left=left :top=top></search-contextmenu>
     </a>
+	<span v-else-if="mode == 'span'">
+       	{{module}}
+    </span>
+    <input v-else v-focus spellcheck=false :size='module.length + 1' :value=module @blur=blur @keydown=keydown>
+    
 </template>
 
 <script>
@@ -36,30 +41,46 @@ export default {
 	},
 	
 	methods: {
-		set_module(module){
-			if (this.module == module){
-				return;	
+		async delete_folder(error_msg){
+			while (error_msg){
+				console.log('error_msg = ', error_msg);				
+				var m = error_msg.matchAll(/rmdir\((\S+)\)/g);
+				error_msg = '';
+				for (var m of m){
+					var folder = m[1];
+					var names = folder.split(/[\/\\]/);
+					var index = names.indexOf('axiom');
+					names = names.slice(index + 1);
+					var section = names.pop();
+					var parentFolder = names.join('.');
+					//error_msg += await form_post(`php/request/delete/package.php`, { package: parentFolder, section});
+				}
+			}
+		},
+		
+		async set_module(module){
+			var undeletables = '';
+			if (this.module != module){
+				console.log('oldText = ' + this.module);
+				console.log('newText = ' + module);			
+				
+				undeletables = await form_post(`php/request/rename.php`, { old: this.module.replace(/\//g, '.'), new: module.replace(/\//g, '.')});
+				console.log('undeletables = ' + undeletables);
+				
+				var modules = this.$root.modules;
+				if (!modules){
+					console.assert(this.module == this.$root.module, "this.module == this.$root.module");
+					this.$root.graph[module] = this.$root.graph[this.module];
+					delete this.$root.graph[this.module];
+					this.$root.module = module;
+				}
+				else{
+					modules[modules.indexOf(this.module)] = module;	
+				}
 			}
 
-			console.log('oldText = ' + this.module);
-			console.log('newText = ' + module);			
-			
-			var sympy = sympy_user();
-			
-			form_post(`php/request/rename.php`, { old: this.module, new: module}).then(res => {
-				console.log('res = ' + res);					
-			});
-			
-			var modules = this.$root.modules;
-			if (!modules){
-				console.assert(this.module == this.$root.module, "this.module == this.$root.module");
-				this.$root.graph[module] = this.$root.graph[this.module];
-				delete this.$root.graph[this.module];
-				this.$root.module = module;
-			}
-			else{
-				modules[modules.indexOf(this.module)] = module;	
-			}
+			this.mode = 'a';
+			return undeletables;
 		},
 		
 		contextmenu(event) {
@@ -82,20 +103,23 @@ export default {
 				this.mode = 'input';
 			}
 			else{
-				this.mode = 'a';
-				this.set_module(event.target.value);
+				this.mode = 'span';
+				focusedAlready = false;
+				this.$nextTick(async ()=>{
+					var undeletables = await this.set_module(event.target.value);
+					console.log("undeletable files = ", undeletables);
+					
+					this.delete_folder(undeletables);
+				});
 			}				
 		},
 		
-		keydown(event){
+		async keydown(event){
 			switch(event.key){
 			case 'Enter':
-				this.set_module(event.target.value);
-				this.mode = 'a';
-				var self = this;
-				setTimeout(()=>{
-					self.$el.focus();				
-				}, 100);
+				var undeletables = await this.set_module(event.target.value);
+				console.log("undeletable files = ", undeletables);
+				this.delete_folder(undeletables);
 				
 				break;
 			case 'F3':
@@ -125,10 +149,10 @@ export default {
 		    		focusedAlready = true;
 		    	}
 		    },
-		    /*
+
 		    updated(el, binding){
 		    	el.focus();
-		    }*/
+		    }
 		},
 	},
 }

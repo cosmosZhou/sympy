@@ -2,26 +2,27 @@ from util import *
 
 
 @apply
-def apply(a, Ξ):
+def apply(a, Ξ, add=False):
     assert a.shape == Ξ.shape
-    if Ξ.is_Lamda:
-        function, *limits = Ξ.of(Lamda)
-    else:
-        function, *limits = Ξ.defun().of(Lamda)
-
+    lamda = Ξ
+    while not lamda.is_Lamda:
+        lamda = lamda.defun()
+            
+    function, *limits = lamda.of(Lamda)
     assert function.is_Bool
+    if add:
+        return Equal(exp(a + (Ξ - 1) * oo), Ξ * exp(a))
     return Equal(exp(a - (1 - Ξ) * oo), Ξ * exp(a))
 
 
 @prove
 def prove(Eq):
     from axiom import algebra
+
     n = Symbol(integer=True, positive=True)
     p = Function(integer=True, shape=())
     a = Symbol(real=True, shape=(n, n))
-
     i, j = Symbol(integer=True)
-
     Ξ = Symbol(Lamda[j:n, i:n](Bool(p(i, j) > 0)))
     Eq << apply(a, Ξ)
 
@@ -56,6 +57,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.arg.definition
 
+    
+    
+
 
 if __name__ == '__main__':
     run()
@@ -63,4 +67,4 @@ if __name__ == '__main__':
 # Self-Attention with Relative Position Representations.pdf
 # https://arxiv.org/abs/1803.02155
 # created on 2020-12-27
-# updated on 2020-12-27
+# updated on 2022-01-08

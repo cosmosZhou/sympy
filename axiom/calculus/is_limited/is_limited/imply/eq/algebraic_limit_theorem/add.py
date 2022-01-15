@@ -62,4 +62,3 @@ if __name__ == '__main__':
 # https://en.wikipedia.org/wiki/Limit_of_a_function#Properties
 
 # created on 2020-05-04
-# updated on 2020-05-04

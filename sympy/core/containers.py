@@ -177,7 +177,14 @@ class Tuple(Basic):
                 else:
                     return r"%s:%s:%s" % tuple([p._print(s) for s in (self[0], self[1], self[2])])
             elif len(self) == 2:
-                return r"%s:%s" % tuple([p._print(s) for s in (self[0], self[1])])
+                e, s = self
+                if s.is_Range:
+                    start, stop, step = s.args
+                    if step.is_One:
+                        if start.is_Zero:
+                            return r"%s:%s" % tuple([p._print(s) for s in (e, stop)])
+                        return r"%s:%s:%s" % tuple([p._print(s) for s in (e, start, stop)])
+                return r"%s:%s" % tuple([p._print(s) for s in (e, self[1])])
             else:
                 return p._print(self[0])
         else:
@@ -242,7 +249,7 @@ class Tuple(Basic):
                 hit = True
                 ab[j] = _t
                 
-        if x.is_Indexed or x.is_Slice:
+        if x.is_Indexed or x.is_Sliced:
             _hit = False
             indices = [*x.indices]
             for j, t in enumerate(indices):

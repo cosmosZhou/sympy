@@ -12,12 +12,11 @@ def apply(given, wrt=None):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
-    k = Symbol(integer=True, positive=True)
-    x = Symbol(real=True, shape=(k,), given=True)
-    A, B = Symbol(etype=dtype.real * k, given=True)
-    f, g, h = Function(shape=(k,), real=True)
+    x = Symbol(real=True, given=True)
+    A, B = Symbol(etype=dtype.real, given=True)
+    f, g, h = Function(real=True)
 
-    p = Symbol(shape=(k,), real=True, given=True)
+    p = Symbol(real=True, given=True)
 
     Eq << apply(Greater(f(x), p) & Element(x, A) | Greater(g(x), p) & Element(x, B - A) | Greater(h(x), p) & NotElement(x, A | B), wrt=p)
 
@@ -37,4 +36,3 @@ if __name__ == '__main__':
 
 from . import two
 # created on 2020-01-13
-# updated on 2020-01-13

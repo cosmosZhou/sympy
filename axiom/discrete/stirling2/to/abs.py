@@ -8,13 +8,13 @@ def apply(self):
     assert not x.is_set
     n, k = self.of(Stirling)
     i = Symbol('i', integer=True)
- 
+
     return Equal(self, Card(imageset(x[:k], Cup[i:k](FiniteSet(x[i])), self.conditionset(n, k, x))))
 
 
 @prove(provable=False)
 def prove(Eq):
-    
+
     n, k = Symbol(integer=True, positive=True)
     Eq << apply(Stirling(n, k))
 
@@ -22,4 +22,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-10-04
-# updated on 2020-10-04

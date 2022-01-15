@@ -93,6 +93,27 @@ class TopKHeap(object):
         return arr
 
 
+
+def argmax(arr):
+    maxi = arr[0]
+    index = 0
+    for i in range(1, len(arr)):
+        a = arr[i]
+        if a > maxi:
+            index = i
+        
+    return index
+
+def argmin(arr):
+    maxi = arr[0]
+    index = 0
+    for i in range(1, len(arr)):
+        a = arr[i]
+        if a < maxi:
+            index = i
+        
+    return index
+
 if __name__ == '__main__':
     import random
     heap = TopKHeap(10)

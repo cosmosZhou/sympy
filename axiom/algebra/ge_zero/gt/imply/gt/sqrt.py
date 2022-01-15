@@ -4,8 +4,7 @@ from util import *
 @apply
 def apply(is_nonnegative, gt):
     x = is_nonnegative.of(Expr >= 0)
-    y, _x = gt.of(Greater)
-    assert _x == x
+    y, S[x] = gt.of(Greater)
     return Greater(sqrt(y), sqrt(x))
 
 
@@ -39,4 +38,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-06-13
-# updated on 2019-06-13

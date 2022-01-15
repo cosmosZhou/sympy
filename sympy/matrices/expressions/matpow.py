@@ -92,9 +92,10 @@ class MatPow(MatrixExpr):
             return base
         return MatPow(base, exp)
 
-    def _eval_transpose(self):
-        base, exp = self.args
-        return MatPow(base.T, exp)
+    def _eval_transpose(self, axis=-1):
+        if axis == self.default_axis:
+            base, exp = self.args
+            return MatPow(base.T, exp)
 
     def _eval_derivative_matrix_lines(self, x):
         from sympy.core.expr import ExprBuilder

@@ -17,26 +17,25 @@ def prove(Eq):
 
     Eq << geometry.sin.to.sum.apply(sin(x))
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
+
+
+
+
+
+
+
+
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2020-11-19
-# updated on 2020-11-19

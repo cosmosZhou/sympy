@@ -3,12 +3,11 @@ from util import *
 
 @apply
 def apply(self):
-    (xij, mean), (j, _0, n), (i, __0, m) = self.of(Sum[Pow[Expr - Expr, 2]])
-    assert 0 == _0 == __0
+    (xij, mean), j_limit, i_limit = self.of(Sum[Pow[Expr - Expr, 2]])
+    j, S[0], n = j_limit
+    i, S[0], m = i_limit
     sgm = mean * (m * n)
-    _xij, *limits = sgm.of(Sum)
-    assert limits == [(j, 0, n), (i, 0, m)]
-    assert xij == _xij
+    S[xij], S[j_limit], S[i_limit] = sgm.of(Sum)
     return Equal(self, n * Sum[i:m]((Sum[j:n](xij) / n - mean) ** 2) + Sum[j:n, i:m]((xij - Sum[j:n](xij) / n) ** 2))
 
 
@@ -73,4 +72,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-03-27
-# updated on 2020-03-27

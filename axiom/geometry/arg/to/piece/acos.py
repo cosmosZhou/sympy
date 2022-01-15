@@ -5,8 +5,8 @@ from util import *
 def apply(self):
     x, y = self.of(Arg[Expr + ImaginaryUnit * Expr])
     r = sqrt(x ** 2 + y ** 2)
-    return Equal(self, Piecewise((0, Equal(x, 0) & Equal(y, 0)), 
-                                 (acos(x / r), y >= 0), 
+    return Equal(self, Piecewise((0, Equal(x, 0) & Equal(y, 0)),
+                                 (acos(x / r), y >= 0),
                                  (-acos(x / r), True)))
 
 
@@ -32,4 +32,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-06-04
-# updated on 2018-06-04

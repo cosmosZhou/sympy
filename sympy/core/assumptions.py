@@ -192,12 +192,10 @@ References
 from sympy.core.facts import FactRules, FactKB
 from sympy.core.core import BasicMeta
 
-
 from random import shuffle
 
-
 _assume_rules = FactRules([
-#integer domain:
+# integer domain:
     'integer        ->  rational',
     'integer        ==  extended_integer & finite',
     'integer        ->  extended_integer',
@@ -217,9 +215,9 @@ _assume_rules = FactRules([
     'extended_integer -> integer | infinite',
     'extended_integer -> super_integer',
     
-    'super_integer -> super_rational',    
+    'super_integer -> super_rational',
         
-#rational domain:    
+# rational domain:    
     'rational       ->  real',
     'rational       ->  algebraic',
     'rational       ==  extended_rational & finite',
@@ -232,7 +230,7 @@ _assume_rules = FactRules([
     'hyper_rational -> super_rational',
     'super_rational -> super_real',
     
-#real domain:    
+# real domain:    
     'real           ->  hermitian',
     'real           ==  extended_real & finite',
     'real           ==  negative | zero | positive',
@@ -249,7 +247,7 @@ _assume_rules = FactRules([
     'nonpositive    ==  extended_nonpositive & finite',
     'nonnegative    ==  extended_nonnegative & finite',
     
-    'irrational     ==  real & !rational',    
+    'irrational     ==  real & !rational',
     'noninteger     ==  extended_real & !integer',
     
     'extended_real  ->  extended_complex',
@@ -268,7 +266,7 @@ _assume_rules = FactRules([
     'hyper_real -> hyper_complex',
     'super_real -> super_complex',
     
-#complex domain:
+# complex domain:
     'complex        -> extended_complex',
     'complex        ==  extended_complex & finite',
     
@@ -287,15 +285,15 @@ _assume_rules = FactRules([
     'extended_nonzero     ->  hyper_complex',
     
     'extended_complex ->  complex | infinite',
-    'extended_complex ->  hyper_complex',    
+    'extended_complex ->  hyper_complex',
     'hyper_complex    ->  super_complex',
     
-#matrix domain:
+# matrix domain:
     'invertible == !singular',
-#random domain:
+# random domain:
     'random -> finite',
     
-#set domain:    
+# set domain:    
     'empty -> finiteset',
     'infiniteset == !finiteset',
     'nonempty == !empty',
@@ -476,6 +474,7 @@ class StdFactKB(FactKB):
 
     This is the only kind of FactKB that Basic objects should use.
     """
+
     def __init__(self, facts=None):
         super().__init__(_assume_rules)
         # save a copy of the facts dict
@@ -579,7 +578,7 @@ def _ask(fact, obj):
 class ManagedProperties(BasicMeta):
     """Metaclass for classes with old-style assumptions"""
 
-    is_Operator = False
+    is_IndexedOperator = False
     
     def __init__(cls, *args, **kws):
         BasicMeta.__init__(cls, *args, **kws)
@@ -678,15 +677,16 @@ class ManagedProperties(BasicMeta):
         else:
             limits = [(limits,)]            
                     
-        return Operator(self, limits)
+        return IndexedOperator(self, limits)
 
     def __iter__(self):
         raise TypeError
 
 
-class Operator:
+# in the form of : Lamda[Tuple[2]], BlockMatrix[1][Identity @ Expr]
+class IndexedOperator:
     is_Basic = False
-    is_Operator = True
+    is_IndexedOperator = True
     is_Number = False
     is_Wanted = False
     
@@ -698,13 +698,22 @@ class Operator:
     def __call__(self, *args, **kwargs):
         return self.cls(*args, *self.limits, **kwargs)
         
+    def has_int_index(self):
+        limits = self.limits
+        if len(limits) == 1:
+            children = limits[0]
+            if len(children) == 1:
+                child = children[0]
+                return isinstance(child, int) and child > 1
+            
     @property
     def basic(self):
         if self._basic is None: 
             cls = self.cls
             limits = self.limits
             assert isinstance(cls, type)
-            from sympy.core.of import Basic, sympify            
+            from sympy.core.of import Basic, sympify
+            kwargs = {}            
             if len(limits) == 1: 
                 children = limits[0]
                 
@@ -720,17 +729,32 @@ class Operator:
                             else:
                                 cls = cls.__mro__[-4]
                             assert cls.is_Basic
-                        else: 
-                            children = [sympify(child)]                            
+                        else:
+                            if child == 1 and cls.is_BlockMatrix:
+                                children = []
+                                kwargs['axis'] = 1
+                            else:
+                                children = [sympify(child)]
+                    elif isinstance(child, IndexedOperator):
+                        if child.has_int_index():
+                            child = child.basic
+                            children = [*child.args]
+                            children[-1] = children[-1].func
                             
             else:
                 children = []                
                 for limit in limits: 
                     assert len(limit) == 1  
                     child = limit[0]
-                    children.append(sympify(child))
+                    if isinstance(child, IndexedOperator) and child.has_int_index():
+                        child = child.basic
+                        child = [*child.args]
+                        child[-1] = child[-1].func
+                        children.extend(child)
+                    else:
+                        children.append(sympify(child))
             
-            obj = Basic.__new__(cls, *children)
+            obj = Basic.__new__(cls, *children, **kwargs)
             self._basic = obj
         return self._basic
         
@@ -754,6 +778,16 @@ class Operator:
     def __getattr__(self, attr):
         return getattr(self.basic, attr)
 
+    def __getitem__(self, args):
+        [[axis]] = self.limits
+        from sympy.core.of import Basic
+        if isinstance(args, tuple):
+            args = (self.func, *args)
+        else:
+            args = (self.func, args)
+        obj = Basic.__new__(*args, axis=axis)
+        return obj
+        
     def __pow__(self, other): 
         return BasicMeta.__pow__(self.basic, other)
     
@@ -777,6 +811,9 @@ class Operator:
     
     def __floordiv__(self, other): 
         return BasicMeta.__floordiv__(self.basic, other)
+    
+    def __matmul__(self, other): 
+        return BasicMeta.__matmul__(self.basic, other)
     
     def __gt__(self, other): 
         return BasicMeta.__gt__(self.basic, other)
@@ -820,3 +857,6 @@ class Operator:
         from sympy import sympify 
         lhs = sympify(lhs)
         return BasicMeta.__floordiv__(lhs, self.basic)
+
+    def __rmatmul__(self, other): 
+        return BasicMeta.__rmatmul__(self.basic, other)

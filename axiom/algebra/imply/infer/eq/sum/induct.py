@@ -5,8 +5,7 @@ from util import *
 def apply(sgm):
     fx, (x, X) = sgm.of(Sum)
 
-    (a, i), (_i, n) = X.of(Cup[FiniteSet[Indexed], Tuple[0]])
-    assert _i == i
+    (a, i), (S[i], S[0], n) = X.of(Cup[FiniteSet[Indexed]])
     j = sgm.generate_var(excludes=i, var='j', integer=True)
 
     return Infer(All[j:i, i:n](Unequal(a[i], a[j])), Equal(sgm, Sum[i:n](fx._subs(x, a[i]))))
@@ -49,4 +48,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-02-04
-# updated on 2019-02-04

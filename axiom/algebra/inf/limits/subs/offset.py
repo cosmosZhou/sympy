@@ -28,10 +28,9 @@ def prove(Eq):
 
     Eq << Eq[-2].this.expr.apply(algebra.any.given.any.limits.subs.offset, -t)
     Eq << algebra.all.given.all.limits.subs.offset.apply(Eq[-1], -t)
-    
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2019-10-03
-# updated on 2019-10-03

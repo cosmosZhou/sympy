@@ -15,11 +15,7 @@ def split(given, index):
 
 @apply
 def apply(given, index=-1):
-    if index is not None:
-        first, second = split(given, index)    
-    else:
-        return given.of(And)    
-    return first, second
+    return split(given, index)    
 
 
 @prove
@@ -52,4 +48,4 @@ from . import delete
 from . import subs
 from . import collect
 # created on 2018-01-04
-# updated on 2021-11-19
+# updated on 2021-11-20

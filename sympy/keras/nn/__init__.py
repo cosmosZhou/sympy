@@ -59,20 +59,29 @@ def relu(x):
     '''
     return Max(x, 0)
 
+def _eval_is_finite(self):
+    if self.is_extended_negative:
+        return True
+    return self.is_finite
 
-relu = Function.relu(real=True,
+relu = Function("relu", real=True,
                      extended_negative=False,
                      eval=relu,
                      _eval_is_extended_integer=lambda self: self.arg.is_extended_integer,
                      _eval_is_extended_positive=lambda self: self.arg.is_extended_positive,
+                     _eval_is_finite=_eval_is_finite,
                      __doc__=relu.__doc__
                      )
 
 
 def sigmoid(x):
-    return Max(x, 0)
+    return 1 / (1 + exp(-x))
 
 
-sigmoid = Function.σ(real=True,
-                     extended_negative=False,
-                     eval=sigmoid)
+sigmoid = Function(
+    "σ", 
+    extended_real=True,
+#     extended_negative=False,
+    extended_positive=True,
+    finite=True,
+    eval=sigmoid)

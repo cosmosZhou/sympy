@@ -1,21 +1,46 @@
 from util import *
 
 
+def list_to_tuple(arr):
+    if isinstance(arr, list):
+        return tuple((list_to_tuple(a) for a in arr))
+    else:
+        return arr
+    
 @apply
 def apply(self):
     A, B = self.of(MatMul)
-    m, n = A.shape
-    _n, l = B.shape
-    assert n == _n
-
-    prod = [[0] * l for i in range(m)]
-    for i in range(m):
+    if len(A.shape) == 2:
+        m, n = A.shape
+        _n, l = B.shape
+        assert n == _n
+    
+        prod = [[0] * l for i in range(m)]
+        for i in range(m):
+            for j in range(l):
+                for k in range(n):
+                    prod[i][j] += A[i, k] * B[k, j]
+    elif len(B.shape) == 2:
+        [n] = A.shape
+        _n, l = B.shape
+        assert n == _n
+    
+        prod = [0] * l
         for j in range(l):
             for k in range(n):
-                prod[i][j] += A[i, k] * B[k, j]
+                prod[j] += A[k] * B[k, j]
+    else:
+        [n] = A.shape
+        [_n] = B.shape
+        assert n == _n
+    
+        prod = 0
+        for k in range(n):
+            prod += A[k] * B[k]
+            
+        prod = (prod,)
 
-
-    rhs = Matrix(prod)
+    rhs = Matrix(list_to_tuple(prod))
     return Equal(self, rhs, evaluate=False)
 
 
@@ -50,4 +75,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2021-09-21
-# updated on 2021-09-21

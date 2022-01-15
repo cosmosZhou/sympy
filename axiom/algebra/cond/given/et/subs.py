@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(f_eq, old, new, reverse=False, simplify=True, assumptions={}):
-    from axiom.algebra.all_eq.cond.imply.all.subs import subs    
+    from axiom.algebra.all_eq.cond.imply.all.subs import subs
     if reverse:
         old, new = new, old
     return subs(f_eq, old, new, simplify=simplify, assumptions=assumptions), Equal(old, new)
@@ -24,4 +24,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-03-16
-# updated on 2019-03-16

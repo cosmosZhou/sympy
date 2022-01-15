@@ -7,8 +7,7 @@ def apply(gt_zero, lt, fx, x=None, left_open=True, right_open=True):
     m, M = lt.of(Less)
     a = gt_zero.of(Expr > 0)
 
-    x, _a, b, c = quadratic_coefficient(fx, x=x)
-    assert _a == a
+    x, S[a], b, c = quadratic_coefficient(fx, x=x)
 
     y0 = a * m ** 2 + b * m + c
     y1 = a * M ** 2 + b * M + c
@@ -73,4 +72,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2021-10-02
-# updated on 2021-10-02

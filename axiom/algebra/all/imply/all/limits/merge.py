@@ -6,31 +6,29 @@ def merge(given):
 
     limit_slice, limit_index = limits
 
-    if not limit_slice[0].is_Slice:
+    if not limit_slice[0].is_Sliced:
         limit_index, limit_slice = limits
 
     x_slice, space = limit_slice
     _domain, n = space.of(CartesianSpace)
 
-    x, slices = x_slice.of(Slice)
+    x, slices = x_slice.of(Sliced)
 
     if len(limit_index) == 3:
         x_index, a, b = limit_index
         integer = x_index.is_integer
         domain = (Range if integer else Interval)(a, b)
-        _x, index = x_index.args
+        S[x], index = x_index.args
     else:
         x_index, domain = limit_index
-        if x_index.is_Slice:
+        if x_index.is_Sliced:
             domain, size = domain.of(CartesianSpace)
             assert size == x_index.shape[0]
-            _x, index = x_index.args
+            S[x], index = x_index.args
         else:
-            _x, index = x_index.of(Indexed)
+            S[x], index = x_index.of(Indexed)
 
     assert _domain == domain
-
-    assert _x == x
 
     start, stop = slices
     if index == stop:
@@ -74,4 +72,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2018-12-09
-# updated on 2018-12-09

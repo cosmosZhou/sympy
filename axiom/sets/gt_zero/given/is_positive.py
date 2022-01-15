@@ -17,16 +17,15 @@ def prove(Eq):
 
     Eq << sets.el.imply.gt.split.interval.apply(Eq[1])
 
-    
 
-    
 
-    
 
-    
+
+
+
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2020-04-25
-# updated on 2020-04-25

@@ -2,11 +2,11 @@ from util import *
 
 
 @apply
-def apply(self, y=None): 
+def apply(self, y=None):
     expr, *limits = self.of(Sup)
     if y is None:
         y = self.generate_var(real=True, var='y')
-    
+
     return Equal(self, ReducedMin({y: ForAll(expr <= y, *limits)}))
 
 
@@ -26,4 +26,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-01-15
-# updated on 2019-01-15

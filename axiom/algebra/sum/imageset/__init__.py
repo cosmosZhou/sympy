@@ -19,7 +19,6 @@ def prove(Eq):
     n, a, b, m = Symbol(integer=True)
     f = Symbol(shape=(oo,), real=True)
     h = Function(real=True)
-    t = Function(integer=True)
     Eq << apply(Sum[n:imageset(n, a * n + b, h(n) > 0)](f[n]))
 
     Eq << Eq[0].this.lhs.apply(algebra.sum.bool)
@@ -43,4 +42,3 @@ if __name__ == '__main__':
     run()
 from . import proportional
 # created on 2018-05-02
-# updated on 2018-05-02

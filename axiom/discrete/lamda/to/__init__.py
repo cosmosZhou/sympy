@@ -1,2 +1,2 @@
 from . import matmul
-from . import blockMatrix
+from . import block

@@ -2,7 +2,6 @@ import os, re
 from sympy.utilities.misc import Text
 from _collections import defaultdict
 
-
 def axiom_directory():
     return os.path.dirname(os.path.dirname(__file__)) + '/axiom'
 
@@ -213,7 +212,7 @@ def yield_from_py(py):
             if re.match('^ *#', line):
                 continue
             
-            for m in re.finditer(r'\b(?:algebra|sets|calculus|discrete|geometry|keras|stats)(?:\.\w+)+', line):
+            for m in re.finditer(r'\b(?:algebra|sets|calculus|discrete|geometry|keras|stats|patent)(?:\.\w+)+', line):
                 module = m[0]        
                 m = re.match('(.+)\.apply$', module)
                 if m:

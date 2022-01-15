@@ -1,4 +1,6 @@
 from util import *
+
+
 from axiom.discrete.imply.gt_zero.alpha import alpha
 
 
@@ -9,7 +11,8 @@ def apply(given):
     offset = _j - j
     if offset != 0:
         assert not offset._has(j)
-
+    assert a < n
+    assert offset >= 0
     a += offset
     n += offset
     return Unequal(alpha(x[a:n]), 0)
@@ -21,23 +24,27 @@ def prove(Eq):
 
     x = Symbol(real=True, shape=(oo,))
     n = Symbol(integer=True, positive=True)
-    a = Symbol(integer=True, nonnegative=True)
-    b, i = Symbol(integer=True)
+    b = Symbol(integer=True, nonnegative=True)
+    a = Symbol(domain=Range(n))
+    i = Symbol(integer=True)
     Eq << apply(All[i:a:n](x[i + b] > 0))
-
-    x_ = Symbol.x(x[a + b:])
-    Eq << x_[i].this.definition
 
     Eq << Eq[0].this.apply(algebra.all.limits.subs.offset, a)
 
-    Eq << Eq[-1].subs(Eq[-2].reversed)
+    Eq << algebra.all_gt_zero.imply.gt_zero.lamda.apply(Eq[-1])
+
+    y = Symbol(x[a + b:n + b])
+    Eq << y[i].this.definition
+
+    Eq << Eq[-3].subs(Eq[-1].reversed)
 
     Eq << discrete.all_gt_zero.imply.ne_zero.alpha.apply(Eq[-1])
-
     Eq << Eq[-1].this.lhs.arg.definition
+    
+    
 
 
 if __name__ == '__main__':
     run()
 # created on 2020-09-22
-# updated on 2020-09-22
+# updated on 2022-01-01

@@ -3,12 +3,10 @@ from util import *
 
 @apply
 def apply(eq, eq_abs, sgm):
-    ((a, i), (_i, n)), X = eq.of(Equal[Cup[FiniteSet[Indexed], Tuple[0]]])
-    assert _i == i
+    ((a, i), (S[i], S[0], n)), X = eq.of(Equal[Cup[FiniteSet[Indexed]]])
 
-    _X, _n = eq_abs.of(Equal[Card])
-    fx, (x, __X) = sgm.of(Sum)
-    assert X == _X == __X
+    S[X], S[n] = eq_abs.of(Equal[Card])
+    fx, (x, S[X]) = sgm.of(Sum)
 
     return Equal(sgm, Sum[i:n](fx._subs(x, a[i])))
 
@@ -34,4 +32,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2021-03-21
-# updated on 2021-03-21

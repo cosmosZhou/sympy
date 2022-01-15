@@ -2,7 +2,7 @@ from util import *
 
 
 @apply
-def apply(is_nonnegative, is_positive):     
+def apply(is_nonnegative, is_positive):
     a = is_nonnegative.of(Expr >= 0)
     y = is_positive.of(Expr > 0)
 
@@ -22,4 +22,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-06-08
-# updated on 2018-06-08

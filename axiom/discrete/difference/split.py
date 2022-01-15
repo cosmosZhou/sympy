@@ -2,10 +2,8 @@ from util import *
 
 
 @apply
-def apply(self, index):
-    from axiom.algebra.symbol.to.blockmatrix import process_slice
+def apply(self, mid):
     expr, x, n = self.of(Difference)
-    mid = process_slice(index, S.Zero, n)
     assert mid >= 0, "mid >= 0 => %s" % (mid >= 0)
     assert mid <= n, "mid <= n => %s" % (mid <= n)
 
@@ -19,7 +17,7 @@ def prove(Eq):
     x = Symbol(real=True)
     f = Function(real=True)
     d = Symbol(integer=True, positive=True, given=False)
-    Eq << apply(Difference(f(x), x, d), slice(0, -1))
+    Eq << apply(Difference(f(x), x, d), d - 1)
 
     Eq << Eq[-1].this.rhs.simplify()
 
@@ -27,4 +25,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-10-08
-# updated on 2020-10-08

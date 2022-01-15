@@ -7,7 +7,6 @@ from .assumptions import BasicMeta, ManagedProperties
 from .cache import cacheit
 from .sympify import _sympify, sympify, SympifyError
 from .compatibility import iterable, ordered
-from .kind import UndefinedKind
 from ._print_helpers import Printable
 
 from inspect import getmro
@@ -94,7 +93,7 @@ class Basic(Printable, metaclass=ManagedProperties):
     # Wanted is used in expression: Product + {Sum[Sum]}
     is_Wanted = False
     
-    is_Operator = False
+    is_IndexedOperator = False
     
     is_super_complex = True
     
@@ -689,8 +688,8 @@ class Basic(Printable, metaclass=ManagedProperties):
         dums = numbered_symbols('_')
         reps = {}
         v = self.bound_symbols
-        from sympy.tensor.indexed import Slice
-        if isinstance(v, (Slice, Symbol)):
+        from sympy.tensor.indexed import Sliced
+        if isinstance(v, (Sliced, Symbol)):
             v = [v]
         # this free will include bound symbols that are not part of
         # self's bound symbols
@@ -1034,10 +1033,9 @@ class Basic(Printable, metaclass=ManagedProperties):
         """
         from sympy.core.containers import Dict
         from sympy.utilities import default_sort_key
-        from sympy import Dummy, Symbol
 
         unordered = False
-        from sympy import Equal
+
         if len(args) == 1:
             sequence = args[0]
             if isinstance(sequence, set):
@@ -1058,6 +1056,7 @@ class Basic(Printable, metaclass=ManagedProperties):
                 assert len(args) == 2, "subs accepts either 1 or 2 arguments"
                 sequence = [args]
 
+        from sympy import Symbol
         sequence = list(sequence)
         for i, s in enumerate(sequence):
             if isinstance(s[0], str):
@@ -1095,7 +1094,7 @@ class Basic(Printable, metaclass=ManagedProperties):
             reps = {}
             rv = self
             kwargs['hack2'] = True
-#             m = Dummy()
+            from sympy import Dummy
             for old, new in sequence:
 
                 d = Dummy(**new.type.dict)
@@ -1112,21 +1111,21 @@ class Basic(Printable, metaclass=ManagedProperties):
         else:
             rv = self
             for old, new in sequence:
-                if old.is_Slice:
-                    rv = rv._subs_slice(old, new, **kwargs)
+                if old.is_Sliced:
+                    rv = rv._subs_sliced(old, new, **kwargs)
                 else:
                     rv = rv._subs(old, new, **kwargs)
                 if not isinstance(rv, Basic):
                     break
             return rv
         
-#    precondition: old is a Slice object
+#    precondition: old is a Sliced object
 #     @cacheit
-    def _subs_slice(self, old, new, **hints):
+    def _subs_sliced(self, old, new, **hints):
         hit = False
         args = [*self.args]
         for i, arg in enumerate(args):
-            arg = arg._subs_slice(old, new, **hints)
+            arg = arg._subs_sliced(old, new, **hints)
             if arg != args[i]:
                 hit = True
                 args[i] = arg
@@ -1209,8 +1208,8 @@ class Basic(Printable, metaclass=ManagedProperties):
         if old == new:
             return self
 
-        if old.is_Slice:
-            this = self._subs_slice(old, new, **hints)
+        if old.is_Sliced:
+            this = self._subs_sliced(old, new, **hints)
             if this != self:
                 return this             
         
@@ -1400,7 +1399,8 @@ class Basic(Printable, metaclass=ManagedProperties):
 
         """
         return any(self._has(pattern) for pattern in patterns)
-
+    
+    @cacheit
     def _has(self, pattern):
         """Helper for .has()"""
         if pattern.is_Tuple:
@@ -1696,7 +1696,15 @@ class Basic(Printable, metaclass=ManagedProperties):
     def typeof(self, cls):
         if isinstance(cls, type):
             return isinstance(self, cls)
+        if cls.is_Wanted:
+            return self.typeof(cls.func)
+        if isinstance(cls.kwargs, dict) and cls.kwargs:
+            if isinstance(self, cls.func):
+                return self.kwargs == cls.kwargs
+            
+            return self.typeof(cls.func)
         return self.typeof(cls.func)
+        
     
     def of(self, cls, copy=False):
         args = self._extract(cls)
@@ -1723,7 +1731,7 @@ class Basic(Printable, metaclass=ManagedProperties):
                     
         for i, arg in enumerate(self.args):
             path.append(i)
-            yield from arg.find_path(cls, path)                
+            yield from arg.find_path(cls, path)
             path.pop()
 
     def fetch_from_path(self, *path, struct=None):
@@ -1767,37 +1775,65 @@ class Basic(Printable, metaclass=ManagedProperties):
         
         return self
     
-    def isinstance(self, cls, index, *path):
+    def isinstance(self, cls, t=None, *path):
         assert cls.is_Basic
         
         if not isinstance(self, cls.func):
             return False
         
-        for wantedIndex, s in enumerate(cls.args):
-            if s.is_Wanted or not isinstance(s, type) and (s.is_Basic or s.is_Operator) and s.is_wanted(): 
-                if not self.args[index].instanceof(s):
+        if t is None:
+            if len(self.args) != len(cls.args):
+                return False
+            
+            for arg, struct in zip(self.args, cls.args):
+                if isinstance(struct, type):
+                    if not isinstance(arg, struct):
+                        return False
+                    
+                elif struct.is_Number:
+                    if arg != struct:    
+                        return False
+                    
+                else:
+                    if not arg.isinstance(struct):
+                        return False
+                    
+            return True
+        
+        for w, s in enumerate(cls.args):
+            if s.is_Wanted or not isinstance(s, type) and (s.is_Basic or s.is_IndexedOperator) and s.is_wanted(): 
+                if not self.args[t].instanceof(s):
                     return False
                 break
         else:
             raise Exception('wanted not detected!')
         
-        j = index - 1
-        # scan backward, starting from wantedIndex - 1
-        for i in range(wantedIndex - 1, -1, -1):
+        
+        j = t - 1
+#X[0], X[1], ..., X[t - 2], X[t - 1], X[t], X[t + 1], X[t + 2], ..., X[m - 1], m = len(X)
+#                               j<---------------- start scanning from here                                 
+#C[0], C[1], ..., C[w - 2], C[w - 1], C[w], C[w + 1], C[w + 2], ..., C[n - 1], n = len(C)
+#                               i<---------------- start scanning from here
+#scan backward, starting from w - 1
+        for i in range(w - 1, -1, -1):
             struct = cls.args[i]
             if j < 0:
                 break
 
             if isinstance(struct, type):
-                if not isinstance(self.args[j], struct):
+                if isinstance(self.args[j], struct):
+                    ...
+                elif j and isinstance(self.args[j - 1], struct):
+                    j -= 1
+                else:
                     break
             elif struct.is_Number:
                 if self.args[j] == struct:
                     ...
-                elif self.args[j + 1] != struct:
-                    break
+                elif j and self.args[j - 1] == struct:
+                    j -= 1
                 else:
-                    continue
+                    break
             else:
                 if not self.args[j].isinstance(struct, *path):
                     break
@@ -1805,23 +1841,31 @@ class Basic(Printable, metaclass=ManagedProperties):
             j -= 1
             
         else:
-            j = index + 1
-            # scan forward, starting from wantedIndex + 1
-            for i in range(wantedIndex + 1, len(cls.args)):
+            j = t + 1
+#X[0], X[1], ..., X[t - 2], X[t - 1], X[t], X[t + 1], X[t + 2], ..., X[m - 1], m = len(X)
+#start scanning from here --------------------->j                                 
+#C[0], C[1], ..., C[w - 2], C[w - 1], C[w], C[w + 1], C[w + 2], ..., C[n - 1], n = len(C)
+#start scanning from here --------------------->i            
+#                 scan forward, starting from w + 1
+            for i in range(w + 1, len(cls.args)):
                 if j >= len(self.args):
                     break
 
                 struct = cls.args[i]
                 if isinstance(struct, type):
-                    if not isinstance(self.args[j], struct):
+                    if isinstance(self.args[j], struct):
+                        ...
+                    elif j + 1 < len(self.args) and isinstance(self.args[j + 1], struct):
+                        j += 1
+                    else:
                         break
                 elif struct.is_Number:
                     if self.args[j] == struct:
                         ...
-                    elif self.args[j + 1] != struct:
-                        break
+                    elif j + 1 < len(self.args) and self.args[j + 1] == struct:
+                        j += 1
                     else:
-                        continue
+                        break
                 else:
                     if not self.args[j].isinstance(struct, *path):
                         break
@@ -1844,18 +1888,20 @@ class Basic(Printable, metaclass=ManagedProperties):
             cls = cls.func
                 
         if not isinstance(self, cls.func):
-            return False        
-        j = 0
-        i = 0
-        while j < len(self.args):
-            struct = cls.args[i]
-            if self.args[j].instanceof(struct):
-                i += 1
-                if i == len(cls.args):
-                    break
-            j += 1
-        else:
-            return i == len(cls.args)
+            return False
+        
+        if cls.args:        
+            j = 0
+            i = 0
+            while j < len(self.args):
+                struct = cls.args[i]
+                if self.args[j].instanceof(struct):
+                    i += 1
+                    if i == len(cls.args):
+                        break
+                j += 1
+            else:
+                return i == len(cls.args)
             
         return True
     
@@ -1941,7 +1987,7 @@ class Basic(Printable, metaclass=ManagedProperties):
                     break
                 
                 if not s.is_Basic:
-                    assert s.is_Operator
+                    assert s.is_IndexedOperator
                     s = s.basic
                 
                 query.append(s.func)
@@ -2380,7 +2426,10 @@ class Basic(Printable, metaclass=ManagedProperties):
         if var is not None:
             if isinstance(var, set):
                 for v in var:
-                    if v.name not in excludes:
+                    if isinstance(v, str):
+                        if v not in excludes:
+                            return Symbol(v, **kwargs)
+                    elif v.name not in excludes:
                         return v 
                 
             else:
@@ -2540,14 +2589,14 @@ class Basic(Printable, metaclass=ManagedProperties):
             return False
     
     def _eval_is_extended_nonpositive(self):
-        extended_positive = self.is_extended_positive        
+        extended_positive = self.is_extended_positive
         if extended_positive:
             return False
         if extended_positive == False:
             return self.is_extended_real
 
     def _eval_is_extended_nonnegative(self):
-        extended_negative = self.is_extended_negative        
+        extended_negative = self.is_extended_negative
         if extended_negative:
             return False
         if extended_negative == False:
@@ -2588,6 +2637,9 @@ class Basic(Printable, metaclass=ManagedProperties):
             return True
 
     def _eval_is_nonzero(self):
+        if self.shape:
+            return
+            
         zero = self.is_zero
         if zero:
             return False
@@ -2683,7 +2735,47 @@ class Basic(Printable, metaclass=ManagedProperties):
     
     def _eval_Card(self):
         ...
+      
+      
+    def yield_substituent(self, x, *limits):
+        for i in x.free_symbols:
+            if i.shape:
+                continue
+            if i.domain_assumed:
+                continue
+            domain = self.domain_defined(i)
+            for var, *ab in limits:
+                if i == var:
+                    if len(ab) == 2:
+                        from sympy import Range, Interval
+                        domain &= (Range if i.is_extended_integer else Interval)(*ab)
+                    elif len(ab) == 1:
+                        [s] = ab
+                        domain &= s
+                    break
+                
+            yield x._subs(i, i.copy(domain=domain))
         
+    def bound_check(self, x, *limits, lower=None, upper=None):
+
+        if lower is not None:
+            if x >= lower:
+                return True
+            if not any(x >= lower for x in self.yield_substituent(x, *limits)):
+                return False
+        
+        if upper is not None:
+            if x <= upper:
+                return True
+            
+            if not any(x <= upper for x in self.yield_substituent(x, *limits)):
+                return False
+
+        return True
+      
+    def delete_from_domain(self, x):
+        return self
+      
     is_given = True
       
       

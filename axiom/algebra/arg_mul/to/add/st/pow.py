@@ -9,10 +9,10 @@ def apply(pow):
     for arg in args:
         if arg.is_Pow:
             arg, n = arg.args
-            
+
             e.add(n)
             if len(e) > 1:
-                return       
+                return
             prod.append(arg)
         elif arg == -1:
             prod.append(-1)
@@ -45,4 +45,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-11-06
-# updated on 2018-11-06

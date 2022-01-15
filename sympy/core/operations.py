@@ -494,24 +494,37 @@ class AssocOp(Basic):
     def max_len_shape(self):
         return max(len(arg.shape) for arg in self.args)    
 
-    def getitem(self, index, **_):
+    def getitem(self, indices, **_):
         args = []
         len_shape = self.max_len_shape()
-#         assert not isinstance(index, list)
-        if isinstance(index, tuple):
-            len_subtracted = len(index)
+        if isinstance(indices, tuple):
+            slice_length = sum(isinstance(i, slice) for i in indices)
+            len_subtracted = len(indices) - slice_length
+            is_slice = slice_length > 0
+        elif isinstance(indices, slice):
+            len_subtracted = 0
+            is_slice = True
         else:
             len_subtracted = 1
+            is_slice = False
             
         len_required = len_shape - len_subtracted
         for arg in self.args:
             shape_length = len(arg.shape)
-            if shape_length <= len_required:
+            if shape_length < len_required:
                 args.append(arg)
-            elif isinstance(index, tuple):
-                args.append(arg[index[len_shape - shape_length:]])
+            elif shape_length == len_required:
+                if is_slice:
+                    if isinstance(indices, tuple):
+                        args.append(arg[indices[len_shape - shape_length:]])
+                    else:
+                        args.append(arg[indices])
+                else:
+                    args.append(arg)
+            elif isinstance(indices, tuple):
+                args.append(arg[indices[len_shape - shape_length:]])
             else:
-                args.append(arg[index])
+                args.append(arg[indices])
 
         return self.func(*args)
 

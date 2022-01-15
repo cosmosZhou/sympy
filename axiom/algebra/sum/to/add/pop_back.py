@@ -2,7 +2,7 @@ from util import *
 
 
 @apply
-def apply(self):    
+def apply(self):
     function, (i, a, b) = self.of(Sum)
     assert i.is_integer
     back = function._subs(i, b - 1)
@@ -26,4 +26,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-04-26
-# updated on 2019-04-26

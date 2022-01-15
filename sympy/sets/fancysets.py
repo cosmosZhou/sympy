@@ -8,6 +8,7 @@ from sympy.sets.sets import Set, Interval, Union, FiniteSet
 from sympy.utilities.misc import filldedent
 from sympy.core.logic import fuzzy_or, fuzzy_and
 from sympy.sets.sets import ProductSet
+from sympy.core.cache import cacheit
 
 Reals = Interval(S.NegativeInfinity, S.Infinity)
 ExtendedReals = Interval(S.NegativeInfinity, S.Infinity, left_open=False, right_open=False)
@@ -296,14 +297,26 @@ class Range(Set):
             if integer:
                 a_start = self.start
                 b_start = b.start
-    
+                if self.step == b.step:
+                    step = self.step
+                elif b.step.is_One:
+                    if b_start.is_finite:
+                        b_start += (a_start - b_start) % self.step
+                    step = self.step
+                elif self.step.is_One:
+                    if a_start.is_finite:
+                        a_start += (b_start - a_start) % b.step
+                    step = b.step
+                else:
+                    return
                 start = Max(a_start, b_start)
     
                 a_end = self.stop
                 b_end = b.stop
     
                 stop = Min(a_end, b_end)
-                return Range(start, stop)                
+                return Range(start, stop, step=step)
+                        
             else:
                 if b.left_open:
                     if self.start <= b.start:
@@ -497,7 +510,7 @@ class Range(Set):
         if self.is_UniversalSet:
             return self
 
-    def __new__(cls, start=None, stop=None, **kwargs):
+    def __new__(cls, start=None, stop=None, step=None, **kwargs):
         if stop is None:
             if start is None:
                 if kwargs.get('positive'):
@@ -544,10 +557,6 @@ class Range(Set):
             right_open = True
                 
         
-        # evaluate if possible
-        if right_open and stop <= start or not right_open and stop < start:
-            return S.Zero.emptySet
-
         if stop == start:
             if left_open or right_open:
                 return S.Zero.emptySet
@@ -589,7 +598,16 @@ class Range(Set):
                 right_open = True
                 stop += 1
                 
-        self = Basic.__new__(cls, start, stop)
+        # evaluate if possible
+        if right_open and stop <= start or not right_open and stop < start:
+            return S.Zero.emptySet
+            
+        if step is not None and step != 1:
+            args = start, stop, _sympify(step)
+        else:
+            args = start, stop
+            
+        self = Basic.__new__(cls, *args)
         self.left_open = bool(left_open)
         self.right_open = bool(right_open)
         return self        
@@ -659,6 +677,12 @@ class Range(Set):
 
         """
         return self._args[1]
+    
+    @property
+    def step(self):
+        if len(self._args) == 3:
+            return self._args[2]
+        return S.One
 
     _sup = right = stop
 
@@ -668,7 +692,7 @@ class Range(Set):
             return
         
         from sympy.sets import Integers
-        if other == Integers:
+        if other == Integers and self.step.is_One:
             start, stop = S.NegativeInfinity, self.start
             if self.left_open:
                 stop += 1
@@ -809,15 +833,42 @@ class Range(Set):
         assert not self.left_open        
         return self.func(-self.stop + 1, -self.start + 1)
     
+    def _eval_right_open(self, other):
+        if self.stop.is_infinite:
+            if other.stop.is_infinite:
+                return self.right_open and other.right_open
+            else:
+                return self.right_open
+        else:
+            if other.stop.is_infinite:
+                return other.right_open
+            else:
+                return True
+    
+    def _eval_left_open(self, other):
+        if self.start.is_infinite:
+            if other.start.is_infinite:
+                return self.left_open and other.left_open
+            else:
+                return self.left_open
+        else:
+            if other.start.is_infinite:
+                return other.left_open
+            else:
+                return False
+            
     def __add__(self, other):
         other = sympify(other)
         if other.is_Range:
-            start = self.min()
-            stop = self.max()
+            start = self.start
+            stop = self.stop
             
-            start += other.min()
-            stop += other.max()
-            left_open, right_open = False, False                    
+            start += other.start
+            stop += other.stop - 1
+            
+            right_open = self._eval_right_open(other)               
+            left_open = self._eval_left_open(other)
+            
             return self.func(start, stop, left_open=left_open, right_open=right_open)
         
         if other.is_Interval:
@@ -843,11 +894,16 @@ class Range(Set):
             else: 
                 stop -= 1
                 return Interval(start, stop)
-            
+        if other.is_CartesianSpace:
+            return other.func(self + other.space, *other.space_shape)
+        
         if not other.is_set:
             start = self.start + other
             stop = self.stop + other
-            return self.func(start, stop)
+            if self.step.is_One:
+                return self.func(start, stop)
+            else:
+                return self.func(start, stop, step=self.step)
 
         return Set.__add__(self, other)
 
@@ -922,6 +978,7 @@ class Range(Set):
                 return self.func(self.stop / other, self.start / other,
                                  left_open=self.right_open, right_open=self.left_open, integer=self.is_integer)
 
+    @cacheit
     def _has(self, pattern):
         return self.start._has(pattern) or self.stop._has(pattern)
 
@@ -968,7 +1025,7 @@ class Range(Set):
             return new
         
         hit = False
-        args = list(self.args[:2])
+        [*args] = self.args
         for i, arg in enumerate(args):
             if not hasattr(arg, '_eval_subs'):
                 continue
@@ -977,8 +1034,7 @@ class Range(Set):
                 hit = True
                 args[i] = arg
         if hit:
-            start, stop = args
-            return self.copy(start=start, stop=stop)
+            return self.func(*args, **self.kwargs)
         return self
 
     @property
@@ -996,9 +1052,12 @@ class Range(Set):
             return p._print_seq(self.args[:2], left, right, delimiter=';')
 
     def _sympystr(self, _): 
-        return '{left_open}{start}{sep} {stop}{right_open}'.format(**{'start': self.start, 'stop': self.stop, 'sep': ';',
+        if self.step.is_One:
+            return '{left_open}{start}{sep} {stop}{right_open}'.format(**{'start': self.start, 'stop': self.stop, 'sep': ';',
                              'left_open': '(' if self.left_open else '[',
                              'right_open': ')' if self.right_open else ']'})
+        else:
+            return 'Range(%s, %s, %s)' % (self.start, self.stop, self.step)
 
     def handle_finite_sets(self, unk):
         if all(arg.domain in self for arg in unk.args):
@@ -1073,32 +1132,33 @@ class Range(Set):
         return
 
     def _latex(self, p):
-        if self.start == self.stop:
-            return r"\left\{%s\right\}" % self._print(self.start)
-        elif self.start.is_NegativeInfinity:
-            if self.stop.is_Infinity:
-                if self.left_open and self.right_open: 
-                    return r"\mathbb{Z}"
-            elif self.stop.is_NegativeOne:
-                if self.left_open and not self.right_open:
-                    return r"\mathbb{Z}^-"
-                                    
-        elif self.stop.is_Infinity:
-            if self.start.is_One:
-                if not self.left_open and self.right_open:
-                    return r"\mathbb{Z}^+"
-        
-        if self.left_open:
-            left = '('
+        if self.step.is_One:
+            if self.start.is_NegativeInfinity:
+                if self.stop.is_Infinity:
+                    if self.left_open and self.right_open: 
+                        return r"\mathbb{Z}"
+                elif self.stop.is_NegativeOne:
+                    if self.left_open and not self.right_open:
+                        return r"\mathbb{Z}^-"
+                                        
+            elif self.stop.is_Infinity:
+                if self.start.is_One:
+                    if not self.left_open and self.right_open:
+                        return r"\mathbb{Z}^+"
+            
+            if self.left_open:
+                left = '('
+            else:
+                left = '['
+    
+            if self.right_open:
+                right = ')'
+            else:
+                right = ']'
+    
+            return r"\left%s%s; %s\right%s" % (left, p._print(self.start), p._print(self.stop), right)
         else:
-            left = '['
-
-        if self.right_open:
-            right = ')'
-        else:
-            right = ']'
-
-        return r"\left%s%s; %s\right%s" % (left, p._print(self.start), p._print(self.stop), right)
+            return r"Range\left(%s, %s, %s\right)" % (p._print(self.start), p._print(self.stop), p._print(self.step))
 
     @classmethod
     def simplify_Element(cls, self, e, s):
@@ -1186,8 +1246,24 @@ class Range(Set):
                  
     def _eval_Card(self):
         from sympy import Piecewise
-        return Piecewise((self.stop - self.start, self.stop >= self.start), (0, True))
+        if self.step == 1:
+            return Piecewise((self.stop - self.start, self.stop >= self.start), (0, True))
+        else:
+            from sympy import Ceiling
+            return Piecewise((Ceiling((self.stop - self.start) / self.step), self.stop >= self.start), (0, True))
 
+
+    def delete_from_domain(self, x):
+        if self.step._has(x):
+            return self.etype.universalSet
+        
+        if self.start._has(x):
+            self = self.copy(start=S.NegativeInfinity)
+                    
+        if self.stop._has(x):
+            self = self.copy(stop=S.Infinity)
+            
+        return self
 
 converter[range] = Range
 

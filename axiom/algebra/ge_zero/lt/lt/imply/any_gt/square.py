@@ -3,9 +3,8 @@ from util import *
 
 @apply
 def apply(m_is_nonnegative, lt_mM, lt, x=None):
-    _m = m_is_nonnegative.of(Expr >= 0)
-    m, M = lt_mM.of(Less)
-    assert m == _m
+    m = m_is_nonnegative.of(Expr >= 0)
+    S[m], M = lt_mM.of(Less)
 
     U, M2 = lt.of(Less)
     _M = M2.of(Expr ** 2)
@@ -97,4 +96,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-07-07
-# updated on 2019-07-07

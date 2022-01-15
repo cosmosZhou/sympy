@@ -88,4 +88,3 @@ if __name__ == '__main__':
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html
 
 # created on 2020-10-25
-# updated on 2020-10-25

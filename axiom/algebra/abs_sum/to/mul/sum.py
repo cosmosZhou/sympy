@@ -8,14 +8,10 @@ def apply(self):
 
 
 def dissect_distance(variance):
-    ym, x_mean = variance.of(Abs[Expr - Expr])
-    x_sum, n = x_mean.of(Expr / Expr)
-    xi, (i, *ab) = x_sum.of(Sum)
+    ym, ((xi, (i, *ab)), n) = variance.of(Abs[Expr - Sum / Expr])
     x = Lamda[i](xi).simplify()
     if ab:
-        zero, _n = ab
-        assert zero == 0
-        assert _n == n
+        S[0], S[n] = ab
 
     return ym, x, i, n
 
@@ -51,4 +47,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-08-02
-# updated on 2018-08-02

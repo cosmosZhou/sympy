@@ -13,11 +13,10 @@ def prove(Eq):
     X, Y = Symbol(real=True, shape=(n, n))
     t = Symbol(real=True, shape=(n,))
     Eq << apply(Equal(X, Y), t)
-    
+
     Eq << Eq[-1].subs(Eq[0])
 
 
 if __name__ == '__main__':
     run()
 # created on 2021-10-04
-# updated on 2021-10-04

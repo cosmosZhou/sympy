@@ -17,10 +17,9 @@ def prove(Eq):
     Eq << apply(x < y)
 
     Eq << algebra.lt.imply.le.relax.apply(Eq[0])
-    Eq << algebra.le.imply.le.floor.apply(Eq[-1])
+    Eq << algebra.le.imply.le.floor.integer.apply(Eq[-1])
 
 
 if __name__ == '__main__':
     run()
 # created on 2019-10-02
-# updated on 2019-10-02

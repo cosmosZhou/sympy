@@ -90,7 +90,7 @@ class Quantifier(Boolean, ExprWithLimits):
         for v in variables:
             if v in _variables:
                 _variables.remove(v)
-            elif v.is_Slice:
+            elif v.is_Sliced:
                 for _v in _variables:
                     if v.index_contains(_v):
                         _variables.remove(_v)
@@ -430,7 +430,7 @@ class Quantifier(Boolean, ExprWithLimits):
 
     def existent_symbols(self):
         free_symbols = Boolean.existent_symbols(self)        
-        bound_symbols = {var.base: var.indices for var in self.bound_symbols if var.is_Slice}
+        bound_symbols = {var.base: var.indices for var in self.bound_symbols if var.is_Sliced}
 
         if bound_symbols:
             deletes = set()

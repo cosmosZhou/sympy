@@ -216,7 +216,7 @@ class Probability(Expr):
                             if given.is_Indexed:               
                                 start = given.indices[0]
                                 stop = start + 1
-                            elif given.is_Slice:
+                            elif given.is_Sliced:
                                 start, stop = given.index
                             else:
                                 expr.append(eq)
@@ -241,7 +241,7 @@ class Probability(Expr):
             self = cls(condition.lhs).marginalize(given)
             return self.func(self.arg, given=condition.rhs)
         elif condition.is_Equal:
-            if given.is_Slice:
+            if given.is_Sliced:
                 start, stop = given.index
                 lhs, rhs = condition.lhs.split(slice(start, stop)), condition.rhs.split(slice(start, stop))
                 assert lhs.is_BlockMatrix and rhs.is_BlockMatrix                

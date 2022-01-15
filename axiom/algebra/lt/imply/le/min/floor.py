@@ -49,7 +49,7 @@ def prove(Eq):
 
     Eq << Eq[-1] / r
 
-    Eq << algebra.le.imply.le.floor.apply(Eq[-1])
+    Eq << algebra.le.imply.le.floor.integer.apply(Eq[-1])
 
     Eq << Eq[-1].this.rhs.apply(algebra.floor.to.min)
 
@@ -59,4 +59,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-12-29
-# updated on 2019-12-29

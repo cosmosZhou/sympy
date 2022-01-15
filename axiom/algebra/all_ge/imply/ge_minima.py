@@ -10,21 +10,20 @@ def apply(all_le):
 @prove
 def prove(Eq):
     from axiom import algebra
-    
+
     M = Symbol(real=True, given=True)
     x = Symbol(real=True)
     f = Function(real=True)
     S = Symbol(etype=dtype.real, given=True)
     Eq << apply(All[x:S](f(x) >= M))
-    
+
     Eq << ~Eq[-1]
-    
+
     Eq << algebra.lt_minima.imply.all_lt.apply(Eq[-1])
-    
+
     Eq << ~Eq[-1]
 
 
 if __name__ == '__main__':
     run()
 # created on 2019-01-02
-# updated on 2019-01-02

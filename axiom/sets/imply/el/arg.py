@@ -2,7 +2,7 @@ from util import *
 
 
 @apply(simplify=False)
-def apply(self):    
+def apply(self):
     return Element(Arg(self), Interval(-S.Pi, S.Pi, left_open=True))
 
 
@@ -16,4 +16,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-08-29
-# updated on 2018-08-29

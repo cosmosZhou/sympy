@@ -2,7 +2,7 @@ from util import *
 
 
 @apply
-def apply(is_positive, self):    
+def apply(is_positive, self):
     a = is_positive.of(Expr > 0)
     args = self.of(Min)
     return Equal(self * a, Min(*(arg * a for arg in args)))
@@ -30,4 +30,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-08-19
-# updated on 2019-08-19

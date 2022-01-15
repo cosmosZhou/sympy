@@ -40,4 +40,3 @@ if __name__ == '__main__':
 
 from . import negative
 # created on 2018-03-02
-# updated on 2018-03-02

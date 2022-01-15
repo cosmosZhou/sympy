@@ -2,7 +2,7 @@ from util import *
 
 
 @apply
-def apply(given): 
+def apply(given):
     ((fx, M), *limits), (M, M0_domain) = given.of(All[Any[Less]])
     M0, a = M0_domain.of(Interval)
     assert a.is_Infinity and M0_domain.left_open
@@ -28,4 +28,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-01-05
-# updated on 2019-01-05

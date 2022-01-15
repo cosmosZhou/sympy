@@ -1,1 +1,1 @@
-from . import blockmatrix
+from . import block

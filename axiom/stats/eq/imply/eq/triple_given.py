@@ -29,16 +29,15 @@ def prove(Eq):
 
     Eq << Eq[0].apply(algebra.cond.imply.all.restrict, (k, 2, oo))
 
-    Eq << Eq[-1].this().expr.lhs.rhs.args[1].apply(algebra.eq.imply.et.eq.blockmatrix)
+    Eq << Eq[-1].this().expr.lhs.rhs.args[1].apply(algebra.eq.imply.et.eq.block)
 
     Eq << stats.eq.imply.eq.single_condition_w.apply(Eq[-1], wrt=Eq[-1].lhs.rhs.args[1].lhs)
 
     Eq << Eq[1].apply(algebra.cond.given.et.all, cond=k >= 2)
 
-    Eq << Eq[-1].this().expr.lhs.rhs.apply(algebra.eq.given.et.eq.blockmatrix)
+    Eq << Eq[-1].this().expr.lhs.rhs.apply(algebra.eq.given.et.eq.block)
 
 
 if __name__ == '__main__':
     run()
 # created on 2021-07-15
-# updated on 2021-07-15

@@ -22,4 +22,3 @@ if __name__ == '__main__':
 
 from . import div
 # created on 2020-02-24
-# updated on 2020-02-24

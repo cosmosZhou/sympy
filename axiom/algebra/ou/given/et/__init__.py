@@ -8,19 +8,19 @@ def apply(self, index=-1):
         if isinstance(eq, And):
             del args[i]
             break
-            
+
     this = Or(*args)
     args = eq.args
     first = And(*args[:index])
     second = And(*args[index:])
-    
+
     return (first | this).simplify(), (second | this).simplify()
 
 
 @prove
 def prove(Eq):
     k = Symbol(integer=True, positive=True)
-    x, y = Symbol(real=True, shape=(k,), given=True)
+    x, y = Symbol(real=True, given=True)
     f, g = Function(shape=(k,), real=True)
     Eq << apply(Or(Unequal(x, y) & (y > 0), Equal(f(x), g(y))))
 
@@ -32,4 +32,3 @@ if __name__ == '__main__':
 
 from . import collect
 # created on 2018-01-04
-# updated on 2018-01-04

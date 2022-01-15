@@ -3,9 +3,9 @@ from util import *
 
 @apply
 def apply(self, *, simplify=True):
-    ecs = self.of(Floor[Piecewise])    
-    ecs = [(Floor(e), c) for e, c in ecs]    
-    
+    ecs = self.of(Floor[Piecewise])
+    ecs = [(Floor(e), c) for e, c in ecs]
+
     return Equal(self, Piecewise(*ecs), evaluate=False)
 
 
@@ -27,4 +27,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-05-14
-# updated on 2019-05-14

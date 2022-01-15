@@ -35,27 +35,65 @@ class Transpose(MatrixExpr):
     def dtype(self):
         return self.arg.dtype
 
-    def __new__(cls, arg, **kwargs):        
-        arg = _sympify(arg)
-        
-        if kwargs.get('evaluate', True):
-            transpose = arg._eval_transpose()
-            if transpose is not None:
-                return transpose
+    def __new__(cls, *args, **kwargs):
+        if len(args) > 1 and isinstance(args[-1], tuple):
+            arg, [axis], *axes = args
+            if axes:
+                arg = cls[axis](arg)
+                axes = tuple(axis for [axis] in axes)
+                return cls[axes](arg)
             
-        return MatrixExpr.__new__(cls, arg, **kwargs)
+        else:
+            [arg] = args
+            if 'axis' in kwargs:
+                axis = kwargs.pop('axis')
+            else:
+                axis = -1
+                
+        if axis < 0:
+            axis += len(arg.shape)
+                
+        if kwargs.get('evaluate', True):
+            transpose = arg._eval_transpose(axis=axis)
+            if transpose is not None:
+                return transpose            
+            
+        obj = MatrixExpr.__new__(cls, arg, **kwargs)
+        obj.axis = _sympify(axis)
+        return obj
     
     def _sympystr(self, p):
         from sympy.printing.precedence import PRECEDENCE
-        return "%s.T" % p.parenthesize(self.arg, PRECEDENCE["Pow"])
-
-    def _latex(self, p): 
-        if self.arg.is_BlockMatrix:
-            X = self.arg            
-            return r"{\left(\begin{array}{%s}%s\end{array}\right)}" % ('c' * len(X.args), ' & '.join('{%s}' % p._print(arg.T) for arg in X.args))
+        if self.axis == self.default_axis:
+            return "%s.T" % p.parenthesize(self.arg, PRECEDENCE["Pow"])
         else:
-            from sympy.printing.precedence import precedence_traditional
-            return r"{%s}^{\color{magenta} T}" % p.parenthesize(self.arg, precedence_traditional(self), True)
+            return "%s.T%s" % (p.parenthesize(self.arg, PRECEDENCE["Pow"]), self.axis)
+
+    def need_parenthesis_for_arg(self):
+        arg = self.arg
+        return arg.is_ExprWithLimits or arg.is_AssocOp or arg.is_MatMul
+    
+    def _print_arg(self, p):
+        latex = p._print(self.arg)
+        if self.need_parenthesis_for_arg():
+            latex = r"\left(%s\right)" % latex
+        return latex
+    
+    def _latex(self, p):
+        if self.arg.is_Transpose:
+            axis = [self.arg.axis, self.axis]
+            arg = self.arg
+            return r"{%s}^{{\color{magenta} T}_{%s}}" % (arg._print_arg(p), ",".join(p._print(a) for a in axis))
+        
+        if self.axis == self.default_axis:
+            if self.arg.is_BlockMatrix:
+                X = self.arg
+                return r"{\left(\begin{array}{%s}%s\end{array}\right)}" % ('c' * len(X.args), ' & '.join('{%s}' % p._print(arg.T) for arg in X.args))
+            else:
+                return r"{%s}^{\color{magenta} T}" % self._print_arg(p)
+        else:
+            return r"{%s}^{{\color{magenta} T}_{%s}}" % (self._print_arg(p), p._print(self.axis))
+            
 
     def doit(self, **hints):
         arg = self.arg
@@ -74,27 +112,40 @@ class Transpose(MatrixExpr):
 
     @property
     def shape(self):        
-        shape = self.arg.shape
-        assert len(shape) > 1
-        return (*shape[:-2], shape[-1], shape[-2])
+        [*shape] = self.arg.shape
+        shape[self.axis], shape[self.axis - 1] = shape[self.axis - 1], shape[self.axis]
+        return tuple(shape)
 
     def _entry(self, i, j=None, expand=False, **kwargs):
-        if j is None:
-            if len(self.shape) > 2:
-                return self.arg[i].T
+        if self.axis == self.default_axis:
+            if j is None:
+                if len(self.shape) > 2:
+                    return self.arg[i].T
+                
+                if isinstance(i, slice):
+                    start, stop = i.start, i.stop
+                    if start is None:
+                        if stop is None:
+                            return self
+                    from sympy.tensor.indexed import Sliced                
+                    return Sliced(self.arg, slice(None, None), i)
+                return self.arg[:, i]
+                        
+            if hasattr(self.arg, '_entry'):
+                return self.arg._entry(j, i, expand=expand, **kwargs)
             
             if isinstance(i, slice):
-                start, stop = i.start, i.stop
-                if start is None:
-                    if stop is None:
-                        return self
-                from sympy import Slice                
-                return Slice(self.arg, slice(None, None), i)
-            return self.arg[:, i]            
-        if hasattr(self.arg, '_entry'):
-            return self.arg._entry(j, i, expand=expand, **kwargs)
+                if isinstance(j, slice): 
+                    return self.arg[j, i].T
+                else:
+                    return self.arg[j, i].T
+            else:
+                return self.arg[j, i]
         else:
-            return self.arg[j, i]
+            if self.axis == 1:
+                if j is None:
+                    return self.arg[:, i]
+            raise Exception('unimplemented')
 
     def _eval_adjoint(self):
         return conjugate(self.arg)
@@ -102,8 +153,9 @@ class Transpose(MatrixExpr):
     def _eval_conjugate(self):
         return adjoint(self.arg)
 
-    def _eval_transpose(self):
-        return self.arg
+    def _eval_transpose(self, axis=-1):
+        if axis == self.axis:
+            return self.arg
 
     def _eval_trace(self):
         from .trace import Trace
@@ -155,6 +207,17 @@ class Transpose(MatrixExpr):
             domain &= arg.domain_defined(x)
         return domain
 
+    def _subs(self, old, new, **hints):
+        this = self.arg
+        if this.is_BlockMatrix and old.is_Transpose and old.arg.is_BlockMatrix:
+            args = old.arg.args
+            from sympy.utilities.misc import sunday
+            i = sunday(this.args, args)
+            if i >= 0:
+                return this.func(*this.args[:i] + (new.T,) + this.args[i + len(args):]).simplify().T
+                
+        return MatrixExpr._subs(self, old, new, **hints)
+
     def __getitem__(self, key):
         if not isinstance(key, tuple) and isinstance(key, slice):
             return self._entry(key)
@@ -178,7 +241,35 @@ class Transpose(MatrixExpr):
         assert isinstance(key, int) or key.is_Expr
         return self._entry(key)
 
-        
+    def of(self, cls):
+        if cls.is_IndexedOperator:
+            if cls.func.is_Transpose:
+                if len(cls.limits) == 1:
+                    [limit] = cls.limits
+                    if len(limit) == 1:
+                        [axis] = limit
+                        if axis == self.axis:
+                            return self.args
+                        
+                if self.axis == self.default_axis:
+                    return MatrixExpr.of(self, cls)
+                    
+        elif isinstance(cls, type):
+            if cls.is_Transpose:
+                if self.axis == self.default_axis:
+                    return self.arg
+            
+            elif isinstance(self, cls):
+                return self
+            
+        elif cls.is_Transpose:#of Basic type
+            axis = cls.kwargs.get('axis', self.default_axis)
+            if axis == self.axis:
+                if cls.args:
+                    return MatrixExpr.of(self, cls)
+                else:
+                    return self.args
+
 
 
 def transpose(expr):

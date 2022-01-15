@@ -2050,10 +2050,6 @@ class Stirling(Function):
                 elif k > n // 2:
                     k = n - k
 
-                if HAS_GMPY:
-                    from sympy.core.compatibility import gmpy
-                    return Integer(gmpy.bincoef(n, k))
-
                 d, result = n - k, 1
                 for i in range(1, k + 1):
                     d += 1
@@ -2240,7 +2236,7 @@ class Stirling(Function):
                 return True
 
     def domain_nonzero(self, x):
-        from sympy.sets.sets import Interval
+        from sympy.sets.fancysets import Range
         from sympy.core.numbers import oo
         n, k = self.args
 

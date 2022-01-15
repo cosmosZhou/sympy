@@ -6,3 +6,4 @@ from . import invert
 from . import merge
 from . import split
 from . import negate
+from . import domain_defined

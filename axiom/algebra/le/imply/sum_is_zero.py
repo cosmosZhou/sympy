@@ -20,12 +20,11 @@ def prove(Eq):
 
     Eq << algebra.ge.imply.sum_is_zero.apply(Eq[0].reversed, Eq[1].lhs)
 
-    
 
-    
+
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2019-11-18
-# updated on 2019-11-18

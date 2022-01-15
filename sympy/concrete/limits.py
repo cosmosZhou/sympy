@@ -186,7 +186,7 @@ def limits_common(limits, _limits, is_or=False, clue=None):
                     dic[x] = domain & _domain
         return dic
     for key in self_dict:
-        if not key.is_Slice:
+        if not key.is_Sliced:
             continue
         for _key in eq_dict:
             if not key._has(_key):
@@ -240,8 +240,7 @@ def limits_cond(limits):
         
         eqs.append(cond)
     return And(*eqs)
-
-
+    
    
 '''
 fundamental theory of logic:

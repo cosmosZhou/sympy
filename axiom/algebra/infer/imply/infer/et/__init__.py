@@ -33,4 +33,3 @@ if __name__ == '__main__':
     run()
 from . import both_sided
 # created on 2018-02-02
-# updated on 2018-02-02

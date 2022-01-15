@@ -27,7 +27,7 @@ def prove(Eq):
     G = Symbol(Lamda[y[i - 1], y[i]](-log(transition_probability)))
     s = Symbol(Lamda[t](-log(joint_probability_t)))
     x = Symbol(Lamda[y[i], i](-log(emission_probability)))
-    Eq.given, Eq.s_definition, Eq.G_definition, Eq.x_definition, Eq.logits_recursion = apply(given, G, x, s)
+    Eq.given, (Eq.s_definition, Eq.G_definition, Eq.x_definition), Eq.logits_recursion = apply(given, G, x, s)
 
     Eq << Eq.s_definition.this.rhs.subs(Eq.given)
 
@@ -73,4 +73,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-12-17
-# updated on 2020-12-17

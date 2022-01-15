@@ -4,8 +4,7 @@ from util import *
 @apply
 def apply(is_negative, lt, k=None):
     a = is_negative.of(Expr < 0)
-    _a, b = lt.of(Less)
-    assert _a == a
+    S[a], b = lt.of(Less)
 
     assert a.is_integer and b.is_integer
     if k is None:
@@ -28,8 +27,11 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(sets.lt_zero.lt_zero.lt.imply.eq.cup.to.interval.left_open)
 
+    
+    
+
 
 if __name__ == '__main__':
     run()
 # created on 2018-10-15
-# updated on 2018-10-15
+# updated on 2021-11-23

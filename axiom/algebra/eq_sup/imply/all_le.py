@@ -2,7 +2,7 @@ from util import *
 
 
 @apply
-def apply(given): 
+def apply(given):
     (fx, *limits), M = given.of(Equal[Sup])
     return All(fx <= M, *limits)
 
@@ -23,4 +23,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-12-28
-# updated on 2018-12-28

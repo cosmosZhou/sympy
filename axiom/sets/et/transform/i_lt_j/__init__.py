@@ -40,4 +40,3 @@ if __name__ == '__main__':
 
 from . import left_close
 # created on 2021-01-30
-# updated on 2021-01-30

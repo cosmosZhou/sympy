@@ -38,4 +38,3 @@ if __name__ == '__main__':
 
 from . import single_variable
 # created on 2019-09-02
-# updated on 2019-09-02

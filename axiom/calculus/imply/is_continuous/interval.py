@@ -8,7 +8,7 @@ def apply(fx, limit, xi=None):
         domain = Interval(*ab)
     else:
         [domain] = ab
-        
+
     assert fx.is_continuous(x, domain)
     if xi is None:
         xi = fx.generate_var(real=True, var='xi')
@@ -30,4 +30,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-05-01
-# updated on 2020-05-01

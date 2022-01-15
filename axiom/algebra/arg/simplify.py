@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(self):
-    z = self.of(Arg[Exp[Arg * S.ImaginaryUnit]])    
+    z = self.of(Arg[Exp[Arg * S.ImaginaryUnit]])
     return Equal(self, Arg(z))
 
 
@@ -24,4 +24,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-03-01
-# updated on 2019-03-01

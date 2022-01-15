@@ -16,11 +16,10 @@ def apply(given, wrt=None):
 def prove(Eq):
     x = Symbol(real=True)
     Eq << apply(log(x) >= 1 - 1 / x)
-    
+
     Eq << Eq[-1].simplify()
 
 
 if __name__ == '__main__':
     run()
 # created on 2020-05-29
-# updated on 2020-05-29

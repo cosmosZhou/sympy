@@ -7,7 +7,7 @@ def apply(self, k=None):
     assert self.right_open and not self.left_open
     assert a.is_integer and b.is_integer
     if k is None:
-        k = self.generate_var(integer=True)    
+        k = self.generate_var(integer=True)
     return Equal(self, Cup[k:a:b](Interval(k, k + 1, right_open=True)))
 
 
@@ -24,4 +24,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2021-04-29
-# updated on 2021-04-29

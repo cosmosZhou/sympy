@@ -22,4 +22,3 @@ if __name__ == '__main__':
 
 from . import mul
 # created on 2019-05-03
-# updated on 2019-05-03

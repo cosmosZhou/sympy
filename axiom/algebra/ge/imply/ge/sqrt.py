@@ -6,17 +6,17 @@ def take_sqrt(x):
         b, e = x.args
         if e.is_integer and e.is_even:
             return abs(b ** (e / 2))
-    
+
     return sqrt(x)
 
 @apply
 def apply(given):
     lhs, rhs = given.of(GreaterEqual)
     assert rhs >= 0
-    
-    x = take_sqrt(lhs)        
+
+    x = take_sqrt(lhs)
     y = take_sqrt(rhs)
-    
+
     return GreaterEqual(x, y)
 
 
@@ -36,4 +36,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2019-05-31
-# updated on 2019-05-31

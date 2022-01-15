@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(given, index=-1):
     e, args = given.of(NotElement[Union])
-    
+
     first = Union(*args[:index])
     second = Union(*args[index:])
     return NotElement(e, first), NotElement(e, second)
@@ -23,4 +23,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2018-01-10
-# updated on 2018-01-10

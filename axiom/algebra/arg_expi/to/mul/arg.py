@@ -21,9 +21,11 @@ def prove(Eq):
     Eq << Eq[-1].this.find(Ceiling).apply(algebra.ceiling.to.zero.arg)
 
     #https://en.wikipedia.org/wiki/Argument_(complex_analysis)
+    
+    
 
 
 if __name__ == '__main__':
     run()
 # created on 2018-11-06
-# updated on 2018-11-06
+# updated on 2022-01-08

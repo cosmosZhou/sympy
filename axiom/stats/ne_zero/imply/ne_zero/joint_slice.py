@@ -28,9 +28,9 @@ def prove(Eq):
     t = Symbol(domain=Range(1, n))
     Eq << apply(Unequal(Probability(x, y), 0), [slice(0, t), slice(0, t)])
 
-    Eq << Eq[0].this.lhs.arg.args[-1].apply(algebra.eq.imply.et.eq.blockmatrix, t)
+    Eq << Eq[0].this.lhs.arg.args[-1].apply(algebra.eq.imply.et.eq.block, t)
 
-    Eq << Eq[-1].this.lhs.arg.args[0].apply(algebra.eq.imply.et.eq.blockmatrix, t)
+    Eq << Eq[-1].this.lhs.arg.args[0].apply(algebra.eq.imply.et.eq.block, t)
 
     Eq << stats.ne_zero.imply.et.apply(Eq[-1])
 
@@ -40,4 +40,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-12-12
-# updated on 2020-12-12

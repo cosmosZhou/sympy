@@ -47,4 +47,3 @@ if __name__ == '__main__':
 from . import sum
 from . import complement
 # created on 2020-07-05
-# updated on 2020-07-05

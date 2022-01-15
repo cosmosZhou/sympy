@@ -10,7 +10,7 @@ def apply(given):
 
 
 @prove
-def prove(Eq):    
+def prove(Eq):
     a, b = Symbol(real=True)
     Eq << apply(Unequal(KroneckerDelta(a, b), 0))
 
@@ -20,4 +20,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-09-05
-# updated on 2020-09-05

@@ -29,11 +29,13 @@ def prove(Eq):
 
     Eq << algebra.et.imply.ou.apply(Eq[-1])
 
-    Eq << Eq[-1].this.args[0].apply(algebra.et.imply.ou)
+    
 
     Eq << Eq[-1].this.args[0].args[0].apply(sets.subset_piece.imply.ou.two)
 
     Eq << Eq[-1].this.args[0].apply(algebra.et.imply.ou)
+
+    
 
 
 if __name__ == '__main__':
@@ -41,4 +43,4 @@ if __name__ == '__main__':
 
 from . import two
 # created on 2021-07-02
-# updated on 2021-07-02
+# updated on 2022-01-08

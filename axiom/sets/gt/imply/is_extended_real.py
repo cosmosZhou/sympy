@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given):
-    n, b = given.of(Greater)    
+    n, b = given.of(Greater)
     return Element(n, Interval(-oo, oo, right_open=False))
 
 
@@ -22,4 +22,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-03-31
-# updated on 2020-03-31

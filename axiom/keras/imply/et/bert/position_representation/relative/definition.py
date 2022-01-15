@@ -20,8 +20,9 @@ def apply(n, dx, dz):
 
     a_K = Symbol("a^K", Lamda[j:n, i:n](w_K[k + clip(j - i, -k, k)]))
     a_V = Symbol("a^V", Lamda[j:n, i:n](w_V[k + clip(j - i, -k, k)]))
-
+    
     a = Symbol(Q @ (K + a_K).T / sqrt(dz))
+    
     s = Symbol(softmax(a))
 
     z = Symbol(s @ (V + a_V))
@@ -74,15 +75,16 @@ def prove(Eq):
 
     Eq << Eq[8].this.lhs.args[1].defun()
 
-    Eq << Eq[-1].this.lhs.apply(algebra.add.to.min)
+    
 
-    Eq << Eq[-1].this.lhs.args[1].apply(algebra.add.to.max)
+    #reference:
+    #Self-Attention with Relative Position Representations.pdf
+    #https://arxiv.org/abs/1803.02155
+    
+    
 
 
 if __name__ == '__main__':
     run()
-# reference:
-# Self-Attention with Relative Position Representations.pdf
-# https://arxiv.org/abs/1803.02155
 # created on 2021-01-03
-# updated on 2021-01-03
+# updated on 2022-01-08

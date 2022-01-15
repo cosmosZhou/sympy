@@ -20,38 +20,37 @@ def prove(Eq):
     epsilon, delta = Symbol(positive=True)
     Eq << apply(All[epsilon:Interval(0, delta, left_open=True)](Limit[x:b - epsilon](f(x)) > 0))
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2021-08-22
-# updated on 2021-08-22

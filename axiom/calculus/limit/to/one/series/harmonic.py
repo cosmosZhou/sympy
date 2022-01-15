@@ -45,7 +45,7 @@ def prove(Eq):
 
     Eq <<= Eq[-2].this.lhs.doit(), Eq[-1].this.lhs.doit().reversed
 
-    
+
     Eq << Eq[-1].this.lhs.apply(algebra.sum.limits.subs.offset, -1) + 1
 
     Eq <<= Eq[-3] / Eq[-3].lhs, Eq[-1] / Eq[-3].lhs
@@ -61,4 +61,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2020-06-25
-# updated on 2020-06-25

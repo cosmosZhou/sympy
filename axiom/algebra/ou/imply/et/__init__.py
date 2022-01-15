@@ -23,9 +23,8 @@ def apply(self, index=-1):
 def prove(Eq):
     from axiom import algebra
 
-    k = Symbol(integer=True, positive=True)
-    x, y = Symbol(real=True, shape=(k,), given=True)
-    f, g = Function(shape=(k,), real=True)
+    x, y = Symbol(real=True, given=True)
+    f, g = Function(real=True)
     Eq << apply(Or(Unequal(x, y) & (y > 0), Equal(f(x), g(y))))
 
     Eq << Eq[0].this.args[1].apply(algebra.et.imply.cond, index=1)
@@ -39,4 +38,3 @@ if __name__ == '__main__':
 from . import collect
 from . import infer
 # created on 2019-04-29
-# updated on 2019-04-29

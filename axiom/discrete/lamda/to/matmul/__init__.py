@@ -9,6 +9,9 @@ def apply(lamda):
         A, b = b, A
         assert not b._has(i)
 
+    if not k_m:
+        domain = b.domain_defined(k) & A.domain_defined(k)
+        k_m = domain.of(Range)
     A = Lamda(A, (k, *k_m), (i, *i_n)).simplify()
 
     if j_limit:
@@ -16,10 +19,7 @@ def apply(lamda):
     else:
         b = Lamda(b, (k, *k_m)).simplify()
 
-
-    rhs = A @ b
-
-    return Equal(lamda, rhs, evaluate=False)
+    return Equal(lamda, A @ b, evaluate=False)
 
 
 @prove
@@ -44,4 +44,3 @@ if __name__ == '__main__':
 
 from . import swapn
 # created on 2020-11-09
-# updated on 2020-11-09

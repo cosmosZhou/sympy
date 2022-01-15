@@ -20,11 +20,10 @@ def prove(Eq):
     Eq << sets.is_positive.imply.is_positive.div.apply(Eq[1])
     Eq << sets.ge.is_positive.imply.ge.mul.apply(Eq[0], Eq[-1])
 
-    
-    
+
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2021-10-02
-# updated on 2021-10-02

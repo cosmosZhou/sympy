@@ -222,10 +222,10 @@ class Mod(Function):
             G = Mul._from_args(G.args[1:])
         return G * cls(p, q, evaluate=(p, q) != (pwas, qwas))
 
-    def _eval_is_integer(self):
+    def _eval_is_extended_integer(self):
         from sympy.core.logic import fuzzy_and, fuzzy_not
         p, q = self.args
-        if fuzzy_and([p.is_integer, q.is_integer, fuzzy_not(q.is_zero)]):
+        if fuzzy_and([p.is_extended_integer, q.is_extended_integer, fuzzy_not(q.is_zero)]):
             return True
 
     is_extended_real = True

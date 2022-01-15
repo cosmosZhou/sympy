@@ -1,13 +1,12 @@
 from util import *
 
 
-# log softmax(x) = x - max(x) - log∑exp(x - max(x))
 @apply
-def apply(self, swap=False):
-    x, y = self.of(Min)
+def apply(self, index=-1):
+    [*args] = self.of(Min)
 
-    if swap:
-        x, y = y, x
+    y = args.pop(index)
+    x = Min(*args)
 
     return Equal(self, y - relu(-x + y))
 
@@ -15,6 +14,7 @@ def apply(self, swap=False):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     x, y = Symbol(real=True)
     Eq << apply(Min(x, y))
 
@@ -24,8 +24,11 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.add.to.min)
 
+    
+    
+
 
 if __name__ == '__main__':
     run()
 # created on 2020-12-29
-# updated on 2020-12-29
+# updated on 2021-12-18

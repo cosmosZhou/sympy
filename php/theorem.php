@@ -5,79 +5,123 @@ if ($input != null) {
 }
 
 $numOfReturnsFromApply = $lengths[$indexOfYield];
-// error_log("numOfReturnsFromApply = " . $numOfReturnsFromApply);
 // error_log("lengths = " . \std\jsonify($lengths));
 
 $latex = [];
 $i = 0;
 $statements = '';
-$statements_before_yield = '';
-
 // error_log("module = $module");
 
 $content = [];
 
-if (!$statementsFromSQLFile){
-    $statementsFromSQLFile = \mysql\yield_from_mysql($module);
+if ($data) {
+    $statementsFromSQL = explode("\n", end($data));
+}
+else{
+    $statementsFromSQL = \mysql\yield_from_mysql($module);
 }
 
-preg_match("/([\w.]+)\.(imply|given)\./", $module, $m);
-$numOfRequisites = $m ? count(explode(".", $m[1])) - 1 : 0;
-
 $where = '';
-foreach ($statementsFromSQLFile as $statement) {
 
-    if ($i == $indexOfYield) {
-        -- $lengths[$i];
-        $statements .= $statement;
-        if ($lengths[$i] == 0) {
+function is_latex_with_tabs($latex, &$matches)
+{
+    $matches = [];
 
-            if ($numOfReturnsFromApply == 1) {
-                if (is_latex($statement, $matches)) {
+    if (strpos($latex, "\t") !== false) {
+        $array = explode("\t", $latex);
 
-                    $numOfReturnsFromApply = count($matches);
-
-                    $statements_before_yield = array_slice($matches, 0, $numOfReturnsFromApply - $numOfYields);
-                    // error_log("statements_before_yield = ".jsonify($statements_before_yield));
-                    $statements = array_slice($matches, $numOfReturnsFromApply - $numOfYields);
-                    // error_log("statements_after_yield = ".jsonify($statements));
-
-                    foreach ($statements as &$statement) {
-                        $statement = $statement[0];
-                    }
-                    $statements = join('', $statements);
-
-                    foreach ($statements_before_yield as &$statement) {
-                        $statement = $statement[0];
-                    }
-
-                    if ($numOfRequisites < count($statements_before_yield)) {
-                        $where = array_slice($statements_before_yield, $numOfRequisites);
-                        $where = join('', $where);
-                        $statements_before_yield = array_slice($statements_before_yield, 0, $numOfRequisites);
-                    } else {
-                        $where = '';
-                    }
-
-                    $statements_before_yield = join('', $statements_before_yield);
-                }
+        foreach ($array as $tex) {
+            if (! preg_match_all('/\\\\\[.+?\\\\\]/', $tex, $match, PREG_SET_ORDER)) {
+                return false;
             }
 
-            $given = [
-                'py' => $inputs[0],
-                'latex' => $statements_before_yield
-            ];
+            foreach ($match as &$statement) {
+                $statement = $statement[0];
+            }
 
-            $inputs = array_slice($inputs, 1);
+            $matches[] = join('', $match);
+        }
+        return true;
+    } else {
+        if (! preg_match_all('/\\\\\[.+?\\\\\]/', $latex, $matches, PREG_SET_ORDER)) {
+            return false;
+        }
 
-            $imply = $statements;
+        foreach ($matches as &$statement) {
+            $statement = $statement[0];
+        }
+        return true;
+    }
+    return false;
+}
 
-            $statements = '';
-            $statements_before_yield = '';
-            ++ $i;
-        } else if ($lengths[$i] == $numOfYields) {
-            $statements_before_yield = $statements;
-            $statements = '';
+$resultsFromApply = [];
+
+foreach ($statementsFromSQL as $statement) {
+
+    if ($i == $indexOfYield) {
+        if ($numOfReturnsFromApply == 1) {
+            
+            -- $lengths[$i];
+            if ($lengths[$i] == 0) {
+                if (is_latex_with_tabs($statement, $matches)) {                    
+                    switch (count($matches)) {
+                        case 3:
+                            list ($given, $where, $imply) = $matches;
+                            break;
+                        case 2:
+                            if ($numOfRequisites) {
+                                list ($given, $imply) = $matches;
+                                $where = '';
+                            } else {
+                                list ($where, $imply) = $matches;
+                                $given = '';
+                            }
+                            break;
+                        case 1:
+                            $where = '';
+                            $given = '';
+                            $imply = $matches[0];
+                            break;
+                    }
+                }
+                
+                $given = [
+                    'py' => $inputs[0],
+                    'latex' => $given
+                ];
+
+                $inputs = array_slice($inputs, 1);
+
+                $statements = '';
+                ++ $i;
+            }
+        } else {
+            $resultsFromApply[] = $statement;
+
+            -- $lengths[$i];
+            if ($lengths[$i] == 0) {
+                $given = array_slice($resultsFromApply, 0, $lengthOfGiven);
+                $given = join('', $given);
+                $given = [
+                    'py' => $inputs[0],
+                    'latex' => $given
+                ];
+
+                if ($lengthOfWhere) {
+                    $where = array_slice($resultsFromApply, $lengthOfGiven, $lengthOfWhere);
+                    $where = join('', $where);
+                } else {
+                    $where = '';
+                }
+
+                $imply = array_slice($resultsFromApply, $lengthOfGiven + $lengthOfWhere);
+                $imply = join('', $imply);
+
+                $statements = '';
+                $inputs = array_slice($inputs, 1);
+                ++ $i;
+            }
         }
     } else {
         $statements .= $statement;
@@ -109,9 +153,9 @@ for ($i = 0; $i < $size; ++ $i) {
 }
 
 $logStr = [];
-foreach ($logs as $log){
+foreach ($logs as $log) {
     $log = str_replace("\\", "\\\\", $log);
-    $log = str_replace("'", "\\'", $log);    
+    $log = str_replace("'", "\\'", $log);
     $logStr[] = "'$log'";
 }
 
@@ -120,10 +164,15 @@ $logStr = "[$logStr]";
 
 ?>
 
-<title><?php echo $module;?></title>
+<title><?php echo $title;?></title>
 <link rel=stylesheet href="static/codemirror/lib/codemirror.css">
 <link rel=stylesheet href="static/codemirror/theme/eclipse.css">
 <link rel=stylesheet href="static/codemirror/addon/hint/show-hint.css">
+<style>
+div {
+	caret-color: transparent;
+}
+</style>
 <body></body>
 
 <script>
@@ -158,12 +207,12 @@ MathJax = {
 };
 </script>
 
-<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
-<script src="https://unpkg.com/vue@3.2.11/dist/vue.global.prod.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/vue3-sfc-loader/dist/vue3-sfc-loader.js"></script>
+<script async src="static/unpkg.com/mathjax@3.2.0/es5/tex-chtml.js"></script>
+<script src="static/unpkg.com/vue@3.2.11/dist/vue.global.prod.js"></script>
+<script src="static/unpkg.com/vue3-sfc-loader@0.8.4/dist/vue3-sfc-loader.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qs/dist/qs.js"></script>
+<script src="static/unpkg.com/axios@0.24.0/dist/axios.min.js"></script>
+<script src="static/unpkg.com/qs@6.10.2/dist/qs.js"></script>
 
 <script src='static/js/std.js'></script>
 <script src='static/js/utility.js'></script>
@@ -204,14 +253,16 @@ createApp('render', {
     imply: <?php echo \std\jsonify($imply)?>,
     where: <?php echo \std\jsonify($where)?>,
     createdTime: `<?php echo $createdTime?>`,
-    updatedTime: `<?php echo $updatedTime?>`,
+    updatedTime: `<?php echo isset($updatedTime)? $updatedTime: ''?>`,
 });
 
-var sqlFile = `<?php echo $sql_statement?>`;
-if (sqlFile) {
-    console.log(`execute sql file: ${sqlFile}`);
+var data = <?php echo \std\jsonify($data)?>;
+if (data) {
+    console.log(`update mysql data`);
+    console.log(data);
 
-    form_post("php/request/mysql/update.php", { sqlFile: sqlFile }).then(res => {
+    data = JSON.stringify(data);
+    form_post("php/request/mysql/update.php", {data}).then(res => {
         console.log('success code = ');
         console.log(res);
     });

@@ -1,10 +1,6 @@
 from util import *
 
-
-@apply
-def apply(piecewise, i=0):
-    [*ecs] = piecewise.of(Piecewise)
-
+def swap(ecs, i):
     j = i + 1
     assert j < len(ecs)
 
@@ -15,7 +11,13 @@ def apply(piecewise, i=0):
         ecs[-2:] = (ej, ci.invert()), (ei, True)
     else:
         ecs[i:i + 2] = (ej, cj & ci.invert()), (ei, ci)
-    return Equal(piecewise, Piecewise(*ecs), evaluate=False)
+        
+    return ecs
+    
+@apply
+def apply(piecewise, i=0):
+    [*ecs] = piecewise.of(Piecewise)
+    return Equal(piecewise, Piecewise(*swap(ecs, i)), evaluate=False)
 
 
 @prove
@@ -54,4 +56,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-01-17
-# updated on 2018-01-17

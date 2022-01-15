@@ -509,7 +509,7 @@ class SparseMatrix(MatrixBase):
     def _eval_scalar_rmul(self, other):
         return self.applyfunc(lambda x: other*x)
 
-    def _eval_transpose(self):
+    def _eval_transpose(self, axis=-1):
         """Returns the transposed SparseMatrix of this SparseMatrix.
 
         Examples
@@ -526,8 +526,9 @@ class SparseMatrix(MatrixBase):
         [1, 3],
         [2, 4]])
         """
-        smat = {(j,i): val for (i,j),val in self._smat.items()}
-        return self._new(self.cols, self.rows, smat)
+        if axis == self.default_axis:
+            smat = {(j,i): val for (i,j),val in self._smat.items()}
+            return self._new(self.cols, self.rows, smat)
 
     def _eval_values(self):
         return [v for k,v in self._smat.items() if not v.is_zero]

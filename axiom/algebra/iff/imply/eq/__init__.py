@@ -34,4 +34,3 @@ if __name__ == '__main__':
 from . import subs
 from . import sum
 # created on 2018-01-29
-# updated on 2018-01-29

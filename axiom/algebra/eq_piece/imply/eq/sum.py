@@ -6,27 +6,25 @@ def apply(self, sgm):
     ((xi, lt), (xi_1, _true)), yi = self.of(Equal[Piecewise])
     i, t = lt.of(Less)
     assert xi._subs(i, i + 1) == xi_1
-    
-    fyi, (_i, *ab) = sgm.of(Sum)
-    assert _i == i
+
+    fyi, (S[i], *ab) = sgm.of(Sum)
     if ab:
-        _0, n = ab        
+        S[0], n = ab
     else:
         domain = fyi.domain_defined(i)
-        _0, n = domain.of(Range)
-    assert _0 == 0
+        S[0], n = domain.of(Range)
     n += 1
-    
+
     assert t >= 0 and t < n
     assert fyi._has(yi)
-    
+
     fxi = fyi._subs(yi, xi)
     return Equal(sgm, Sum[i:n](fxi) - fxi._subs(i, t))
 
 
 @prove
 def prove(Eq):
-    i, j = Symbol(integer=True)
+    i = Symbol(integer=True)
     n = Symbol(domain=Range(2, oo))
     x, y = Symbol(real=True, shape=(oo,))
     t = Symbol(domain=Range(n))
@@ -39,4 +37,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-11-27
-# updated on 2019-11-27

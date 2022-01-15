@@ -40,4 +40,3 @@ if __name__ == '__main__':
 from . import both
 from . import max
 # created on 2018-07-29
-# updated on 2018-07-29

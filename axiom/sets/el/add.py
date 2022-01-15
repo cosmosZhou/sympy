@@ -5,7 +5,7 @@ from util import *
 def apply(self, t):
     e, interval = self.of(Element)
 
-    return Equivalent(self,Element(e + t, interval + t))
+    return Equivalent(self, Element(e + t, interval + t))
 
 
 @prove
@@ -23,4 +23,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-02-27
-# updated on 2020-02-27

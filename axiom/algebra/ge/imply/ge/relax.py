@@ -10,7 +10,7 @@ def apply(given, lower=None, upper=None):
     elif upper is not None:
         assert lhs <= upper
         lhs = upper
-        
+
     return GreaterEqual(lhs, rhs)
 
 
@@ -30,4 +30,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-07-01
-# updated on 2018-07-01

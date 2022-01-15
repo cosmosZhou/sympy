@@ -1,1 +1,1 @@
-from . import det_blockMatrix
+from . import det_block

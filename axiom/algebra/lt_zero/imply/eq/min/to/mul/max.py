@@ -12,7 +12,7 @@ def apply(is_negative, self, div=False):
     else:
         args = [arg / factor for arg in args]
         rhs = Max(*args) * factor
-        
+
     return Equal(self, rhs)
 
 
@@ -32,11 +32,10 @@ def prove(Eq):
 
     Eq << Eq[-1].reversed
 
-    
-    
+
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2021-10-02
-# updated on 2021-10-02

@@ -37,4 +37,3 @@ if __name__ == '__main__':
 
 from . import limits_intersect
 # created on 2019-02-24
-# updated on 2019-02-24

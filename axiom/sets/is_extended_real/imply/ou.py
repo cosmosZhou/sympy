@@ -2,7 +2,7 @@ from util import *
 
 
 @apply
-def apply(is_extended_real):    
+def apply(is_extended_real):
     x, R = is_extended_real.of(Element)
     a, b = R.of(Interval)
     right = b == oo and not R.right_open
@@ -33,4 +33,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2021-05-15
-# updated on 2021-05-15

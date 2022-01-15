@@ -2,25 +2,27 @@ from util import *
 
 
 @apply
-def apply(self):
+def apply(self, factor=None):
     args = self.of(Max)
 
-    common_factors = None
+    if factor is None:
+        common_factors = None
 
-    for arg in args:
-        if not arg.is_Mul:
-            return
+        for arg in args:
+            if not arg.is_Mul:
+                return
 
-        if common_factors is None:
-            common_factors = {*arg.args}
-        else:
-            common_factors &= {*arg.args}
+            if common_factors is None:
+                common_factors = {*arg.args}
+            else:
+                common_factors &= {*arg.args}
 
-    if common_factors:
-        factor = Mul(*common_factors)
-        if factor < 0:
-            args = [arg / factor for arg in args]
-            return Equal(self, factor * Min(*args))
+        if common_factors:
+            factor = Mul(*common_factors)
+    assert factor < 0
+    
+    args = [arg / factor for arg in args]
+    return Equal(self, factor * Min(*args))
 
 
 @prove
@@ -39,8 +41,10 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(GreaterEqual).reversed
 
+    
+
 
 if __name__ == '__main__':
     run()
 # created on 2020-01-24
-# updated on 2020-01-24
+# updated on 2021-12-26

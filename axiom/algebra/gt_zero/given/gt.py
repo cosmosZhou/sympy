@@ -11,13 +11,12 @@ def apply(given):
 def prove(Eq):
     a, b = Symbol(real=True, given=True)
     Eq << apply(Less(0, a - b))
-    
+
     Eq << Eq[0] + b
-    
+
     Eq << Eq[-1].reversed
 
 
 if __name__ == '__main__':
     run()
 # created on 2019-07-06
-# updated on 2019-07-06

@@ -38,7 +38,7 @@ def prove(Eq):
         Piecewise((f(x), Element(x, A)), (f_quote(x), True)),
         Piecewise((g(x), Element(x, B)), (g_quote(x), True)))
 
-    Eq << Eq[1].this.lhs.apply(algebra.add.to.piece.st.two_pieces)
+    Eq << Eq[1].this.lhs.apply(algebra.add_piece.to.piece)
 
     Eq << Eq[-1].apply(algebra.cond.given.et.all, cond=Element(x, A))
 
@@ -46,7 +46,7 @@ def prove(Eq):
 
     Eq <<= Eq[-2].this().expr.simplify(), Eq[-1].this().expr.simplify()
 
-    
+
 
     Eq << Eq[-1].subs(Eq[0])
 
@@ -55,4 +55,3 @@ if __name__ == '__main__':
     run()
 
 # created on 2020-07-04
-# updated on 2020-07-04

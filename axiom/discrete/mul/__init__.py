@@ -1,2 +1,2 @@
 from . import to
-from . import binomial
+from . import binom

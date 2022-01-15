@@ -458,10 +458,11 @@ class Order(Expr):
     def _eval_derivative(self, x):
         return self.func(self.expr.diff(x), *self.args[1:]) or self
 
-    def _eval_transpose(self):
-        expr = self.expr._eval_transpose()
-        if expr is not None:
-            return self.func(expr, *self.args[1:])
+    def _eval_transpose(self, axis=-1):
+        if axis == self.default_axis:
+            expr = self.expr._eval_transpose()
+            if expr is not None:
+                return self.func(expr, *self.args[1:])
 
     def _sage_(self):
         #XXX: SAGE doesn't have Order yet. Let's return 0 instead.

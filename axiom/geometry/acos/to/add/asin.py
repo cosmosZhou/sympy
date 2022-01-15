@@ -22,10 +22,9 @@ def prove(Eq):
     Eq << Eq[0].subs(x, -1)
 
     #https://en.wikipedia.org/wiki/Argument_(complex_analysis)
-    
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2018-06-13
-# updated on 2018-06-13

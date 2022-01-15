@@ -11,11 +11,10 @@ def apply(given):
 def prove(Eq):
     x, y = Symbol(complex=True)
     Eq << apply(Equal(x, y))
-    
+
     Eq << Eq[1].subs(Eq[0])
 
 
 if __name__ == '__main__':
     run()
 # created on 2021-09-27
-# updated on 2021-09-27

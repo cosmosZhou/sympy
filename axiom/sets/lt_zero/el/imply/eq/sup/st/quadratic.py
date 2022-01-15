@@ -7,8 +7,7 @@ def apply(is_negative, el, fx, x=None):
     from axiom.algebra.le.ge.imply.le.quadratic import quadratic_coefficient
     a = is_negative.of(Expr < 0)
 
-    x, _a, b, c = quadratic_coefficient(fx, x=x)
-    assert _a == a
+    x, S[a], b, c = quadratic_coefficient(fx, x=x)
 
     assert -ab * (2 * a) == b
     return Equal(Sup[x:interval](fx), c - b ** 2 / (4 * a))
@@ -42,4 +41,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-12-26
-# updated on 2019-12-26

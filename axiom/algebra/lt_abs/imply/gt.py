@@ -16,9 +16,9 @@ def prove(Eq):
     x, a = Symbol(real=True, given=True)
     Eq << apply(abs(x) < a)
 
-    
 
-    
+
+
 
     Eq << algebra.imply.le.abs.apply(-x)
 
@@ -32,4 +32,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-07-27
-# updated on 2018-07-27

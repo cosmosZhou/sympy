@@ -18,7 +18,7 @@ def prove(Eq):
     f = Function(real=True)
     Eq << apply(All[x:a:b]((x <= c) | (f(x) >= 1)))
 
-    
+
 
     Eq << algebra.all_ou.given.all.apply(Eq[0])
 
@@ -26,4 +26,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2019-02-06
-# updated on 2019-02-06

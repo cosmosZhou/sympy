@@ -2,7 +2,7 @@ from util import *
 
 
 @apply
-def apply(self): 
+def apply(self):
     (x, y), n = self.of(Add ** Expr)
     assert n.is_Integer
     s = 0
@@ -23,4 +23,3 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-08-17
-# updated on 2018-08-17

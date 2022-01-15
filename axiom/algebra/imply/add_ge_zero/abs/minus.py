@@ -16,16 +16,15 @@ def prove(Eq):
 
     Eq << algebra.imply.le.abs.apply(x).reversed - x
 
-    
 
-    
 
-    
 
-    
+
+
+
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2019-09-15
-# updated on 2019-09-15
