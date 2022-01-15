@@ -638,6 +638,10 @@ class Inference:
                     
         if self.is_Relational: 
             if self.is_Equal:
+                if other.is_Equal:
+                    assert other.lhs.is_nonzero or other.rhs.is_nonzero
+                    return self.func(self.lhs / other.lhs, self.rhs / other.rhs, given=(self, other))
+                    
                 lhs = (self.lhs / other).ratsimp().simplify()
                 rhs = (self.rhs / other).ratsimp().simplify()
 
