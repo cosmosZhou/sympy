@@ -22,7 +22,7 @@ def prove(Eq):
 
     Eq << apply(X, Y)
 
-    Eq << stats.imply.eq.chiSquared.induct.apply(Symbol.Y(Lamda[k](Sum[i:k](X[i] * X[i]))), Y)
+    Eq << stats.imply.eq.chiSquared.induct.apply(Symbol('Y', Lamda[k](Sum[i:k](X[i] * X[i]))), Y)
 
     Eq << Eq[-1].this.lhs.args[0].args[0].definition
 

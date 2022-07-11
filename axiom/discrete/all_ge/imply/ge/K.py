@@ -35,7 +35,7 @@ def prove(Eq):
 
     Eq << algebra.all.imply.cond.subs.apply(Eq[0], i, 1)
 
-    _n = Symbol.n(domain=Range(2, oo))
+    _n = Symbol('n', domain=Range(2, oo))
 
     Eq << Eq[0].subs(n, _n)
 

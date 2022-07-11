@@ -2,23 +2,23 @@ from util import *
 
 
 @apply
-def apply(set_comprehension_equality, last_element_equality):
-    from axiom.sets.eq.given.eq.set_comprehension import of_set_comprehension
+def apply(cup_finiteset_equality, last_element_equality):
+    from axiom.sets.eq.given.eq.cup.finiteset import of_cup_finiteset
 
     if last_element_equality.lhs.is_Cup:
-        last_element_equality, set_comprehension_equality = set_comprehension_equality, last_element_equality
+        last_element_equality, cup_finiteset_equality = cup_finiteset_equality, last_element_equality
     p, n = last_element_equality.lhs.of(Indexed)
     a, _n = last_element_equality.rhs.of(Indexed)
 
     assert n == _n
 
-    set_comprehension_p, set_comprehension_a = set_comprehension_equality.of(Equal)
-    _p = of_set_comprehension(set_comprehension_p)
-    _a = of_set_comprehension(set_comprehension_a)
+    cup_finiteset_p, cup_finiteset_a = cup_finiteset_equality.of(Equal)
+    _p = of_cup_finiteset(cup_finiteset_p)
+    _a = of_cup_finiteset(cup_finiteset_a)
     assert a[:n + 1] == _a
     assert p[:n + 1] == _p
 
-    return Equal(p[:n].set_comprehension(), a[:n].set_comprehension())
+    return Equal(p[:n].cup_finiteset(), a[:n].cup_finiteset())
 
 
 @prove(proved=False)
@@ -27,7 +27,7 @@ def prove(Eq):
 
     n = Symbol(integer=True, positive=True, given=True)
     p, a = Symbol(shape=(oo,), etype=dtype.integer, given=True)
-    Eq << apply(Equal(p[:n + 1].set_comprehension(), a[:n + 1].set_comprehension()),
+    Eq << apply(Equal(p[:n + 1].cup_finiteset(), a[:n + 1].cup_finiteset()),
                 Equal(p[n], a[n]))
 
     Eq << Eq[0].this.lhs.apply(sets.cup.to.union.split, cond=slice(-1))

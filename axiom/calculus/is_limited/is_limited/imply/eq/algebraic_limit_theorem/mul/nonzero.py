@@ -24,46 +24,46 @@ def prove(Eq):
     Eq << apply(Element(Limit[x:x0:dir](f(x)), Reals - {0}), Element(Limit[x:x0:dir](g(x)), Reals))
 
     ε = Symbol(real=True, positive=True)
-    ε0 = Symbol.ε_0(real=True, positive=True)
-    δ0 = Symbol.δ_0(real=True, positive=True)
-    Eq.limit_A_definition = calculus.is_limited.imply.any_all.limit_definition.symbol_subs.apply(Eq[0], ε0, δ0, var='A')
+    ε_0 = Symbol(real=True, positive=True)
+    δ_0 = Symbol(real=True, positive=True)
+    Eq.limit_A_definition = calculus.is_limited.imply.any_all.limit_definition.symbol_subs.apply(Eq[0], ε_0, δ_0, var='A')
 
     A = -Eq.limit_A_definition.expr.expr.lhs.arg.args[0]
     Eq << Eq[0].subs(A.this.definition.reversed)
 
-    Eq.abs_gt_zero = sets.is_nonzero_real.imply.abs_gt_zero.apply(Eq[-1])
+    Eq.abs_gt_zero = sets.is_nonzero_real.imply.gt_zero.abs.apply(Eq[-1])
 
-    Eq.abs_is_positive = sets.is_nonzero_real.imply.abs_is_positive.apply(Eq[-1], simplify=None)
+    Eq.abs_is_positive = sets.is_nonzero_real.imply.is_positive.abs.apply(Eq[-1], simplify=None)
 
     Eq << sets.is_nonzero_real.imply.is_nonzero_real.div.apply(Eq[-1])
 
-    Eq << sets.is_nonzero_real.imply.abs_is_positive.apply(Eq[-1], simplify=None)
+    Eq << sets.is_nonzero_real.imply.is_positive.abs.apply(Eq[-1], simplify=None)
 
     Eq << Eq[-1].this.lhs.apply(algebra.abs.to.reciprocal, simplify=None)
 
     Eq.is_positive_real = sets.el.imply.el.mul.interval.apply(Eq[-1], ε / 2, simplify=None)
 
-    ε1 = Symbol.ε_1(real=True, positive=True)
-    δ1 = Symbol.δ_1(real=True, positive=True)
-    Eq.limit_B_definition = calculus.is_limited.imply.any_all.limit_definition.symbol_subs.apply(Eq[1], ε1, δ1, var='B')
+    ε_1 = Symbol(real=True, positive=True)
+    δ_1 = Symbol(real=True, positive=True)
+    Eq.limit_B_definition = calculus.is_limited.imply.any_all.limit_definition.symbol_subs.apply(Eq[1], ε_1, δ_1, var='B')
 
     B = -Eq.limit_B_definition.expr.expr.lhs.arg.args[0]
     Eq << algebra.imply.le.abs.add.mul.apply(f(x), g(x), A, B)
 
-    δ2 = Symbol.δ_2(real=True, positive=True)
-    Eq << calculus.is_limited.imply.any_all.le.boundedness.apply(Eq[1], delta=δ2, var='B')
+    δ_2 = Symbol(real=True, positive=True)
+    Eq << calculus.is_limited.imply.any_all.le.boundedness.apply(Eq[1], delta=δ_2, var='B')
 
     B = Eq[-1].expr.expr.rhs
     Eq.le = Eq[-1].this.expr.expr.apply(algebra.le.lt.imply.le.subs, Eq[-2])
 
     assert B > 0
-    Eq << Eq.limit_A_definition.subs(ε0, ε / B / 2)
+    Eq << Eq.limit_A_definition.subs(ε_0, ε / B / 2)
 
     Eq.lt_fx = Eq[-1].this.expr.expr * B
 
     Eq << algebra.gt_zero.imply.gt_zero.div.apply(Eq.abs_gt_zero, ε / 2, simplify=None)
 
-    Eq << Eq.limit_B_definition.subs(ε1, Eq[-1].lhs)
+    Eq << Eq.limit_B_definition.subs(ε_1, Eq[-1].lhs)
 
     Eq << algebra.cond.ou.imply.cond.apply(Eq.is_positive_real, Eq[-1])
 
@@ -84,7 +84,7 @@ def prove(Eq):
     Eq << Eq[-1].this.find(Add[Min]).apply(algebra.add.to.min)
 
     delta = Symbol(real=True, positive=True)
-    Eq << algebra.any.imply.any.subs.apply(Eq[-1], Min(δ0, δ1, δ2), delta)
+    Eq << algebra.any.imply.any.subs.apply(Eq[-1], Min(δ_0, δ_1, δ_2), delta)
 
     Eq << Eq[-1].this.find(Element).apply(sets.el.given.el.add, x0)
 
@@ -96,8 +96,8 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.args[0].definition
 
-    
-    
+
+
 
 
 if __name__ == '__main__':

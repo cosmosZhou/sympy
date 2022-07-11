@@ -16,7 +16,7 @@ def apply(given):
                 left_open = True
                 right_open = True
                 start = b
-                stop = y                
+                stop = y
             else:
                 ...
         elif cond1.is_Less:
@@ -26,16 +26,16 @@ def apply(given):
                 left_open = True
                 right_open = True
                 start = x
-                stop = b                
+                stop = b
         #x < y
         if cond1.is_GreaterEqual:
             #a >= b
             if x == a:
-                e = x                
+                e = x
                 left_open = False
                 right_open = True
                 start = b
-                stop = y       
+                stop = y
             else:
                 ...
     elif cond0.is_LessEqual:
@@ -47,7 +47,7 @@ def apply(given):
                 left_open = False
                 right_open = False
                 start = b
-                stop = y       
+                stop = y
             else:
                 ...
 
@@ -67,13 +67,13 @@ def prove(Eq):
 
     Eq << Eq[-2].this.lhs.apply(sets.lt.lt.imply.el.interval)
 
-    Eq << Eq[-1].this.rhs.apply(sets.el.imply.et.split.interval)
+    Eq << Eq[-1].this.rhs.apply(sets.el_interval.imply.et)
 
-    
+
 
     Eq << Eq[-1].this.find(Greater).reversed
 
-    
+
 
 
 if __name__ == '__main__':

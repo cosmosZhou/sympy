@@ -5,12 +5,12 @@ from util import *
 def apply(A, B, n=None, k=None, x=None):
 
     if x is None:
-        x = Symbol.x(real=True)
+        x = Symbol(real=True)
 
     if n is None:
-        n = Symbol.n(integer=True)
+        n = Symbol(integer=True)
     if k is None:
-        k = Symbol.k(integer=True)
+        k = Symbol(integer=True)
 
     return Equal(Sum[n:0:oo](A[n] * x ** n) * Sum[n:0:oo](B[n] * x ** n), Sum[n:0:oo](Sum[k:0:n + 1](A[n - k] * B[k]) * x ** n))
 

@@ -21,7 +21,7 @@ def prove(Eq):
     e = Symbol(real=True, positive=True)
     Eq << apply(Element(x, Interval(a, b, right_open=True) | Interval(c, d, right_open=True)), e)
 
-    Eq << sets.el.imply.ou.split.union.apply(Eq[0])
+    Eq << sets.el_union.imply.ou.apply(Eq[0])
 
     Eq << Eq[-1].this.args[0].apply(sets.el.imply.el.div.interval, e)
 

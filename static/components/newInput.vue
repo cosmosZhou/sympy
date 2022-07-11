@@ -1,9 +1,9 @@
 <template>
 	<div>
-		<select v-if=phrases v-focus name=suggest class='non-arrowed' :style=select_style :size=select_size @keydown=keydown_select>
+		<select v-if=phrases v-focus name=suggest class='non-arrowed' :style=select_style :size=select_size @keydown=keydown_select @blur=blur>
 			<option v-for="phrase in phrases" :value=phrase>{{phrase}}</option>
 		</select>
-		<input v-focus spellcheck=false name=module :value=module :size=input_size @keydown=keydown @change=change_input />
+		<input v-focus spellcheck=false ref=input name=module :value=module :size=input_size @keydown=keydown @input=oninput @change=onchange >
 	</div>
 </template>
 
@@ -63,32 +63,46 @@ export default {
 		},
 		
 		editor(){
-			return this.$el.querySelector('input');
+			return this.$refs.input;
+		},
+		
+		input(){
+			return this.$refs.input;
 		},
 	},
 	
 	methods: {
-		complete(hint, prefix, start){
-			form_post(`php/request/${hint}.php`, { prefix: prefix }).then(phrases => {
-				if (phrases.length) {
-					if (phrases.length == 1) {
-						var [phrase] = phrases;
-						var input = this.$el.querySelector('input');
-						var start1 = input.selectionStart;							
-						var start0 = start1 - prefix.length + prefix.search(/\w*$/);
-						var text = input.value;
-						
-						this.module = input.value = text.slice(0, start0) + phrase + text.slice(start1);
-						var selectionStart = start0 + phrase.length;
-						input.selectionStart = selectionStart;
-						input.selectionEnd = selectionStart;							
-					}
-					else{
-						this.phrases = phrases;
-						this.start = start + 1;
-					}
-				}
-			});				
+		async complete(hint, prefix, start){
+			var phrases = await form_post(`php/request/${hint}.php`, { prefix: prefix });
+			if (!phrases.length) {
+				return;
+			}
+			
+			var input = this.input;
+			var value = input.value;
+			console.log("before assignment: value = ", value);
+			console.log("before assignment: module = ", this.module);
+			
+			if (phrases.length == 1) {
+				var [phrase] = phrases;
+				
+				var start1 = input.selectionStart;							
+				var start0 = start1;
+				start0 = start1 + prefix.search(/\w*$/) - prefix.length;						
+				value = value.slice(0, start0) + phrase + value.slice(start1);
+				console.log("after assignment:", value);
+				
+				input.value = value;
+				this.set_module(value);
+				
+				var selectionStart = start0 + phrase.length;
+				input.selectionStart = selectionStart;
+				input.selectionEnd = selectionStart;							
+			}
+			else{
+				this.phrases = phrases;
+				this.start = start + 1;
+			}
 		},
 		
 		keydown(event){
@@ -149,6 +163,11 @@ export default {
 			
 		},	
 		
+		blur(event){
+			this.phrases = null;	
+		},
+		
+		
 		keydown_select(event){
 			var self = event.target;
 			switch (event.key) {
@@ -156,17 +175,21 @@ export default {
 				var phrase = self.options[self.selectedIndex].value;
 
 				var input = self.nextElementSibling;
-				var selectionStart = input.selectionStart;
-
-				var text = input.value;
-				if (text[selectionStart - 1] == '.'){
-					this.module = input.value = text.slice(0, selectionStart) + phrase + text.slice(selectionStart);	
+				//var selectionStart = input.selectionStart;
+				var selectionStart = this.start;
+				var value = input.value;
+				var pos;
+				if (value[selectionStart - 1] == '.'){
+					pos = selectionStart;
 				}
 				else{
-					var pos = text.slice(0, selectionStart).search(/\w+$/); 
-					this.module = input.value = text.slice(0, pos) + phrase + text.slice(selectionStart);
-				}					
-
+					pos = value.slice(0, selectionStart).search(/\w+$/);
+				}
+				
+				value = value.slice(0, pos) + phrase + value.slice(selectionStart);
+				input.value = value;
+				this.set_module(value);
+				
 				this.phrases = null;
 				
 				selectionStart += phrase.length;
@@ -181,8 +204,10 @@ export default {
 				var input = self.nextElementSibling;
 				var selectionStart = input.selectionStart;
 
-				var text = input.value;
-				this.module = input.value = text.slice(0, selectionStart - 1) + text.slice(selectionStart);
+				var value = input.value;
+				value = text.slice(0, selectionStart - 1) + text.slice(selectionStart);
+				input.value = value;
+				this.set_module(value);
 
 				this.phrases = null;
 				--selectionStart;
@@ -190,10 +215,10 @@ export default {
 			case 'Delete':
 				var input = self.nextElementSibling;
 				var selectionStart = input.selectionStart;
-				var text = input.value;
-				// console.log("text = " + text);
-				// console.log("selectionStart = " + selectionStart);
-				this.module = input.value = text.slice(0, selectionStart) + text.slice(selectionStart + 1);
+				var value = input.value;
+				value = text.slice(0, selectionStart) + text.slice(selectionStart + 1);
+				input.value = value;
+				this.set_module(value);
 				break;
 			case 'ArrowLeft':
 				var input = self.nextElementSibling;
@@ -217,15 +242,23 @@ export default {
 			}
 			
 			this.$nextTick(()=>{
-				var input = this.$el.querySelector('input');
+				var input = this.input;
 				input.focus();
 				input.selectionStart = selectionStart;
 				input.selectionEnd = selectionStart;
 			});
 		},
 		
-		change_input(event){
-			setAttribute(this, 'module', event.target.value);
+		oninput(event){
+			this.set_module(event.target.value);
+		},
+		
+		onchange(event){
+			document.title = event.target.value;	
+		},
+		
+		set_module(module){
+			setAttribute(this, 'module', module);
 		},
 	},
 	

@@ -15,7 +15,7 @@ def apply(n, w=None, left=True, P=None):
     x = x[:n]
 
     if P is None:
-        P = Symbol(conditionset(x, Equal(x.set_comprehension(), Range(n))))
+        P = Symbol(conditionset(x, Equal(x.cup_finiteset(), Range(n))))
 
     if left:
         return All[x:P](Element(w[i, j] @ x, P))
@@ -34,7 +34,7 @@ def prove(Eq):
 
     x = Eq[2].variable
 
-    Eq << discrete.set_comprehension.rmatmul.apply(x, w)
+    Eq << discrete.cup.finiteset.rmatmul.apply(x, w)
 
     Eq << Eq[2].this.expr.rhs.definition.subs(Eq[-1])
 

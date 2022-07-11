@@ -195,6 +195,7 @@ export default {
 		                    case 'keras':
 		                    case 'sets':
 		                    case 'stats':
+		                    case 'patent':
 		                        break;
 		                    default:
 		                        var symbol = module;
@@ -219,6 +220,7 @@ export default {
 		                    case 'keras':
 		                    case 'sets':
 		                    case 'stats':
+		                    case 'patent':
 		                        break;
 		                    default:
 		                        return;
@@ -668,6 +670,7 @@ export default {
                 						case 'keras':
                 						case 'sets':
                 						case 'stats':
+                						case 'patent':
                 							url += `suggest.php`;
                 							break;
                 						case 'Eq':

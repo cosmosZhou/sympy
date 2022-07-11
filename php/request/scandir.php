@@ -8,6 +8,17 @@ $folder = $dict['folder'];
 
 $packages = [];
 
+switch($folder[0]){
+    case '/':
+    case '\\':
+        break;
+    default:
+        $folder = '/'.$folder;
+        break;
+}
+
+$folder = str_replace('.', '/', $folder);
+
 $folder = dirname(dirname(dirname(__file__))).'/axiom'.$folder;
 
 foreach (scandir($folder) as $file) {

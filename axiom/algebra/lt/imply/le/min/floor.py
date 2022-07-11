@@ -34,7 +34,7 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    di = Symbol.d_i(integer=True)
+    di = Symbol('d_i', integer=True)
     i0 = Symbol(integer=True)
     r, l, s = Symbol(integer=True, positive=True)
     Eq << apply(i0 + di * r < Min(l * r + i0, s))

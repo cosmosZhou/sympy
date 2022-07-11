@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 """
 Algorithms and classes to support enumerative combinatorics.
 

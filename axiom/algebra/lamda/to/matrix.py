@@ -69,7 +69,7 @@ def prove(Eq):
 
     Eq << algebra.et.given.et.apply(Eq[-1])
 
-    _i = Symbol.i(domain=Range(4))
+    _i = Symbol('i', domain=Range(4))
     Eq << Eq.all_et.limits_subs(i, _i)
 
     Eq << algebra.eq.imply.eq.lamda.apply(Eq[-1], (_i, 0, 4))

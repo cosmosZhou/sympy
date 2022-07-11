@@ -17,7 +17,7 @@ def prove(Eq):
     x1, x2 = Symbol(complex=True)
     Eq << apply(Unequal(x2, 0), n, x1)
 
-    Eq << algebra.ne_zero.imply.ne_zero.reciprocal.apply(Eq[0])
+    Eq << algebra.ne_zero.imply.ne_zero.div.apply(Eq[0])
 
     r = Symbol(Eq[-1].lhs * x1)
     Eq << r.this.definition * x2

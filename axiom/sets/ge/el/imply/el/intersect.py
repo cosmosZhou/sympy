@@ -20,9 +20,9 @@ def prove(Eq):
     a, b, c, x, y = Symbol(real=True)
     Eq << apply(x >= a, Element(x, Interval(b, c)))
 
-    Eq << sets.el.given.et.split.interval.apply(Eq[2])
+    Eq << sets.el_interval.given.et.apply(Eq[2])
 
-    Eq << sets.el.imply.et.split.interval.apply(Eq[1])
+    Eq << sets.el_interval.imply.et.apply(Eq[1])
 
     Eq << algebra.ge.ge.imply.ge.max.rhs.apply(Eq[-1], Eq[0])
 

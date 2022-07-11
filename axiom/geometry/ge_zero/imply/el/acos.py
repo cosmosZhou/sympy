@@ -20,9 +20,9 @@ def prove(Eq):
     b = Symbol(domain=Interval(-1, 1, right_open=True))
     Eq << apply(Element(x, Interval(a, b, right_open=True, left_open=True)))
 
-    Eq << sets.el.given.et.split.interval.apply(Eq[1])
+    Eq << sets.el_interval.given.et.apply(Eq[1])
 
-    Eq.gt, Eq.lt = sets.el.imply.et.split.interval.apply(Eq[0])
+    Eq.gt, Eq.lt = sets.el_interval.imply.et.apply(Eq[0])
 
     Eq << Element(a, Interval(-1, 1), plausible=True)
 

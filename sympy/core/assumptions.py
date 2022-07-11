@@ -675,7 +675,7 @@ class ManagedProperties(BasicMeta):
             else:
                 limits = [(x, a)]
         else:
-            limits = [(limits,)]            
+            limits = [(limits,)]
                     
         return IndexedOperator(self, limits)
 

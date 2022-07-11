@@ -4,8 +4,9 @@ from util import *
 def find_denominator(expr):
     if expr.is_Pow:
         e = expr.exp
-        if e.is_integer and e < 0:
-            return expr.base
+        if e < 0:
+            if e.is_rational:
+                return expr.base
         return
 
     if expr.is_Mul or expr.is_Add:
@@ -22,7 +23,7 @@ def apply(given):
     if den is None:
         den = find_denominator(rhs)
 
-    return Unequal(den, 0)
+    return Unequal(den, 0, evaluate=False)
 
 
 @prove
@@ -32,9 +33,12 @@ def prove(Eq):
     a, b, c, d = Symbol(complex=True)
     Eq << apply(Equal(a / b + d, c))
 
-    Eq << Eq[0].this.apply(algebra.eq.transposition, lhs=0)
+    Eq << Eq[0].this.apply(algebra.eq.transport, lhs=0)
 
     Eq << algebra.eq.imply.ne_zero.domain_definition.st.mul.apply(Eq[-1])
+
+
+
 
 
 if __name__ == '__main__':
@@ -42,3 +46,4 @@ if __name__ == '__main__':
 
 from . import st
 # created on 2019-04-15
+# updated on 2022-04-02

@@ -1,4 +1,3 @@
-from __future__ import print_function, division
 import itertools
 from sympy.combinatorics.fp_groups import FpGroup, FpSubgroup, simplify_presentation
 from sympy.combinatorics.free_groups import FreeGroup

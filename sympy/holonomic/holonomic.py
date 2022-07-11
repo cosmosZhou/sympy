@@ -3,8 +3,6 @@ This module implements Holonomic Functions and
 various operations on them.
 """
 
-from __future__ import print_function, division
-
 from sympy import (Symbol, S, Dummy, Order, rf, meijerint, I,
     solve, limit, Float, nsimplify, gamma)
 from sympy.core.compatibility import ordered

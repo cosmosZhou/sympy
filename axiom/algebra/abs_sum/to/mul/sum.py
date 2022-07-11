@@ -20,7 +20,7 @@ def dissect_distance(variance):
 def prove(Eq):
     from axiom import algebra
 
-    n, m = Symbol(integer=True, positive=True)
+    n = Symbol(integer=True, positive=True)
     x = Symbol(real=True, shape=(n,))
     y = Symbol(real=True)
     i = Symbol(integer=True)
@@ -28,7 +28,7 @@ def prove(Eq):
 
     Eq << Eq[0].this.rhs.find(Sum).simplify()
 
-    x_ = Symbol.x(Lamda[i](y - x[i]))
+    x_ = Symbol("x", Lamda[i](y - x[i]))
     Eq << x_[i].this.definition
 
     Eq << Eq[-1] - y

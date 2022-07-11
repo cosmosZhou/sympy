@@ -13,13 +13,13 @@ def X_definition(n, w, x):
     j = Symbol(integer=True)
 
     index = index_function(n + 1)
-    return Symbol.X(Lamda[j:n + 1](w[n, index[j](x[:n + 1], evaluate=False)] @ x[:n + 1])), index
+    return Symbol('X', Lamda[j:n + 1](w[n, index[j](x[:n + 1], evaluate=False)] @ x[:n + 1])), index
 
 
 def predefined_symbols(n):
     x = Symbol(shape=(oo,), integer=True, nonnegative=True)
     t, i, j = Symbol(integer=True)
-    Q = Symbol(Lamda[t:n + 1](conditionset(x[:n + 1], Equal(x[:n + 1].set_comprehension(), Range(n + 1)) & Equal(x[n], t))))
+    Q = Symbol(Lamda[t:n + 1](conditionset(x[:n + 1], Equal(x[:n + 1].cup_finiteset(), Range(n + 1)) & Equal(x[n], t))))
     w = Symbol(Lamda[j, i](SwapMatrix(n + 1, i, j)))
 
     return Q, w, x
@@ -62,9 +62,9 @@ def prove(Eq):
     k = Eq[-1].expr.lhs.expr.arg.args[0].indices[-1]
     Eq.Xv_definition = Eq[1].subs(j, v)
 
-    Eq << Eq.Xv_definition[k].apply(sets.eq.imply.eq.set_comprehension, (k, 0, n + 1))
+    Eq << Eq.Xv_definition[k].apply(sets.eq.imply.eq.cup.finiteset, (k, 0, n + 1))
 
-    Eq.x_n1_set_comprehension = Eq[-2].subs(Eq[-1].reversed)
+    Eq.x_n1_cup_finiteset = Eq[-2].subs(Eq[-1].reversed)
 
     Eq << Eq.Xv_definition[n]
 
@@ -80,7 +80,7 @@ def prove(Eq):
     Eq << Eq[-1].this.expr.apply(algebra.eq_piecewise.imply.ou)
     Eq << algebra.all_et.imply.all.apply(Eq[-1] & Eq.h_domain)
     return
-    Eq <<= Eq.x_n1_set_comprehension & Eq[-1]
+    Eq <<= Eq.x_n1_cup_finiteset & Eq[-1]
     Eq.Xv_in_Qv, Eq.x_eq_swap_Xv = algebra.all_et.given.all.apply(Eq[3])
     Eq << Eq.Xv_in_Qv.this.expr.rhs.definition
     Eq.indexu_eq_indexu = Eq.x_eq_swap_Xv.function.rhs.args[0].indices[1].this.subs(Eq.Xv_definition)

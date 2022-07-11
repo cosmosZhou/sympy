@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from sympy.core import S, sympify, Dummy, Mod
 from sympy.core.cache import cacheit
 from sympy.core.compatibility import reduce, HAS_GMPY

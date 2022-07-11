@@ -18,7 +18,7 @@ def prove(Eq):
     A, B = Symbol(etype=dtype.integer, given=True)
     Eq << apply(Element(e, A | B))
 
-    Eq << sets.el.imply.ou.split.union.apply(Eq[0], simplify=False)
+    Eq << sets.el_union.imply.ou.apply(Eq[0], simplify=False)
 
 
 if __name__ == '__main__':

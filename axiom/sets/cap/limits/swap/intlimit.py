@@ -21,7 +21,7 @@ def prove(Eq):
 
     Eq << Eq[0].this.lhs.apply(sets.cap.piece)
 
-    Eq << Eq[-1].this.lhs.expr.args[0].cond.apply(sets.et.transform.i_lt_j)
+    Eq << Eq[-1].this.lhs.expr.args[0].cond.apply(sets.et_el.transform.i_lt_j)
 
     Eq << Eq[-1].this.rhs.apply(sets.cap.piece)
 

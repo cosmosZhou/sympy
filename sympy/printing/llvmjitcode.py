@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 '''
 Use llvmlite to create executable functions from Sympy expressions
 

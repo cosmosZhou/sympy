@@ -2,8 +2,6 @@
 A MathML printer.
 """
 
-from __future__ import print_function, division
-
 from sympy import sympify, S, Mul
 from sympy.core.compatibility import default_sort_key
 from sympy.printing.conventions import split_super_sub, requires_partial

@@ -39,11 +39,11 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Range).apply(sets.range_min.to.intersect, simplify=None)
 
-    Eq << Eq[-1].this.find(Element).apply(sets.el.given.et.split.intersect, simplify=None)
+    Eq << Eq[-1].this.find(Element).apply(sets.el_intersect.given.et, simplify=None)
 
     Eq << Eq[-1].this(i).find(Element[2]).simplify()
 
-    
+
 
 
 if __name__ == '__main__':

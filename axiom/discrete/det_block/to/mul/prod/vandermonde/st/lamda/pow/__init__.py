@@ -29,15 +29,7 @@ def prove(Eq):
 
     Eq << Eq[-1].find(Lamda[Sum, Tuple[2]]).this().expr.simplify()
 
-    _i = i.copy(domain=Range(n))
-    _j = j.copy(domain=Range(n + 1))
-    Eq << discrete.stirling2.to.mul_sum.apply(i, j)
-
-    Eq << Eq[-1] * factorial(j)
-
-    Eq << Eq[-1].reversed
-
-    Eq << Eq[-4].subs(Eq[-1])
+    Eq << Eq[-1].this.rhs.expr.apply(discrete.sum_binom.to.mul.stirling2, simplify=None)
 
     Eq << Eq[3].subs(Eq[-1])
 
@@ -53,14 +45,21 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.apply(discrete.det.to.mul)
 
-    Eq << Eq[-1] * (-1) ** n
+    
 
-    Eq << Eq[-1].this.rhs.powsimp()
+    
+    Eq << Eq[-1].this.find(Add ** Symbol).apply(algebra.pow.to.mul.neg)
+
+    
+    
 
 
 if __name__ == '__main__':
     run()
 # created on 2021-10-04
-# updated on 2021-11-25
+# updated on 2022-07-11
 from . import n2
 from . import mn
+from . import n3
+from . import n4
+from . import ratio

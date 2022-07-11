@@ -16,9 +16,9 @@ def apply(is_imply_P, is_imply_Q):
 @prove
 def prove(Eq):
     from axiom import algebra
-    p, q, x, y, a, b = Symbol(real=True, given=True)
 
-    Eq << apply(Infer(p > q, x > y), Infer(x > y, a > b))
+    p, q, r = Symbol(bool=True)
+    Eq << apply(Infer(p, q), Infer(q, r))
 
     Eq << Eq[0].apply(algebra.infer.imply.ou)
 
@@ -36,7 +36,11 @@ def prove(Eq):
 
     Eq << algebra.et.imply.ou.apply(Eq[-1])
 
+    
+    
+
 
 if __name__ == '__main__':
     run()
 # created on 2018-02-01
+# updated on 2022-01-27

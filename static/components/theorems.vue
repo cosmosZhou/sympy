@@ -2,7 +2,7 @@
 	<div>
 		theorems:<br>
 		<template v-for="theorem, i of theorems">
-			<theorem :theorem=theorem :tabindex="i + initialIndex" :index=i></theorem>
+			<axiomTheorem :theorem=theorem :tabindex="i + initialIndex" :index=i></axiomTheorem>
 			<template v-if='i == focusedIndex'>
 				<axiomContextmenu v-if='left >= 0' :left=left :top=top></axiomContextmenu>
 				<packageSelector v-else :path=path></packageSelector>				
@@ -14,7 +14,7 @@
 <script>
 console.log('importing theorems.vue');	
 
-import theorem from "./theorem.vue"
+import axiomTheorem from "./axiomTheorem.vue"
 import axiomContextmenu from "./axiomContextmenu.vue"
 import packageSelector from "./packageSelector.vue"
 export default {
@@ -23,22 +23,27 @@ export default {
 			focusedIndex: -1,
 			left: -1,
 			top: -1,
-			theorem: [],
+			axiomTheorem: [],
 		};
 	},
 	
-	components : {theorem, axiomContextmenu, packageSelector},
+	components : {axiomTheorem, axiomContextmenu, packageSelector},
 
 	props : [ 'theorems', 'initialIndex' ],
 
 	computed :{
+		children(){
+			return this.axiomTheorem;
+		},
+		
 		path(){
-			var href = location.href;				
-			return href.match(/\/axiom.php(\/.*)\/(\w+)\/*$/)[1];
+			var href = location.href;
+			return href.match(/\/axiom\.php\?module=((?:\w+[.\/])+)(\w+)[.\/]?(?:#\w+)?$/)[1];
+			//return href.match(/\/axiom.php(\/.*)\/(\w+)\/*$/)[1];
 		},
 		
 		focusedElement(){
-			return this.theorem[this.focusedIndex];
+			return this.axiomTheorem[this.focusedIndex];
 		},
 	},
 	
@@ -71,16 +76,16 @@ export default {
 				// Code that will run only after the entire view has been rendered
 				var index = indexFocused;
 				var self = this;
-				if (index == this.$children.length){
+				if (index == this.children.length){
 					--index;
 					if(index < 0){
 						var forefather = this.$parent;
-						var self = forefather.$children[0];
-						index = self.$children.length - 1;							
+						var self = forefather.children[0];
+						index = self.children.length - 1;							
 					}
 				}
 				 
-				self.$children[index].$el.focus();					
+				self.children[index].$el.focus();					
 			});				
 		},
 	}

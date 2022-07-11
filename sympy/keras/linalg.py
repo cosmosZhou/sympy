@@ -9,9 +9,11 @@ from sympy.tensor.indexed import Indexed
 # https://tensorflow.google.cn/api_docs/python/tf/linalg/band_part
 def BandPart(x, *limits):
     '''
-    >>> m, n, l, u = Symbol(integer=True, positive=True)
-    >>> x = Symbol(real=True, shape=(m, n))
-    >>> BandPart[l, u](x).this.defun()
+    >>> n = 20
+    >>> BandPart[5, 3](OneMatrix(n, n)).this.defun()
+    >>> algebra.eq.imply.eq.bool.apply(Eq[-1].this.rhs.doit())     
+    >>> BandPart[5, 3, 2](OneMatrix(n, n)).this.defun() #dilated version
+    >>> algebra.eq.imply.eq.bool.apply(Eq[-1].this.rhs.doit())
     '''
     
     if len(limits) == 3:

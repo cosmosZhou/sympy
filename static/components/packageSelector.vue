@@ -4,7 +4,7 @@
         <p>{{path}}</p>
         <div class=packageSelector>
             <smallPackage v-for="module, i of packages" :module=module :tabindex="i + 1"></smallPackage>
-        </div>        
+        </div>
         
         <button class=confirm type=button @click=click>confirm</button>
         <button class=cancel type=button @click=click>cancel</button>
@@ -19,30 +19,30 @@ import smallPackage from "./smallPackage.vue"
 export default {
     data(){
         return {
+        	packages: [],
         };
     },
     
     components : {smallPackage},
 
+    async created(){
+        var sympy = sympy_user();
+		var packages = await get(`/${sympy}/php/request/scandir.php`, {folder: this.path});
+		this.packages = packages;
+    	console.log("in created(){: ", this.packages);
+    },
+    
     props : [ 'path'],
     
     computed: {            
         theorem(){
-            var children = this.$parent.$children;
+            var children = this.$parent.children;
             var index = this.$parent.focusedIndex;
             return children[index].$el.textContent.trim();
-        },
-        
-        packages() {
-            //console.log("folders() {");
-            var params = {folder: this.path};
-            var sympy = sympy_user();
-            return Vue.http.get(`/${sympy}/php/request/scandir.php`, {params: params}).then(response => response.data);
         },        
     },
     
-    methods: {
-
+    methods: {		
         click(event){
             var self = event.target;
             switch (self.className){
@@ -77,7 +77,7 @@ export default {
         
         focus(module){                
             if (module != null){                                    
-                for (let child of this.$children){
+                for (let child of this.children){
                     if (child.module == module){
                         child.$el.focus();
                         break;
@@ -88,7 +88,7 @@ export default {
                 self = this;    
             
                 setTimeout(()=>{
-                    for (let child of self.$children){
+                    for (let child of self.children){
                         child.$el.focus();
                         break;
                     }

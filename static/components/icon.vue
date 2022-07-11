@@ -315,7 +315,7 @@ export default {
 				}
 				else if (!text){						
 					var parent = self.$parent;
-					parent.remove(parent.$children.indexOf(self));						
+					parent.remove(parent.children.indexOf(self));						
 				}
 			});
 			

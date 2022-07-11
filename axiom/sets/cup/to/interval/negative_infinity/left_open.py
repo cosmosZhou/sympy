@@ -24,19 +24,19 @@ def prove(Eq):
 
     k = Eq[-1].rhs.variable
     x = Eq[-1].lhs.lhs
-    Eq <<= Eq[-2].this.lhs.expr.apply(sets.el.imply.ge.split.interval), Eq[-1].this.rhs.apply(algebra.any.given.cond.subs, k, -Ceiling(x))
+    Eq <<= Eq[-2].this.lhs.expr.apply(sets.el_interval.imply.ge), Eq[-1].this.rhs.apply(algebra.any.given.cond.subs, k, -Ceiling(x))
 
     Eq <<= Eq[-2].this.lhs.apply(algebra.any.imply.any_et.limits.unleash, simplify=None), algebra.infer.given.et.infer.apply(Eq[-1])
 
-    Eq <<= Eq[-3].this.lhs.expr.args[1].apply(sets.el.imply.ge.split.range), Eq[-2].this.rhs.apply(sets.el.given.et.split.range), algebra.infer.given.cond.apply(Eq[-1])
+    Eq <<= Eq[-3].this.lhs.expr.args[1].apply(sets.el_range.imply.ge), Eq[-2].this.rhs.apply(sets.el_range.given.et), algebra.infer.given.cond.apply(Eq[-1])
 
-    Eq <<= Eq[-3].this.lhs.expr.apply(algebra.ge.ge.imply.ge.add), -Eq[-2].this.rhs, sets.el.given.et.split.interval.apply(Eq[-1])
+    Eq <<= Eq[-3].this.lhs.expr.apply(algebra.ge.ge.imply.ge.add), -Eq[-2].this.rhs, sets.el_interval.given.et.apply(Eq[-1])
 
     Eq << Eq[-4].this.lhs.apply(sets.le_zero.imply.is_nonpositive, simplify=None)
 
     Eq << algebra.imply.gt.ceiling.apply(x)
 
-    Eq << Eq[-3].this.lhs.apply(sets.el.imply.le.split.interval)
+    Eq << Eq[-3].this.lhs.apply(sets.el_interval.imply.le)
 
     Eq << Eq[-1].this.lhs.apply(algebra.le_zero.imply.ceiling_le_zero)
 

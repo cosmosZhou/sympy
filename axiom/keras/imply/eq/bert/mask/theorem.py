@@ -26,7 +26,7 @@ def prove(Eq):
     Ξ = Symbol(Lamda[j:n, i:n](Bool(p(i, j) > 0)))
     Eq << apply(a, Ξ)
 
-    a_quote = Symbol.a(a - (1 - Ξ) * oo)
+    a_quote = Symbol('a', a - (1 - Ξ) * oo)
     Eq << a_quote.this.definition
 
     Eq << Eq[-1][i, j]
@@ -37,7 +37,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.args[1].args[1].apply(algebra.add.to.piece)
 
-    Eq << Eq[-1].this.rhs.args[1].apply(algebra.mul_piece.to.piece)
+    Eq << Eq[-1].this.rhs.args[1].apply(algebra.mul.to.piece)
 
     Eq << Eq[-1].this.rhs.apply(algebra.add.to.piece)
 
@@ -49,7 +49,7 @@ def prove(Eq):
 
     Eq << Eq[-1] * exp(a[i, j])
 
-    Eq << Eq[-1].this.rhs.apply(algebra.mul_piece.to.piece)
+    Eq << Eq[-1].this.rhs.apply(algebra.mul.to.piece)
 
     Eq << algebra.eq.eq.imply.eq.transit.apply(Eq.exp_a, Eq[-1])
 
@@ -67,4 +67,4 @@ if __name__ == '__main__':
 # Self-Attention with Relative Position Representations.pdf
 # https://arxiv.org/abs/1803.02155
 # created on 2020-12-27
-# updated on 2022-01-08
+# updated on 2022-01-23

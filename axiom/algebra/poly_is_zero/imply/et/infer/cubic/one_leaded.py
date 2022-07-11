@@ -39,7 +39,7 @@ def prove(Eq):
     x = Symbol(x + a / 3)
     Eq.x_def = x.this.definition
 
-    Eq << Eq.x_def.this.apply(algebra.eq.transposition, rhs=0).reversed
+    Eq << Eq.x_def.this.apply(algebra.eq.transport, rhs=0).reversed
 
     Eq << Eq[0].subs(Eq[-1])
 
@@ -55,11 +55,11 @@ def prove(Eq):
 
     Eq <<= Eq[-3].subs(Eq.x_def), Eq[-2].subs(Eq.x_def), Eq[-1].subs(Eq.x_def)
 
-    Eq <<= Eq[-3].this.find(Equal[Add, Add]).apply(algebra.eq.transposition, lhs=0), Eq[-2].this.find(Equal[Add, Add]).apply(algebra.eq.transposition, lhs=0), Eq[-1].this.find(Equal[Add, Add]).apply(algebra.eq.transposition, lhs=0)
+    Eq <<= Eq[-3].this.find(Equal[Add, Add]).apply(algebra.eq.transport, lhs=0), Eq[-2].this.find(Equal[Add, Add]).apply(algebra.eq.transport, lhs=0), Eq[-1].this.find(Equal[Add, Add]).apply(algebra.eq.transport, lhs=0)
 
-    Eq <<= Eq[-3].this.find(Equal[Add, Add]).apply(algebra.eq.transposition, lhs=0), Eq[-2].this.find(Equal[Add, Add]).apply(algebra.eq.transposition, lhs=0), Eq[-1].this.find(Equal[Add, Add]).apply(algebra.eq.transposition, lhs=0)
+    Eq <<= Eq[-3].this.find(Equal[Add, Add]).apply(algebra.eq.transport, lhs=0), Eq[-2].this.find(Equal[Add, Add]).apply(algebra.eq.transport, lhs=0), Eq[-1].this.find(Equal[Add, Add]).apply(algebra.eq.transport, lhs=0)
 
-    Eq <<= Eq[-3].this.find(Equal[Add, Add]).apply(algebra.eq.transposition, lhs=0), Eq[-2].this.find(Equal[Add, Add]).apply(algebra.eq.transposition, lhs=0), Eq[-1].this.find(Equal[Add, Add]).apply(algebra.eq.transposition, lhs=0)
+    Eq <<= Eq[-3].this.find(Equal[Add, Add]).apply(algebra.eq.transport, lhs=0), Eq[-2].this.find(Equal[Add, Add]).apply(algebra.eq.transport, lhs=0), Eq[-1].this.find(Equal[Add, Add]).apply(algebra.eq.transport, lhs=0)
 
 
 if __name__ == '__main__':

@@ -31,7 +31,7 @@ def prove(Eq):
 
     Eq.subset = sets.subset.imply.subset.complement.apply(Eq[-1], Eq[-1].rhs.args[1])
 
-    Eq << sets.el.imply.le.split.interval.apply(Eq[1])
+    Eq << sets.el_interval.imply.le.apply(Eq[1])
 
     Eq << sets.le.imply.subset.interval.negativeInfinity.apply(Eq[-1], right_open=True)
 

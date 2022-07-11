@@ -28,6 +28,10 @@ export default {
 	props : [ 'packages'],
 	
 	computed: {
+		children(){
+			return this.axiomPackage;
+		},
+
 		focusedElement(){
 			return this.axiomPackage[this.focusedIndex];
 		},		
@@ -61,16 +65,16 @@ export default {
 				// Code that will run only after the entire view has been rendered
 				var index = indexFocused;
 				var self = this;
-				if (index == this.$children.length){
+				if (index == this.children.length){
 					--index;
 					if(index < 0){
 						var forefather = this.$parent;
-						self = forefather.$children[1];
+						self = forefather.children[1];
 						index = 0;							
 					}
 				}
 				 
-				self.$children[index].$el.focus();
+				self.children[index].$el.focus();
 				
 			});				
 		},

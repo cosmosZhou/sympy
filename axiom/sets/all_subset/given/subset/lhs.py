@@ -18,7 +18,7 @@ def prove(Eq):
 
     Eq << apply(All[i:0:m](Subset(x[i], A)))
 
-    Eq << sets.subset.imply.all_subset.split.cup.apply(Eq[1])
+    Eq << sets.subset_cup.imply.all_subset.apply(Eq[1])
 
 
 if __name__ == '__main__':

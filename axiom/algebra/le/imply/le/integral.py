@@ -10,7 +10,7 @@ def apply(given, *limits):
 
 @prove
 def prove(Eq):
-    from axiom import algebra
+    from axiom import algebra, calculus
     x, a, b = Symbol(real=True)
 
     f, g = Function(shape=(), real=True)
@@ -19,7 +19,7 @@ def prove(Eq):
 
     Eq << Eq[0].apply(algebra.cond.imply.all.restrict, (x, a, b))
 
-    Eq << algebra.all_le.imply.le.integral.apply(Eq[-1])
+    Eq << calculus.all_le.imply.le.integral.apply(Eq[-1])
 
 
 if __name__ == '__main__':

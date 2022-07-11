@@ -8,3 +8,4 @@ from . import expr
 from . import mul
 from . import matProd
 from . import block
+from . import reducedSum

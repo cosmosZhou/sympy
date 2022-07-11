@@ -2,21 +2,21 @@ from util import *
 
 
 @apply
-def apply(set_comprehension_equality, last_element_equality):
-    from axiom.sets.eq.given.eq.set_comprehension import of_set_comprehension
+def apply(cup_finiteset_equality, last_element_equality):
+    from axiom.sets.eq.given.eq.cup.finiteset import of_cup_finiteset
     if last_element_equality.lhs.is_Cup:
-        last_element_equality, set_comprehension_equality = set_comprehension_equality, last_element_equality
+        last_element_equality, cup_finiteset_equality = cup_finiteset_equality, last_element_equality
 
     p, n = last_element_equality.lhs.of(Indexed)
     _n = last_element_equality.rhs
     assert _n == n
 
-    set_comprehension, interval = set_comprehension_equality.of(Equal)
-    _p = of_set_comprehension(set_comprehension)
+    cup_finiteset, interval = cup_finiteset_equality.of(Equal)
+    _p = of_cup_finiteset(cup_finiteset)
     assert p[:n + 1] == _p
     assert interval == Range(n + 1)
 
-    return Equal(p[:n].set_comprehension(), Range(n))
+    return Equal(p[:n].cup_finiteset(), Range(n))
 
 
 @prove
@@ -25,7 +25,7 @@ def prove(Eq):
 
     n = Symbol(integer=True, positive=True, given=True)
     p = Symbol(shape=(oo,), integer=True, nonnegative=True, given=True)
-    Eq << apply(Equal(p[:n + 1].set_comprehension(), Range(n + 1)),
+    Eq << apply(Equal(p[:n + 1].cup_finiteset(), Range(n + 1)),
                 Equal(p[n], n))
 
     Eq << Eq[0].this.lhs.apply(sets.cup.to.union.split, cond=slice(-1))

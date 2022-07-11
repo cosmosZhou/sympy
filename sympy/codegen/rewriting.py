@@ -30,7 +30,6 @@ The ``optims_c99`` imported above is tuple containing the following instances
 
 
 """
-from __future__ import (absolute_import, division, print_function)
 from itertools import chain
 from sympy import log, exp, Max, Min, Wild, expand_log, Dummy
 from sympy.codegen.cfunctions import log1p, log2, exp2, expm1

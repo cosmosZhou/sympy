@@ -31,9 +31,9 @@ def prove(Eq):
 
     Eq << sets.el.given.el.sub.apply(Eq[2], d)
 
-    Eq <<= sets.el.given.et.split.range.apply(Eq[3]), sets.el.given.et.split.range.apply(Eq[-1])
+    Eq <<= sets.el_range.given.et.apply(Eq[3]), sets.el_range.given.et.apply(Eq[-1])
 
-    Eq <<= sets.el.imply.et.split.range.apply(Eq[4]), sets.el.imply.et.split.range.apply(Eq[1])
+    Eq <<= sets.el_range.imply.et.apply(Eq[4]), sets.el_range.imply.et.apply(Eq[1])
 
     Eq << Eq[-2].reversed
 

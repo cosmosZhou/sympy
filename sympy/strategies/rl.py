@@ -2,8 +2,6 @@
 
 This file assumes knowledge of Basic and little else.
 """
-from __future__ import print_function, division
-
 from sympy.utilities.iterables import sift
 from .util import new
 

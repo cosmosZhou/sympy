@@ -9,11 +9,13 @@ def apply(self):
 
 @prove(provable=False)
 def prove(Eq):
-    x, y = Symbol(integer=True)
-    f, g = Function(integer=True)
+    p, q = Symbol(bool=True)
+    Eq << apply(Infer(p, q))
 
-    Eq << apply(Infer(x > y, f(x) > g(y)))
+    
+
 
 if __name__ == '__main__':
     run()
 # created on 2018-01-01
+# updated on 2022-01-27

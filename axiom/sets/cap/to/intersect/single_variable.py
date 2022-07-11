@@ -24,8 +24,8 @@ def prove(Eq):
     Eq <<= Eq[-2].this.lhs.expr.apply(sets.el_piece.imply.ou), \
     Eq[-1].this.rhs.expr.apply(sets.el_piece.given.ou)
 
-    Eq <<= Eq[-2].this.rhs.apply(sets.el.given.et.el.split.intersect, simplify=None), \
-    Eq[-1].this.lhs.apply(sets.el.imply.et.el.split.intersect, simplify=None)
+    Eq <<= Eq[-2].this.rhs.apply(sets.el_intersect.given.et.el, simplify=None), \
+    Eq[-1].this.lhs.apply(sets.el_intersect.imply.et.el, simplify=None)
 
     Eq <<= Eq[-2].this.rhs.find(Element).apply(sets.el_cap.given.all_el), \
     Eq[-1].this.lhs.find(Element).apply(sets.el_cap.imply.all_el)

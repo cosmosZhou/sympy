@@ -3,15 +3,15 @@ from util import *
 
 @apply
 def apply(a_size, xa_equality, j=None):
-    a_set_comprehension, n = a_size.of(Equal[Card])
-    x_set_comprehension, _a_set_comprehension = xa_equality.of(Equal)
+    a_cup_finiteset, n = a_size.of(Equal[Card])
+    x_cup_finiteset, _a_cup_finiteset = xa_equality.of(Equal)
 
-    assert a_set_comprehension == _a_set_comprehension
+    assert a_cup_finiteset == _a_cup_finiteset
 
-    xexpr, (k, a, b) = x_set_comprehension.of(Cup[FiniteSet])
+    xexpr, (k, a, b) = x_cup_finiteset.of(Cup[FiniteSet])
     assert n == b - a
 
-    aexpr, (_k, _a, _b) = a_set_comprehension.of(Cup[FiniteSet])
+    aexpr, (_k, _a, _b) = a_cup_finiteset.of(Cup[FiniteSet])
     assert n == _b - _a
 
     x = Lamda[k:a:b](xexpr).simplify()
@@ -36,8 +36,8 @@ def prove(Eq):
     x, a = Symbol(shape=(n,), integer=True, given=True)
     k = Symbol(integer=True)
     j = Symbol(domain=Range(n), given=True)
-    Eq << apply(Equal(Card(a.set_comprehension(k)), n),
-                Equal(x[:n].set_comprehension(k), a.set_comprehension(k)),
+    Eq << apply(Equal(Card(a.cup_finiteset(k)), n),
+                Equal(x[:n].cup_finiteset(k), a.cup_finiteset(k)),
                 j=j)
 
     Eq << Eq[2].lhs.this.defun()

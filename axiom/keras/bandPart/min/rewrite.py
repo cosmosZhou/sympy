@@ -7,10 +7,10 @@ def apply(self, lower=True, upper=None):
     n, m = x.shape
     if lower:
         l = Min(l, n - 1)
-        
+
     if upper:
         u = Min(u, m - 1)
-     
+
     return Equal(self, BandPart[l, u](x))
 
 
@@ -34,21 +34,22 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Bool).apply(algebra.bool.to.piece)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.mul_piece.to.piece)
+    Eq << Eq[-1].this.lhs.apply(algebra.mul.to.piece)
 
-    Eq << Eq[-1].this.rhs.apply(algebra.mul_piece.to.piece)
+    Eq << Eq[-1].this.rhs.apply(algebra.mul.to.piece)
 
-    Eq << Eq[-1].this.find(Element).apply(sets.el.to.et.split.range)
+    Eq << Eq[-1].this.find(Element).apply(sets.el_range.to.et)
 
-    Eq << Eq[-1].this.find(Element).apply(sets.el.to.et.split.range)
+    Eq << Eq[-1].this.find(Element).apply(sets.el_range.to.et)
 
     Eq << Eq[-1].this.find(-Min).apply(algebra.mul.to.max)
 
     Eq << Eq[-1].this.find(GreaterEqual[Add, Max]).apply(algebra.ge_max.to.et.ge)
 
-    
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2022-01-01
+# updated on 2022-01-23

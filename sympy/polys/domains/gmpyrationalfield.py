@@ -1,7 +1,5 @@
 """Implementaton of :class:`GMPYRationalField` class. """
 
-from __future__ import print_function, division
-
 from sympy.polys.domains.groundtypes import (
     GMPYRational, SymPyRational,
     gmpy_numer, gmpy_denom, gmpy_factorial,

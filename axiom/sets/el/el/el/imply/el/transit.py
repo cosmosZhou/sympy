@@ -24,11 +24,11 @@ def prove(Eq):
     a, b, c, d, x, y, z = Symbol(real=True)
     Eq << apply(Element(x, Interval(a, b, left_open=True)), Element(y, Interval(c, d, right_open=True)), Element(z, Interval(x, y, left_open=True)))
 
-    Eq << sets.el.given.et.split.interval.apply(Eq[-1])
+    Eq << sets.el_interval.given.et.apply(Eq[-1])
 
-    Eq << sets.el.imply.et.split.interval.apply(Eq[2])
+    Eq << sets.el_interval.imply.et.apply(Eq[2])
 
-    Eq <<= sets.el.imply.gt.split.interval.apply(Eq[0]), sets.el.imply.lt.split.interval.apply(Eq[1])
+    Eq <<= sets.el_interval.imply.gt.apply(Eq[0]), sets.el_interval.imply.lt.apply(Eq[1])
 
     Eq << algebra.gt.gt.imply.gt.transit.apply(Eq[-4], Eq[-2])
 

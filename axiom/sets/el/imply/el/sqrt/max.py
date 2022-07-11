@@ -16,7 +16,7 @@ def prove(Eq):
     a, b, x = Symbol(real=True)
     Eq << apply(Element(x, Interval(a, b)))
 
-    Eq << sets.el.given.et.split.interval.apply(Eq[1])
+    Eq << sets.el_interval.given.et.apply(Eq[1])
 
     Eq << sets.el.imply.le.max.apply(Eq[0])
 

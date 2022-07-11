@@ -807,10 +807,9 @@ class CartesianSpace(Set):
         return self.space.is_extended_integer
 
     def _contains(self, other):
-        from sympy import Range
-        if tuple(self.etype.shape) != tuple(other.shape):
-            assert tuple(self.etype.shape) == tuple(other.shape), "self.etype.shape = %s, other.shape = %s" % (self.etype.shape, other.shape)
-        assert tuple(self.etype.shape) == tuple(other.shape)
+        from sympy import Range        
+        assert tuple(self.etype.shape) == tuple(other.shape), "self.etype.shape = %s, other.shape = %s" % (self.etype.shape, other.shape)
+        
         if self.is_UniversalSet:
             return S.true
         if other.is_Sliced or other.is_Symbol:
@@ -849,6 +848,21 @@ class CartesianSpace(Set):
                         return cond
                     return
                 return S.true
+        elif other.is_DenseMatrix:
+            contains = None
+            for arg in other.args:
+                cond = Element(arg, self.space)
+                if cond:
+                    if contains is None:
+                        contains = S.true
+                    elif contains == False:
+                        return
+                elif cond == False:
+                    if contains is None:
+                        contains = S.false
+                    elif contains:
+                        return
+            return contains
 
     def __mul__(self, other):
         if other.is_set:
@@ -861,7 +875,7 @@ class CartesianSpace(Set):
                 assert self.space_shape[:len(other.space_shape)] == other.space_shape
                 shape = self.space_shape
             elif len(self.space_shape) < len(other.space_shape):
-                assert self.space_shape == other.space_shape[:len(self.space_shape)]
+                assert self.space_shape == other.space_shape[len(self.space_shape):]
                 shape = other.space_shape
             else:
                 assert self.space_shape == other.space_shape

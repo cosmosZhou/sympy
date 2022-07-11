@@ -8,11 +8,11 @@ def rewrite_as_Or(given):
     eqs = []
     for var, domain in limits_dict.items():
         if isinstance(domain, list):
-            cond = conditionset(var, *domain).simplify()
+            cond = Element(var, conditionset(var, *domain).simplify()).simplify()
         elif domain.is_set:
             cond = Element(var, domain).simplify()
         else:
-            assert domain.is_boolean
+            assert domain.is_bool
             cond = domain
         eqs.append(cond.invert().simplify())
 

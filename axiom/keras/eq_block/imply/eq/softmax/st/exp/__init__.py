@@ -71,7 +71,7 @@ def prove(Eq):
     i = Eq[1].find(Lamda).variable
     Eq << Eq[-1][i]
 
-    Eq << Eq[-1].this.rhs.apply(keras.softmax.to.mul)
+    Eq << Eq[-1].this.rhs.apply(keras.softmax.to.mul.reducedSum)
 
     Eq.zi_def = Eq[-1].this.rhs.subs(Eq.a_quote_exp[i])
 
@@ -100,7 +100,7 @@ def prove(Eq):
     j = Eq.ksi_def.rhs.variable
     Eq << Eq[-1][j]
 
-    Eq.zij_def = Eq[-1].this.find(Mul).apply(algebra.mul_piece.to.piece)
+    Eq.zij_def = Eq[-1].this.find(Mul).apply(algebra.mul.to.piece)
 
     z_dquote = Symbol('z^\"', Eq[1].rhs)
     Eq.z_dquote_def = z_dquote.this.definition
@@ -135,7 +135,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(And).apply(algebra.et.collect, cond=Eq[-1].find(Element))
 
-    Eq.zij_dquote_def = Eq[-1].this(i, j).find(And).apply(sets.et_ou.to.el_range.bandPart.upper)
+    Eq.zij_dquote_def = Eq[-1].this(i, j).find(And).apply(sets.et_ou.to.el_range.bandPart.upper.min)
 
     Eq.zi_quote_def = Eq[0][i]
 
@@ -158,8 +158,10 @@ def prove(Eq):
 
 
 
+
 if __name__ == '__main__':
     run()
 # created on 2022-01-02
 
 from . import tf
+# updated on 2022-03-30

@@ -1,7 +1,5 @@
 """Implementation of :class:`FiniteField` class. """
 
-from __future__ import print_function, division
-
 from sympy.polys.domains.field import Field
 from sympy.polys.domains.groundtypes import SymPyInteger
 from sympy.polys.domains.modularinteger import ModularIntegerFactory

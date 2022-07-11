@@ -65,8 +65,6 @@ When is this module NOT the best approach?
 
 """
 
-from __future__ import print_function, division
-
 import sys
 import os
 import shutil

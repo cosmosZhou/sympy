@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from .vector import Vector, _check_vector
 from .frame import _check_frame
 

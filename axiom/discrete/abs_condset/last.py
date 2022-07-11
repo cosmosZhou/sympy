@@ -6,11 +6,11 @@ def apply(n, P_quote=None):
 
     if P_quote is None:
         x = Symbol(shape=(oo,), integer=True, nonnegative=True)
-        P_quote = Symbol("P'", conditionset(x[:n + 1], Equal(x[:n].set_comprehension(), Range(n)) & Equal(x[n], n)))
+        P_quote = Symbol("P'", conditionset(x[:n + 1], Equal(x[:n].cup_finiteset(), Range(n)) & Equal(x[n], n)))
     else:
         x = P_quote.definition.variable.base
 
-    P = Symbol(conditionset(x[:n], Equal(x[:n].set_comprehension(), Range(n))))
+    P = Symbol(conditionset(x[:n], Equal(x[:n].cup_finiteset(), Range(n))))
     return Equal(Card(P), Card(P_quote))
 
 
@@ -34,7 +34,7 @@ def prove(Eq):
 
     Eq << Eq.x_quote_definition[i]
 
-    Eq << sets.eq.imply.eq.set_comprehension.apply(Eq[-1], (i, 0, n))
+    Eq << sets.eq.imply.eq.cup.finiteset.apply(Eq[-1], (i, 0, n))
 
     Eq.x_quote_n_definition = Eq[-2].subs(i, n)
 

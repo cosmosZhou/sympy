@@ -39,8 +39,11 @@ def apply(x_independence_assumption, y_independence_assumption, xy_independence_
 def prove(Eq):
     from axiom import keras, algebra, sets, discrete, stats
 
-    from axiom.keras.eq.eq.eq.ne_zero.imply.eq.crf.markov import assumptions
-    Eq << apply(*assumptions())
+    from axiom.keras.eq.eq.eq.ne_zero.imply.eq.crf.markov import markov_assumptions
+    d, n = Symbol(domain=Range(2, oo))
+    x = Symbol(shape=(n, d), real=True, random=True)
+    y = Symbol(shape=(n,), domain=Range(d), random=True)
+    Eq << apply(*markov_assumptions(x, y))
 
     x_probability = Eq[3].lhs.arg.args[0]
     x = x_probability.lhs
@@ -112,8 +115,8 @@ def prove(Eq):
 
     Eq << -Eq[-1].this.rhs
 
-    Eq << Eq[-1].this.find(log).apply(keras.log.to.logsumexp)
-    
+    Eq << Eq[-1].this.find(log).apply(keras.log_reducedSum.to.logsumexp)
+
     Eq.xy_joint_nonzero = stats.ne_zero.imply.ne_zero.joint_slice.apply(Eq[3], (slice(0, t + 1), slice(0, t + 1)))
 
     Eq << stats.ne_zero.imply.et.apply(Eq.xy_joint_nonzero)
@@ -149,11 +152,11 @@ def prove(Eq):
 
     #reference: Neural Architectures for Named Entity Recognition.pdf
     #https://spaces.ac.cn/archives/5542
-    
-    
+
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2018-12-21
-# updated on 2021-12-31
+# updated on 2022-01-28

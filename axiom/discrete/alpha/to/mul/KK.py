@@ -24,7 +24,7 @@ def apply(x):
 def prove(Eq):
     from axiom import discrete, algebra
     x = Symbol(real=True, positive=True, shape=(oo,))
-#     x = Symbol.x(real=True, shape=(oo,))
+#     x = Symbol(real=True, shape=(oo,))
     n = Symbol(integer=True, positive=True, given=False)
 
     Eq << apply(x[:n + 1])

@@ -295,13 +295,13 @@ class ExprWithIntLimits(ExprWithLimits):
                 tex += r"_{%s} " % p._print(limit[0])
             elif len(limit) == 2:
                 var, domain = limit
-                if domain.is_boolean:
+                if domain.is_bool:
 #                     "\right." here is necessary to match the previous \left
                     tex += r"\limits_{%s \left| %s \right.}" % (var.latex, domain.latex)
                 else:
                     tex += r"\limits_{\substack{%s \in %s}} " % tuple([p._print(i) for i in limit])                
             else:
-                if limit[1].is_boolean:
+                if limit[1].is_bool:
                     tex += r"\limits_{{%s \in %s} \left| %s \right.}" % (limit[0].latex, limit[2].latex, limit[1].latex)
                 else:
                     x, a, b = limit
@@ -317,7 +317,7 @@ class ExprWithIntLimits(ExprWithLimits):
                     return p._print(limit[0])
                 elif len(limit) == 2:
                     var, domain = limit
-                    if domain.is_boolean:
+                    if domain.is_bool:
     #                     "\right." here is necessary to match the previous \left
                         return r"%s\left|%s\right." % tuple([p._print(i) for i in limit])
                     else:
@@ -325,7 +325,7 @@ class ExprWithIntLimits(ExprWithLimits):
                 else:
                     x, a, b = limit
                     if b.is_set:
-                        assert a.is_boolean
+                        assert a.is_bool
                         return r"%s \in %s \left|%s\right." % (p._print(x), p._print(b), p._print(a))
                         
                     if x.is_integer:

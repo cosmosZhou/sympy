@@ -20,17 +20,17 @@ def prove(Eq):
 
     Eq << sets.eq.given.et.infer.apply(Eq[0])
 
-    Eq <<= Eq[-2].this.lhs.apply(sets.el.imply.et.split.interval), Eq[-1].this.rhs.apply(sets.el.given.et.split.interval)
+    Eq <<= Eq[-2].this.lhs.apply(sets.el_interval.imply.et), Eq[-1].this.rhs.apply(sets.el_interval.given.et)
 
     Eq <<= Eq[-2].this.find(GreaterEqual).apply(algebra.ge_max.imply.et.ge), Eq[-1].this.find(GreaterEqual).apply(algebra.ge_max.given.et.ge)
 
-    Eq <<= Eq[-2].this.find(Element).apply(sets.el.given.et.split.intersect, simplify=None), Eq[-1].this.find(Element).apply(sets.el.imply.et.split.intersect, simplify=None)
+    Eq <<= Eq[-2].this.find(Element).apply(sets.el_intersect.given.et, simplify=None), Eq[-1].this.find(Element).apply(sets.el_intersect.imply.et, simplify=None)
 
-    Eq <<= Eq[-2].this.find(Element).apply(sets.el.given.et.split.interval), Eq[-1].this.find(Element).apply(sets.el.imply.et.split.interval)
+    Eq <<= Eq[-2].this.find(Element).apply(sets.el_interval.given.et), Eq[-1].this.find(Element).apply(sets.el_interval.imply.et)
 
-    Eq <<= Eq[-2].this.find(Element).apply(sets.el.given.et.split.interval), Eq[-1].this.find(Element).apply(sets.el.imply.et.split.interval)
+    Eq <<= Eq[-2].this.find(Element).apply(sets.el_interval.given.et), Eq[-1].this.find(Element).apply(sets.el_interval.imply.et)
 
-    
+
 
 
 if __name__ == '__main__':

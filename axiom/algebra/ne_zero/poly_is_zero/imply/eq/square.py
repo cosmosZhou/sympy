@@ -29,7 +29,7 @@ def prove(Eq):
 
     Eq << algebra.et.given.et.apply(Eq[-1])
 
-    Eq << Eq[1].this.apply(algebra.eq.transposition)
+    Eq << Eq[1].this.apply(algebra.eq.transport)
 
     Eq << Eq[-2].subs(Eq[-1])
 

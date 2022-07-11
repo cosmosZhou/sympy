@@ -9,10 +9,10 @@ def apply(given, m=None, b=None):
     assert w[i, j].is_SwapMatrix or w[i, j].definition.is_SwapMatrix
 
     if m is None:
-        m = Symbol.m(integer=True, nonnegative=True)
+        m = Symbol(integer=True, nonnegative=True)
 
     if b is None:
-        b = Symbol.b(integer=True, shape=(oo,))
+        b = Symbol(integer=True, shape=(oo,))
 
     return All[x:S](Element(x @ MatProduct[i:m](w[i, b[i]]), S))
 

@@ -39,11 +39,11 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq.UV)
 
-    Eq << Eq[-1].this.find(Mul[Piecewise]).apply(algebra.mul_piece.to.piece)
+    Eq << Eq[-1].this.find(Mul[Piecewise]).apply(algebra.mul.to.piece)
 
     Eq << Eq[-1].this.find(Arg[Piecewise]).apply(algebra.arg_piece.to.piece)
 
-    Eq << Eq[-1].this.find(Mul[Piecewise]).apply(algebra.mul_piece.to.piece)
+    Eq << Eq[-1].this.find(Mul[Piecewise]).apply(algebra.mul.to.piece)
 
     Eq << Eq[-1].this.find(Add[Piecewise]).apply(algebra.add.to.piece)
 
@@ -75,7 +75,7 @@ def prove(Eq):
 
     Eq.p_cubic = Eq[-1].find(Pow[Mul]).this.apply(algebra.root.to.mul.expi.arg)
 
-    Eq.p_is_positive = algebra.ne_zero.imply.abs_gt_zero.apply(Eq[0])
+    Eq.p_is_positive = algebra.ne_zero.imply.gt_zero.abs.apply(Eq[0])
 
     Eq << algebra.gt_zero.imply.eq.arg.apply(Eq.p_is_positive, Eq.p_cubic.find(Exp))
 
@@ -101,7 +101,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.arg.apply(algebra.mul.to.exp)
 
-    Eq.arg_p3_w = Eq[-1].this.lhs.find(Exp).apply(geometry.expi.to.add.euler.formula)
+    Eq.arg_p3_w = Eq[-1].this.lhs.find(Exp).apply(geometry.expi.to.add.Euler)
 
     Eq.p3_contains = sets.imply.el.arg.apply(-p ** 3)
 
@@ -131,7 +131,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.arg.apply(algebra.mul.to.exp)
 
-    Eq.arg_p3_w = Eq[-1].this.lhs.find(Exp).apply(geometry.expi.to.add.euler.formula)
+    Eq.arg_p3_w = Eq[-1].this.lhs.find(Exp).apply(geometry.expi.to.add.Euler)
 
     Eq << sets.el.imply.el.sub.apply(Eq.p3_contains, S.Pi * 2, simplify=None)
 
@@ -150,6 +150,10 @@ def prove(Eq):
     Eq << Eq[-1].this.find(Add[~Ceiling]).apply(algebra.ceiling.to.add.half)
 
 
+
+
+
 if __name__ == '__main__':
     run()
 # created on 2018-11-08
+# updated on 2022-01-23

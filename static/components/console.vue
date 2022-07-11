@@ -62,7 +62,7 @@ export default {
 				}
 				
 				this.statements[i].latex = latex;
-				this.$children[i].latex = latex;
+				this.children[i].latex = latex;
 			}
 		},
 	},

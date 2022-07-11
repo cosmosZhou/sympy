@@ -17,7 +17,9 @@ def prove(Eq):
 
     Eq << apply(Product[k:g(i), j:f(i), i:{a}](x[i, j]))
 
-    s = Function(eval=lambda i: Product[k:g(i), j:f(i)](x[i, j]))
+    s = Function(real=True)
+    s[i] = Product[k:g(i), j:f(i)](x[i, j])
+    
     Eq << s(i).this.defun()
 
     Eq << algebra.eq.imply.eq.prod.apply(Eq[-1], (i, {a}))

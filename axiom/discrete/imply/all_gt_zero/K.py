@@ -43,7 +43,7 @@ def prove(Eq):
 
     Eq << algebra.all.imply.all.limits.merge.apply(Eq[-1])
 
-    Eq << Eq[-1].this.expr.args[1].apply(sets.el.imply.ge.split.range)
+    Eq << Eq[-1].this.expr.args[1].apply(sets.el_range.imply.ge)
 
     Eq << Eq[-1].this.expr.args[1].apply(algebra.ge.imply.gt.relax, 0)
 

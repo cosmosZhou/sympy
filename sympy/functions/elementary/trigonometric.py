@@ -1350,7 +1350,7 @@ class Tan(TrigonometricFunction):
 tan = Tan
 
 
-class cot(TrigonometricFunction):
+class Cot(TrigonometricFunction):
     """
     The cotangent function.
 
@@ -1641,6 +1641,7 @@ class cot(TrigonometricFunction):
             return S.ComplexInfinity
         return cot(argnew)
 
+cot = Cot
 
 class ReciprocalTrigonometricFunction(TrigonometricFunction):
     """Base class for reciprocal functions of trigonometric functions. """
@@ -1759,7 +1760,7 @@ class ReciprocalTrigonometricFunction(TrigonometricFunction):
         return (1 / self._reciprocal_of(self.args[0]))._eval_nseries(x, n, logx)
 
 
-class sec(ReciprocalTrigonometricFunction):
+class Sec(ReciprocalTrigonometricFunction):
     """
     The secant function.
 
@@ -1838,8 +1839,9 @@ class sec(ReciprocalTrigonometricFunction):
             k = n // 2
             return (-1) ** k * euler(2 * k) / factorial(2 * k) * x ** (2 * k)
 
+sec = Sec
 
-class csc(ReciprocalTrigonometricFunction):
+class Csc(ReciprocalTrigonometricFunction):
     """
     The cosecant function.
 
@@ -1919,7 +1921,7 @@ class csc(ReciprocalTrigonometricFunction):
             return ((-1) ** (k - 1) * 2 * (2 ** (2 * k - 1) - 1) * 
                     bernoulli(2 * k) * x ** (2 * k - 1) / factorial(2 * k))
 
-
+csc = Csc
 class sinc(Function):
     r"""Represents unnormalized sinc function
 
@@ -2014,8 +2016,7 @@ class InverseTrigonometricFunction(Function):
         if self.arg.is_real:
             return True
 
-
-class asin(InverseTrigonometricFunction):
+class ArcSin(InverseTrigonometricFunction):
     """
     The inverse sine function.
 
@@ -2195,8 +2196,9 @@ class asin(InverseTrigonometricFunction):
         """
         return sin
 
+asin = ArcSin
 
-class acos(InverseTrigonometricFunction):
+class ArcCos(InverseTrigonometricFunction):
     """
     The inverse cosine function.
 
@@ -2375,7 +2377,9 @@ class acos(InverseTrigonometricFunction):
         return Interval(0, S.Pi)
 
 
-class atan(InverseTrigonometricFunction):
+acos = ArcCos
+
+class ArcTan(InverseTrigonometricFunction):
     """
     The inverse tangent function.
 
@@ -2554,8 +2558,9 @@ class atan(InverseTrigonometricFunction):
     def _eval_rewrite_as_acsc(self, arg, **kwargs):
         return sqrt(arg ** 2) / arg * (S.Pi / 2 - acsc(sqrt(1 + arg ** 2)))
 
+atan = ArcTan
 
-class acot(InverseTrigonometricFunction):
+class ArcCot(InverseTrigonometricFunction):
     """
     The inverse cotangent function.
 
@@ -2717,8 +2722,9 @@ class acot(InverseTrigonometricFunction):
     def _eval_rewrite_as_acsc(self, arg, **kwargs):
         return arg * sqrt(1 / arg ** 2) * (S.Pi / 2 - acsc(sqrt((1 + arg ** 2) / arg ** 2)))
 
+acot = ArcCot
 
-class asec(InverseTrigonometricFunction):
+class ArcSec(InverseTrigonometricFunction):
     r"""
     The inverse secant function.
 
@@ -2844,8 +2850,9 @@ class asec(InverseTrigonometricFunction):
     def _eval_rewrite_as_acsc(self, arg, **kwargs):
         return S.Pi / 2 - acsc(arg)
 
+asec = ArcSec
 
-class acsc(InverseTrigonometricFunction):
+class ArcCsc(InverseTrigonometricFunction):
     """
     The inverse cosecant function.
 
@@ -2950,6 +2957,7 @@ class acsc(InverseTrigonometricFunction):
     def _eval_rewrite_as_asec(self, arg, **kwargs):
         return S.Pi / 2 - asec(arg)
 
+acsc = ArcCsc
 
 class atan2(InverseTrigonometricFunction):
     r"""

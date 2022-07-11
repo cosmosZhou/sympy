@@ -1,4 +1,3 @@
-from __future__ import print_function, division
 from .pycode import (
     PythonCodePrinter,
     MpmathPrinter,  # MpmathPrinter is imported for backward compatibility

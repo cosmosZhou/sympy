@@ -20,7 +20,7 @@ def prove(Eq):
 
     Eq << apply(LessEqual(f(x), p) & Element(x, A) | LessEqual(g(x), p) & Element(x, B - A) | LessEqual(h(x), p) & NotElement(x, A | B), wrt=p)
 
-    Eq << Eq[0].this.args[1].args[1].apply(sets.el.imply.et.split.complement, simplify=None)
+    Eq << Eq[0].this.args[1].args[1].apply(sets.el_complement.imply.et, simplify=None)
 
     Eq << Eq[-1].this.args[2].args[1].apply(sets.notin.imply.et.split.union, simplify=None)
 

@@ -13,7 +13,7 @@ def prove(Eq):
     z = Symbol(complex=True, given=True)
     Eq << apply(z)
 
-    Eq << Eq[0].this.find(Exp).apply(geometry.expi.to.add.euler.formula)
+    Eq << Eq[0].this.find(Exp).apply(geometry.expi.to.add.Euler)
 
     Eq << Eq[-1].this.lhs.apply(algebra.expr.to.add.complex)
 

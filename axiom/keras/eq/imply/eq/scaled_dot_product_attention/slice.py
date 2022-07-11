@@ -14,7 +14,7 @@ def apply(n, d, index):
 def prove(Eq):
     n = Symbol(integer=True)
     d = Symbol("d_z", integer=True)
-#     i = Symbol.i(integer=True)
+#     i = Symbol(integer=True)
     h = Symbol(domain=Range(n + 1))
     Eq << apply(n, d, slice(0, h))
 

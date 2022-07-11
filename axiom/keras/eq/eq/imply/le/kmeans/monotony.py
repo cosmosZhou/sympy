@@ -34,7 +34,7 @@ def prove(Eq):
 
     Eq << algebra.iff.imply.eq.sum.collapse.apply(Eq[-1], Eq[3].rhs.expr)
 
-    i_ = Symbol.i(Eq[-1].find(Indexed, Sum))
+    i_ = Symbol('i', Eq[-1].find(Indexed, Sum))
     Eq << Eq[-1].subs(i_.this.definition.reversed)
 
     Eq << Eq[-1].this.lhs.apply(algebra.sum.limits.domain_defined.delete)

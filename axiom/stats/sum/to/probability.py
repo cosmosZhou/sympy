@@ -20,7 +20,7 @@ def apply(self):
 @prove(provable=False)
 def prove(Eq):
     x, y = Symbol(integer=True, random=True)
-    x_ = Symbol.x(integer=True)
+    x_ = Symbol('x', integer=True)
     Eq << apply(Sum[x_](Probability(x, y)))
 
 

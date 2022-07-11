@@ -14,7 +14,7 @@ def apply(given, x=None):
     kwargs.pop('shape', None)
     if x is None:
         x = S.generate_var(shape=shape, **kwargs)
-    return Any[x[:n]:Equal(Card(x[:n].set_comprehension()), n)](Equal(S, Cup[i:n]({x[i]})))
+    return Any[x[:n]:Equal(Card(x[:n].cup_finiteset()), n)](Equal(S, Cup[i:n]({x[i]})))
 
 
 @prove
@@ -31,7 +31,7 @@ def prove(Eq):
 
     Eq << algebra.cond.ou.imply.cond.apply(Eq[0], Eq.ou)
 
-    Eq << Eq[-1].this.limits[0][1].apply(sets.all_ne.imply.eq.card.set_comprehension)
+    Eq << Eq[-1].this.limits[0][1].apply(sets.all_ne.imply.eq.card.cup.finiteset)
 
 
 if __name__ == '__main__':

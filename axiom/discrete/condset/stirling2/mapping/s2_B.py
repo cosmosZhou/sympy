@@ -5,15 +5,15 @@ from util import *
 def apply(n, k, s2=None, B=None):
     from sympy.functions.combinatorial.numbers import Stirling
     if s2 is None:
-        x = Symbol.x(shape=(oo,), etype=dtype.integer, finite=True)
-        s2 = Symbol.s2(Cup[x[:k + 1]:Stirling.conditionset(n + 1, k + 1, x)](x[:k + 1].set_comprehension().set))
+        x = Symbol(shape=(oo,), etype=dtype.integer, finite=True)
+        s2 = Symbol(Cup[x[:k + 1]:Stirling.conditionset(n + 1, k + 1, x)](x[:k + 1].cup_finiteset().set))
     e = Symbol(**s2.etype.dict)
 
     if B is None:
         x = s2.definition.variable.base
-        s0 = Symbol.s0(Cup[x[:k]:Stirling.conditionset(n, k, x)](x[:k].set_comprehension().set))
+        s0 = Symbol(Cup[x[:k]:Stirling.conditionset(n, k, x)](x[:k].cup_finiteset().set))
 
-        B = Symbol.B(Cup[e:s0]({e | {n.set}}))
+        B = Symbol(Cup[e:s0]({e | {n.set}}))
 
     return Equal(conditionset(e, Element({n}, e), s2), B)
 
@@ -26,13 +26,13 @@ def prove(Eq):
     Eq << apply(n, k)
 
     s2 = Eq[0].lhs
-    s2_quote = Symbol.s_quote_2(conditionset(Eq[0].rhs.variable, Eq[0].rhs.limits[0][1]))
+    s2_quote = Symbol('s_quote_2', conditionset(Eq[0].rhs.variable, Eq[0].rhs.limits[0][1]))
     Eq << s2_quote.this.definition
 
     Eq.s2_definition = imageset(Eq[0].rhs.variable, Eq[0].rhs.expr.arg, s2_quote).this.subs(Eq[-1]).subs(Eq[0].reversed).reversed
 
     s0 = Eq[1].lhs
-    s0_quote = Symbol.s_quote_0(conditionset(Eq[1].rhs.variable, Eq[1].rhs.limits[0][1]))
+    s0_quote = Symbol('s_quote_0', conditionset(Eq[1].rhs.variable, Eq[1].rhs.limits[0][1]))
     Eq << s0_quote.this.definition
 
     Eq << imageset(Eq[1].rhs.variable, Eq[1].rhs.expr.arg, s0_quote).this.subs(Eq[-1]).subs(Eq[1].reversed).reversed
@@ -70,7 +70,7 @@ def prove(Eq):
     Eq << Eq[-1].subs(Eq.x_k_definition)
     x_union = Eq[-1]
     Eq << Eq.x_k_definition.apply(sets.eq.imply.eq.set, simplify=False)
-    Eq << Eq[-1].apply(sets.eq.imply.eq.union, x[:k].set_comprehension())
+    Eq << Eq[-1].apply(sets.eq.imply.eq.union, x[:k].cup_finiteset())
     Eq << s0_plausible.subs(Eq[-1].reversed)
     Eq << Eq[-1].this.expr.expr.apply(sets.element.given.contains.split.imageset)
     Eq << Eq[-1].this.expr.expr.rhs.definition
@@ -153,7 +153,7 @@ def prove(Eq):
     Eq.x_tilde_set_in_s0 = Eq[-3].func(Element(construct_finite_set(Cup, x_tilde), s0), *Eq[-3].limits, plausible=True)
     Eq << Eq.x_tilde_set_in_s0.subs(s0_definition)
     Eq << Eq[-1].this.expr.apply(sets.element.given.any_eq.split.imageset)
-    Eq << sets.eq.imply.eq.set_comprehension.apply(Eq.x_tilde_definition, (i, 0, k))
+    Eq << sets.eq.imply.eq.cup_finiteset.apply(Eq.x_tilde_definition, (i, 0, k))
     Eq << Eq[-1].subs(Eq.x_j_definition)
     Eq << Eq[-1].subs(Eq.s2_n_assertion.reversed)
     Eq << Eq.x_tilde_set_in_s0.subs(Eq[-1])

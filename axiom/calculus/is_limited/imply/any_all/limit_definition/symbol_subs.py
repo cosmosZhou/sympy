@@ -21,10 +21,10 @@ def prove(Eq):
 
     n = Symbol(integer=True, positive=True)
     x, x0, a = Symbol(real=True)
-    #x = Symbol.x(real=True, shape=(n,))
+    #x = Symbol(real=True, shape=(n,))
     x = Symbol(integer=True)
     f = Function(real=True, shape=())
-    #x0 = Symbol.x0(real=True, shape=(n,))
+    #x0 = Symbol(real=True, shape=(n,))
     x0 = oo
     #x0 = -oo
     #a = oo

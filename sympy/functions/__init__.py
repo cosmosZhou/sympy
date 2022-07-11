@@ -20,7 +20,7 @@ from sympy.functions.elementary.complexes import (Re, Im, sign, Abs, Norm,
 from sympy.functions.elementary.trigonometric import (sin, cos, tan, 
         sec, csc, cot, sinc, asin, acos, atan, asec, acsc, acot, atan2)
 
-from sympy.functions.elementary.trigonometric import Sin, Cos, Tan#, Sec, Csc, Cot#, Asin, Acos, Atan, Asec, Acsc, Acot
+from sympy.functions.elementary.trigonometric import Sin, Cos, Tan, Sec, Csc, Cot, ArcSin, ArcCos, ArcTan, ArcSec, ArcCsc, ArcCot
 
 from sympy.functions.elementary.exponential import (exp_polar, exp, log, Exp, Log,
         LambertW)

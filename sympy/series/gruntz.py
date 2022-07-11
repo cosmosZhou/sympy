@@ -116,8 +116,6 @@ And check manually which line is wrong. Then go to the source code and
 debug this function to figure out the exact problem.
 
 """
-from __future__ import print_function, division
-
 from sympy import cacheit
 from sympy.core import Basic, S, oo, I, Dummy, Wild, Mul
 from sympy.core.compatibility import reduce

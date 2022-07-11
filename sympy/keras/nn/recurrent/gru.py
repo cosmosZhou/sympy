@@ -52,7 +52,7 @@ gru = Function.gru(real=True, eval=gru_recursive, shape=property(shape))
 def GRU(x, *limits):
     (Wx,), (Wh,), (b,) = limits
     n = x.shape[0]
-    t = Symbol.t(integer=True)
+    t = Symbol(integer=True)
     
     return Lamda[t:n](gru[Wx, Wh, b, t](x))
 

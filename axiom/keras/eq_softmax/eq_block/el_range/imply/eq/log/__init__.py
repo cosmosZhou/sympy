@@ -67,7 +67,7 @@ def prove(Eq):
 
     Eq.eq = Eq[-1][i + h[i]]
 
-    Eq.ge_neg_min, Eq.lt_min = sets.el.imply.et.split.range.apply(Eq[2])
+    Eq.ge_neg_min, Eq.lt_min = sets.el_range.imply.et.apply(Eq[2])
 
     Eq <<= Eq.ge_neg_min.this.find(Min).args[0].apply(algebra.expr.to.piece, upper=n - 1), Eq.lt_min.this.find(Min).args[0].apply(algebra.expr.to.piece, upper=n)
 

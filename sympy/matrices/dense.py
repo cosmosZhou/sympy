@@ -221,6 +221,9 @@ class DenseMatrix(MatrixBase):
                     # block-matrix-safe way to multiply if the `sum` fails.
                     vec = (mat[a] * other_mat[b] for a, b in zip(row_indices, col_indices))
                     new_mat[i] = reduce(lambda a, b: a + b, vec)
+
+        if new_mat_cols == 1:
+            new_mat_cols, new_mat_rows = new_mat_rows, new_mat_cols
         return classof(self, other)._new(new_mat_rows, new_mat_cols, new_mat, copy=False)
 
     def _eval_matrix_mul_elementwise(self, other):
@@ -301,7 +304,10 @@ class DenseMatrix(MatrixBase):
     def _eval_tolist(self):
         mat = list(self._args)
         cols = self.cols
-        return [mat[i * cols:(i + 1) * cols] for i in range(self.rows)]
+        array = [mat[i * cols:(i + 1) * cols] for i in range(self.rows)]
+        if self.rows == 1:
+            return array[0]
+        return array
 
     def _LDLdecomposition(self, hermitian=True):
         """Helper function of LDLdecomposition.
@@ -441,29 +447,32 @@ class DenseMatrix(MatrixBase):
         shape = self.shape
         if self.is_integer:
             if self.is_positive:
-                interval = Range(1, oo)
+                domain = Range(1, oo)
             elif self.is_nonnegative:
-                interval = Range(oo)
+                domain = Range(oo)
             elif self.is_negative:
-                interval = Range(-oo, 0)
+                domain = Range(-oo, 0)
             elif self.is_nonpositive:
-                interval = Range(-oo, 1)
+                domain = Range(-oo, 1)
             else:
-                interval = Range(-oo, oo)
+                domain = Range(-oo, oo)
         elif self.is_extended_real:
             if self.is_positive:
-                interval = Interval(0, oo, left_open=True)
+                domain = Interval(0, oo, left_open=True)
             elif self.is_nonnegative:
-                interval = Interval(0, oo)
+                domain = Interval(0, oo)
             elif self.is_negative:
-                interval = Interval(-oo, 0, right_open=True)
+                domain = Interval(-oo, 0, right_open=True)
             elif self.is_nonpositive:
-                interval = Interval(-oo, 0)
+                domain = Interval(-oo, 0)
             else:
-                interval = Interval(-oo, oo)
+                domain = Interval(-oo, oo)
+        elif self.dtype.is_bool:
+            from sympy import FiniteSet
+            domain = FiniteSet(S.true, S.false)
         else:
-            interval = S.Complexes
-        return CartesianSpace(interval, *shape)        
+            domain = S.Complexes
+        return CartesianSpace(domain, *shape)
     
     _eval_is_complex = lambda self: _fuzzy_group((a.is_complex for a in self._args), quick_exit=True)
     _eval_is_finite = lambda self: _fuzzy_group((a.is_finite for a in self._args), quick_exit=True)
@@ -472,7 +481,37 @@ class DenseMatrix(MatrixBase):
     _eval_is_extended_positive = lambda self: _fuzzy_group((a.is_extended_positive for a in self._args), quick_exit=True)
     _eval_is_extended_negative = lambda self: _fuzzy_group((a.is_extended_negative for a in self._args), quick_exit=True)
 
+    def _latex(self, p):
+        lines = []
+        
+        if self.dtype.is_bool and all(arg in (S.true, S.false) for arg in self.args):
+            for i in range(0, len(self._args), self.cols):  # horrible, should be 'rows'                
+                lines.append(" & ".join([r'\blacksquare' if i else r'\square' for i in self._args[i:i + self.cols]]))
+        else:
+            for i in range(0, len(self._args), self.cols):  # horrible, should be 'rows'                
+                lines.append(" & ".join([p._print(i) for i in self._args[i:i + self.cols]]))
 
+        mat_str = p._settings['mat_str']
+        if mat_str is None:
+            if p._settings['mode'] == 'inline':
+                mat_str = 'smallmatrix'
+            else:
+                if (self.cols <= 10) is True:
+                    mat_str = 'matrix'
+                else:
+                    mat_str = 'array'
+
+        out_str = r'\begin{%MATSTR%}%s\end{%MATSTR%}'
+        out_str = out_str.replace('%MATSTR%', mat_str)
+        if mat_str == 'array':
+            out_str = out_str.replace('%s', '{' + 'c' * self.cols + '}%s')
+        if p._settings['mat_delim']:
+            left_delim = p._settings['mat_delim']
+            right_delim = p._delim_dict[left_delim]
+            out_str = r'\left' + left_delim + out_str + r'\right' + right_delim
+        return out_str % r"\\".join(lines)
+
+        
 def _force_mutable(x):
     """Return a matrix as a Matrix, otherwise return x."""
     if getattr(x, 'is_Matrix', False):
@@ -488,6 +527,12 @@ def _force_mutable(x):
 
 
 class MutableDenseMatrix(DenseMatrix):
+    r"""
+    >>> n = 20
+    >>> i, j = Symbol(integer=True)
+    >>> Lamda[j:n, i:n](j - i).this.doit()
+    """
+    
     __slots__ = []
     
     def __new__(cls, *args, **kwargs):

@@ -73,7 +73,7 @@ def prove(Eq):
 
     Eq << Eq[0].this.lhs.apply(algebra.sum.bool)
 
-    Eq << Eq[-1].this.lhs.expr.args[-1].arg.apply(sets.et.transform.i_ge_j)
+    Eq << Eq[-1].this.lhs.expr.args[-1].arg.apply(sets.et_el.transform.i_ge_j)
 
     Eq << Eq[-1].this.rhs.apply(algebra.sum.bool)
 

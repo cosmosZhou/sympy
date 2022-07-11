@@ -1,17 +1,14 @@
-from __future__ import print_function, division
-
 from functools import wraps, reduce
 import collections
 
 from sympy.core import S, Symbol, Tuple, Integer, Basic, Expr, Eq, Mul, Add
 from sympy.core.decorators import call_highest_priority
-from sympy.core.compatibility import SYMPY_INTS, default_sort_key
+from sympy.core.compatibility import default_sort_key
 from sympy.core.sympify import SympifyError, _sympify
 from sympy.functions import conjugate, adjoint
 from sympy.functions.special.tensor_functions import KroneckerDelta
 from sympy.matrices import ShapeError
 from sympy.simplify import simplify
-from sympy.core.logic import _fuzzy_group
 
 
 def _sympifyit(arg, retval=None):
@@ -79,7 +76,8 @@ class MatrixExpr(Expr):
         return Basic.__new__(cls, *args, **kwargs)
 
     def __abs__(self):
-        raise NotImplementedError
+        from sympy.functions.elementary.complexes import Abs
+        return Abs(self, evaluate=False)
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rmul__')
@@ -127,9 +125,9 @@ class MatrixExpr(Expr):
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__div__')
-    def __rdiv__(self, other):
-        raise NotImplementedError()
-        # return MatMul(other, Pow(self, S.NegativeOne))
+    def __rdiv__(self, other):  
+        from sympy.core.power import Pow      
+        return Mul(other, Pow(self, S.NegativeOne))
 
     __truediv__ = __div__
     __rtruediv__ = __rdiv__
@@ -782,11 +780,11 @@ class Identity(MatrixExpr):
     is_upper = True
     is_lower = True
     is_singular = False
-    is_Identity = True
     is_finite = True
 #     is_zero = False
-#     def __new__(cls, *args):
-#         return super(Identity, cls).__new__(cls, args)
+
+    def __new__(cls, n):
+        return super(Identity, cls).__new__(cls, shape=(n, n))
 
     def _latex(self, p):
         return r"\mathbb{I}" if p._settings['mat_symbol_style'] == 'plain' else r"\mathbf{I}"
@@ -796,7 +794,11 @@ class Identity(MatrixExpr):
 
     @property
     def n(self):
-        return self.args[0]
+        return self.shape[-1]
+
+    @property
+    def kwargs(self):
+        return dict(shape=self.shape)
 
     @property
     def dtype(self):
@@ -805,16 +807,12 @@ class Identity(MatrixExpr):
 
     @property
     def rows(self):
-        return self.args[0]
+        return self.shape[-1]
 
     @property
     def cols(self):
-        return self.args[0]
-
-    @property
-    def shape(self):
-        return (self.args[0], self.args[0])
-
+        return self.shape[-2]
+    
     @property
     def is_square(self):
         return True
@@ -863,42 +861,8 @@ class Identity(MatrixExpr):
     def _eval_is_extended_negative(self):
         return False
     
-    
-class GenericIdentity(Identity):
-    """
-    An identity matrix without a specified shape
-
-    This exists primarily so MatMul() with no arguments can return something
-    meaningful.
-    """
-
-    def __new__(cls):
-        # super(Identity, cls) instead of super(GenericIdentity, cls) because
-        # Identity.__new__ doesn't have the same signature
-        return super(Identity, cls).__new__(cls)
-
-    @property
-    def rows(self):
-        raise TypeError("GenericIdentity does not have a specified shape")
-
-    @property
-    def cols(self):
-        raise TypeError("GenericIdentity does not have a specified shape")
-
-    @property
-    def shape(self):
-        raise TypeError("GenericIdentity does not have a specified shape")
-
-    # Avoid Matrix.__eq__ which might call .shape
-    def __eq__(self, other):
-        return isinstance(other, GenericIdentity)
-
-    def __ne__(self, other):
-        return not (self == other)
-
-    def __hash__(self):
-        return super(GenericIdentity, self).__hash__()
-
+    def doit(self, **hints):
+        return self
 
 def simplify_shape(shape):
     while shape:
@@ -927,7 +891,8 @@ class ZeroMatrix(MatrixExpr):
     """
     is_zero = True
     
-    def __new__(cls, *shape):
+    def __new__(cls, *shape, **kwargs):
+        shape = kwargs.get('shape', shape)
         shape = simplify_shape(shape)
         if not shape:
             return S.Zero
@@ -979,6 +944,7 @@ class ZeroMatrix(MatrixExpr):
                     return self.func(*self.shape[1:])
             else:
                 return S.Zero
+            
         elif isinstance(i, slice):
             if isinstance(j, slice):
                 raise Exception('unimplemented slice object %s' % i)
@@ -988,7 +954,8 @@ class ZeroMatrix(MatrixExpr):
                     if stop is None:
                         return self.func(self.shape[0])
             raise Exception('unimplemented slice object %s' % i)
-        return S.Zero
+        
+        return self.func(*self.shape[2:])
 
     def __nonzero__(self):
         return False
@@ -1095,7 +1062,8 @@ class OneMatrix(MatrixExpr):
     is_extended_negative = False
     is_finite = True
     
-    def __new__(cls, *shape):
+    def __new__(cls, *shape, **kwargs):
+        shape = kwargs.get('shape', shape)
         shape = simplify_shape(shape)
         if not shape:
             return S.One
@@ -1136,7 +1104,10 @@ class OneMatrix(MatrixExpr):
                         return self.func(self.shape[0])
                 raise Exception('unimplemented slice object %s' % j)
         if len(self.shape) > 1:
-            return self.func(*self.shape[1:])
+            if j is None:
+                return self.func(*self.shape[1:])
+            else:
+                return self.func(*self.shape[2:])
         else: 
             return S.One
 
@@ -1350,23 +1321,86 @@ def _make_matrix(x):
     return ImmutableDenseMatrix([[x]])
 
 
-# precondition: i > j or i < j
-class SwapMatrix(Identity): 
-    is_Identity = False
+class ElementaryMatrix:
     
-    def _pretty(self, p):
-        return p._helper_print_function(self.func, self.args, sort=False, func_name='Swap')
+    def _eval_subs(self, old, new, **hints):
+        n = self.n._subs(old, new, **hints)
+        
+        hit = n != self.n
+        
+        args = [*self.args]
+        for i, arg in enumerate(args):
+            _arg = arg._subs(old, new, **hints)
+            if _arg != arg:
+                hit = True
+                args[i] = _arg
+                
+        if hit:
+            return self.func(n, *args)
+        
+        return self
+
+    @property
+    def dtype(self):
+        from sympy.core.symbol import dtype
+        return dtype.integer
+
+    @property
+    def rows(self):
+        return self.shape[-1]
+
+    @property
+    def cols(self):
+        return self.shape[-2]
+
+    @property
+    def n(self):
+        return self.shape[-1]
+    
+    def _eval_is_extended_integer(self):
+        return True
+    
+    def _eval_is_finite(self):
+        return True
+     
+    def _eval_is_singular(self):
+        return False
+    
+    def _eval_is_extended_negative(self):
+        return False
     
     def _latex(self, p):
         return p._print_Basic(self)
     
     def _sympystr(self, p):
         return p._print_Basic(self)
-
-    def __new__(cls, n, i, j):
+    
+    @property
+    def kwargs(self):
+        return {'shape': self.shape}
+    
+    @property
+    def is_square(self):
+        return True
+    
+    def conjugate(self):
+        return self
+    
+# precondition: i > j or i < j
+class SwapMatrix(ElementaryMatrix, MatrixExpr):
+    
+    def __new__(cls, *args, **kwargs):
+        shape = kwargs.get('shape')
+        if shape:
+            n = shape[-1]
+            i, j = args
+        else:
+            n, i, j = args
+            
+        n = _sympify(n)
         if i == j:
             return Identity(n)
-        return Identity.__new__(cls, n, i, j)
+        return MatrixExpr.__new__(cls, i, j, shape=(n, n))
     
     def _entry(self, i, j=None, **_):
         from sympy.concrete.expr_with_limits import Lamda
@@ -1399,14 +1433,13 @@ class SwapMatrix(Identity):
 
     @property
     def i(self):
-        return self.args[1]
+        return self.args[0]
 
     @property
     def j(self):
-        return self.args[2]
+        return self.args[1]
 
-    def _eval_determinant(self):
-        
+    def _eval_determinant(self):        
         return 2 * KroneckerDelta(self.i, self.j) - 1
 
     def _eval_transpose(self, axis=-1):
@@ -1427,12 +1460,6 @@ class SwapMatrix(Identity):
     def _eval_domain_defined(self, x, **_): 
         return self.n.domain_defined(x) & x.domain_conditioned((self.i < self.n) & (self.i >= 0) & ((self.j < self.n) & (self.j >= 0)))
 
-    is_extended_real = True
-    
-    is_finite = True 
-    
-    is_integer = True
-    
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rmatmul__')
     def __matmul__(self, other):
@@ -1459,18 +1486,26 @@ class SwapMatrix(Identity):
             
         return MatrixExpr.__matmul__(self, other)
 
+    def _eval_trace(self):
+        from sympy import Piecewise, Equal
+        return Piecewise((self.rows, Equal(self.i, self.j)), (self.rows - 2, True))
     
-class MulMatrix(Identity):
+    
+
+class MulMatrix(ElementaryMatrix, MatrixExpr):
 
     _op_priority = 11.1
     
-    def _latex(self, p):
-        return p._print_Basic(self)
-
-    def _sympystr(self, p):
-        return p._print_Basic(self)
-
-    is_Identity = False
+    def __new__(cls, *args, **kwargs):
+        shape = kwargs.get('shape')
+        if shape:
+            n = shape[-1]
+            i, k = args
+        else:
+            n, i, k = args
+        
+        n = _sympify(n)
+        return MatrixExpr.__new__(cls, i, k, shape=(n, n))
     
     @property
     def multiplier(self):
@@ -1485,8 +1520,8 @@ class MulMatrix(Identity):
 
     @property
     def i(self):
-        return self.args[1]
-
+        return self.args[-2]
+    
     def _eval_determinant(self):
         return self.multiplier
 
@@ -1566,22 +1601,50 @@ class MulMatrix(Identity):
             
         return MatrixExpr.__rmatmul__(self, lhs)
 
+    @property
+    def dtype(self):
+        return self.multiplier.dtype
+
+    def _eval_is_extended_integer(self):
+        return self.multiplier.is_extended_integer
     
-class AddMatrix(MulMatrix):
+    def _eval_is_finite(self):
+        return self.multiplier.is_finite
+     
+    def _eval_is_singular(self):
+        return self.multiplier.is_zero
+    
+    def _eval_is_extended_negative(self):
+        if self.multiplier.is_extended_nonnegative:
+            return False
+        
+
+class AddMatrix(ElementaryMatrix, MatrixExpr):
     '''
     multiply the ith row and add it to the jth row
     or multiply the ith column and add it to the jth column
     '''
 
-#     is_Identity = False
     def __new__(cls, *args, **kwargs):
-        if len(args) == 3:
+        shape = kwargs.get('shape')
+        if shape:
+            n = shape[-1]
+        else:
+            n, *args = args
+        
+        if len(args) == 2:
             args += (1,)
-        return MatrixExpr.__new__(cls, *args, **kwargs)
+            
+        n = _sympify(n)
+        return MatrixExpr.__new__(cls, *args, shape=(n, n))
+    
+    @property
+    def i(self):
+        return self.args[0]
     
     @property
     def j(self):
-        return self.args[2]
+        return self.args[1]
 
     def _eval_transpose(self, axis=-1):
         if axis == self.default_axis:
@@ -1680,29 +1743,50 @@ class AddMatrix(MulMatrix):
     def is_lower(self):
         return self.i <= self.j
 
+    @property
+    def dtype(self):
+        return self.multiplier.dtype
+
+    @property
+    def multiplier(self):
+        return self.args[-1]
     
-class ShiftMatrix(Identity):
+    def _eval_is_extended_integer(self):
+        return self.multiplier.is_extended_integer
+    
+    def _eval_is_finite(self):
+        return self.multiplier.is_finite
+     
+    def _eval_is_extended_negative(self):
+        if self.multiplier.is_extended_nonnegative:
+            return False
+    
+class ShiftMatrix(ElementaryMatrix, MatrixExpr):
     '''
     shift the ith row beyond the jth row
     or shift the jth column beyond the ith column
     '''
+    
+    def __new__(cls, *args, **kwargs):
+        shape = kwargs.get('shape')
+        if shape:
+            n = shape[-1]
+            i, j = args
+        else:
+            n, i, j = args
+            
+        n = _sympify(n)
+        
+        return MatrixExpr.__new__(cls, i, j, shape=(n, n))    
 
-    def _latex(self, p):
-        return p._print_Basic(self)
-    
-    def _sympystr(self, p):
-        return p._print_Basic(self)
-    
-    is_Identity = False
-    
     @property
     def i(self):
-        return self.args[1]
+        return self.args[-2]
 
     @property
     def j(self):
-        return self.args[2]
-
+        return self.args[-1]
+    
     def _eval_determinant(self):
         return (-1) ** (self.j - self.i)
 
@@ -1805,12 +1889,6 @@ class ShiftMatrix(Identity):
     @property
     def is_lower(self):
         return self.i == self.j
-
-    is_extended_real = True
-    
-    is_finite = True 
-    
-    is_integer = True
 
 
 from .matmul import MatMul

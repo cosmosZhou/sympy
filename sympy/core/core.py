@@ -172,6 +172,8 @@ class BasicMeta(type):
     def __neg__(self):
         from sympy.core.of import Basic
         from sympy import Mul, S
+        if self.is_Mul:
+            return Basic.__new__(Mul, S.NegativeOne)
         return Basic.__new__(Mul, S.NegativeOne, self)
     
     def __invert__(self):
@@ -191,7 +193,11 @@ class BasicMeta(type):
             other = 1 / other
             self, other = other, self
         else:
-            other = Basic.__new__(Pow, other, S.NegativeOne)
+            if other.is_Pow:
+                b, e = other.args
+                other = Basic.__new__(Pow, b, -e)
+            else:
+                other = Basic.__new__(Pow, other, S.NegativeOne)
         return Basic.__new__(Mul, self, other)
 
 #     lhs / self

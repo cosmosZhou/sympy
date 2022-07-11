@@ -4,10 +4,10 @@ from axiom.sets.imply.eq.swap import swap
 
 @apply
 def apply(given):
-    from axiom.sets.eq.given.eq.set_comprehension import of_set_comprehension
-    set_comprehension_abs, n = given.of(Equal)
-    set_comprehension = set_comprehension_abs.of(Card)
-    a = of_set_comprehension(set_comprehension)
+    from axiom.sets.eq.given.eq.cup.finiteset import of_cup_finiteset
+    cup_finiteset_abs, n = given.of(Equal)
+    cup_finiteset = cup_finiteset_abs.of(Card)
+    a = of_cup_finiteset(cup_finiteset)
 
     assert a.shape == (n,)
 
@@ -15,7 +15,7 @@ def apply(given):
 
     p = Symbol(shape=(oo,), **a.dtype.dict)
 
-    P = Symbol(conditionset(p[:n], Equal(p[:n].set_comprehension(), set_comprehension)))
+    P = Symbol(conditionset(p[:n], Equal(p[:n].cup_finiteset(), cup_finiteset)))
 
     b = Symbol(integer=True, shape=(oo,), nonnegative=True)
 
@@ -29,7 +29,7 @@ def prove(Eq):
 
     n = Symbol(domain=Range(2, oo), given=False)
     a = Symbol(shape=(oo,), etype=dtype.integer, given=True)
-    Eq << apply(Equal(Card(a[:n].set_comprehension()), n))
+    Eq << apply(Equal(Card(a[:n].cup_finiteset()), n))
 
     p = Eq[3].variable.base
     b = Eq[3].expr.variable.base

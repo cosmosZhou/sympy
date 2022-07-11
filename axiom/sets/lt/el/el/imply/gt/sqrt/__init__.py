@@ -34,7 +34,7 @@ def prove(Eq):
 
     Eq << -sets.el.imply.lt.square.apply(Eq.y_contains) + 1
 
-    Eq << algebra.gt_zero.imply.sqrt_gt_zero.apply(Eq[-1])
+    Eq << algebra.gt_zero.imply.gt_zero.sqrt.apply(Eq[-1])
 
     Eq << algebra.cond.imply.infer.apply(Eq.x_contains, cond=Eq[-4].lhs)
 

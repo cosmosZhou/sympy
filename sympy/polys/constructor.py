@@ -1,7 +1,5 @@
 """Tools for constructing domains for expressions. """
 
-from __future__ import print_function, division
-
 from sympy.core import sympify
 from sympy.polys.domains import ZZ, QQ, EX
 from sympy.polys.domains.realfield import RealField

@@ -28,7 +28,7 @@ def prove(Eq):
     #Eq << apply(x >= b, a > x)
     Eq << apply(x <= b, a < x)
 
-    Eq << sets.el.given.et.split.range.apply(Eq[-1])
+    Eq << sets.el_range.given.et.apply(Eq[-1])
 
     Eq << algebra.lt.given.le.apply(Eq[-1])
 

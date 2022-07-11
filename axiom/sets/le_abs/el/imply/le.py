@@ -50,7 +50,7 @@ def prove(Eq):
     t = Symbol(integer=True, given=True)
     Eq << apply(abs(y(t) - Sum[i:n](x(i)) / n) <= abs(y(t) - Sum[j:m](y(j)) / m), Element(t, Range(m)))
 
-    t_ = Symbol.t(domain=Range(m))
+    t_ = Symbol('t', domain=Range(m))
     Eq << Eq[0]._subs(t, t_).this.apply(algebra.le_abs.imply.le.function, t_)
 
     Eq << Eq[-1].subs(t_, t)

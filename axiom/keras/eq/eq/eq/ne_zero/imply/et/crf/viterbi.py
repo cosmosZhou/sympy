@@ -33,7 +33,11 @@ def apply(x_independence_assumption, y_independence_assumption, xy_independence_
 def prove(Eq):
     from axiom import keras, algebra, sets
 
-    Eq[-4:], (*Eq[-3:], Eq.G_definition), Eq[-2:] = apply(*keras.eq.eq.eq.ne_zero.imply.eq.crf.markov.assumptions())
+    from axiom.keras.eq.eq.eq.ne_zero.imply.eq.crf.markov import markov_assumptions
+    d, n = Symbol(domain=Range(2, oo))
+    x = Symbol(shape=(n, d), real=True, random=True)
+    y = Symbol(shape=(n,), domain=Range(d), random=True)
+    Eq[-4:], (*Eq[-3:], Eq.G_definition), Eq[-2:] = apply(*markov_assumptions(x, y))
 
     x_probability = Eq[3].lhs.arg.args[0]
     x = x_probability.lhs
@@ -101,4 +105,4 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-12-20
-# updated on 2021-12-31
+# updated on 2022-01-28

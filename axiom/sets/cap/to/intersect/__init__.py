@@ -21,8 +21,8 @@ def prove(Eq):
     #Eq << apply(Cap[x:A](f(x) & g(x)))
     Eq << sets.eq.given.et.infer.apply(Eq[0], wrt=y)
 
-    Eq <<= Eq[-2].this.rhs.apply(sets.el.given.et.el.split.intersect, simplify=False), \
-    Eq[-1].this.lhs.apply(sets.el.imply.et.el.split.intersect, simplify=False)
+    Eq <<= Eq[-2].this.rhs.apply(sets.el_intersect.given.et.el, simplify=False), \
+    Eq[-1].this.lhs.apply(sets.el_intersect.imply.et.el, simplify=False)
 
     Eq <<= Eq[-2].this.rhs.args[0].apply(sets.el_cap.given.all_el), \
     Eq[-1].this.lhs.args[0].apply(sets.el_cap.imply.all_el)

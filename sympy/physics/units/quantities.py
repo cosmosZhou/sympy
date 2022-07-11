@@ -2,8 +2,6 @@
 Physical quantities.
 """
 
-from __future__ import division
-
 from sympy import (Abs, Add, AtomicExpr, Derivative, Function, Mul,
     Pow, S, Symbol, sympify)
 

@@ -17,7 +17,7 @@ def apply(given, d):
 def prove(Eq):
     from axiom import sets
     x, a, b = Symbol(real=True, given=True)
-#     t = Symbol.t(real=True)
+#     t = Symbol(real=True)
     d = Symbol(real=True, given=True, positive=True)
 
     Eq << apply(NotElement(x, Interval(a, b)), d)

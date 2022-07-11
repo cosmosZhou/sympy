@@ -1,4 +1,4 @@
-from sympy.tensor.indexed import Indexed
+from sympy.tensor.indexed import Sliced
 from sympy.keras.nn import sigmoid
 from sympy.functions.elementary.hyperbolic import tanh
 from sympy.matrices.expressions.blockmatrix import BlockMatrix
@@ -13,8 +13,11 @@ def lstm_recursive(x, *limits):
     hc = lstm[W, Wh, b, t - 1](x)
     
     xt = x[t]
-    h = Indexed(hc, 0)
-    c = Indexed(hc, 1)    
+    
+    d = hc.shape[0] / 2
+    
+    h = Sliced(hc, (0, d))
+    c = Sliced(hc, (d, 2 * d))    
     d = h.shape[-1]
     
     Wi = W[:,:d]
@@ -44,7 +47,7 @@ def shape(self):
     (Wh,) = self.limits[1]
     d = Wh.shape[-1] / 4
     if len(self.limits) > 3:
-        return (2, d)
+        return (2 * d,)
     
     x = self.arg
     x_shape = x.shape
@@ -54,24 +57,28 @@ def shape(self):
     return shape
 
 
-lstm = Function.lstm(real=True, integer=None, eval=lstm_recursive, shape=property(shape))
+lstm = Function(real=True, integer=None, eval=lstm_recursive, shape=property(shape))
 
     
 def LSTM(x, *weights):
     (W,), (Wh,), (b,) = weights
     n = x.shape[0]
-    t = Symbol.t(integer=True)
-    return Lamda[t:n](Indexed(lstm[W, Wh, b, t](x), 0))
+    t = Symbol(integer=True)
+    expr = lstm[W, Wh, b, t](x)
+    d = expr.shape[0] / 2
+    return Lamda[t:n](Sliced(lstm[W, Wh, b, t](x), (0, d)))
 
 
 def LSTMCell(x, *weights):
     (W,), (Wh,), (b,) = weights
     n = x.shape[0]
-    t = Symbol.t(integer=True)
-    return Lamda[t:n](Indexed(lstm[W, Wh, b, t](x), 1))
+    t = Symbol(integer=True)
+    expr = lstm[W, Wh, b, t](x)
+    d = expr.shape[0] / 2
+    return Lamda[t:n](Sliced(expr, (d, d * 2)))
 
 
-LSTM = Function.LSTM(real=True, integer=None, eval=LSTM, shape=property(shape))
+LSTM = Function(real=True, integer=None, eval=LSTM, shape=property(shape))
 
-LSTMCell = Function.LSTMCell(real=True, integer=None, eval=LSTMCell, shape=property(shape))
+LSTMCell = Function(real=True, integer=None, eval=LSTMCell, shape=property(shape))
 

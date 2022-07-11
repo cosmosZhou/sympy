@@ -3,15 +3,14 @@ from util import *
 
 @apply
 def apply(eq_relu, eq_min, eq_K_quote, eq_V_quote, eq_K, eq_V, Q, K, V):
-    ((i, l), i_limit), β = eq_relu.of(Equal[Lamda[relu[Expr - Expr]]])
+    ((i, l), i_limit), β = eq_relu.of(Equal[Lamda[relu[Expr + 1 - Expr]]])
     S[i], S[0], n = i_limit
 
-    ((iu1, S[n]), S[i_limit]), ζ = eq_min.of(Equal[Lamda[Min]])
-    u = iu1 - i - 1
+    (((S[i], u), S[n]), S[i_limit]), ζ = eq_min.of(Equal[Lamda[Min[Add]]])    
 
     ((w_K, clip_index), j_limit, S[i_limit]), K_dquote = eq_K.of(Equal[Lamda[Indexed]])
     ((w_V, S[clip_index]), S[j_limit], S[i_limit]), V_dquote = eq_V.of(Equal[Lamda[Indexed]])
-    j, S[0], S[Min(n, l + u + 1)] = j_limit
+    j, S[0], S[Min(n, l + u - 1)] = j_limit
     k, (S[j - i + β[i]], S[-k], S[k]) = clip_index.of(Add[clip])
 
     S[n], d_z = Q.shape
@@ -23,9 +22,8 @@ def apply(eq_relu, eq_min, eq_K_quote, eq_V_quote, eq_K, eq_V, Q, K, V):
     ((S[w_V], S[clip_index]), S[j_limit], S[i_limit]), V_quote = eq_V_quote.of(Equal[Lamda[Indexed]])
     S[k], (S[j - i], S[-k], S[k]) = clip_index.of(Add[clip])
     S[j], S[0], S[n] = j_limit
-
-    # in practice, l + u + 1 = k_max * 2 + 1, where k_max = l = u
-    return Equal(softmax(Q @ (K + K_quote).T / sqrt(d_z) + (BandPart[l, u](OneMatrix(n, n)) - 1) * oo) @ (V + V_quote),
+    
+    return Equal(softmax(Q @ (K + K_quote).T / sqrt(d_z) + (BandPart[l - 1, u - 1](OneMatrix(n, n)) - 1) * oo) @ (V + V_quote),
                  Lamda[i:n](softmax(Q[i] @ (K[indices] + K_dquote[i][indices0]).T / sqrt(d_z)) @ (V[indices] + V_dquote[i][indices0])))
 
 
@@ -45,19 +43,19 @@ def prove(Eq):
     i, j = Symbol(integer=True)
     K_quote = Symbol(real=True, shape=(n, n, d_z))
     V_quote = Symbol(real=True, shape=(n, n, d_z))
-    K_dquote = Symbol('K^\"', real=True, shape=(n, Min(n, l + u + 1), d_z))
-    V_dquote = Symbol('V^\"', real=True, shape=(n, Min(n, l + u + 1), d_z))
+    K_dquote = Symbol('K^\"', real=True, shape=(n, Min(n, l + u - 1), d_z))
+    V_dquote = Symbol('V^\"', real=True, shape=(n, Min(n, l + u - 1), d_z))
     (Eq.beta, Eq.zeta, Eq.K_quote, Eq.V_quote, Eq.K_dquote, Eq.V_dquote), Eq.objective = apply(
-        Equal(β, Lamda[i:n](relu(i - l))),
-        Equal(ζ, Lamda[i:n](Min(i + u + 1, n))),
+        Equal(β, Lamda[i:n](relu(i - l + 1))),
+        Equal(ζ, Lamda[i:n](Min(i + u, n))),
         Equal(K_quote, Lamda[j:n, i:n](w_K[k + clip(j - i, -k, k)])),
         Equal(V_quote, Lamda[j:n, i:n](w_V[k + clip(j - i, -k, k)])),
-        Equal(K_dquote, Lamda[j:Min(n, l + u + 1), i:n](w_K[k + clip(j - i + β[i], -k, k)])),
-        Equal(V_dquote, Lamda[j:Min(n, l + u + 1), i:n](w_V[k + clip(j - i + β[i], -k, k)])),
+        Equal(K_dquote, Lamda[j:Min(n, l + u - 1), i:n](w_K[k + clip(j - i + β[i], -k, k)])),
+        Equal(V_dquote, Lamda[j:Min(n, l + u - 1), i:n](w_V[k + clip(j - i + β[i], -k, k)])),
         Q, K, V)
 
-    K_dquote = Symbol('K^\"', Transpose[1](Lamda[j:Min(n, l + u + 1)](K_quote[:, Min(n - 1, j + β[i])])))
-    V_dquote = Symbol('V^\"', Transpose[1](Lamda[j:Min(n, l + u + 1)](V_quote[:, Min(n - 1, j + β[i])])))
+    K_dquote = Symbol('K^\"', Transpose[1](Lamda[j:Min(n, l + u - 1)](K_quote[:, Min(n - 1, j + β[i])])))
+    V_dquote = Symbol('V^\"', Transpose[1](Lamda[j:Min(n, l + u - 1)](V_quote[:, Min(n - 1, j + β[i])])))
     Eq <<= K_dquote.this.definition, V_dquote.this.definition
 
     Eq << keras.eq_relu.eq_min.eq.eq.imply.eq.softmax.bert.position_representation.relative.band_part_mask.apply(Eq.beta, Eq.zeta, Eq[-2], Eq[-1], Q, K, V)
@@ -98,4 +96,4 @@ if __name__ == '__main__':
     run()
 
 # created on 2020-12-30
-# updated on 2022-01-11
+# updated on 2022-03-30

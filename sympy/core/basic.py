@@ -81,7 +81,7 @@ class Basic(Printable, metaclass=ManagedProperties):
    
     is_ConditionSet = False
     
-    is_boolean = False
+    is_bool = False
     
     is_Matrix = False
     
@@ -144,7 +144,7 @@ class Basic(Printable, metaclass=ManagedProperties):
     __rand__ = __and__
 
     def __or__(self, other):
-        if self.is_boolean and other.is_boolean: 
+        if self.is_bool and other.is_bool: 
             from sympy.logic.boolalg import Or        
             """Overloading for |"""
             return Or(self, other)
@@ -152,7 +152,7 @@ class Basic(Printable, metaclass=ManagedProperties):
         return given(self, other)        
 
     def __ror__ (self, other):
-        if self.is_boolean and other.is_boolean:
+        if self.is_bool and other.is_bool:
             return other.__or__(self)
         
         if self.is_set:
@@ -1706,11 +1706,8 @@ class Basic(Printable, metaclass=ManagedProperties):
         return self.typeof(cls.func)
         
     
-    def of(self, cls, copy=False):
-        args = self._extract(cls)
-        if copy and isinstance(args, tuple):
-            return [*args]
-        return args
+    def of(self, cls):
+        return self._extract(cls)
     
     def is_wanted(self):
         if self.is_Wanted:
@@ -2775,6 +2772,9 @@ class Basic(Printable, metaclass=ManagedProperties):
       
     def delete_from_domain(self, x):
         return self
+      
+    def max_len_shape(self):
+        return max(len(arg.shape) for arg in self.args)    
       
     is_given = True
       

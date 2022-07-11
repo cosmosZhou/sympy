@@ -15,7 +15,7 @@ def apply(self, offset=None):
 
     if len(ab) == 2:
         a, b = ab
-        assert a.is_boolean
+        assert a.is_bool
         b = Element(x, b)
         ab = [a & b]
     return Equal(self, Measure(imageset(x, fx + offset, *ab).simplify()))

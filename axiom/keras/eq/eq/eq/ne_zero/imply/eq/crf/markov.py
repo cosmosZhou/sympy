@@ -1,13 +1,12 @@
 from util import *
 
 
-def assumptions():
+def markov_assumptions(x, y):
     # d is the number of output labels
-    # oo is the length of the sequence
-    d, n = Symbol(domain=Range(2, oo))
-    x = Symbol(shape=(n, d), real=True, random=True, given=True)
-    y = Symbol(shape=(n,), domain=Range(d), random=True, given=True)
-
+    # n is the length of the sequence
+    n, d = x.shape
+    [S[n]] = y.shape
+    
     k = Symbol(domain=Range(1, n))
     return Equal(x[k] | x[:k].as_boolean() & y[:k].as_boolean(), x[k]), Equal(y[k] | y[:k], y[k] | y[k - 1]), Equal(y[k] | x[:k], y[k]), Unequal(Probability(x, y), 0)
 
@@ -24,12 +23,12 @@ def process_assumptions(x_independence_assumption, y_independence_assumption, xy
 
 
 @apply
-def apply(x_independence_assumption, y_independence_assumption, xy_independence_assumption, xy_nonzero_assumption):
+def apply(x_independence_assumption, y_independence_assumption, xy_independence_assumption, xy_nonzero_assumption, t=None):
     x, y = process_assumptions(x_independence_assumption, y_independence_assumption, xy_independence_assumption, xy_nonzero_assumption)
     n, _ = x.shape
-    t = Symbol(integer=True, domain=Range(n))
+    if t is None:
+        t = Symbol(integer=True, domain=Range(n))
     i = Symbol(integer=True)
-
     return Equal(Probability(x[:t + 1], y[:t + 1]),
                     Probability(x[0] | y[0]) * Probability(y[0]) * Product[i:1:t + 1](Probability(y[i] | y[i - 1]) * Probability(x[i] | y[i])))
 
@@ -38,7 +37,10 @@ def apply(x_independence_assumption, y_independence_assumption, xy_independence_
 def prove(Eq):
     from axiom import stats, algebra
 
-    (Eq.x_independence, Eq.y_independence, Eq.xy_independence, Eq.xy_nonzero_assumption), Eq.factorization = apply(*assumptions())
+    d, n = Symbol(domain=Range(2, oo))
+    x = Symbol(shape=(n, d), real=True, random=True)
+    y = Symbol(shape=(n,), domain=Range(d), random=True)
+    (Eq.x_independence, Eq.y_independence, Eq.xy_independence, Eq.xy_nonzero_assumption), Eq.factorization = apply(*markov_assumptions(x, y))
 
     x = Eq.x_independence.rhs.base
     y, k = Eq.y_independence.rhs.lhs.of(Indexed)
@@ -81,6 +83,7 @@ def prove(Eq):
     Eq << algebra.ou.imply.all.apply(Eq[-1], pivot=1)
 
     _, Eq.y_nonzero_assumption = stats.ne_zero.imply.et.apply(Eq.xy_nonzero_assumption)
+
     Eq <<= Eq[-1] & Eq.y_nonzero_assumption
 
     Eq.y_joint_y_historic = Eq[-1].this.lhs.arg.apply(algebra.eq.imply.et.eq.block)
@@ -119,11 +122,11 @@ def prove(Eq):
     Eq <<= Eq[-1] & Eq.first
 
     #reference: Neural Architectures for Named Entity Recognition.pdf
-
-
+    
+    
 
 
 if __name__ == '__main__':
     run()
 # created on 2020-12-17
-# updated on 2021-11-20
+# updated on 2022-03-17

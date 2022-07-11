@@ -21,7 +21,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.apply(algebra.add.to.piece)
 
-    Eq << Eq[-1].this.find(Element).apply(sets.el.to.et.split.range)
+    Eq << Eq[-1].this.find(Element).apply(sets.el_range.to.et)
 
     Eq << Eq[-1].this.lhs.apply(algebra.piece.swap)
 

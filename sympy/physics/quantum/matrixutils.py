@@ -1,7 +1,5 @@
 """Utilities to deal with sympy.Matrix, numpy and scipy.sparse."""
 
-from __future__ import print_function, division
-
 from sympy import MatrixBase, I, Expr, Integer
 from sympy.matrices import eye, zeros
 from sympy.external import import_module

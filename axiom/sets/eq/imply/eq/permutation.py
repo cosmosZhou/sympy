@@ -5,18 +5,18 @@ from util import *
 @apply
 def apply(given, x):
     assert given.is_Equal
-    p_set_comprehension, interval = given.args
-    assert len(p_set_comprehension.limits) == 1
-    i, zero, n_1 = p_set_comprehension.limits[0]
+    p_cup_finiteset, interval = given.args
+    assert len(p_cup_finiteset.limits) == 1
+    i, zero, n_1 = p_cup_finiteset.limits[0]
     assert zero.is_zero
     n = n_1
-    assert p_set_comprehension.expr.is_FiniteSet
-    p = p_set_comprehension.expr.arg.base
-    assert p_set_comprehension == p[:n].set_comprehension()
+    assert p_cup_finiteset.expr.is_FiniteSet
+    p = p_cup_finiteset.expr.arg.base
+    assert p_cup_finiteset == p[:n].cup_finiteset()
     zero, _n = interval.args
     assert zero.is_zero
     assert _n == n and interval.right_open
-    return Equal(Cup[i:n](x[p[i]].set), x[:n].set_comprehension())
+    return Equal(Cup[i:n](x[p[i]].set), x[:n].cup_finiteset())
 
 
 @prove
@@ -25,25 +25,25 @@ def prove(Eq):
 
     n = Symbol(integer=True, positive=True)
     p, x = Symbol(integer=True, shape=(n,))
-    Eq << apply(Equal(p.set_comprehension(), Range(n)), x)
+    Eq << apply(Equal(p.cup_finiteset(), Range(n)), x)
 
     A = Symbol(Eq[1].lhs)
     B = Symbol(Eq[1].rhs)
     Eq.A_definition = A.this.definition
 
     i = Eq[1].lhs.variable
-    _i = Symbol.i(domain=Range(n))
+    _i = Symbol('i', domain=Range(n))
     Eq.A_definition = Eq.A_definition.this.rhs.limits_subs(i, _i)
 
     j = Eq[1].rhs.variable
-    _j = Symbol.j(domain=Range(n))
+    _j = Symbol('j', domain=Range(n))
     Eq.B_definition = B.this.definition
 
     Eq.B_definition = Eq.B_definition.this.rhs.limits_subs(Eq.B_definition.rhs.variable, _j)
 
     Eq.subset = Subset(Eq.A_definition.rhs, Eq.B_definition.rhs, plausible=True)
 
-    Eq << sets.subset.given.all_subset.split.cup.apply(Eq.subset)
+    Eq << sets.subset_cup.given.all_subset.apply(Eq.subset)
 
     Eq << Eq[-1].apply(sets.el_cup.given.any_el)
 
@@ -51,7 +51,7 @@ def prove(Eq):
 
     Eq.supset = Supset(Eq.subset.lhs, Eq.subset.rhs, plausible=True)
 
-    Eq << sets.supset.given.all_supset.split.cup.apply(Eq.supset)
+    Eq << sets.supset_cup.given.all_supset.apply(Eq.supset)
 
     Eq.definition = Eq[-1].apply(sets.el_cup.given.any_el)
 

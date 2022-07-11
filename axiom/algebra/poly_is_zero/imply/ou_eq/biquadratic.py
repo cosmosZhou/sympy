@@ -32,19 +32,19 @@ def prove(Eq):
 
     Eq << Eq[-1].this.args[-1].apply(algebra.eq_square.imply.ou_is_zero)
 
-    Eq << Eq[-1].this.args[0].apply(algebra.eq.transposition)
+    Eq << Eq[-1].this.args[0].apply(algebra.eq.transport)
 
-    Eq << Eq[-1].this.args[0].apply(algebra.eq.transposition)
+    Eq << Eq[-1].this.args[0].apply(algebra.eq.transport)
 
-    Eq << Eq[-1].this.args[0].apply(algebra.eq.transposition)
+    Eq << Eq[-1].this.args[0].apply(algebra.eq.transport)
 
-    Eq << Eq[-1].this.args[0].apply(algebra.eq.transposition)
+    Eq << Eq[-1].this.args[0].apply(algebra.eq.transport)
 
-    
-    
+
+
 
 
 if __name__ == '__main__':
-    run()  
+    run()
 # created on 2018-11-26
 # updated on 2021-12-03

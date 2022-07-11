@@ -8,7 +8,7 @@ from util import *
 def apply(x=None, y=None, **kwargs):
     if 'etype' in kwargs:
         etype = kwargs['etype']
-        S = Symbol.S(etype=etype)
+        S = Symbol(etype=etype)
     else:
         S = kwargs['set']
 

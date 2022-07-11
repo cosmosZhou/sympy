@@ -107,7 +107,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.apply(algebra.infer.flatten)
 
-    w_ = Symbol.w(Lamda[i:n](w[i] / (1 - w[n])))
+    w_ = Symbol('w', Lamda[i:n](w[i] / (1 - w[n])))
     Eq << w_[i].this.definition * (1 - w[n])
 
     Eq << Eq[-1].reversed
@@ -134,7 +134,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.apply(algebra.infer_infer.imply.infer_infer.et)
 
-    Eq <<  Eq[-1].this.find(And[~Element]).apply(sets.el.imply.lt.split.interval)
+    Eq <<  Eq[-1].this.find(And[~Element]).apply(sets.el_interval.imply.lt)
 
     Eq << Eq[-1].this.find(And[Less]).apply(algebra.lt.ge.imply.ge.mul)
 

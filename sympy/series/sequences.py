@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from sympy.core.basic import Basic
 from sympy.core.cache import cacheit
 from sympy.core.compatibility import (with_metaclass, is_sequence, iterable, ordered)

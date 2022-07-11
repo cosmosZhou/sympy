@@ -19,8 +19,8 @@ def prove(Eq):
 
     Eq << sets.eq.given.et.infer.apply(Eq[0])
 
-    Eq <<= Eq[-2].this.lhs.apply(sets.el.imply.et.split.complement, simplify=None), \
-    Eq[-1].this.rhs.apply(sets.el.given.et.split.complement, simplify=None)
+    Eq <<= Eq[-2].this.lhs.apply(sets.el_complement.imply.et, simplify=None), \
+    Eq[-1].this.rhs.apply(sets.el_complement.given.et, simplify=None)
 
     Eq <<= Eq[-2].this.lhs.find(Element).simplify(), Eq[-1].this.rhs.find(Element).simplify()
 

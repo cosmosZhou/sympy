@@ -5,7 +5,7 @@ from util import *
 def apply(self):
     assert self.is_ConditionSet
     variable, expr, base_set = self.base_set.image_set()
-    if base_set.is_boolean:
+    if base_set.is_bool:
         condition = base_set & self.condition._subs(self.variable, expr)
     else:
         condition = Element(variable, base_set).simplify() & self.condition._subs(self.variable, expr)

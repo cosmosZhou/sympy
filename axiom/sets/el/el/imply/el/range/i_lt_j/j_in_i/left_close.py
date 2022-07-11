@@ -32,9 +32,9 @@ def prove(Eq):
 
     Eq << sets.el.given.el.sub.apply(Eq[2], d)
 
-    Eq <<= sets.el.given.et.split.range.apply(Eq[-1]), sets.el.given.et.split.range.apply(Eq[3])
+    Eq <<= sets.el_range.given.et.apply(Eq[-1]), sets.el_range.given.et.apply(Eq[3])
 
-    Eq <<= sets.el.imply.et.split.range.apply(Eq[0]), sets.el.imply.et.split.range.apply(Eq[4])
+    Eq <<= sets.el_range.imply.et.apply(Eq[0]), sets.el_range.imply.et.apply(Eq[4])
 
     Eq << algebra.ge.imply.gt.relax.apply(Eq[-2])
 

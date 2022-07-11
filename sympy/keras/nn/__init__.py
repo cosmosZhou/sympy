@@ -77,6 +77,11 @@ relu = Function("relu", real=True,
 def sigmoid(x):
     return 1 / (1 + exp(-x))
 
+def __iter__(self):
+    raise TypeError
+
+def __getitem__(self, index):
+    return self.func(self.arg[index])
 
 sigmoid = Function(
     "σ", 
@@ -84,4 +89,6 @@ sigmoid = Function(
 #     extended_negative=False,
     extended_positive=True,
     finite=True,
-    eval=sigmoid)
+    eval=sigmoid,
+    __iter__=__iter__,
+    __getitem__=__getitem__)

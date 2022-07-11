@@ -15,11 +15,11 @@ def prove(Eq):
     x, a, b = Symbol(real=True)
     Eq << apply(Element(x, Interval(a, b)))
 
-    Eq << sets.el.imply.et.split.interval.apply(Eq[0])
+    Eq << sets.el_interval.imply.et.apply(Eq[0])
 
     Eq <<= Eq[-1].reversed, Eq[-2].reversed
 
-    Eq << sets.el.given.et.split.interval.apply(Eq[1])
+    Eq << sets.el_interval.given.et.apply(Eq[1])
 
 
 if __name__ == '__main__':

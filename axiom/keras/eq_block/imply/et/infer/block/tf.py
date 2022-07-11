@@ -89,7 +89,7 @@ def prove(Eq):
 
     Eq <<= Eq[-1].this.expr.rhs.apply(algebra.expr.to.lamda, j)
 
-    Eq <<= Eq[-1].this.find(ExprCondPair[2]).cond.apply(algebra.lt.transposition, rhs=slice(0, 4, 3))
+    Eq <<= Eq[-1].this.find(ExprCondPair[2]).cond.apply(algebra.lt.transport, rhs=slice(0, 4, 3))
 
     Eq << Eq[-1].subs(Eq.z_ij_def)
 
@@ -109,7 +109,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this(i).find(And).simplify()
 
-    Eq << Eq[-1].this.find(Less[2]).apply(algebra.lt.transposition, rhs=slice(0, 2))
+    Eq << Eq[-1].this.find(Less[2]).apply(algebra.lt.transport, rhs=slice(0, 2))
 
     Eq << Eq[-1].this.find(Or).apply(algebra.ou_lt.to.lt.max)
 
@@ -119,7 +119,7 @@ def prove(Eq):
 
     Eq <<= Eq[-1].this.expr.rhs.apply(algebra.expr.to.lamda, j)
 
-    Eq <<= Eq[-1].this.find(Less).apply(algebra.lt.transposition, rhs=slice(0, 4, 3))
+    Eq <<= Eq[-1].this.find(Less).apply(algebra.lt.transport, rhs=slice(0, 4, 3))
 
     Eq << Eq[-1].subs(Eq.z_ij_def)
 
@@ -133,12 +133,12 @@ def prove(Eq):
 
     Eq << Eq[-1].this(i).expr.rhs.find(ExprCondPair[Piecewise[ExprCondPair[~Piecewise]]]).find(Symbol < Min - 1).simplify()
 
-    Eq << Eq[-1].this.find(Less[2]).apply(algebra.lt.transposition, rhs=slice(0, 2))
+    Eq << Eq[-1].this.find(Less[2]).apply(algebra.lt.transport, rhs=slice(0, 2))
 
     Eq << Eq[-1].this.find(Or).apply(algebra.ou_lt.to.lt.max)
 
     Eq << Eq[-1].this(i).find(Max).simplify()
-    
+
 
 
 if __name__ == '__main__':

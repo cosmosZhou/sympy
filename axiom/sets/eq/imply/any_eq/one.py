@@ -32,7 +32,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.expr.apply(sets.el.imply.subset, simplify=False)
 
-    Eq << Eq[-1].this.expr.apply(sets.eq.subset.imply.eq, Eq[0])
+    Eq << Eq[-1].this.expr.apply(sets.eq_card.subset.imply.eq, Eq[0])
 
 
 if __name__ == '__main__':

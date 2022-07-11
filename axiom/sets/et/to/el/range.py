@@ -60,7 +60,7 @@ def prove(Eq):
 
     Eq << Eq[-2].this.lhs.apply(sets.lt.lt.imply.el.range)
 
-    Eq << Eq[-1].this.rhs.apply(sets.el.imply.et.split.range)
+    Eq << Eq[-1].this.rhs.apply(sets.el_range.imply.et)
 
     Eq << Eq[-1].this.find(GreaterEqual).apply(algebra.ge.imply.gt.relax)
 

@@ -19,7 +19,7 @@ def prove(Eq):
     U, S = Symbol(etype=dtype.integer)
     Eq << apply(Element(e, U), S)
 
-    Eq << sets.el.given.ou.split.union.apply(Eq[1])
+    Eq << sets.el_union.given.ou.apply(Eq[1])
 
     Eq << algebra.ou.given.cond.apply(Eq[-1], index=1)
 

@@ -14,8 +14,6 @@ and the Diffie-Hellman key exchange.
 
 """
 
-from __future__ import print_function
-
 from string import whitespace, ascii_uppercase as uppercase, printable
 
 from sympy import nextprime

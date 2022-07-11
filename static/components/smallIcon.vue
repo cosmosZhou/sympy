@@ -207,7 +207,7 @@ export default {
 				case 'Delete':
 					var self = this.$parent;
 					var parent = self.$parent;
-					parent.remove(parent.$children.indexOf(self));
+					parent.remove(parent.children.indexOf(self));
 					break;
 				case 'Backspace':
 					var parent = this.$parent.$parent;
@@ -256,7 +256,7 @@ export default {
 
 		indexFocused(){
 			var self = this.$parent;				
-			return self.$parent.$children.indexOf(self);
+			return self.$parent.children.indexOf(self);
 		},			
 	}
 }

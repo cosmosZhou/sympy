@@ -5,7 +5,7 @@ from util import *
 def apply(self):
     x = self.of(acos)
     #assert x in Interval(-1, 1)
-    return Equal(self, Piecewise((asin(sqrt(1 - x ** 2)), x >= 0), (S.Pi - asin(sqrt(1 - x ** 2)), True)))
+    return Equal(self, Piecewise((ArcSin(sqrt(1 - x ** 2)), x >= 0), (S.Pi - ArcSin(sqrt(1 - x ** 2)), True)))
 
 
 @prove
@@ -21,9 +21,9 @@ def prove(Eq):
 
     Eq <<= algebra.infer.given.infer.subs.bool.apply(Eq[-2]), algebra.infer.given.infer.subs.bool.apply(Eq[-1], invert=True)
 
-    Eq <<= Eq[-2].this.rhs.apply(algebra.eq.transposition), Eq[-1].this.rhs.apply(algebra.eq.transposition)
+    Eq <<= Eq[-2].this.rhs.apply(algebra.eq.transport), Eq[-1].this.rhs.apply(algebra.eq.transport)
 
-    Eq.is_nonnegative, Eq.is_negative = Eq[-2].this.rhs.reversed, Eq[-1].this.rhs.apply(algebra.eq.transposition, rhs=0)
+    Eq.is_nonnegative, Eq.is_negative = Eq[-2].this.rhs.reversed, Eq[-1].this.rhs.apply(algebra.eq.transport, rhs=0)
 
     Eq << Eq.is_negative.this.rhs.reversed
 

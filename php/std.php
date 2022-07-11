@@ -863,6 +863,18 @@ class Text implements IteratorAggregate
         $this->flush();
     }
 
+    public function find($substring)
+    {
+
+        // $this->rewind();
+        foreach ($this as $line) {
+            if (strpos($line, $substring) !== false) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     public function search($regex)
     {
         $regex = "/$regex/";
@@ -1386,5 +1398,14 @@ class TopKHeap{
     }
 }
 
+function getParameter($key, $value=''){
+    if (array_key_exists($key, $_GET))
+        return $_GET[$key];
+        
+    if (array_key_exists($key, $_POST))
+        return $_POST[$key];
+        
+    return $value;
+}
 
 ?>

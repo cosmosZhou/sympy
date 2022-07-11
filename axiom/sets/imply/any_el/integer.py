@@ -17,7 +17,7 @@ def prove(Eq):
     n = Symbol(integer=True)
     Eq << apply(x, n)
 
-    Eq << Eq[-1].this.expr.apply(sets.el.given.et.split.interval)
+    Eq << Eq[-1].this.expr.apply(sets.el_interval.given.et)
 
     Eq << Eq[-1].this.find(Greater) + 1
 

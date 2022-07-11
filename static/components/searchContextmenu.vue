@@ -59,7 +59,7 @@ export default {
             var indexFocused = parent.focusedIndex;
             this.focusedIndex = -1;
             
-            var self = parent.$children[indexFocused];
+            var self = parent.children[indexFocused];
             self.remove();
             parent.remove(indexFocused);            
         },
@@ -73,10 +73,10 @@ export default {
             
             var indexFocused = parent.focusedIndex;
             
-            promise(()=>{
+            parent.$nextTick(()=>{
                 
                 var packageSelector = null;
-                for (let child of parent.$children){
+                for (let child of parent.children){
                     if (child.$el.className == 'packageSelector-wrapper'){
                         packageSelector = child;
                         break;
@@ -89,7 +89,7 @@ export default {
         
         clickRename(event){            
             var parent = this.$parent;
-            //var icon = parent.$children[parent.focusedIndex];
+            //var icon = parent.children[parent.focusedIndex];
             //console.log('icon = ');
             //console.log(icon);            
             

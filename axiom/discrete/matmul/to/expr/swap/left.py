@@ -5,13 +5,13 @@ from util import *
 def apply(x, i=None, j=None, w=None):
     n = x.shape[0]
     if i is None:
-        i = Symbol.i(domain=Range(n))
+        i = Symbol(domain=Range(n))
 
     if j is None:
-        j = Symbol.j(domain=Range(n))
+        j = Symbol(domain=Range(n))
 
     if w is None:
-        w = Symbol.w(Lamda[j, i](SwapMatrix(n, i, j)))
+        w = Symbol(Lamda[j, i](SwapMatrix(n, i, j)))
 
     return Equal(w[i, j] @ w[i, j] @ x, x)
 

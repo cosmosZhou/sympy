@@ -8,8 +8,6 @@ ode_order
 _desolve
 
 """
-from __future__ import print_function, division
-
 from sympy.core.function import Derivative, AppliedUndef
 from sympy.core.relational import Equal
 from sympy.core.symbol import Wild

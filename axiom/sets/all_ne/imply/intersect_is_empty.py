@@ -9,7 +9,7 @@ def apply(given):
 
     x = Lamda[i:n](xi).simplify()
 
-    return Equal({y} & x.set_comprehension(), y.emptySet)
+    return Equal({y} & x.cup_finiteset(), y.emptySet)
 
 
 @prove

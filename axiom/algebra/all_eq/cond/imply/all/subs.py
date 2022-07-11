@@ -1,7 +1,7 @@
 from util import *
 
 
-def subs(self, old, new, simplify=True, assumptions={}):
+def subs(self, old, new, simplify=True, assumptions={}, index=None):
     if self == old:
         return new
 
@@ -41,13 +41,23 @@ def subs(self, old, new, simplify=True, assumptions={}):
 
     hit = False
     args = [*self.args]
-    for i, arg in enumerate(args):
+    if index is None:
+        
+        for i, arg in enumerate(args):
+            _arg = subs(arg, old, new, simplify=simplify, assumptions=assumptions)
+            if _arg != arg:
+                hit = True
+                args[i] = _arg
+    else:
+        arg = args[index]
         _arg = subs(arg, old, new, simplify=simplify, assumptions=assumptions)
         if _arg != arg:
             hit = True
-            args[i] = _arg
+            args[index] = _arg
+            
     if hit:
         return self.func(*args, **self.kwargs)
+
     return self
 
 
@@ -74,7 +84,10 @@ def prove(Eq):
 
     Eq << Eq[-1].this.expr.apply(algebra.eq.cond.imply.cond.subs)
 
+    
+
 
 if __name__ == '__main__':
     run()
 # created on 2019-01-06
+# updated on 2022-04-01

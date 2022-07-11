@@ -318,6 +318,13 @@ class Inference:
             plausible = imply._assumptions.get('plausible')
             if plausible is False:
                 return False
+            
+            negation = imply.negation
+            if negation is not None:
+#             if imply.negation implies a True proposition, then self must be False
+                if negation.plausible is None:
+                    return False
+
             return True
         
         negation = self.negation
@@ -429,7 +436,7 @@ class Inference:
                                 continue
 
                             cond &= self.domain_definition()
-                            self = Inference(cond, equivalent=self)                            
+                            self = Inference(cond, equivalent=self)
                 else:
                     cond = self.cond._subs(old, new, **kwargs)
                     if cond == self.cond:
@@ -625,7 +632,7 @@ class Inference:
             return self.func(self.lhs @ rhs.lhs, self.rhs @ rhs.rhs, given=(self, rhs))
 
         else: 
-            assert not rhs.is_boolean
+            assert not rhs.is_bool
             if rhs.is_invertible:
                 return self.func(self.lhs @ rhs, self.rhs @ rhs, equivalent=self)
             return self.func(self.lhs @ rhs, self.rhs @ rhs, given=self)
@@ -640,7 +647,7 @@ class Inference:
             return self.func(lhs.lhs @ self.lhs, lhs.rhs @ self.rhs, given=(lhs, self))
 
         else: 
-            assert not lhs.is_boolean
+            assert not lhs.is_bool
             if lhs.is_invertible:
                 return self.func(lhs @ self.lhs, lhs @ self.rhs, equivalent=self)
             return self.func(lhs @ self.lhs, lhs @ self.rhs, given=self)

@@ -36,7 +36,7 @@ def prove(Eq):
 
     Eq << Eq[0].this.expr - Eq[0].rhs
 
-    _n = Symbol.n(domain=Range(a, oo))
+    _n = Symbol("n", domain=Range(a, oo))
     Eq << algebra.all.imply.all.limits.restrict.apply(Eq[-1], Range(a, _n))
 
     Eq << algebra.all_eq.imply.eq.sum.apply(Eq[-1])

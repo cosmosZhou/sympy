@@ -19,7 +19,7 @@ def prove(Eq):
 
     Eq << Eq[0].this.find(Or).apply(algebra.ou.invert)
 
-    Eq << Eq[-1].this.find(NotElement).apply(sets.notin.to.ou.split.range)
+    Eq << Eq[-1].this.find(NotElement).apply(sets.notin_range.to.ou)
 
     Eq << Eq[-1].this.find(Symbol >= Symbol) - i
 
@@ -29,25 +29,25 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Or[~And]).apply(algebra.et.distribute, 1)
 
-    Eq << Eq[-1].this.find(GreaterEqual).apply(algebra.ge.transposition)
+    Eq << Eq[-1].this.find(GreaterEqual).apply(algebra.ge.transport)
 
     Eq << -Eq[-1].this.find(GreaterEqual)
 
     Eq << Eq[-1].this.lhs.apply(algebra.et.invert)
 
-    Eq << Eq[-1].this.find(NotElement).apply(sets.notin.to.ou.split.range)
+    Eq << Eq[-1].this.find(NotElement).apply(sets.notin_range.to.ou)
 
     Eq << Eq[-1].this.find(Range).apply(sets.range_min.to.intersect)
 
-    Eq << Eq[-1].this.find(Element).apply(sets.el.to.et.split.intersect)
+    Eq << Eq[-1].this.find(Element).apply(sets.el_intersect.to.et)
 
-    Eq << Eq[-1].this.lhs.find(Element).apply(sets.el.to.et.split.range)
+    Eq << Eq[-1].this.lhs.find(Element).apply(sets.el_range.to.et)
 
-    Eq << Eq[-1].this.find(Element).apply(sets.el.to.et.split.range)
+    Eq << Eq[-1].this.find(Element).apply(sets.el_range.to.et)
 
-    Eq << Eq[-1].this.find(Element).apply(sets.el.to.et.split.range)
+    Eq << Eq[-1].this.find(Element).apply(sets.el_range.to.et)
 
-    
+
 
 
 if __name__ == '__main__':

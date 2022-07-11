@@ -1,8 +1,5 @@
 """Real and complex root isolation and refinement algorithms. """
 
-from __future__ import print_function, division
-
-
 from sympy.polys.densearith import (
     dup_neg, dup_rshift, dup_rem)
 from sympy.polys.densebasic import (

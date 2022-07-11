@@ -12,13 +12,14 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra
 
-    x, y = Symbol(integer=True)
-    f, g = Function(integer=True)
-    Eq << apply(Infer(x > y, f(x) > g(y)))
+    p, q = Symbol(bool=True)
+    Eq << apply(Infer(p, q))
 
     Eq << Eq[0].this.lhs.apply(algebra.infer.to.ou)
 
     Eq << Eq[-1].this.rhs.apply(algebra.infer.to.ou)
+
+    
 
 
 if __name__ == '__main__':
@@ -26,3 +27,4 @@ if __name__ == '__main__':
 
 #     https://en.wikipedia.org/wiki/Contraposition
 # created on 2018-10-09
+# updated on 2022-01-27

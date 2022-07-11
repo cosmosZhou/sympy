@@ -84,7 +84,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq[1])
 
-    Eq << Eq[-1].this.find(Exp).apply(geometry.expi.to.add.euler.formula)
+    Eq << Eq[-1].this.find(Exp).apply(geometry.expi.to.add.Euler)
 
     Eq << Eq[-1].subs(Eq.w_conj.reversed)
 

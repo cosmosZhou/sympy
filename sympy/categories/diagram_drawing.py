@@ -82,8 +82,6 @@ References
 [Xypic] http://xy-pic.sourceforge.net/
 
 """
-from __future__ import print_function, division
-
 from sympy.categories import (CompositeMorphism, IdentityMorphism,
                               NamedMorphism, Diagram)
 from sympy.core import Dict, Symbol

@@ -29,7 +29,7 @@ def apply(self):
             assert arg == factor
             additives.append(1)
 
-    return Equal(self, Add(*additives) * Mul(*common_terms))
+    return Equal(self, Add(*additives) * factor)
 
 
 @prove

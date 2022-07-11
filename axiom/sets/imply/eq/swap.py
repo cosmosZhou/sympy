@@ -7,10 +7,10 @@ def apply(x, i=None, j=None):
 
     assert x.dtype.is_set
     if i is None:
-        i = Symbol.i(integer=True)
+        i = Symbol(integer=True)
 
     if j is None:
-        j = Symbol.j(integer=True)
+        j = Symbol(integer=True)
 
     return Equal(swap[i, j](swap[i, j](x)), x)
 

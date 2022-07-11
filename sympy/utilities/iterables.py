@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from collections import defaultdict, OrderedDict
 from itertools import (
     combinations, combinations_with_replacement, permutations,
@@ -2455,8 +2453,7 @@ def kbins(l, k, ordered=None):
     The default is to give the items in the same order, but grouped
     into k partitions without any reordering:
 
-    >>> from __future__ import print_function
-    >>> for p in kbins(list(range(5)), 2):
+    >>>     >>> for p in kbins(list(range(5)), 2):
     ...     print(p)
     ...
     [[0], [1, 2, 3, 4]]

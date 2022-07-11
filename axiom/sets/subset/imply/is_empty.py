@@ -18,7 +18,7 @@ def prove(Eq):
 
     Eq << sets.ne_empty.imply.any_el.apply(Eq[-1], simplify=False)
 
-    Eq << Eq[-1].this.expr.apply(sets.el.imply.et.split.complement, simplify=None)
+    Eq << Eq[-1].this.expr.apply(sets.el_complement.imply.et, simplify=None)
 
     Eq << sets.any_et.imply.any.single_variable.limits_absorb.apply(Eq[-1], index=0, simplify=None)
 

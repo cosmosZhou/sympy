@@ -23,9 +23,9 @@ def apply(all0, all1):
 
     equality, (_x, S[s]) = all1.of(All)
     assert x == _x
-    assert equality.is_Equal and {*equality.args} == {Card(x.set_comprehension()), n}
+    assert equality.is_Equal and {*equality.args} == {Card(x.cup_finiteset()), n}
 
-    return Equal(Card(s), factorial(n) * Card(Cup[x:s]({x.set_comprehension()})))
+    return Equal(Card(s), factorial(n) * Card(Cup[x:s]({x.cup_finiteset()})))
 
 
 @prove(proved=False)
@@ -37,7 +37,7 @@ def prove(Eq):
     x = Symbol(**S.element_symbol().type.dict)
     i, j = Symbol(integer=True)
     Eq << apply(All[j:1:n, x:S](Element(Lamda[i:n](Piecewise((x[0], Equal(i, j)), (x[j], Equal(i, 0)), (x[i], True))), S)),
-                All[x:S](Equal(Card(x.set_comprehension()), n)))
+                All[x:S](Equal(Card(x.cup_finiteset()), n)))
 
     Eq << discrete.eq.imply.eq.swap2.general.apply(Eq[0])
 
@@ -54,7 +54,7 @@ def prove(Eq):
     Eq <<= Eq[-2] & Eq[-1]
 
     F = Function(etype=dtype.integer * n)
-    F.eval = lambda e: conditionset(x, Equal(x.set_comprehension(), e), S)
+    F.eval = lambda e: conditionset(x, Equal(x.cup_finiteset(), e), S)
     e = Symbol(etype=dtype.integer)
     Eq << Subset(F(e), S, plausible=True)
 

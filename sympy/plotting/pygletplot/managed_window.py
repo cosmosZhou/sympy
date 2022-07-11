@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from pyglet.window import Window
 from pyglet.clock import Clock
 

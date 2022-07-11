@@ -16,7 +16,7 @@ def prove(Eq):
     Eq << apply(Unequal(x, 0) | Unequal(y, 0))
 
     Eq << algebra.ou_ne_zero.imply.add_gt_zero.square.apply(Eq[0])
-    Eq << algebra.gt_zero.imply.sqrt_gt_zero.apply(Eq[-1])
+    Eq << algebra.gt_zero.imply.gt_zero.sqrt.apply(Eq[-1])
 
 
 if __name__ == '__main__':

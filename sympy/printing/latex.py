@@ -984,33 +984,6 @@ class LatexPrinter(Printer):
 
         return name
 
-    def _print_MatrixBase(self, expr):
-        lines = []
-        for i in range(0, len(expr._args), expr.cols):  # horrible, should be 'rows'                
-            lines.append(" & ".join([self._print(i) for i in expr._args[i:i + expr.cols]]))
-
-        mat_str = self._settings['mat_str']
-        if mat_str is None:
-            if self._settings['mode'] == 'inline':
-                mat_str = 'smallmatrix'
-            else:
-                if (expr.cols <= 10) is True:
-                    mat_str = 'matrix'
-                else:
-                    mat_str = 'array'
-
-        out_str = r'\begin{%MATSTR%}%s\end{%MATSTR%}'
-        out_str = out_str.replace('%MATSTR%', mat_str)
-        if mat_str == 'array':
-            out_str = out_str.replace('%s', '{' + 'c' * expr.cols + '}%s')
-        if self._settings['mat_delim']:
-            left_delim = self._settings['mat_delim']
-            right_delim = self._delim_dict[left_delim]
-            out_str = r'\left' + left_delim + out_str + r'\right' + right_delim
-        return out_str % r"\\".join(lines)
-
-    _print_ImmutableMatrix = _print_ImmutableDenseMatrix = _print_Matrix = _print_MatrixBase
-
     def _print_MatrixElement(self, expr):
         if len(expr.args) == 3:
             return self.parenthesize(expr.parent, PRECEDENCE["Atom"], strict=True)\

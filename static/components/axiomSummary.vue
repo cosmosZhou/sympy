@@ -69,6 +69,7 @@ export default {
 			recentAxioms: [],
 			topk: 10,
 			
+			keyword: '',
 			caseSensitive: false,
 			wholeWord: false, 
 			regularExpression: false,

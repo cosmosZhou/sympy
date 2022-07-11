@@ -5,19 +5,19 @@ from util import *
 def apply(given, i=None, j=None):
     from axiom.discrete.eq.imply.et.index import index_function
     assert given.is_Equal
-    x_set_comprehension, interval = given.args
+    x_cup_finiteset, interval = given.args
     n = interval.max() + 1
     assert interval.min() == 0
-    assert len(x_set_comprehension.limits) == 1
-    k, a, b = x_set_comprehension.limits[0]
+    assert len(x_cup_finiteset.limits) == 1
+    k, a, b = x_cup_finiteset.limits[0]
     assert b - a == n
-    x = Lamda(x_set_comprehension.expr.arg, *x_set_comprehension.limits).simplify()
+    x = Lamda(x_cup_finiteset.expr.arg, *x_cup_finiteset.limits).simplify()
 
     if j is None:
-        j = Symbol.j(domain=Range(n), given=True)
+        j = Symbol(domain=Range(n), given=True)
 
     if i is None:
-        i = Symbol.i(domain=Range(n), given=True)
+        i = Symbol(domain=Range(n), given=True)
 
     assert j >= 0 and j < n
     assert i >= 0 and i < n
@@ -38,7 +38,7 @@ def prove(Eq):
     x = Symbol(shape=(n,), integer=True, given=True)
     k = Symbol(integer=True)
     i, j = Symbol(domain=Range(n), given=True)
-    Eq << apply(Equal(x[:n].set_comprehension(k), Range(n)), i, j)
+    Eq << apply(Equal(x[:n].cup_finiteset(k), Range(n)), i, j)
 
     Eq << Eq[-1].apply(algebra.cond.given.et.ou, cond=Equal(i, j))
 

@@ -1516,7 +1516,7 @@ class Piecewise(Function):
             tuples.append((universe - e, c))    
         return self.func(*tuples)
 
-    def mul(self, other):
+    def mul(self, other, simplify=True):
         piece = []
         u = S.true
         for e, c in self.args:
@@ -1537,7 +1537,11 @@ class Piecewise(Function):
                 args[-1][-1] = True
                 piece.append((self.func(*args).simplify(), c))
             u &= c.invert()
-        return self.func(*piece).simplify()
+
+        self = self.func(*piece)
+        if simplify:
+            self = self.simplify()
+        return self
         
     def add(self, other):
         piece = []
@@ -1573,7 +1577,7 @@ class Piecewise(Function):
             return self.func(*self.args[:-1], *((e + _, c) for e, c in other.args))
 
     def __bool__(self):
-        if self.is_boolean:
+        if self.is_bool:
             return False
         return True
             

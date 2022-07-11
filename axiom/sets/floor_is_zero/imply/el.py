@@ -14,7 +14,7 @@ def prove(Eq):
     x = Symbol(real=True, given=True)
     Eq << apply(Equal(Floor(x), 0))
 
-    Eq << sets.el.given.et.split.interval.apply(Eq[-1])
+    Eq << sets.el_interval.given.et.apply(Eq[-1])
 
     Eq << algebra.imply.ge.floor.apply(x)
 

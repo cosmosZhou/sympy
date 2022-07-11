@@ -232,7 +232,7 @@ class Tuple(Basic):
                 if domain.right_open:
                     return r"%s \le %s < %s" % (start.latex, self.latex, end.latex)
                 return r"%s \le %s \le %s" % (start.latex, self.latex, end.latex)
-        elif domain.is_boolean:
+        elif domain.is_bool:
             return r"%s \left| %s \right." % (self.latex, domain.latex)
         else:
             return r"%s \in %s" % (self.latex, domain.latex)
@@ -296,7 +296,7 @@ class Tuple(Basic):
                 domain = function.domain_defined(x)
         elif len(ab) == 1: 
             domain = ab[0]
-            if domain.is_boolean:
+            if domain.is_bool:
                 domain = x.domain_conditioned(domain)
         else:
             a, b = ab

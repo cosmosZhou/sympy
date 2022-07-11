@@ -40,4 +40,4 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2018-02-15
-from . import geometric_progression
+from . import arithmetic_progression

@@ -16,7 +16,9 @@ def prove(Eq):
 
     Eq << apply(Cap[j:{a, b, c, d}, i:m](x[i, j]))
 
-    s = Function(eval=lambda i: Cap[j:{a, b, c, d}](x[i, j]), etype=dtype.real)
+    s = Function(etype=dtype.real)
+    s[i] = Cap[j:{a, b, c, d}](x[i, j])
+    
     Eq << s(i).this.defun()
 
     Eq << sets.eq.imply.eq.cap.apply(Eq[-1], (i, 0, m))

@@ -17,19 +17,19 @@ def prove(Eq):
 
     Eq << sets.eq.given.et.infer.apply(Eq[1], t)
 
-    Eq <<= Eq[-2].this.rhs.apply(sets.el.given.ou.split.union), Eq[-1].this.lhs.apply(sets.el.imply.ou.split.union)
+    Eq <<= Eq[-2].this.rhs.apply(sets.el_union.given.ou), Eq[-1].this.lhs.apply(sets.el_union.imply.ou)
 
-    Eq <<= Eq[-2].this.lhs.apply(sets.el.imply.et.split.interval), Eq[-1].this.rhs.apply(sets.el.given.et.split.interval)
+    Eq <<= Eq[-2].this.lhs.apply(sets.el_interval.imply.et), Eq[-1].this.rhs.apply(sets.el_interval.given.et)
 
-    Eq <<= Eq[-2].this.find(Element).apply(sets.el.given.et.split.interval), Eq[-1].this.find(Element).apply(sets.el.imply.et.split.interval)
+    Eq <<= Eq[-2].this.find(Element).apply(sets.el_interval.given.et), Eq[-1].this.find(Element).apply(sets.el_interval.imply.et)
 
-    Eq <<= Eq[-2].this.find(Element).apply(sets.el.given.et.split.interval), Eq[-1].this.find(Element).apply(sets.el.imply.et.split.interval)
+    Eq <<= Eq[-2].this.find(Element).apply(sets.el_interval.given.et), Eq[-1].this.find(Element).apply(sets.el_interval.imply.et)
 
     Eq << algebra.infer.given.et.infer.split.ou.apply(Eq[-1])
 
     Eq <<= algebra.infer.given.infer.split.et.apply(Eq[-2], 1), algebra.infer.given.infer.split.et.apply(Eq[-1], 0)
 
-    Eq << sets.el.imply.et.split.interval.apply(Eq[0])
+    Eq << sets.el_interval.imply.et.apply(Eq[0])
 
     Eq <<= algebra.cond.imply.infer.apply(Eq[-2], cond=t > x), algebra.cond.imply.infer.apply(Eq[-1], cond=t <= x)
 

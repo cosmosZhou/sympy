@@ -16,11 +16,11 @@ def prove(Eq):
     a, b, c = Symbol(real=True)
     Eq << apply(Element(x, Interval(a, b)), c=c)
 
-    Eq << sets.el.imply.le.split.interval.apply(Eq[1])
+    Eq << sets.el_interval.imply.le.apply(Eq[1])
 
-    Eq << sets.el.imply.ge.split.interval.apply(Eq[1])
+    Eq << sets.el_interval.imply.ge.apply(Eq[1])
 
-    Eq << sets.el.given.et.split.interval.apply(Eq[0])
+    Eq << sets.el_interval.given.et.apply(Eq[0])
 
 
 if __name__ == '__main__':

@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from itertools import product
 import re
 from sympy import sympify

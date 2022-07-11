@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from time import clock
 
 import pyglet.gl as pgl

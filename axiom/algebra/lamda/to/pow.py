@@ -34,7 +34,7 @@ def prove(Eq):
     a, b = Symbol(real=True, shape=(n,))
     Eq << apply(Lamda[j:n](a[j] ** b[j]))
 
-    _j = Symbol.j(domain=Range(n))
+    _j = Symbol('j', domain=Range(n))
     Eq << algebra.eq.given.eq.getitem.apply(Eq[0], _j)
 
     

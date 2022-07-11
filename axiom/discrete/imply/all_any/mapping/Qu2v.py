@@ -39,9 +39,9 @@ def prove(Eq):
     Eq << Eq[-1].subs(i, n)
 
     k = Eq[-1].expr.lhs.expr.arg.args[0].indices[-1]
-    Eq << Eq[1][k].apply(sets.eq.imply.eq.set_comprehension, (k, 0, n + 1), simplify=False)
+    Eq << Eq[1][k].apply(sets.eq.imply.eq.cup.finiteset, (k, 0, n + 1), simplify=False)
 
-    Eq.x_n1_set_comprehension = Eq[-2].subs(Eq[-1].reversed)
+    Eq.x_n1_cup_finiteset = Eq[-2].subs(Eq[-1].reversed)
 
     Eq << Eq[1][n]
 
@@ -55,7 +55,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.expr().expr.rhs.args[0].simplify()
 
-    Eq <<= Eq.x_n1_set_comprehension & Eq[-1]
+    Eq <<= Eq.x_n1_cup_finiteset & Eq[-1]
 
     Eq << Eq[-1].this.expr.apply(algebra.cond.any.imply.any_et)
 

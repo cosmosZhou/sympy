@@ -19,7 +19,7 @@ def prove(Eq):
     f, g, h = Function(etype=dtype.real * k)
     Eq << apply(Supset(f(x), S) & Element(x, A) | Supset(g(x), S) & Element(x, B - A) | Supset(h(x), S) & NotElement(x, A | B), wrt=S)
 
-    Eq << Eq[0].this.args[1].args[1].apply(sets.el.imply.et.split.complement, simplify=None)
+    Eq << Eq[0].this.args[1].args[1].apply(sets.el_complement.imply.et, simplify=None)
 
     Eq << Eq[-1].this.args[2].args[1].apply(sets.notin.imply.et.split.union, simplify=None)
 

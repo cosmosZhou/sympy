@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(eq):
-    ((((((A, i), (S[0], S[i])), (S[i], S[0], (l, n))), (S[A[i + Min(l, n) - 1, i:i + Min(l, n) - 1]], (S[i], S[0], S[n - Min(l, n) + 1]))), (((S[A[i]], (S[i], (S[i], (S[n], u)))), (S[i], S[0], (S[1], S[n], S[-Min(n, u)]))), (((S[A], S[i + n - Min(n, u) + 1]), (S[i + n - Min(n, u) + 1], S[n])), (S[i], S[0], (S[n], S[u]))))), (S[A[i][relu(i - l + 1):Min(n, i + u)]], (S[i], S[0], S[n]))), z = \
+    ((((((A, i), (S[0], S[i])), (S[i], S[0], (l, n))), (S[A[i + Min(l, n) - 1, i:i + Min(l, n) - 1]], (S[i], S[0], S[n - Min(l, n) + 1]))), (((S[A[i]], (S[i], (S[i], (S[n], u)))), (S[i], S[0], S[n + 1 - Min(n, u)])), (S[A[i + n - Min(n, u) + 1, i + n - Min(n, u) + 1:n]], (S[i], S[0], S[Min(n, u) - 1])))), (S[A[i][relu(i - l + 1):Min(n, i + u)]], (S[i], S[0], S[n]))), z = \
     eq.of(Equal[BlockMatrix[1][
         BlockMatrix[
             Lamda[
@@ -16,13 +16,11 @@ def apply(eq):
             Lamda
             ],
         BlockMatrix[
-            Lamda[Sliced[Tuple[Add[Min]]], Tuple[Add]],
+            Lamda[Sliced[Tuple[Add[Min]]]],
             Lamda[
                 BlockMatrix[
-                    Sliced[Indexed],
                     NegativeInfinity * OneMatrix
-                    ],
-                Tuple[Min - 1]
+                    ]
                 ]
             ]
         ] - Lamda[OneMatrix * logsumexp]])
@@ -85,11 +83,11 @@ def prove(Eq):
 
     Eq << keras.eq_block.imply.eq.softmax.st.exp.tf.apply(Eq[-1])
 
-
-
+    
+    
 
 
 if __name__ == '__main__':
     run()
 # created on 2022-01-03
-# updated on 2022-01-05
+# updated on 2022-03-15

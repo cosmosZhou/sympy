@@ -27,11 +27,11 @@ def prove(Eq):
     Eq <<= Eq[-2].this.rhs.apply(sets.el_cap.given.all_el),\
     Eq[-1].this.lhs.apply(sets.el_cap.imply.all_el)
 
-    Eq <<= Eq[-2].this.rhs.expr.apply(sets.el.given.ou.split.union),\
-    Eq[-1].this.lhs.expr.apply(sets.el.imply.ou.split.union)
+    Eq <<= Eq[-2].this.rhs.expr.apply(sets.el_union.given.ou),\
+    Eq[-1].this.lhs.expr.apply(sets.el_union.imply.ou)
 
-    Eq <<= Eq[-2].this.lhs.apply(sets.el.imply.ou.split.union),\
-    Eq[-1].this.rhs.apply(sets.el.given.ou.split.union)
+    Eq <<= Eq[-2].this.lhs.apply(sets.el_union.imply.ou),\
+    Eq[-1].this.rhs.apply(sets.el_union.given.ou)
 
     Eq <<= Eq[-2].this.find(Element[Cap]).apply(sets.el_cap.imply.all_el),\
     Eq[-1].this.find(Element[Cap]).apply(sets.el_cap.given.all_el)

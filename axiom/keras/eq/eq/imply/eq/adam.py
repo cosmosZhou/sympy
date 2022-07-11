@@ -38,7 +38,7 @@ def prove(Eq):
     m, g = Symbol(shape=(oo,), real=True)
     t = Symbol(integer=True, positive=True)
     beta = Symbol(real=True, nonzero=True)
-#     beta = Symbol.beta(real=True, zero=False)
+#     beta = Symbol(real=True, zero=False)
     Eq << apply(Equal(m[0], 0), Equal(m[t], beta * m[t - 1] + (1 - beta) * g[t]))
 
     Eq << Eq[1] / beta ** t

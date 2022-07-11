@@ -8,7 +8,7 @@ def baseset_delete(self):
 
     * limits, limit = limits
     x, cond, baseset = limit
-    assert cond.is_boolean
+    assert cond.is_bool
     assert baseset.is_set
 
     assert function.domain_defined(x) & cond.domain_defined(x) in baseset

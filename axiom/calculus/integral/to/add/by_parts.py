@@ -27,7 +27,9 @@ def prove(Eq):
     u, v = Function(real=True)
     Eq << apply(Integral(u(x) * diff(v(x), x), (x, a, b)), u=u(x))
 
-    uv = Function(real=True, eval=lambda x: u(x) * v(x))
+    uv = Function(real=True)
+    uv[x] = u(x) * v(x)
+    
     Eq << diff(uv(x), x).this.expr.defun()
 
     Eq << Eq[-1].this.rhs.doit()

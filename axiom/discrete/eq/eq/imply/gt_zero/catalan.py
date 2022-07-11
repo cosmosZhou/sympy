@@ -54,7 +54,7 @@ def prove(Eq):
     Eq << Eq[-1].this.lhs.limits_subs(k, k.copy(domain=None))
 
     Eq << Eq[-1] + Eq[1]
-    Eq << Eq[-1].this.apply(algebra.gt.transposition)
+    Eq << Eq[-1].this.apply(algebra.gt.transport)
 
     Eq << Infer(Eq.hypothsis_k, Eq.induct, plausible=True)
 

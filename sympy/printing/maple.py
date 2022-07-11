@@ -8,8 +8,6 @@ Maple expressions, using the functions defined in the Maple objects where possib
 FIXME: This module is still under actively developed. Some functions may be not completed.
 """
 
-from __future__ import print_function, division
-
 from sympy.core import S
 from sympy.core.numbers import Integer, IntegerConstant
 from sympy.printing.codeprinter import CodePrinter

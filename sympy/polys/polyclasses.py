@@ -1,7 +1,5 @@
 """OO layer for several polynomial representations. """
 
-from __future__ import print_function, division
-
 from sympy import oo
 from sympy.core.sympify import CantSympify
 from sympy.polys.polyerrors import CoercionFailed, NotReversible, NotInvertible

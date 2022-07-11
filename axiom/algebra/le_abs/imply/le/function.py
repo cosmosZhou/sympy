@@ -38,10 +38,10 @@ def prove(Eq):
     t = Symbol(domain=Range(m))
     Eq << apply(abs(y(t) - Sum[i:n](x(i)) / n) <= abs(y(t) - Sum[j:m](y(j)) / m), t)
 
-    x_ = Symbol.x(Lamda[i:n](x(i)))
+    x_ = Symbol('x', Lamda[i:n](x(i)))
     Eq << x_[i].this.definition
 
-    y_ = Symbol.y(Lamda[j:m](y(j)))
+    y_ = Symbol('y', Lamda[j:m](y(j)))
     Eq << y_[j].this.definition
 
     Eq << y_[t].this.definition

@@ -40,9 +40,9 @@ def prove(Eq):
 
     Eq << sets.el.imply.sqrt_gt_zero.apply(Eq[2])
 
-    Eq << algebra.gt_zero.imply.square_gt_zero.apply(Eq[-1])
+    Eq << algebra.gt_zero.imply.gt_zero.square.apply(Eq[-1])
 
-    Eq << algebra.gt_zero.imply.square_gt_zero.apply(Eq.x_is_positive)
+    Eq << algebra.gt_zero.imply.gt_zero.square.apply(Eq.x_is_positive)
 
     Eq << algebra.gt_zero.gt_zero.imply.gt_zero.apply(Eq[-1], Eq[-2])
 

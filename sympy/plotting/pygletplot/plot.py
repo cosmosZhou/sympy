@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from threading import RLock
 
 # it is sufficient to import "pyglet" here once

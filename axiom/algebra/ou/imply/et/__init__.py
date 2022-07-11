@@ -13,6 +13,9 @@ def apply(self, index=-1):
     del args[i]
     this = self.func(*args)
     args = eq.args
+    if index is None:
+        return tuple((eq | this).simplify() for eq in args)
+        
     lhs = And(*args[:index])
     rhs = And(*args[index:])
 
@@ -31,6 +34,8 @@ def prove(Eq):
 
     Eq << Eq[0].this.args[1].apply(algebra.et.imply.cond, index=0)
 
+    
+
 
 if __name__ == '__main__':
     run()
@@ -38,3 +43,4 @@ if __name__ == '__main__':
 from . import collect
 from . import infer
 # created on 2019-04-29
+# updated on 2022-01-28

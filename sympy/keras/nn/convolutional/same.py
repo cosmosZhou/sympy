@@ -20,14 +20,14 @@ def shape(self):
 
 def conv1d(x, w, *limits):
     """
-    >>> m = Symbol.m(integer=True, positive=True)
-    >>> n = Symbol.n(integer=True, positive=True)
-    >>> d = Symbol.d(integer=True, positive=True)
-    >>> x = Symbol.x(real=True, shape=(m, n, d))
+    >>> m = Symbol(integer=True, positive=True)
+    >>> n = Symbol(integer=True, positive=True)
+    >>> d = Symbol(integer=True, positive=True)
+    >>> x = Symbol(real=True, shape=(m, n, d))
     >>> d_ = Symbol("d'", integer=True, positive=True)
-    >>> l = Symbol.l(integer=True, positive=True)
-    >>> w = Symbol.w(real=True, shape=(l, d, d_))
-    >>> r = Symbol.r(integer=True, positive=True)
+    >>> l = Symbol(integer=True, positive=True)
+    >>> w = Symbol(real=True, shape=(l, d, d_))
+    >>> r = Symbol(integer=True, positive=True)
     >>> conv1d[r](x, w).this.defun()
     """    
     if limits:
@@ -41,8 +41,8 @@ def conv1d(x, w, *limits):
     assert in_channels == _in_channels
     
     def conv1d(x, w): 
-        i = Symbol.i(integer=True)
-        di = Symbol.d_i(integer=True)
+        i = Symbol(integer=True)
+        di = Symbol('d_i', integer=True)
         
         d0 = initial_offset((r,), w)
         
@@ -52,7 +52,7 @@ def conv1d(x, w, *limits):
             
     if batch_size:
         batch_size = batch_size[0]
-        k = Symbol.k(integer=True)        
+        k = Symbol(integer=True)        
         return Lamda[k:batch_size](conv1d(x[k], w))
     else:
         return conv1d(x, w)    
@@ -73,11 +73,11 @@ def conv2d(x, w, *limits):
     assert in_channels == _in_channels        
     
     def conv2d(x, w):
-        i = Symbol.i(integer=True)
-        di = Symbol.d_i(integer=True)
+        i = Symbol(integer=True)
+        di = Symbol('d_i', integer=True)
         
-        j = Symbol.j(integer=True)
-        dj = Symbol.d_j(integer=True)
+        j = Symbol(integer=True)
+        dj = Symbol('d_j', integer=True)
         
         d0 = initial_offset(r, w, 0)
         d1 = initial_offset(r, w, 1)
@@ -89,7 +89,7 @@ def conv2d(x, w, *limits):
             
     if batch_size:
         batch_size = batch_size[0]
-        k = Symbol.k(integer=True)        
+        k = Symbol(integer=True)        
         return Lamda[k:batch_size](conv2d(x[k], w))
     else:
         return conv2d(x, w)    
@@ -110,14 +110,14 @@ def conv3d(x, w, *limits):
     assert in_channels == _in_channels        
     
     def conv3d(x, w):
-        i = Symbol.i(integer=True)
-        di = Symbol.d_i(integer=True)
+        i = Symbol(integer=True)
+        di = Symbol('d_i', integer=True)
         
-        j = Symbol.j(integer=True)
-        dj = Symbol.d_j(integer=True)
+        j = Symbol(integer=True)
+        dj = Symbol('d_j', integer=True)
         
-        t = Symbol.t(integer=True)
-        dt = Symbol.d_t(integer=True)
+        t = Symbol(integer=True)
+        dt = Symbol('d_t', integer=True)
         
         d0 = initial_offset(r, w, 0)
         d1 = initial_offset(r, w, 1)
@@ -131,7 +131,7 @@ def conv3d(x, w, *limits):
             
     if batch_size:
         batch_size = batch_size[0]
-        k = Symbol.k(integer=True)        
+        k = Symbol(integer=True)        
         return Lamda[k:batch_size](conv3d(x[k], w))
     else:
         return conv3d(x, w)    

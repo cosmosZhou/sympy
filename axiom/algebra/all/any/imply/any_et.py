@@ -15,12 +15,12 @@ def apply(forall, exists):
 
         if domain_f == []:
             domain_f = key.universalSet
-        elif domain_f.is_boolean:
+        elif domain_f.is_bool:
             domain_f = conditionset(key, domain_f)
 
         if domain_e == []:
             domain_e = key.universalSet
-        elif domain_e.is_boolean:
+        elif domain_e.is_bool:
             domain_e = conditionset(key, domain_e)
 
         assert domain_f.is_set

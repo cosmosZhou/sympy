@@ -37,7 +37,7 @@ def of_differentiable(cond, open=True, extended=False):
 
 def is_differentiable(f, a, b, x=None, open=True, plausible=None, extended=False):
     if x is None:
-        x = Symbol.x(real=True)
+        x = Symbol(real=True)
 
     if open:
         left_open = right_open = True

@@ -30,3 +30,6 @@ npm run serve
 npm run dev  
 创建发行版本：  
 npm run build  
+
+disable cache when debugging in Chrome:  
+![debug](js/debug.png)  

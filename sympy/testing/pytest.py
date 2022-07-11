@@ -1,7 +1,5 @@
 """py.test hacks to support XFAIL/XPASS"""
 
-from __future__ import print_function, division
-
 import sys
 import functools
 import os

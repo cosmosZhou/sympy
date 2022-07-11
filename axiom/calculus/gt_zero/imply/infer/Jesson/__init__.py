@@ -9,18 +9,18 @@ def apply(is_positive, x=None, w=None, i=None, n=None):
     domain = x_.domain
     assert domain.left_open and domain.right_open
     if x is None:
-        x = Symbol.x(shape=(oo,), domain=domain)
+        x = Symbol(shape=(oo,), domain=domain)
 
     if w is None:
-        w = Symbol.w(shape=(oo,), nonnegative=True)
+        w = Symbol(shape=(oo,), nonnegative=True)
     else:
         assert w >= 0
 
     if i is None:
-        i = Symbol.i(integer=True)
+        i = Symbol(integer=True)
 
     if n is None:
-        n = Symbol.n(integer=True, positive=True)
+        n = Symbol(integer=True, positive=True)
 
     assert x.domain_assumed == domain
     return Infer(Equal(Sum[i:n](w[i]), 1), GreaterEqual(Sum[i:n](w[i] * fx._subs(x_, x[i])), fx._subs(x_, Sum[i:n](w[i] * x[i]))))

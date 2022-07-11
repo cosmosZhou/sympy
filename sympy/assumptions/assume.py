@@ -1,4 +1,3 @@
-from __future__ import print_function, division
 import inspect
 from sympy.core.cache import cacheit
 from sympy.core.singleton import S
@@ -142,7 +141,7 @@ class Predicate(Boolean):
 
     The tautological predicate ``Q.is_true`` can be used to wrap other objects:
 
-        >>> x = Symbol.x(real=True)
+        >>> x = Symbol(real=True)
         >>> Q.is_true(x > 1)
         Q.is_true(x > 1)
 

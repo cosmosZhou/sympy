@@ -30,7 +30,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.apply(algebra.ne.given.lt)
 
-    j_ = Symbol.j(integer=True, nonnegative=True)
+    j_ = Symbol('j', integer=True, nonnegative=True)
     Eq << Eq[-1].subs(j, j_)
 
     Eq << algebra.infer.imply.all.apply(Eq[-1])

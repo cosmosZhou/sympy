@@ -23,8 +23,6 @@ which case it will just return a Poly in t, or in k(t), in which case it
 will return the fraction (fa, fd). Other variable names probably come
 from the names used in Bronstein's book.
 """
-from __future__ import print_function, division
-
 from sympy import real_roots, default_sort_key
 from sympy.abc import z
 from sympy.core.function import Lambda

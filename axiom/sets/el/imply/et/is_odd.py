@@ -32,7 +32,7 @@ def prove(Eq):
 
     Eq << sets.el.imply.el.mul.range.apply(Eq.contains, 2)
 
-    Eq.greater_than, Eq.less_than = sets.el.imply.et.split.range.apply(Eq[-1], right_open=False)
+    Eq.greater_than, Eq.less_than = sets.el_range.imply.et.apply(Eq[-1], right_open=False)
 
     Eq.strict_greater_than = algebra.ge.imply.gt.relax.apply(Eq.greater_than)
 

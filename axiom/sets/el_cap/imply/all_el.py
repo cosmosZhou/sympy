@@ -28,7 +28,7 @@ def prove(Eq):
     k = Symbol(domain=Range(n))
     Eq << Eq[0].this.rhs.apply(sets.cap.to.intersect.split, {k})
 
-    Eq << sets.el.imply.el.split.intersect.apply(Eq[-1], index=0)
+    Eq << sets.el_intersect.imply.el.apply(Eq[-1], index=0)
 
     Eq << algebra.cond.imply.all.apply(Eq[-1], k)
 

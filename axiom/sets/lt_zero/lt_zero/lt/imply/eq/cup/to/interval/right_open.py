@@ -5,13 +5,13 @@ from util import *
 def apply(a_is_negative, b_is_negative, lt, k=None):
     a = a_is_negative.of(Expr < 0)
     b = b_is_negative.of(Expr < 0)
-    
+
     S[a], S[b] = lt.of(Less)
-    
+
     assert a.is_integer and b.is_integer
     if k is None:
         k = a.generate_var(b.free_symbols, integer=True)
-    
+
     return Equal(Cup[k:a:b](Interval(k, k + 1, right_open=True)), Interval(a, b, right_open=True))
 
 
@@ -56,7 +56,7 @@ def prove(Eq):
 
     Eq << algebra.any.imply.any_et.limits.unleash.apply(Eq[-1], simplify=None)
 
-    Eq << Eq[-1].this.find(Element).apply(sets.el.imply.et.split.range)
+    Eq << Eq[-1].this.find(Element).apply(sets.el_range.imply.et)
 
     Eq << Eq[-1].this.expr.apply(algebra.et.imply.cond, slice(0, 2))
 
@@ -80,8 +80,8 @@ def prove(Eq):
 
     Eq << sets.eq.eq.imply.eq.union.apply(Eq.eq_complement, Eq.is_empty)
 
-    
-    
+
+
 
 
 if __name__ == '__main__':

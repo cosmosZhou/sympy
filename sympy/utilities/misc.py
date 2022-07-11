@@ -1,7 +1,5 @@
 """Miscellaneous stuff that doesn't really fit anywhere else."""
 
-from __future__ import print_function, division
-
 import sys
 import os
 import re as _re
@@ -752,6 +750,17 @@ class Text:
         self.file.truncate()
         self.file.flush()
 
+    def find(self, regex, bool=True):
+        import re
+        for i, line in enumerate(self):
+            if re.match(regex, line):
+                if bool:
+                    return True
+                return i
+        if bool:
+            return False
+        else:
+            return -1
     
 class __LINE__:
 

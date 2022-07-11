@@ -1,7 +1,6 @@
 from util import *
 
 
-
 @apply
 def apply(given):
     return Equal(Bool(given), 1)

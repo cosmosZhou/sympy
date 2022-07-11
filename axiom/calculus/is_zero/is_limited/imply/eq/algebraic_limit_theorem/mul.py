@@ -30,13 +30,13 @@ def prove(Eq):
 
     epsilon = Symbol(real=True, positive=True)
 
-    delta0 = Symbol.δ_0(real=True, positive=True)
+    δ_0 = Symbol(real=True, positive=True)
 
-    Eq << calculus.eq.imply.any_all.limit_definition.apply(Eq[0], epsilon, delta0)
+    Eq << calculus.eq.imply.any_all.limit_definition.apply(Eq[0], epsilon, δ_0)
 
-    delta1 = Symbol.δ_1(real=True, positive=True)
+    δ_1 = Symbol(real=True, positive=True)
 
-    Eq << calculus.is_limited.imply.any_all.le.boundedness.apply(Eq[1], delta=delta1, var='B')
+    Eq << calculus.is_limited.imply.any_all.le.boundedness.apply(Eq[1], delta=δ_1, var='B')
 
     B = Eq[-1].variables[1]
 
@@ -55,7 +55,7 @@ def prove(Eq):
 
     delta = Symbol(real=True, positive=True)
 
-    Eq << algebra.any.imply.any.subs.apply(Eq[-1], Min(delta0, delta1), delta)
+    Eq << algebra.any.imply.any.subs.apply(Eq[-1], Min(δ_0, δ_1), delta)
 
     Eq << calculus.any_all.imply.eq.limit_definition.apply(Eq[-1])
 

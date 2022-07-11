@@ -11,7 +11,7 @@ def apply(n, k, A=None):
         i = Symbol(integer=True)
         s1_quote = Symbol("s'_1", Stirling.conditionset(n, k + 1, x))
         x_quote = Symbol("x'", Lamda[i:k + 1](Piecewise(({n} | x[i], Equal(i, j)), (x[i], True))))
-        A = Symbol(Lamda[j](Cup[x[:k + 1]:s1_quote]({x_quote.set_comprehension()})))
+        A = Symbol(Lamda[j](Cup[x[:k + 1]:s1_quote]({x_quote.cup_finiteset()})))
 
     return Equal(Card(Cup[j](A[j])), Sum[j](Card(A[j])))
 
@@ -97,7 +97,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.expr.apply(sets.eq.imply.supset)
 
-    Eq << Eq[-1].this.expr.apply(sets.supset.imply.all_supset.split.cup)
+    Eq << Eq[-1].this.expr.apply(sets.supset_cup.imply.all_supset)
 
     Eq << Eq[-1].this.expr.subs(Eq[-1].expr.variable, Eq[-1].variable)
 

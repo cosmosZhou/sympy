@@ -744,6 +744,10 @@ class Range(Set):
 
         if self.right_open:
             expr = And(expr, other < self.stop)
+            
+            if self.step != 1:
+                from sympy import Equal
+                expr &= Equal((other - self.start) % self.step, 0)
         else:
             expr = And(expr, other <= self.stop)
 

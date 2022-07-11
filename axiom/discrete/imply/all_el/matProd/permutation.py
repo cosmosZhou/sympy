@@ -8,16 +8,16 @@ def apply(m, d, w=None, x=None):
 
     assert m >= 0
     if w is None:
-        w = Symbol.w(Lamda[j, i](SwapMatrix(n, i, j)))
+        w = Symbol(Lamda[j, i](SwapMatrix(n, i, j)))
     else:
         assert len(w.shape) == 4 and all(s == n for s in w.shape)
         assert w[i, j].is_SwapMatrix or w[i, j].definition.is_SwapMatrix
 
     if x is None:
-        x = Symbol.x(shape=(oo,), integer=True, nonnegative=True)
+        x = Symbol(shape=(oo,), integer=True, nonnegative=True)
     x = x[:n]
 
-    P = Symbol(conditionset(x, Equal(x.set_comprehension(), Range(n))))
+    P = Symbol(conditionset(x, Equal(x.cup_finiteset(), Range(n))))
 
     return All[x:P](Element(x @ MatProduct[i:m](w[i, d[i]]), P))
 

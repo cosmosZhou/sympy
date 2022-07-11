@@ -9,7 +9,7 @@ def apply(given, old, new):
     domain = limits_dict(limits)[old]
     if domain.is_set:
         assert new in domain
-    elif domain.is_boolean:
+    elif domain.is_bool:
         assert domain._subs(old, new)
     else:
         return

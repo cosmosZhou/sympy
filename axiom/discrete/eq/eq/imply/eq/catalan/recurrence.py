@@ -17,8 +17,12 @@ def prove(Eq):
     Eq << apply(Equal(C[0], 1),
                 Equal(C[n + 1], Sum[k:n + 1](C[k] * C[n - k])))
 
+    
+    g = Function(extended_real=True)
+    x = Symbol(real=True)
+    g[x] = Sum[n:oo](C[n] * x ** n)
+    
     x = Symbol(domain=Interval(0, S.One / 4, left_open=True))
-    g = Function(eval=lambda x: Sum[n:oo](C[n] * x ** n))
     Eq.g_definition = g(x).this.defun()
 
     Eq << Eq[1] * x ** n

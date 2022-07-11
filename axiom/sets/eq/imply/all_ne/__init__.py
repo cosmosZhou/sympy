@@ -19,7 +19,7 @@ def prove(Eq):
 
     n = Symbol(integer=True, positive=True, given=True)
     x = Symbol(shape=(oo,), etype=dtype.integer, finiteset=True, given=True)
-    Eq << apply(Equal(Card(x[:n].set_comprehension()), n))
+    Eq << apply(Equal(Card(x[:n].cup_finiteset()), n))
 
     xi = Eq[1].expr.args[0]
     x, i = xi.args

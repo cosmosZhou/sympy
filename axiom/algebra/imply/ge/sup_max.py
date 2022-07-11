@@ -24,7 +24,7 @@ def prove(Eq):
 
     Eq << algebra.all.given.infer.apply(Eq[-1])
 
-    Eq << Eq[-1].this.lhs.apply(algebra.all_le.imply.le_maxima)
+    Eq << Eq[-1].this.lhs.apply(algebra.all_le.imply.le.maxima)
 
 
 if __name__ == '__main__':

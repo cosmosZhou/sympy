@@ -12,13 +12,13 @@ def prove(Eq):
     from axiom import sets
     x = Symbol(etype=dtype.real, shape=(oo, oo))
     i, j, t, a = Symbol(integer=True)
-    m = Symbol(integer=True, positive=True)
 
     f, g = Function(real=True)
     s = Function(etype=dtype.real)
     Eq << apply(Cap[t:i, i:g(i, j) > 0:s(i), j:f(i, j) > 0, i:{a}](x[i, j]))
 
-    u = Function(eval=lambda a: Cap[t:i, i:g(i, j) > 0:s(a), j:f(a, j) > 0](x[i, j]))
+    u = Function(etype=dtype.real)
+    u[a] = Cap[t:i, i:g(i, j) > 0:s(a), j:f(a, j) > 0](x[i, j])
 
     Eq << u(i).this.defun()
 

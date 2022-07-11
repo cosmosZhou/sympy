@@ -17,12 +17,16 @@ def apply(self, offset):
 def prove(Eq):
     from axiom import algebra, calculus
 
-    x, y, a, b, c, d = Symbol(real=True)
-    f, g = Function(real=True, integrable=True)
+    x, a, b, d = Symbol(real=True)
+    f = Function(real=True, integrable=True)
     Eq << apply(Integral[x:a:b](f(x)), d)
 
-    fp = Function("f^+", eval=lambda x : (abs(f(x)) + f(x)) / 2)
-    fn = Function("f^-", eval=lambda x : (abs(f(x)) - f(x)) / 2)
+    fp = Function("f^+", real=True)
+    fp[x] = (abs(f(x)) + f(x)) / 2
+    
+    fn = Function("f^-", real=True)
+    fn[x] = (abs(f(x)) - f(x)) / 2
+    
     Eq << fp(x).this.defun()
 
     Eq << algebra.imply.add_ge_zero.abs.apply(f(x)) / 2

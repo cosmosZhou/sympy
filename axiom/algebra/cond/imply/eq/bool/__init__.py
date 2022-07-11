@@ -4,7 +4,7 @@ from util import *
 
 @apply
 def apply(given):
-    assert given.is_boolean
+    assert given.is_bool
     return Equal(Bool(given), 1)
 
 

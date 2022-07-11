@@ -83,6 +83,21 @@ windows下安装php7.4:
 ![httpd-conf](php/httpd-conf.png)  
 修改后重启wampserver即可。
 
+## curl_init
+
+Call to undefined function curl_init()  
+
+修改D:\wamp64\bin\php\php7.3.5\phpForApache.ini中的  
+;extension=curl  
+将其改为  
+;extension=curl  
+
+观察info.php后发现：  
+cURL support	enabled   
+
+重启apache服务器即可！
+
+
 ## 修改DOCUMENT_ROOT
 
 修改D:\wamp64\scripts\config.inc.php  
@@ -290,3 +305,4 @@ www.axiom.top
 或者
 https://www.axiom.top
 之后可以发现没有“不安全”提示语句了！  
+

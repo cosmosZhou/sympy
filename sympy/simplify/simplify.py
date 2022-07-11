@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from collections import defaultdict
 
 from sympy.core import (Basic, S, Add, Mul, Pow, Symbol, sympify, expand_mul,

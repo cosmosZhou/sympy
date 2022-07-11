@@ -19,7 +19,7 @@ def prove(Eq):
 
     Eq << sets.el.imply.el.neg.apply(Eq[-1])
 
-    Eq << sets.el.imply.et.split.interval.apply(Eq[-1])
+    Eq << sets.el_interval.imply.et.apply(Eq[-1])
 
     Eq <<= algebra.lt.imply.lt.floor.apply(Eq[-1]), algebra.gt.imply.ge.floor.apply(Eq[-2])
 

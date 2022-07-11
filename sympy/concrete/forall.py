@@ -27,7 +27,7 @@ class ForAll(Quantifier):
                         domain = ab[0]
                         if domain.is_set:
                             eqs.append(Equal(domain, domain.etype.emptySet))
-                        elif domain.is_boolean:
+                        elif domain.is_bool:
                             eqs.append(domain.invert())
                 if eqs:
                     return And(*eqs, **assumptions)

@@ -3,8 +3,6 @@ This module can be used to solve 2D beam bending problems with
 singularity functions in mechanics.
 """
 
-from __future__ import print_function, division
-
 from sympy.core import S, Symbol, diff, symbols
 from sympy.solvers import linsolve
 from sympy.printing import sstr

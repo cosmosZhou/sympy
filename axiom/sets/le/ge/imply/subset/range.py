@@ -21,11 +21,11 @@ def prove(Eq):
 
     Eq << ~Eq[-1]
 
-    Eq << Eq[-1].this.expr.apply(sets.notin.imply.ou.split.range)
+    Eq << Eq[-1].this.expr.apply(sets.notin_range.imply.ou)
 
     Eq << algebra.any.imply.any_et.limits.single_variable.apply(Eq[-1], simplify=None)
 
-    Eq << Eq[-1].this.expr.args[1].apply(sets.el.imply.et.split.range)
+    Eq << Eq[-1].this.expr.args[1].apply(sets.el_range.imply.et)
 
     #if self implies a False proposition, then self must be False
     Eq << Eq[-1].this.expr.apply(algebra.cond.cond.ou.given.ou, simplify=False)

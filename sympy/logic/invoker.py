@@ -60,7 +60,8 @@ class Invoker:
         
     def result(self, obj, simplify=True, evaluate=None):
         assumptions = {self.determine_assumptions(obj): self.source}
-
+        from sympy.core.sympify import _sympify        
+        obj = _sympify(obj)
         for i in range(-1, -len(self.index) - 1, -1):
             this = self._objs[i - 1]
             args = [*this.args]
@@ -191,9 +192,10 @@ class Invoker:
                         domain &= _domain
                             
                     _x = x.copy(domain=domain)
-                    this = this._subs(x, _x).simplify()
-                    reps.append((x, _x))
-                    outer_context[x] = (_x, domain)
+                    if x != _x:
+                        this = this._subs(x, _x).simplify()
+                        reps.append((x, _x))
+                        outer_context[x] = (_x, domain)
             
             obj = getattr(this, self.callable.__name__)(*args, **kwargs)
             if obj.is_BooleanAtom:
@@ -202,7 +204,7 @@ class Invoker:
             reps.reverse()
             for x, _x in reps:
                 _obj = obj._subs(_x, x)
-                if obj.is_boolean:
+                if obj.is_bool:
                     if _obj.is_BooleanAtom:
                         _obj = _obj.copy(equivalent=obj)
                 obj = _obj                    
@@ -477,14 +479,16 @@ class Invoker:
 
 class Identity(Invoker):
 
-    def result(self, obj): 
+    def result(self, obj, simplify=True): 
         from sympy import Equal
         
         for i in range(-1, -len(self.index) - 1, -1):
             this = self._objs[i - 1]
             args = [*this.args]
             args[self.index[i]] = obj
-            obj = this.func(*args, **this.kwargs).simplify()            
+            obj = this.func(*args, **this.kwargs)
+            if simplify:
+                obj = obj.simplify()
 
         return Equal(self.source, obj, evaluate=False, plausible=None)            
         
@@ -499,13 +503,11 @@ class Identity(Invoker):
                     (x, *_), *_ = this.limits
                     # domain might be different!
                     assert args[0].name == x.name
-#             elif self.obj.__self__.is_Quantifier:
-#                 ...
             else: 
                 assert all(arg.is_Equal and arg.plausible is None for arg in args)                
                 args = map(lambda inf: inf.cond, args)
 
         obj = self.invoke(*args, **kwargs)
         
-        return self.result(obj)
+        return self.result(obj, simplify=kwargs.get('simplify', True) is not None)
 

@@ -20,9 +20,10 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.args[1].expr.apply(calculus.integral.to.piece.st.interval)
 
-    Eq << Eq[-1].this.rhs.args[0].expr.apply(algebra.mul_piece.to.piece)
+    Eq << Eq[-1].this.find(-Piecewise).apply(algebra.mul.to.piece)
 
     Eq << Eq[-1].this.rhs.apply(algebra.piece.flatten)
+
     Eq << Eq[-1].this.rhs.args[1].cond.reversed
 
     Eq << Eq[-1].this.rhs.args[0].expr.apply(calculus.neg.to.integral)
@@ -33,6 +34,8 @@ def prove(Eq):
 
     Eq << Eq[-1].this.args[0].apply(algebra.et.given.et.subs.eq)
 
+    
+
 
 if __name__ == '__main__':
     run()
@@ -40,3 +43,4 @@ if __name__ == '__main__':
 
 from . import st
 # created on 2020-05-24
+# updated on 2022-01-23

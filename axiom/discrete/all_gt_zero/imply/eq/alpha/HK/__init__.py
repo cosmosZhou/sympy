@@ -47,7 +47,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.rhs.expand()
 
-    n_ = Symbol.n(domain=Range(3, oo))
+    n_ = Symbol('n', domain=Range(3, oo))
     Eq << discrete.imply.infer.alpha.HK.apply(x[:n_], wrt=j)
 
     Eq << Eq[0].subs(n, n_)

@@ -33,8 +33,8 @@ def prove(Eq):
     Eq <<= Eq[-2].this.lhs.args[1].apply(algebra.any_et.imply.any.limits_absorb, index=0), \
     Eq[-1].this.rhs.args[1].apply(algebra.any_et.given.any.limits_absorb, index=0)
 
-    Eq <<= Eq[-2].this.rhs.apply(sets.el.given.ou.split.union, simplify=None), \
-    Eq[-1].this.lhs.apply(sets.el.imply.ou.split.union, simplify=None)
+    Eq <<= Eq[-2].this.rhs.apply(sets.el_union.given.ou, simplify=None), \
+    Eq[-1].this.lhs.apply(sets.el_union.imply.ou, simplify=None)
 
     Eq <<= Eq[-2].this.rhs.find(Element).apply(sets.el_cup.given.any_el), \
     Eq[-1].this.lhs.find(Element).apply(sets.el_cup.imply.any_el)

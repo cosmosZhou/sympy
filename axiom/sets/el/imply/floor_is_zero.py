@@ -15,7 +15,7 @@ def prove(Eq):
     x = Symbol(real=True)
     Eq << apply(Element(x, Interval(0, 1, right_open=True)))
 
-    Eq << sets.el.imply.et.split.interval.apply(Eq[0])
+    Eq << sets.el_interval.imply.et.apply(Eq[0])
     Eq << algebra.ge_zero.lt.imply.floor_is_zero.apply(Eq[-2], Eq[-1])
 
 

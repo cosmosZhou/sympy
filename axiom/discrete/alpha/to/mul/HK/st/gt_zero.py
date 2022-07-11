@@ -28,7 +28,7 @@ def prove(Eq):
 
     Eq << Eq.n2.this.apply(algebra.infer.to.all)
 
-    _n = Symbol.n(domain=Range(2, oo))
+    _n = Symbol('n', domain=Range(2, oo))
 
     Eq << discrete.alpha.to.mul.HK.induct.apply(alpha(x[:_n + 1]))
 

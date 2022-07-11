@@ -20,9 +20,9 @@ def prove(Eq):
     a, b, c, x, y = Symbol(integer=True, given=True)
     Eq << apply(Element(x, Interval(a, b, left_open=True)), Element(y, Interval(b, c)))
 
-    Eq << sets.el.imply.et.split.interval.apply(Eq[0])
+    Eq << sets.el_interval.imply.et.apply(Eq[0])
 
-    Eq << sets.el.imply.et.split.interval.apply(Eq[1])
+    Eq << sets.el_interval.imply.et.apply(Eq[1])
 
     Eq << algebra.le.ge.imply.le.transit.apply(Eq[-3], Eq[-2])
 

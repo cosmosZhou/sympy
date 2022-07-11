@@ -7,7 +7,7 @@ def apply(eq_cup, subset, Q, K, V, K_quote, V_quote):
     (d, j), j_limit = cup.of(Cup[FiniteSet[Indexed]])
     S[j], S[0], S[m] = j_limit
     n, d_z = Q.shape
-    S[cup], (S[0], S[n]) = subset.of(Subset[Expr, Range])     
+    S[cup], (S[0], S[n]) = subset.of(Subset[Expr, Range])
     return Equal(softmax(Q @ (K + K_quote).T / sqrt(d_z) + (Lamda[j:n](Bool(Element(j, cup))) - OneMatrix(n, n)) * oo) @ (V + V_quote), \
                  softmax(Q @ (Lamda[j:m](K[d[j]]).T + Transpose[1, 2](Lamda[j:m](K_quote[:, d[j]]))) / sqrt(d_z)) @ (Lamda[j:m](V[d[j]]) + Transpose[1](Lamda[j:m](V_quote[:, d[j]]))))
 
@@ -27,7 +27,7 @@ def prove(Eq):
     i, j = Symbol(integer=True)
     K_quote = Symbol(shape=(n, n, d_z), real=True)
     V_quote = Symbol(shape=(n, n, d_z), real=True)
-    s = d[:m].set_comprehension(j)
+    s = d[:m].cup_finiteset(j)
     Eq << apply(
         Equal(Card(s), m),
         Subset(s, Range(n)),
@@ -46,7 +46,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.subs(Eq.Xi_def.reversed, Eq.a_def[i].reversed)
 
-    Eq << Eq[-1].this.find(softmax).apply(keras.softmax.to.mul)
+    Eq << Eq[-1].this.find(softmax).apply(keras.softmax.to.mul.reducedSum)
 
     Eq << keras.imply.eq.bert.mask.theorem.apply(a[i], Xi, add=True)
 
@@ -128,7 +128,7 @@ def prove(Eq):
     Eq << Eq[-1].this.find(Lamda[Tuple[2]]).apply(algebra.lamda.to.transpose, axis=1)
 
     Eq << algebra.eq.eq.imply.eq.transit.apply(Eq.z_def, Eq[-1])
-    
+
 
 
 if __name__ == '__main__':

@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(self):
-    args = self.of(Determinant[Mul])
+    args = self.of(Det[Mul])
     scalar = []
     matrix = []
     for arg in args:
@@ -25,10 +25,12 @@ def prove(Eq):
     n = Symbol(integer=True, positive=True)
     X = Symbol(shape=(n, n), complex=True)
     a = Symbol(complex=True)
-    Eq << apply(Determinant(a * X))
+    Eq << apply(Det(a * X))
 
-    f = Function(complex=True, eval=lambda i: a)
     i = Symbol(integer=True)
+    f = Function(complex=True)
+    f[i] = a
+    
     Eq << (X * Lamda[i:n](f(i))).this.find(f).defun()
 
     Eq << Eq[0].subs(Eq[-1].reversed)

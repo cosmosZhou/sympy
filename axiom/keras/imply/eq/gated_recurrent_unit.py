@@ -7,20 +7,20 @@ def apply(x, Wx, Wh, b):
     t = Symbol(integer=True, positive=True)
 
     d = h[t - 1].shape[-1]
-    Wxz = Symbol.W_xz(Wx[:,:d])
-    Wxr = Symbol.W_xr(Wx[:, d:2 * d])
-    Wxh = Symbol.W_xh(Wx[:, -d:])
+    Wxz = Symbol('W_xz', Wx[:,:d])
+    Wxr = Symbol('W_xr', Wx[:, d:2 * d])
+    Wxh = Symbol('W_xh', Wx[:, -d:])
 
-    Whz = Symbol.W_hz(Wh[:,:d])
-    Whr = Symbol.W_hr(Wh[:, d:2 * d])
-    Whh = Symbol.W_hh(Wh[:, -d:])
+    Whz = Symbol('W_hz', Wh[:,:d])
+    Whr = Symbol('W_hr', Wh[:, d:2 * d])
+    Whh = Symbol('W_hh', Wh[:, -d:])
 
-    bz = Symbol.b_z(b[:d])
-    br = Symbol.b_r(b[d:2 * d])
-    bh = Symbol.b_h(b[-d:])
+    bz = Symbol('b_z', b[:d])
+    br = Symbol('b_r', b[d:2 * d])
+    bh = Symbol('b_h', b[-d:])
 
-    zt = Symbol.z_t(sigmoid(x[t] @ Wxz + h[t - 1] @ Whz + bz))
-    rt = Symbol.r_t(sigmoid(x[t] @ Wxr + h[t - 1] @ Whr + br))
+    zt = Symbol('z_t', sigmoid(x[t] @ Wxz + h[t - 1] @ Whz + bz))
+    rt = Symbol('r_t', sigmoid(x[t] @ Wxr + h[t - 1] @ Whr + br))
     gh = Symbol(r"\tilde{h}_t", tanh(x[t] @ Wxh + (rt * h[t - 1]) @ Whh + bh))
 
     return Equal(h[t], (1 - zt) * gh + zt * h[t - 1])
@@ -30,8 +30,8 @@ def apply(x, Wx, Wh, b):
 def prove(Eq):
     m, n = Symbol(integer=True, positive=True)
 
-    dx = Symbol.d_x(integer=True, positive=True)
-    dh = Symbol.d_h(integer=True, positive=True)
+    dx = Symbol('d_x', integer=True, positive=True)
+    dh = Symbol('d_h', integer=True, positive=True)
 
     x = Symbol(real=True, shape=(n, dx))
     Wx = Symbol("W^x", real=True, shape=(dx, 3 * dh))

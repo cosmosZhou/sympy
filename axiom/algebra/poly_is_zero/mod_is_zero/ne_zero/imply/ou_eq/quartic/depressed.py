@@ -68,7 +68,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.apply(algebra.eq.simplify.terms.common)
 
-    Eq.eq = Eq[-1].this.apply(algebra.eq.transposition, lhs=slice(0, 3))
+    Eq.eq = Eq[-1].this.apply(algebra.eq.transport, lhs=slice(0, 3))
 
     Eq << Equal(Eq[-1].rhs, 0).this.apply(algebra.poly_is_zero.imply.et.infer.quadratic, x)
 

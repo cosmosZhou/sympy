@@ -1,7 +1,5 @@
 """Algorithms for computing symbolic roots of polynomials. """
 
-from __future__ import print_function, division
-
 import math
 
 from sympy.core import S, I, pi

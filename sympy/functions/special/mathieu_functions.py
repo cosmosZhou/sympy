@@ -1,8 +1,6 @@
 """ This module contains the Mathieu functions.
 """
 
-from __future__ import print_function, division
-
 from sympy.core import S
 from sympy.core.function import Function, ArgumentIndexError
 from sympy.core.power import sqrt

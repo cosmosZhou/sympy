@@ -28,7 +28,7 @@ def prove(Eq):
 
     Eq << Eq[-1].apply(algebra.infer.given.all)
 
-    n_ = Symbol.n(integer=True, positive=True)
+    n_ = Symbol('n', integer=True, positive=True)
     Eq << algebra.all.given.cond.subs.apply(Eq[-1], Eq[-1].variable, n_)
 
     Eq << Eq[-1].this.lhs.apply(discrete.binom.to.mul)

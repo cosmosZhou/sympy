@@ -5,7 +5,7 @@ from util import *
 def apply(n):
     assert n > 0
     x = Symbol(integer=True, nonnegative=True, shape=(oo,))
-    P = Symbol("P", conditionset(x[:n], Equal(x[:n].set_comprehension(), Range(n))))
+    P = Symbol("P", conditionset(x[:n], Equal(x[:n].cup_finiteset(), Range(n))))
     return Unequal(P, P.etype.emptySet)
 
 
@@ -32,7 +32,7 @@ def prove(Eq):
     Eq << Eq[-1].this.lhs.simplify()
 
     Eq << algebra.all.given.infer.apply(Eq[-2])
-    Eq << Eq[-1].this.lhs.apply(sets.el.imply.ge.split.range)
+    Eq << Eq[-1].this.lhs.apply(sets.el_range.imply.ge)
 
 
 if __name__ == '__main__':

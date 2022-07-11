@@ -36,7 +36,7 @@ def prove(Eq):
 
     Eq << algebra.all.given.ou.apply(Eq[1])
 
-    Eq << Eq[-1].this.find(NotElement).apply(sets.notin.given.ou.split.intersect, simplify=None)
+    Eq << Eq[-1].this.find(NotElement).apply(sets.notin_intersect.given.ou, simplify=None)
 
     Eq << Eq[-1].this.find(NotElement).apply(sets.notin.given.le.real, simplify=None)
 

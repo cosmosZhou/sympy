@@ -26,7 +26,7 @@ def prove(Eq):
 
     Eq << algebra.cond.imply.et.infer.split.apply(Eq[0], cond=Equal(a, 0))
 
-    Eq <<= algebra.infer.imply.infer.et.apply(Eq[-2]), Eq[-1].this.rhs.apply(algebra.eq.transposition, lhs=0)
+    Eq <<= algebra.infer.imply.infer.et.apply(Eq[-2]), Eq[-1].this.rhs.apply(algebra.eq.transport, lhs=0)
 
     Eq <<= Eq[-2].this.rhs.apply(algebra.eq.cond.imply.cond.subs), algebra.infer.imply.infer.et.apply(Eq[-1])
 

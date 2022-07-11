@@ -15,7 +15,7 @@ def prove(Eq):
     x = Symbol(complex=True)
     Eq << apply(x < 0)
 
-    Eq << sets.el.imply.lt.split.interval.apply(Eq[1])
+    Eq << sets.el_interval.imply.lt.apply(Eq[1])
 
 
 

@@ -22,7 +22,7 @@ def prove(Eq):
     x = Eq[1].variable
     Eq << algebra.any.given.cond.subs.apply(Eq[1], x, b - 1)
 
-    Eq << sets.el.given.et.split.range.apply(Eq[-1])
+    Eq << sets.el_range.given.et.apply(Eq[-1])
     Eq << Eq[-1].reversed
 
 

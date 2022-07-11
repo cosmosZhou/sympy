@@ -5,7 +5,7 @@ from util import *
 def apply(given):
     x, y = given.of(Equal)
 
-    return Equal(x - y, 0)
+    return Equal(x - y, ZeroMatrix(*x.shape))
 
 
 @prove
@@ -16,7 +16,10 @@ def prove(Eq):
 
     Eq << Eq[1] + b
 
+    
+
 
 if __name__ == '__main__':
     run()
 # created on 2018-05-09
+# updated on 2022-07-02

@@ -18,14 +18,14 @@ def limits_absorb(given, index):
         if ab:
             if len(ab) == 1:
                 cond, *_ = ab
-                if cond.is_boolean:
+                if cond.is_bool:
                     eq &= cond
                 else:
                     eq &= Element(wrt, cond)
             else:
                 assert len(ab) == 2
                 a, b = ab
-                if a.is_boolean:
+                if a.is_bool:
                     eq &= a & Element(wrt, b)
                 else:
                     eq &= Element(wrt, (Range if wrt.is_integer else Interval)(a, b))
@@ -50,7 +50,7 @@ def limits_absorb(given, index):
             limit_a, *limit_b = limits
             if len(limit_a) == 2:
                 a, fa = limit_a
-                if fa.is_boolean:
+                if fa.is_bool:
                     limit_a = (a, fa & eq)
                     limits[0] = limit_a
                 else:

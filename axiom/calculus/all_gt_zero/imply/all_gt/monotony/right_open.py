@@ -44,7 +44,7 @@ def prove(Eq):
 
     Eq << algebra.any.imply.any_et.limits.cond.apply(Eq[-1], simplify=None)
 
-    Eq << Eq[-1].this.find(Element).apply(sets.el.imply.gt.split.interval)
+    Eq << Eq[-1].this.find(Element).apply(sets.el_interval.imply.gt)
 
     eta = Symbol(real=True, positive=True)
     Eq << Eq[-1].this.find(Greater).apply(algebra.gt_zero.imply.any_gt, var=eta)

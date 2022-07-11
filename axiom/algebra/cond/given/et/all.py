@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given, *, cond=None, wrt=None):
-    assert cond.is_boolean
+    assert cond.is_bool
 
     if wrt is None:
         wrt = cond.wrt

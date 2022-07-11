@@ -1,15 +1,17 @@
 from util import *
 
 
+def interval_is_negative(interval):
+    if interval.is_Interval:
+        if interval.right_open:
+            return interval.stop <= 0
+        else:
+            return interval.stop < 0
+
 @apply
 def apply(given):
     x, domain = given.of(Element)
-    a, b = domain.of(Interval)
-    if domain.right_open:
-        assert b <= 0
-    else:
-        assert b < 0
-
+    assert interval_is_negative(domain)    
     return Element(1 / x, Interval(-oo, 0, right_open=True))
 
 
@@ -32,7 +34,10 @@ def prove(Eq):
 
     Eq << Eq[-1].this.expr.apply(algebra.eq.cond.imply.cond.subs, reverse=True)
 
+    
+
 
 if __name__ == '__main__':
     run()
 # created on 2020-04-13
+# updated on 2022-04-03

@@ -6,7 +6,7 @@ def apply(n, k, s0=None, B=None):
     from sympy.functions.combinatorial.numbers import Stirling
     if s0 is None:
         x = Symbol(shape=(oo,), etype=dtype.integer, finiteset=True)
-        s0 = Symbol(Cup[x[:k]:Stirling.conditionset(n, k, x)](x[:k].set_comprehension().set))
+        s0 = Symbol(Cup[x[:k]:Stirling.conditionset(n, k, x)](x[:k].cup_finiteset().set))
     if B is None:
         e = Symbol(**s0.etype.dict)
         assert e.is_extended_real
@@ -24,7 +24,7 @@ def prove(Eq):
     Eq << apply(n, k)
 
     s0 = Eq[0].lhs
-    s0_quote = Symbol.s_quote_0(conditionset(Eq[0].rhs.variable, Eq[0].rhs.limits[0][1]))
+    s0_quote = Symbol('s_quote_0', conditionset(Eq[0].rhs.variable, Eq[0].rhs.limits[0][1]))
     Eq << s0_quote.this.definition
 
     Eq.s0_definition = imageset(Eq[0].rhs.variable, Eq[0].rhs.expr.arg, s0_quote).this.subs(Eq[-1]).subs(Eq[0].reversed).reversed

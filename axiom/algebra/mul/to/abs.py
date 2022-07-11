@@ -39,7 +39,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.args[0].cond.apply(algebra.et.to.ou)
 
-    Eq << Eq[-1].this.lhs.args[0].expr.apply(algebra.mul.to.piece)
+    Eq << Eq[-1].this.lhs.args[0].expr.apply(algebra.mul.to.piece.et.ne_zero)
 
     Eq << Eq[-1].this.lhs.apply(algebra.piece.flatten, index=0)
 
@@ -49,7 +49,7 @@ def prove(Eq):
 
     Eq.equal = Eq[-1].this.lhs.args[1].cond.apply(algebra.et.to.ou)
 
-    
+
 
     Eq.suffice = Infer(Eq.equal.lhs.args[1].cond, Equal(x * y, 0), plausible=True)
 
@@ -87,8 +87,8 @@ def prove(Eq):
 
     Eq << algebra.iff.imply.eq.subs.apply(Eq.equivalent, Eq.equal.lhs)
 
-    
-    
+
+
 
 
 if __name__ == '__main__':

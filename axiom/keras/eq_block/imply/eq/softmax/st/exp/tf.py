@@ -71,7 +71,7 @@ def prove(Eq):
     i = Eq[1].find(Lamda).variable
     Eq << Eq[-1][i]
 
-    Eq << Eq[-1].this.rhs.apply(keras.softmax.to.mul)
+    Eq << Eq[-1].this.rhs.apply(keras.softmax.to.mul.reducedSum)
 
     Eq.zi_def = Eq[-1].this.rhs.subs(Eq.a_quote_exp[i])
 
@@ -100,7 +100,7 @@ def prove(Eq):
     j = Eq.ksi_def.rhs.variable
     Eq << Eq[-1][j]
 
-    Eq.zij_def = Eq[-1].this.find(Mul).apply(algebra.mul_piece.to.piece)
+    Eq.zij_def = Eq[-1].this.find(Mul).apply(algebra.mul.to.piece)
 
     z_dquote = Symbol('z^\"', Eq[1].rhs)
     Eq.z_dquote_def = z_dquote.this.definition
@@ -155,11 +155,11 @@ def prove(Eq):
 
     Eq << algebra.eq.eq.imply.eq.transit.apply(Eq.z_def, Eq[-1])
 
-    
-    
+
+
 
 
 if __name__ == '__main__':
     run()
 # created on 2022-01-01
-# updated on 2022-01-13
+# updated on 2022-01-23

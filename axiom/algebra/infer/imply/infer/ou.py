@@ -11,12 +11,9 @@ def apply(given, *, cond=None):
 @prove
 def prove(Eq):
     from axiom import algebra
-    f, g = Function(integer=True)
 
-    a, b, x, y = Symbol(integer=True)
-
-
-    Eq << apply(Infer(a > b, f(a) > g(b)), cond=x > y)
+    p, q, r = Symbol(bool=True)
+    Eq << apply(Infer(p, q), cond=r)
 
     Eq << algebra.infer.imply.ou.apply(Eq[0])
 
@@ -24,9 +21,13 @@ def prove(Eq):
 
     Eq << algebra.ou.given.et.apply(Eq[-1])
 
-    Eq << algebra.ou.given.ou.apply(Eq[-1], slice(0, 2))
+    Eq << algebra.ou.given.ou.apply(Eq[-1], slice(0, 3, 2))
+
+    
+    
 
 
 if __name__ == '__main__':
     run()
 # created on 2019-10-05
+# updated on 2022-01-27

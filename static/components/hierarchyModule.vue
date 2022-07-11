@@ -1,94 +1,108 @@
 <template>
 	<li :style=li_style>
-   		<search-link :module=module></search-link>
+   		<searchLink :module=module></searchLink>
    		<template v-if=modules>
    			<button class=transparent @click=click :title=buttonTitle>{{buttonText}}</button>
    		 	<ul v-if=show>
-   	 			<hierarchyModule ref=module v-for="module of modules" :module=module></hierarchyModule>
+   	 			<hierarchyModule v-for="module, i of modules" :module=module :ref="el => children[i] = el"></hierarchyModule>
    			</ul>
 		</template>				
     </li>
 </template>
 
 <script>
-	console.log('importing hierarchyModule.vue');
-	
-	import searchLink from "./searchLink.vue"
-	
-	export default {
-		components : {searchLink},
-		
-		props : {
-			module: null,
-			show:{
-				default: false,
-			}
-		},
-		
-		data(){
-			return {
-				backgroundColor: 'inherit',
-			};
-		},
+console.log('importing hierarchyModule.vue');
 
-		created(){
+import searchLink from "./searchLink.vue"
+
+export default {
+	components : {searchLink},
+	
+	props : ['module'],
+	
+	data(){
+		return {
+			backgroundColor: 'inherit',
+			show: false,
+			children: [],
+		};
+	},
+
+	created(){
+		var root = this.$root;
+		if (root.deep){
+			this.show = true;
+		}
+		else if (root.traceback){
+			if (this.module == root.traceback.back()){
+				this.show = false;
+				this.backgroundColor = 'yellow';
+			}
+			else {
+				if (this.module == root.traceback[this.depth]){
+					this.show = true;
+				}
+			}
+		}			
+	},
+	
+	computed: {
+		deep: {
+			/*get(){
+				return 0;	
+			},*/
+			
+			set(deep){
+				if (deep){
+					this.show = true;
+					this.$nextTick(()=>{
+						for (var child of this.children){
+							child.deep = true;
+						}
+					})
+				}
+			},
+		},
+		
+		li_style(){
+			return `background-color:${this.backgroundColor}`;	
+		},
+		
+		depth(){
+			var depth = -1;
 			var root = this.$root;
-			if (root.deep){
-				this.show = true;
+			var parent = this.$parent;
+			for (;;){
+				if (parent === root)
+					break;
+
+				++depth;
+				parent = parent.$parent;
 			}
-			else if (root.traceback){
-				if (this.module == root.traceback.back()){
-					this.show = false;
-					this.backgroundColor = 'yellow';
-				}
-				else {
-					if (this.module == root.traceback[this.depth]){
-						this.show = true;
-					}
-				}
-			}			
+			
+			return depth;
 		},
 		
-		computed: {
-			li_style(){
-				return `background-color:${this.backgroundColor}`;	
-			},
-			
-			depth(){
-				var depth = -1;
-				var root = this.$root;
-				var parent = this.$parent;
-				for (;;){
-					if (parent === root)
-						break;
-
-					++depth;
-					parent = parent.$parent;
-				}
-				
-				return depth;
-			},
-			
-			buttonText(){
-				return this.show? '<<<<' : '>>>>';
-			},
-			
-			buttonTitle(){
-				return this.show? 'click to collapse' : 'click to expand';
-			},
-
-			modules(){
-				return this.$root.graph[this.module];
-			},
+		buttonText(){
+			return this.show? '<<<<' : '>>>>';
 		},
 		
-		methods: {
-			click(event) {
-				this.show = !this.show;
-			},	
-			
+		buttonTitle(){
+			return this.show? 'click to collapse' : 'click to expand';
 		},
-	};
+
+		modules(){
+			return this.$root.graph[this.module];
+		},
+	},
+	
+	methods: {
+		click(event) {
+			this.show = !this.show;
+		},	
+		
+	},
+};
 </script>
 
 <style scoped>

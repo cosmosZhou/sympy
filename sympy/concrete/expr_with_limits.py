@@ -285,7 +285,7 @@ class ExprWithLimits(Expr):
                                     sym = (x, domain.condition)
                                 else:
                                     sym = (x, domain.condition, domain.base_set)
-                        elif domain.is_boolean:
+                        elif domain.is_bool:
                             if domain.is_BinaryCondition:
                                 if domain.lhs == x:
                                     if domain.is_GreaterEqual:
@@ -345,13 +345,13 @@ class ExprWithLimits(Expr):
                                 return cls.identity(function)
                         
                     elif len(sym) == 3:
-                        if x.is_Symbol and x.is_bounded and not ab[0].is_boolean:
+                        if x.is_Symbol and x.is_bounded and not ab[0].is_bool:
                             _x = x.unbounded
                             function = function._subs(x, _x)
                             sym = (_x, *ab)
                             
                         a, b = ab
-                        if a.is_boolean:
+                        if a.is_bool:
                             if a:
                                 if b.is_Range and x.is_integer:
                                     if b.is_UniversalSet:
@@ -528,7 +528,7 @@ class ExprWithLimits(Expr):
             
             for c in ab:
                 symbols = c.free_symbols
-                if c.is_boolean:
+                if c.is_bool:
                     symbols -= {var for var in symbols if var._has(x)}
                 
                 isyms.update(symbols)
@@ -680,7 +680,7 @@ class ExprWithLimits(Expr):
                 limits[index] = (new,)
             elif len(domain) == 1:
                 domain = domain[0]
-                if domain.is_boolean:
+                if domain.is_bool:
                     domain = domain._subs(x, new)
                 limits[index] = (new, domain)
             elif not domain:
@@ -786,7 +786,7 @@ class ExprWithLimits(Expr):
                     function = self.expr._subs(old, new)
                     if len(domain) == 2:
                         a, b = domain
-                        if a.is_boolean:
+                        if a.is_bool:
                             cond, baseset = domain
                             assert baseset.is_set
                             cond = cond._subs(old, new)                            
@@ -797,7 +797,7 @@ class ExprWithLimits(Expr):
                             self = self.func(function, (x, cond))
                     elif len(domain) == 1:
                         cond = domain[0]
-                        if cond.is_boolean:
+                        if cond.is_bool:
                             cond = cond._subs(old, new)
                             self = self.func(function, (x, cond))
                             
@@ -816,7 +816,7 @@ class ExprWithLimits(Expr):
                         self = self.func(function, (x, a + diff, b + diff))
                     elif len(domain) == 1:
                         cond = domain[0]
-                        assert cond.is_boolean
+                        assert cond.is_bool
                         cond = cond._subs(x, x - diff)
                         self = self.func(function, (x, cond))
                     else:
@@ -973,7 +973,7 @@ class ExprWithLimits(Expr):
                 
                 limit = self.limits[i]
                 
-                if len(limit) <= 1 or not limit[1].is_boolean:
+                if len(limit) <= 1 or not limit[1].is_bool:
                     _limit = limit._subs_limits(old, new)
                     if _limit != limit:
                         limits[i] = _limit
@@ -1035,7 +1035,7 @@ class ExprWithLimits(Expr):
                 
                 limit = self.limits[i]
                 
-                if len(limit) and limit[1].is_boolean:
+                if len(limit) and limit[1].is_bool:
                     ...
                 else:
                     _limit = limit._subs_limits(old, new)
@@ -1089,7 +1089,7 @@ class ExprWithLimits(Expr):
         for i, arg in enumerate(args):
             if not hasattr(arg, '_eval_subs'):
                 continue
-            arg = arg._subs(old, new)    
+            arg = arg._subs(old, new)
             if not _aresame(arg, args[i]):
                 hit = True
                 args[i] = arg
@@ -1308,7 +1308,7 @@ class ExprWithLimits(Expr):
             for key in dic_original.keys() - dic.keys():
                 del limits[[x for x, *_ in limits].index(key)]
 
-            if self.is_boolean:
+            if self.is_bool:
                 kwargs = {'equivalent': self}
             else:
                 kwargs = {}
@@ -1425,7 +1425,7 @@ class AddWithLimits(ExprWithLimits):
     def _eval_is_extended_real(self):
         function = self.expr                
         for x, domain in self.limits_dict.items():
-            if not isinstance(domain, list) and not domain.is_boolean and not x.shape:
+            if not isinstance(domain, list) and not domain.is_bool and not x.shape:
                 _x = x.copy(domain=domain)
                 if _x != x:
                     function = function._subs(x, _x)
@@ -1435,7 +1435,7 @@ class AddWithLimits(ExprWithLimits):
     def _eval_is_extended_positive(self):
         function = self.expr                
         for x, domain in self.limits_dict.items():
-            if not isinstance(domain, list) and not domain.is_boolean and not x.shape:
+            if not isinstance(domain, list) and not domain.is_bool and not x.shape:
                 _x = x.copy(domain=domain)
                 if _x != x:
                     function = function._subs(x, _x)
@@ -1444,7 +1444,7 @@ class AddWithLimits(ExprWithLimits):
     def _eval_is_extended_negative(self):
         function = self.expr                
         for x, domain in self.limits_dict.items():
-            if not isinstance(domain, list) and not domain.is_boolean and not x.shape:
+            if not isinstance(domain, list) and not domain.is_bool and not x.shape:
                 _x = x.copy(domain=domain)
                 if _x != x:
                     function = function._subs(x, _x)
@@ -1987,7 +1987,7 @@ class INFSUPBase(ExprWithLimits):
                     for x, *ab in self.limits:
                         if len(ab) == 2:
                             a, b = ab
-                            if a.is_boolean:
+                            if a.is_bool:
                                 conds.append(Unequal(b, x.emptySet))
                                 conds.append(a.invert())
                             else:
@@ -2264,9 +2264,9 @@ Inf.reversed_type = Sup
 
 class Lamda(ExprWithLimits):
     r"""Represents unevaluated Lamda operator.
-    >>> n = Symbol.n(integer=True, positive=True)
-    >>> A = Symbol.A(shape=(n, n), real=True)
-    >>> B = Symbol.B(shape=(n, n), real=True)
+    >>> n = Symbol(integer=True, positive=True)
+    >>> A = Symbol(shape=(n, n), real=True)
+    >>> B = Symbol(shape=(n, n), real=True)
     >>> discrete.matmul.to.lamda.apply(A @ B)
     """
     
@@ -2322,7 +2322,7 @@ class Lamda(ExprWithLimits):
         array = []
         for i in range(diff):
             array.append(function._subs(x, sympify(i)))
-        return BlockMatrix(*array)
+        return BlockMatrix(array)
 
     def as_coeff_mmul(self):
         return 1, self
@@ -2475,13 +2475,13 @@ class Lamda(ExprWithLimits):
                     limits = [*self.limits]
                     del limits[i]
                     if limits:
-                        return self.func(function, *limits).simplify()
+                        return self.func(function, *limits).simplify(squeeze=squeeze)
                     return function
                 if not a.is_zero: 
                     function = self.expr._subs(x, x + a)
                     limits = [*self.limits]
                     limits[i] = (x, 0, b - a)
-                    return self.func(function, *limits).simplify()
+                    return self.func(function, *limits).simplify(squeeze=squeeze)
         
         if len(self.limits) > 1:
             this = self.func(self.expr, self.limits[0])
@@ -2640,32 +2640,33 @@ class Lamda(ExprWithLimits):
                             
                 
             except ValueError:
-                index = expr.args[-1]
-                # index = step * var + start
-                start, step = index.of_simple_poly(var)
-                if step == 1:
-                    _, *ab = self.limits[0]
-                    if ab:
-                        if len(ab) == 2:
-                            zero, shape = ab
-                            assert zero.is_zero
-                            return expr.base[indices[:-1]][start:shape + start], None
-                        else:
-                            [domain] = ab
-                            zero, shape, step = domain.args
-                            return expr.base[indices[:-1]][start:shape + start:step], None
-                elif step:
-                    _, *ab = self.limits[0]
-                    if ab:
-                        if len(ab) == 2:
-                            zero, shape = ab
-                            assert zero.is_zero
-                            if shape.is_Ceiling:
-                                stop = shape.arg * step + start
-                                if not stop._has(var):
-                                    return expr.base[indices[:-1]][start:stop:step], None
-                            
-            
+                validIndices = [(i, index) for i, index in enumerate(expr.indices) if index._has(var)]
+                if len(validIndices) == 1:
+                    [[i, index]] = validIndices
+                    # index = step * var + start
+                    start, step = index.of_simple_poly(var)
+                    if step == 1:
+                        _, *ab = self.limits[0]
+                        if ab:
+                            if len(ab) == 2:
+                                zero, shape = ab
+                                assert zero.is_zero
+                                step = 1
+                            else:
+                                [domain] = ab
+                                zero, shape, step = domain.args
+                                
+                            return expr.base[indices[:i] + (slice(start, shape + start, step),) + indices[i + 1:]], None
+                    elif step:
+                        _, *ab = self.limits[0]
+                        if ab:
+                            if len(ab) == 2:
+                                zero, shape = ab
+                                assert zero.is_zero
+                                if shape.is_Ceiling:
+                                    stop = shape.arg * step + start
+                                    if not stop._has(var):
+                                        return expr.base[indices[:i] + (slice(start, stop, step),) + indices[i + 1:]], None
             
         if expr.args[-len(variables):] == variables:
             return expr.base[indices[:-len(variables)]], None
@@ -2826,24 +2827,29 @@ class Lamda(ExprWithLimits):
 
     def simplify_MatMul(self, expr):
         if expr.is_MatMul:
-            last = self.func(expr.args[-1], self.limits[0])
-            _last = last.simplify()
-            if last != _last:
-                if len(_last.shape) > 1:
-                    _last = _last.T
-                independent = expr.func(*expr.args[:-1], _last).simplify()
-                limits = self.limits[1:]
-                if limits:
-                    independent = self.func(independent, *limits)
-                return None, independent
+            var = self.limits[0]
+            *former, last = expr.args 
+            if last._has(var) and not any(e._has(var) for e in former):
+                last = self.func(last, var)
+                _last = last.simplify()
+                if last != _last:
+                    if len(_last.shape) == 2:
+                        _last = _last.T
+                    independent = expr.func(*former, _last).simplify()
+                    limits = self.limits[1:]
+                    if limits:
+                        independent = self.func(independent, *limits)
+                    return None, independent
             var = self.limits[-1][0]
-            if expr.args[0]._has(var) and not any(arg._has(var) for arg in expr.args[1:]):
+            
+            first, *latter = expr.args
+            if first._has(var) and not any(arg._has(var) for arg in latter):
 # consider the complex case:
 # [i:n - Min(l, n) + 1](Q[i + Min(l, n) - 1] @ W @ K[i:i + Min(l, n)].T)
                 first = self.func(expr.args[0], self.limits[-1])
                 _first = first.simplify()
                 if first != _first:
-                    independent = expr.func(_first, *expr.args[1:]).simplify()
+                    independent = expr.func(_first, *latter).simplify()
                     limits = self.limits[:-1]
                     if limits:
                         independent = self.func(independent, *limits)
@@ -2882,10 +2888,24 @@ class Lamda(ExprWithLimits):
             limits = []
             for limit, index in zip(self.limits[::-1], indices):
                 if isinstance(index, slice):
-                    assert index.step is None, "cases for %s is not implemented" % index
-                    assert index.start is None, "cases for %s is not implemented" % index
-                    assert index.stop is None, "cases for %s is not implemented" % index
-                    limits.append(limit)
+                    x, a, b = limit
+                    
+                    start = index.start
+                    if start is None:
+                        start = S.Zero
+                        
+                    assert index.step is None or index.step == 1, "cases for %s is not implemented" % index
+                    
+                    stop = index.stop
+                    if stop is None:
+                        stop = b - a
+                    
+                    assert start >= 0
+                    start += a
+                    
+                    stop += a
+                    assert stop <= b
+                    limits.append((x, start, stop))
                     continue
                 
                 x, *domain = limit
@@ -2906,7 +2926,7 @@ class Lamda(ExprWithLimits):
                     _index = index._subs(v, _v)
                     if _index == index:
 # if the substitution fails, it means that index has v only in its domain, not in its definition or explicit expression, 
-# like i = Symbol.i(domain = Interval(j, oo)), where i has j, but only in its domain, not in its definition                        
+# like i = Symbol(domain = Interval(j, oo)), where i has j, but only in its domain, not in its definition                        
                         continue
                     index = _index
                     reps[_v] = v
@@ -3037,9 +3057,9 @@ class Lamda(ExprWithLimits):
             return 1
         return self.shape[-2]
 
-    @property
-    def is_Matrix(self):
-        return len(self.shape) == 2
+    # @property
+    # def is_Matrix(self):
+    #     return len(self.shape) == 2
 
     @property
     def is_square(self):

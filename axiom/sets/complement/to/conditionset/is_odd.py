@@ -33,7 +33,7 @@ def prove(Eq):
 
     Eq << algebra.all.given.ou.apply(Eq[-1])
 
-    Eq << Eq[-1].this.args[1].apply(sets.notin.given.ou.split.complement)
+    Eq << Eq[-1].this.args[1].apply(sets.notin_complement.given.ou)
 
     Eq << ~Eq[-1]
 

@@ -19,7 +19,7 @@ def prove(Eq):
 
     Eq << algebra.any.given.cond.subs.apply(Eq[0], Eq[0].variable, Floor(x))
 
-    Eq << sets.el.given.et.split.interval.apply(Eq[-1])
+    Eq << sets.el_interval.given.et.apply(Eq[-1])
 
     Eq << algebra.imply.lt.floor.apply(x)
 

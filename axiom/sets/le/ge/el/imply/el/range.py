@@ -19,9 +19,9 @@ def prove(Eq):
     a, b, a_quote, b_quote, x = Symbol(integer=True, given=True)
     Eq << apply(a_quote <= a, b_quote >= b, Element(x, Range(a, b)))
 
-    Eq << sets.el.given.et.split.range.apply(Eq[-1])
+    Eq << sets.el_range.given.et.apply(Eq[-1])
 
-    Eq << sets.el.imply.et.split.range.apply(Eq[2])
+    Eq << sets.el_range.imply.et.apply(Eq[2])
 
     Eq << algebra.ge.le.imply.ge.transit.apply(Eq[-2], Eq[0])
     Eq << algebra.lt.ge.imply.lt.transit.apply(Eq[-1], Eq[1])

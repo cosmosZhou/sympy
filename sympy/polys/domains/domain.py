@@ -1,8 +1,5 @@
 """Implementation of :class:`Domain` class. """
 
-from __future__ import print_function, division
-
-
 from sympy.core import Basic, sympify
 from sympy.core.compatibility import HAS_GMPY, is_sequence
 from sympy.core.decorators import deprecated

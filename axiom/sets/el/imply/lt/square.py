@@ -18,7 +18,7 @@ def prove(Eq):
     x, a = Symbol(real=True)
     Eq << apply(Element(x, Interval(-a, a, left_open=True, right_open=True)))
 
-    Eq << sets.el.imply.et.split.interval.apply(Eq[0])
+    Eq << sets.el_interval.imply.et.apply(Eq[0])
 
     Eq << algebra.gt.lt.imply.gt.transit.apply(Eq[-2], Eq[-1])
 

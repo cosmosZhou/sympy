@@ -1,7 +1,5 @@
 """Quantum mechanical angular momemtum."""
 
-from __future__ import print_function, division
-
 from sympy import (Add, binomial, cos, exp, Expr, factorial, I, Integer, Mul,
                    pi, Rational, S, sin, simplify, sqrt, Sum, symbols, sympify,
                    Tuple, Dummy)

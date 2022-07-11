@@ -17,7 +17,7 @@ def prove(Eq):
     i = Symbol(integer=True)
     Eq << apply(All[i:0:n](x[i] > 0))
 
-    x_ = Symbol.x(real=True, positive=True, shape=(oo,))
+    x_ = Symbol('x', real=True, positive=True, shape=(oo,))
     Eq << discrete.imply.ne_zero.alpha.apply(x_[:n])
 
     Eq << Eq[-1].subs(x_[:n], x[:n])

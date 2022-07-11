@@ -17,7 +17,7 @@ def prove(Eq):
 
     Eq << apply(All[i:n](Equal(f(i), g(i))))
 
-    i_ = Symbol.i(domain=Range(n))
+    i_ = Symbol('i', domain=Range(n))
 
     Eq << algebra.all.imply.cond.subs.apply(Eq[0], i, i_)
 

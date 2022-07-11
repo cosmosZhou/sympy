@@ -2,8 +2,6 @@
 Generating and counting primes.
 
 """
-from __future__ import print_function, division
-
 import random
 from bisect import bisect
 # Using arrays for sieving instead of lists greatly reduces

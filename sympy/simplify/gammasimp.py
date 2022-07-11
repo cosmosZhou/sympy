@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from sympy.core import Function, S, Mul, Pow, Add
 from sympy.core.compatibility import ordered, default_sort_key
 from sympy.core.function import count_ops, expand_func

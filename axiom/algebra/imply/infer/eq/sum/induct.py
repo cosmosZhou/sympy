@@ -20,7 +20,7 @@ def prove(Eq):
     x = Symbol(real=True)
     a = Symbol(real=True, shape=(oo,))
     f = Function(real=True)
-    s = a[:n].set_comprehension()
+    s = a[:n].cup_finiteset()
     Eq << apply(Sum[x:s](f(x)))
 
     Eq.initial = Eq[0].subs(n, 1)
@@ -31,7 +31,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.args[1].apply(algebra.all_ne.imply.eq.sum, Eq[0].rhs.lhs)
 
-    Eq << Eq[-1].this.lhs.args[1].apply(algebra.eq.transposition, rhs=0)
+    Eq << Eq[-1].this.lhs.args[1].apply(algebra.eq.transport, rhs=0)
 
     Eq << Eq[-1].this.lhs.args[0].reversed
 

@@ -27,7 +27,7 @@ def prove(Eq):
 
     Eq << apply(Or(Element(x, A), Element(x, B), Element(x, C)))
 
-    Eq << sets.el.imply.ou.split.union.apply(Eq[1], simplify=False)
+    Eq << sets.el_union.imply.ou.apply(Eq[1], simplify=False)
 
 
 if __name__ == '__main__':

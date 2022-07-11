@@ -16,7 +16,7 @@ def prove(Eq):
     A = Symbol(shape=(n, n), complex=True)
     Eq << apply(A)
 
-    Eq << Symbol.L(Eq[0].lhs.arg).this.definition
+    Eq << Symbol('L', Eq[0].lhs.arg).this.definition
 
     shift = Eq[-1].rhs.expr.args[0].base
     Eq.L_definition = Eq[-1].this.rhs.doit()

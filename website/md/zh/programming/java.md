@@ -51,6 +51,9 @@ Tab 设置：
 
 ![tab](java/tab.png)   
 ![console](java/console.png)   
+工程代码批量format 设置：  
+![tab](java/format.png)   
+
 
 ### STS快捷键
 
@@ -59,10 +62,10 @@ M-F: toggle word wrap;
 C-m: Maximize editor view:  
 C-{: duplicate current edit view horizontally( Toggle Split Editor)  
 C-_: duplicate current edit view vertically( Toggle Split Editor)  
-
-
-
 C-L: 快捷键go to line:  
+C-T: 查看jar包版本信息：
+![jar](java/jar-version.png)   
+
 ### 指定jdk版本
 
 ![jdk](java/jdk.png)   

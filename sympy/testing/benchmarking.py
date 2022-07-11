@@ -1,7 +1,5 @@
 """benchmarking through py.test"""
 
-from __future__ import print_function, division
-
 import py
 from py.__.test.item import Item
 from py.__.test.terminal.terminal import TerminalSession

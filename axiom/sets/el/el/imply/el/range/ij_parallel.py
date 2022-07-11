@@ -27,17 +27,17 @@ def prove(Eq):
     a, i, j, n, m, d = Symbol(integer=True)
     Eq << apply(Element(i, Range(d + j, n + j)), Element(j, Range(a, m)))
 
-    Eq.ge, Eq.lt = sets.el.imply.et.split.range.apply(Eq[0])
+    Eq.ge, Eq.lt = sets.el_range.imply.et.apply(Eq[0])
 
-    Eq << Eq.ge.this.apply(algebra.ge.transposition, rhs=0)
+    Eq << Eq.ge.this.apply(algebra.ge.transport, rhs=0)
 
-    Eq << Eq.lt.this.apply(algebra.lt.transposition, rhs=-1)
+    Eq << Eq.lt.this.apply(algebra.lt.transport, rhs=-1)
 
     Eq << sets.lt.ge.imply.el.range.apply(Eq[-1], Eq[-2])
 
     Eq <<= Eq[1] & Eq[-1]
 
-    Eq << sets.el.imply.et.split.range.apply(Eq[1])
+    Eq << sets.el_range.imply.et.apply(Eq[1])
 
     Eq <<= algebra.ge.ge.imply.ge.transit.apply(Eq.ge, Eq[-2] + d), algebra.lt.imply.le.strengthen.apply(Eq[-1])
 

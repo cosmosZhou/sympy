@@ -4,12 +4,11 @@ from util import *
 @apply
 def apply(eq_xy, eq_ab, i=None):
     (x, w), y = eq_xy.of(Equal[MatMul])
-    (a, _w), b = eq_ab.of(Equal[MatMul])
-    assert w == _w
+    (a, S[w]), b = eq_ab.of(Equal[MatMul])
+    
     [n] = x.shape
-    [__n] = a.shape
-    _n, _i, _j = w.of(SwapMatrix)
-    assert n == _n == __n
+    [S[n]] = a.shape
+    _i, _j = w.of(SwapMatrix)
     assert _i >= 0 and _i < n
     assert _j >= 0 and _j < n
     if i is None:

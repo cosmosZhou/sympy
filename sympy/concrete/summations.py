@@ -81,7 +81,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
     ========
 
     >>> from sympy.abc import i, k, m, n, x
-    >>> n = Symbol.n(integer=True)
+    >>> n = Symbol(integer=True)
     >>> Sum(1 / (n * (n + 1)), (n, 1, oo))
     Sum(k, (k, 1, m))
     >>> Sum(1 / (n * (n + 1)), (n, 1, oo)).this.expr.apart(n)
@@ -920,7 +920,11 @@ class Sum(AddWithLimits, ExprWithIntLimits):
     def try_sub(self, autre):
         if isinstance(autre, Sum) and self.expr == autre.expr and len(self.limits) == len(autre.limits) == 1 and len(self.limits[0]) == len(autre.limits[0]) == 3:
             (x, a, b), *_ = self.limits
+            if a.is_bool:
+                return
             (_x, _a, _b), *_ = autre.limits
+            if _a.is_bool:
+                return
 
             if (b - a).is_Integer or (_b - _a).is_Integer:
                 return
@@ -943,11 +947,11 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                     return
                 return a + b
 
-    def __sub__(self, autre):
-        sub = self.try_sub(autre)
+    def __sub__(self, that):
+        sub = self.try_sub(that)
         if sub is not None:
             return sub
-        return super(type(self), self).__sub__(autre)
+        return super(type(self), self).__sub__(that)
 
     def __add__(self, expr):
         if len(self.limits) == 1:
@@ -1259,13 +1263,13 @@ domain & limit[1] = %s
                     
                     return self.func(piecewise, *self.limits).simplify()
  
-            domain = self.expr.domain_nonzero(x)
+            domain = self.expr.domain_nonzero(x) & self.expr.domain_defined(x)
 
             domain &= universe
             if not domain:
                 return S.Zero
             assert domain.is_super_integer, domain
-            
+
             if domain.is_Piecewise:
                 domain = Union(*(e for e, _ in domain.args)) & universe
                      
@@ -1507,7 +1511,7 @@ domain & limit[1] = %s
     def _eval_is_finite(self):
         function = self.expr                
         for x, domain in self.limits_dict.items():
-            if not isinstance(domain, list) and not domain.is_boolean:
+            if not isinstance(domain, list) and not domain.is_bool:
                 if domain.is_infinite:
                     return
                     

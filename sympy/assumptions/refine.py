@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from sympy.core import S, Add, Expr, Basic, Mul
 from sympy.assumptions import Q, ask
 

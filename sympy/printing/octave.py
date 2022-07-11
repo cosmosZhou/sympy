@@ -10,7 +10,6 @@ complete source code files.
 
 """
 
-from __future__ import print_function, division
 from sympy.codegen.ast import Assignment
 from sympy.core import Mul, Pow, S, Rational
 

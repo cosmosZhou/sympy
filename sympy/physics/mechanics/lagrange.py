@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from sympy.core.backend import diff, zeros, Matrix, eye, sympify
 from sympy.physics.vector import dynamicsymbols, ReferenceFrame
 from sympy.physics.mechanics.functions import (find_dynamicsymbols, msubs,

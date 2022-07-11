@@ -14,7 +14,7 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra, discrete
 
-    n = Symbol(domain=Range(3, oo))
+    n = Symbol(domain=Range(2, oo))
     x1, x2 = Symbol(complex=True)
     i, j = Symbol(integer=True)
     Eq << apply(Det([Lamda[j:n + 2](x1 ** j), Lamda[j:n + 2](j * x1 ** j), Lamda[j:n + 2, i:n](j ** i * x2 ** j)]))
@@ -35,11 +35,11 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Det).apply(discrete.det_block.to.zero)
 
-
-
+    
+    
 
 
 if __name__ == '__main__':
     run()
 # created on 2021-11-22
-# updated on 2021-12-15
+# updated on 2022-07-11

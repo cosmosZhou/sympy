@@ -18,15 +18,15 @@ def prove(Eq):
     from axiom import sets
 
     x, a, b = Symbol(real=True)
-    #t = Symbol.t(real=True)
+    #t = Symbol(real=True)
     d = 2
     Eq << apply(Element(x, Interval(a, b)), d)
 
-    Eq << sets.el.imply.et.split.interval.apply(Eq[0])
+    Eq << sets.el_interval.imply.et.apply(Eq[0])
 
     Eq <<= Eq[-2] / d, Eq[-1] / d
 
-    Eq << sets.el.given.et.split.interval.apply(Eq[1])
+    Eq << sets.el_interval.given.et.apply(Eq[1])
 
 
 

@@ -86,3 +86,14 @@ from . import range_min
 from . import range_max
 from . import interval_min
 from . import interval_max
+from . import et_el
+from . import el_union
+from . import el_intersect
+from . import el_complement
+from . import notin_range
+from . import notin_interval
+from . import subset_cup
+from . import supset_cup
+from . import notin_intersect
+from . import notin_complement
+from . import is_real

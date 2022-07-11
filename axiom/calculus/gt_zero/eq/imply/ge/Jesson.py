@@ -11,7 +11,7 @@ def apply(is_positive, eq, x=None):
     domain = x_.domain
     assert domain.left_open and domain.right_open
     if x is None:
-        x = Symbol.x(shape=(oo,), domain=domain)
+        x = Symbol(shape=(oo,), domain=domain)
     assert x.domain_assumed == domain
     return GreaterEqual(Sum[i:n](wi * fx._subs(x_, x[i])), fx._subs(x_, Sum[i:n](wi * x[i])))
 

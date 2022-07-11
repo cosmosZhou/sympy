@@ -6,7 +6,7 @@ def apply(X0, X1):
     n0, p = pspace(X0).distribution.of(BinomialDistribution)
     n1, S[p] = pspace(X1).distribution.of(BinomialDistribution)
 
-    Y = Symbol.y(distribution=BinomialDistribution(n0 + n1, p))
+    Y = Symbol(distribution=BinomialDistribution(n0 + n1, p))
     y = pspace(Y).symbol
 
     return Equal(Probability(Equal(X0 + X1, y)), Probability(Equal(Y, y)).doit())

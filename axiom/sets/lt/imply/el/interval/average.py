@@ -15,7 +15,7 @@ def prove(Eq):
     a, b = Symbol(real=True, given=True)
     Eq << apply(a < b)
 
-    Eq << sets.el.given.et.split.interval.apply(Eq[-1])
+    Eq << sets.el_interval.given.et.apply(Eq[-1])
 
     Eq <<= Eq[-2] * 2, Eq[-1] * 2
 

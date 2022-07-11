@@ -32,7 +32,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Product).apply(algebra.prod.to.pow.sum)
 
-    Eq << Eq[-1].this.find(Sum).apply(algebra.sum.to.mul.geometric_progression)
+    Eq << Eq[-1].this.find(Sum).apply(algebra.sum.to.mul.arithmetic_progression)
 
     Eq << Eq[-1].this.find(Det).apply(discrete.det_lamda.to.prod.vandermonde.st.linear)
 

@@ -190,3 +190,16 @@ from . import mul_lamda
 from . import et_lt
 from . import transpose_lamda
 from . import add_piece
+from . import eq_add_sqrt
+from . import eq_block
+from . import le_block
+from . import sum_complement
+from . import ge_block
+from . import lt_block
+from . import gt_block
+from . import block_ge
+from . import block_le
+from . import block_lt
+from . import block_gt
+from . import eq_sqrt
+from . import any_lt_zero

@@ -514,7 +514,7 @@ def run():
     
     from run import prove_with_timing, import_module
     
-    res = import_module(package, debug=False)
+    res = import_module(package)
     from util import MySQL
     try:
         state, lapse, latex = prove_with_timing(res, debug=True, slow=True)
@@ -529,7 +529,11 @@ def run():
             raise e 
         else: 
             sql = analyze_results_from_run(res, latex=False)        
-    
+    except TypeError:
+        from run import tackle_type_error
+        if tackle_type_error(package):
+            return
+            
     rowcount = MySQL.instance.execute(sql)
     if rowcount <= 0:
         
@@ -1005,7 +1009,7 @@ def imply(apply, **kwargs):
             if len(given) == 1:
                 given = given[0]
             elif not given:
-                given = None        
+                given = None
         else:
             given = None
              
@@ -1047,7 +1051,7 @@ def imply(apply, **kwargs):
             if isinstance(statement, tuple):
                 return tuple(s.simplify(emplace=True) for s in statement)
             
-            return statement.simplify(emplace=True)            
+            return statement.simplify(emplace=True)
         
         dependency = {}
         

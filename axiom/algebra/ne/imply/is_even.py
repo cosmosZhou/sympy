@@ -23,7 +23,7 @@ def prove(Eq):
 
     Eq << sets.imply.el.mod.apply(n % 2)
 
-    Eq << sets.el.imply.ou.split.range.apply(Eq[-1])
+    Eq << sets.el_range.imply.ou.apply(Eq[-1])
 
     Eq << algebra.cond.ou.imply.cond.apply(Eq[0], Eq[-1])
 

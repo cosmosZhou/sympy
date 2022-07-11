@@ -59,7 +59,7 @@ def prove(Eq):
 
     Eq << algebra.any.imply.any_et.limits.unleash.apply(Eq[-1], simplify=None)
 
-    Eq << Eq[-1].this.find(Element).apply(sets.el.imply.et.split.range)
+    Eq << Eq[-1].this.find(Element).apply(sets.el_range.imply.et)
 
     Eq << Eq[-1].this.expr.apply(algebra.et.imply.et, slice(0, 3, 2))
 

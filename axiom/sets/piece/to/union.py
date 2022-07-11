@@ -29,7 +29,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.apply(algebra.ou.to.infer, index=slice(1, 3))
 
-    Eq << Eq[-1].this.rhs.apply(sets.el.given.ou.split.union, simplify=None)
+    Eq << Eq[-1].this.rhs.apply(sets.el_union.given.ou, simplify=None)
 
     Eq << Eq[-1].this.rhs.find(Element).apply(sets.el_piece.given.ou)
 
@@ -37,7 +37,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.ou.to.infer, index=slice(2, 4))
 
-    Eq << Eq.necessary.this.find(Element).apply(sets.el.imply.ou.split.union, simplify=None)
+    Eq << Eq.necessary.this.find(Element).apply(sets.el_union.imply.ou, simplify=None)
 
     Eq << Eq[-1].this.lhs.find(Element).apply(sets.el_piece.imply.ou)
 

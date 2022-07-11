@@ -1,7 +1,5 @@
 """Compatibility interface between dense and sparse polys. """
 
-from __future__ import print_function, division
-
 from sympy.polys.densearith import dup_add_term
 from sympy.polys.densearith import dmp_add_term
 from sympy.polys.densearith import dup_sub_term

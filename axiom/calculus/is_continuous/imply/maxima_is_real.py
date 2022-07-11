@@ -23,7 +23,7 @@ def prove(Eq):
 
     Eq << calculus.is_continuous.imply.any_all_le.extreme_value_theorem.apply(Eq[0])
 
-    Eq << Eq[-1].this.expr.apply(algebra.all_le.imply.le_maxima)
+    Eq << Eq[-1].this.expr.apply(algebra.all_le.imply.le.maxima)
 
     Eq << algebra.imply.all_ge.maxima.apply(Eq[1].lhs)
 

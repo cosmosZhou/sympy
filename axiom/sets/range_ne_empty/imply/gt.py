@@ -17,7 +17,7 @@ def prove(Eq):
 
     Eq << sets.ne_empty.imply.any_el.apply(Eq[0])
 
-    Eq << Eq[-1].this.expr.apply(sets.el.imply.et.split.range)
+    Eq << Eq[-1].this.expr.apply(sets.el_range.imply.et)
 
     Eq << Eq[-1].this.expr.apply(algebra.lt.ge.imply.gt.transit)
 

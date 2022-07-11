@@ -292,3 +292,10 @@ class Mod(Function):
 
     def _eval_is_finite(self):
         return self.args[1].is_finite
+    
+    def __iter__(self):
+        raise TypeError
+    
+    def __getitem__(self, indices):
+        from sympy.core.operations import AssocOp
+        return AssocOp.getitem(self, indices)

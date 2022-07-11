@@ -1587,16 +1587,24 @@ class Add(Expr, AssocOp):
                         if b.is_Number:  # b.is_constant()
                             return args
                         if isinstance(args, tuple):
-                            _b, _a = args
-                            return (_a, _b)
+                            if len(args) == 2:
+                                b, a = args
+                                return a, b
                     return args
                 if len(cls.args) == 3:
                     a, b, c = cls.args
-                    cls = Basic.__new__(Add, b, a, c)
+                    if a.is_Number:
+                        cls = Basic.__new__(Add, a, c, b)
+                    else:
+                        cls = Basic.__new__(Add, b, a, c)
                     args = Expr.of(self, cls)
                     if args is not None:
-                        _b, _a, _c = args
-                        return (_a, _b, _c)
+                        if a.is_Number:
+                            _c, _b = args
+                            return _b, _c
+                        else:
+                            _b, _a, _c = args
+                            return _a, _b, _c
                     
                     cls = Basic.__new__(Add, b, c, a)
                     args = Expr.of(self, cls)

@@ -28,11 +28,11 @@ def prove(Eq):
 
     Eq << Eq[-1].this.expr.apply(algebra.all.imply.all_et)
 
-    Eq << Eq[-1].this.find(Element).apply(sets.el.imply.lt.split.interval)
+    Eq << Eq[-1].this.find(Element).apply(sets.el_interval.imply.lt)
 
     Eq << Eq[-1].this.expr.expr.apply(algebra.lt_zero.gt.imply.lt.mul)
 
-    Eq << Eq[-1].this.expr.expr.apply(algebra.lt.transposition, lhs=0)
+    Eq << Eq[-1].this.expr.expr.apply(algebra.lt.transport, lhs=0)
 
 
 if __name__ == '__main__':

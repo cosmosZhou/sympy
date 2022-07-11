@@ -7,7 +7,7 @@ def apply(n, k, s2=None, A=None):
     j = Symbol(domain=Range(k + 1))
     if s2 is None:
         x = Symbol(shape=(oo,), etype=dtype.integer, finiteset=True)
-        s2 = Symbol(Cup[x[:k + 1]:Stirling.conditionset(n + 1, k + 1, x)](x[:k + 1].set_comprehension().set))
+        s2 = Symbol(Cup[x[:k + 1]:Stirling.conditionset(n + 1, k + 1, x)](x[:k + 1].cup_finiteset().set))
 
     e = Symbol(**s2.etype.dict)
     if A is None:
@@ -15,7 +15,7 @@ def apply(n, k, s2=None, A=None):
         i = Symbol(integer=True)
         s1_quote = Symbol("s'_1", Stirling.conditionset(n, k + 1, x))
         x_quote = Symbol(Lamda[i:k + 1](Piecewise(({n} | x[i], Equal(i, j)), (x[i], True))))
-        A = Symbol(Lamda[j](Cup[x[:k + 1]:s1_quote]({x_quote.set_comprehension()})))
+        A = Symbol(Lamda[j](Cup[x[:k + 1]:s1_quote]({x_quote.cup_finiteset()})))
 
     return Equal(conditionset(e, NotElement({n}, e), s2), Cup[j](A[j]))
 
@@ -28,7 +28,7 @@ def prove(Eq):
     n = Symbol(integer=True, positive=True, given=True)
     Eq << apply(n, k)
 
-    s2_quote = Symbol.s_quote_2(conditionset(Eq[0].rhs.variable, Eq[0].rhs.limits[0][1]))
+    s2_quote = Symbol('s_quote_2', conditionset(Eq[0].rhs.variable, Eq[0].rhs.limits[0][1]))
     Eq << s2_quote.this.definition
 
     Eq.s2_definition = imageset(Eq[0].rhs.variable, Eq[0].rhs.expr.arg, s2_quote).this.subs(Eq[-1]).subs(Eq[0].reversed).reversed
@@ -108,13 +108,13 @@ def prove(Eq):
 
     Eq << Eq[-1].apply(algebra.all.given.all_ou.limits.delete, simplify=None)
 
-    Eq << Eq[-1].this.find(NotElement).apply(sets.notin.given.ou.split.complement, simplify=None)
+    Eq << Eq[-1].this.find(NotElement).apply(sets.notin_complement.given.ou, simplify=None)
 
     Eq << Eq[-1].this.find(Greater).apply(algebra.cond.given.ou.domain_defined, wrt=i, simplify=None)
 
     Eq << Eq.xi_is_positive.apply(algebra.all.imply.all_ou.limits.delete, simplify=None)
 
-    Eq << Eq[-1].this.find(NotElement).apply(sets.notin.imply.ou.split.complement, simplify=None)
+    Eq << Eq[-1].this.find(NotElement).apply(sets.notin_complement.imply.ou, simplify=None)
 
     Eq <<= Eq.x_quote_union & Eq.SqueezeTheorem & Eq.xi_all_is_positive
 
@@ -180,7 +180,7 @@ def prove(Eq):
     Eq << sets.imply.all.conditionset.apply(s2_quote_n)
     Eq << Eq[-1].this.expr.apply(sets.eq.eq.all_is_positive.notcontains.imply.eq.stirling2, s1=s1_quote)
     Eq << algebra.all_any.imply.all_any.limits_swap.apply(Eq[-1])
-    Eq << Eq.s2_hat_n_hypothesis.this.expr.expr.apply(sets.eq.given.eq.set_comprehension)
+    Eq << Eq.s2_hat_n_hypothesis.this.expr.expr.apply(sets.eq.given.eq.cup_finiteset)
     Eq << Eq[-1].subs(Eq.x_quote_definition)
     Eq.supset_A = sets.supset.imply.supset.cup.lhs.apply(Eq.supset_A, (j,), simplify=False)
     Eq <<= Eq.supset_A & Eq.subset_A

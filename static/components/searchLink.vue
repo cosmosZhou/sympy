@@ -2,7 +2,7 @@
 	
 	<a v-if="mode == 'a'" v-focus tabindex=2 :href=href @contextmenu.prevent=contextmenu @keydown=keydown_a>
        	{{module}}
-       	<search-contextmenu v-if='showContextmenu' :left=left :top=top></search-contextmenu>
+       	<searchContextmenu v-if='showContextmenu' :left=left :top=top></searchContextmenu>
     </a>
 	<span v-else-if="mode == 'span'">
        	{{module}}

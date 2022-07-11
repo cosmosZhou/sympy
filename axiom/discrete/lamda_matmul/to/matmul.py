@@ -2,8 +2,8 @@ from util import *
 
 
 @apply
-def apply(lamda):
-    matmul, (j, *j_ab) = lamda.of(Lamda)
+def apply(self):
+    matmul, (j, *j_ab) = self.of(Lamda)
     if j_ab:
         a, b = j_ab
     else:
@@ -13,7 +13,7 @@ def apply(lamda):
     assert a == 0
 
     A, B = matmul.of(MatMul)
-
+    
     if A._has(j):
         A = Lamda[j:k](A).simplify()
         
@@ -26,8 +26,8 @@ def apply(lamda):
         i = B.generate_var(excludes=j, integer=True)
         n = B.shape[0]
         B = Lamda[j:k, i:n](B[i]).simplify()
-
-    return Equal(lamda, A @ B, evaluate=False)
+        
+    return Equal(self, A @ B, evaluate=False)
 
 
 @prove

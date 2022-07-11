@@ -32,8 +32,8 @@ def prove(Eq):
 
     Eq.lt = Eq[-1].this.rhs.apply(algebra.mul.to.square)
 
-    x1_ = Symbol.x1(y2 - x1)
-    x0_ = Symbol.x0(y2 - x0)
+    x1_ = Symbol('x1', y2 - x1)
+    x0_ = Symbol('x0', y2 - x0)
 
     Eq.x0_defintion = x0_.this.definition + x0 - x0_
 
@@ -47,8 +47,8 @@ def prove(Eq):
 
     Eq.lt = Eq.lt.subs(Eq[-1])
 
-    y1_ = Symbol.y1(y2 - y1)
-    y0_ = Symbol.y0(y2 - y0)
+    y1_ = Symbol('y1', y2 - y1)
+    y0_ = Symbol('y0', y2 - y0)
 
     Eq << y0_.this.definition + y0 - y0_
 

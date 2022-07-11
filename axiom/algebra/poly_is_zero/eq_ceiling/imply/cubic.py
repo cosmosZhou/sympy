@@ -52,7 +52,7 @@ def prove(Eq):
     Eq.w, Eq.w_conj, Eq.add_ww, Eq.mul_ww, Eq.w_square, Eq.w_conj_square, Eq.w3 = algebra.imply.et.eq.omega.apply('omega')
 
     w = Eq.w.lhs
-    Eq.w_sub = Eq.add_ww.this.apply(algebra.eq.transposition)
+    Eq.w_sub = Eq.add_ww.this.apply(algebra.eq.transport)
 
     Eq.w3_conj = algebra.eq.imply.eq.conjugate.apply(Eq.w3)
 
@@ -149,8 +149,8 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq.A_def, Eq.B_def, Eq.w, Eq.w_conj)
 
-    
-    
+
+
 
 
 if __name__ == '__main__':

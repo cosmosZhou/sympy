@@ -24,7 +24,7 @@ def prove(Eq):
     t, x, a, b = Symbol(real=True)
     Eq << apply(t > 0, Element(x, Interval(a, b, left_open=True)))
 
-    Eq << sets.el.imply.et.split.interval.apply(Eq[1])
+    Eq << sets.el_interval.imply.et.apply(Eq[1])
 
     Eq <<= algebra.gt_zero.gt.imply.gt.mul.apply(Eq[0], Eq[-2]), algebra.gt_zero.le.imply.le.mul.apply(Eq[0], Eq[-1])
 

@@ -5,6 +5,7 @@
 <?php
 require_once 'utility.php';
 require_once 'mysql.php';
+require_once 'std.php';
 
 $dict = empty($_POST) ? $_GET : $_POST;
 
@@ -32,10 +33,12 @@ $keyword = $dict["keyword"];
 $wholeWord = array_key_exists("wholeWord", $dict) ? true : false;
 $caseSensitive = array_key_exists("caseSensitive", $dict) ? true : false;
 $regularExpression = array_key_exists("regularExpression", $dict) ? true : false;
+$nlp = array_key_exists("nlp", $dict) ? true : false;
 
 error_log("wholeWord = $wholeWord");
 error_log("caseSensitive = $caseSensitive");
 error_log("regularExpression = $regularExpression");
+error_log("nlp = $nlp");
 
 $like = false;
 
@@ -48,7 +51,18 @@ if ($wholeWord) {
     $like = true;
 }
 
-if ($like) {
+if ($nlp){    
+    $modules = [];
+    foreach (\std\list_all_files(dirname(dirname(__file__)).'/axiom', 'py') as $py){
+        $file = new \std\Text($py);
+        //error_log("py = $py");
+        if (!$regularExpression && $file->find($keyword) || $regularExpression && $file->search($keyword)){
+            error_log("py = $py");
+            $modules[] = py_to_module($py);
+        }
+    }
+}
+elseif ($like) {
     if ($regex == null) {
         $modules = \mysql\select_axiom_by_state($state);
     } else {

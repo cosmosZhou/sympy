@@ -28,7 +28,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.apply(algebra.mul.to.add, deep=True)
 
-    Eq << Eq[-1].this.apply(algebra.gt.transposition, lhs=0)
+    Eq << Eq[-1].this.apply(algebra.gt.transport, lhs=0)
 
 
 if __name__ == '__main__':

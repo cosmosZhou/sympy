@@ -3,8 +3,6 @@ This module provides convenient functions to transform sympy expressions to
 lambda functions which can be used to calculate numerical values very fast.
 """
 
-from __future__ import print_function, division
-
 import inspect
 import keyword
 import re
@@ -235,7 +233,7 @@ def lambdify(args, expr, modules=None, printer=None, use_imps=True,
 
     If it is a matrix, an array will be returned (for the NumPy module).
 
-    >>> x = Symbol.x(real=True)
+    >>> x = Symbol(real=True)
     >>> f = lambdify(x, Matrix([x, x + 1]))
     >>> f(1)
     [[1]

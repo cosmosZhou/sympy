@@ -1,7 +1,5 @@
 """Finite extensions of ring domains."""
 
-from __future__ import print_function, division
-
 from sympy.polys.polyerrors import CoercionFailed
 from sympy.polys.polytools import Poly
 

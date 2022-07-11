@@ -19,7 +19,7 @@ def prove(Eq):
     x = Symbol(real=True)
     a = Symbol(real=True, shape=(oo,))
     f = Function(real=True)
-    Eq << apply(Equal(X, a[:Card(X)].set_comprehension()), Element(x, X))
+    Eq << apply(Equal(X, a[:Card(X)].cup_finiteset()), Element(x, X))
 
     Eq << Eq[1].subs(Eq[0])
     Eq << sets.el_cup.imply.any_el.apply(Eq[-1])

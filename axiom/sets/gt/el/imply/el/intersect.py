@@ -18,9 +18,9 @@ def prove(Eq):
     a, b, x, y = Symbol(real=True)
     Eq << apply(x > a, Element(x, Interval(a, b)))
 
-    Eq << sets.el.given.et.split.interval.apply(Eq[2])
+    Eq << sets.el_interval.given.et.apply(Eq[2])
 
-    Eq << sets.el.imply.et.split.interval.apply(Eq[1])
+    Eq << sets.el_interval.imply.et.apply(Eq[1])
 
 
 if __name__ == '__main__':

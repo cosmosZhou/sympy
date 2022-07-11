@@ -7,7 +7,7 @@ def apply(x, w=None, left=True, reference=True):
     i, j, k = Symbol(integer=True)
 
     if w is None:
-        w = Symbol.w(Lamda[j, i](SwapMatrix(n, i, j)))
+        w = Symbol(Lamda[j, i](SwapMatrix(n, i, j)))
     else:
         assert len(w.shape) == 4 and all(s == n for s in w.shape)
 

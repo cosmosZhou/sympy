@@ -1,7 +1,5 @@
 """Recurrence Operators"""
 
-from __future__ import print_function, division
-
 from sympy import symbols, Symbol, S
 from sympy.printing import sstr
 

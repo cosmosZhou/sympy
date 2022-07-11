@@ -25,7 +25,7 @@ def prove(Eq):
 
     Eq << a[n].this.definition.this.rhs.apply(discrete.matmul.to.sum)
 
-    Eq << discrete.set_comprehension.matmul.apply(a)
+    Eq << discrete.cup.finiteset.matmul.apply(a)
 
     Eq << Eq[-1].this.lhs.apply(sets.cup.limits.domain_defined.insert)
 

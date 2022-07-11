@@ -6,7 +6,7 @@ def limits_subs(cls, self, offset, simplify=True):
     fx = fx._subs(x, x + offset)
     if len(ab) == 2:
         a, b = ab
-        if a.is_boolean:
+        if a.is_bool:
             a = a._subs(x, x + offset)
             b -= offset
         else:
@@ -15,7 +15,7 @@ def limits_subs(cls, self, offset, simplify=True):
         limit = (x, a, b)
     elif ab:
         [domain] = ab
-        if domain.is_boolean:
+        if domain.is_bool:
             domain = domain._subs(x, x + offset)
         else:
             domain -= offset

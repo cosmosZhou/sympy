@@ -30,7 +30,7 @@ def prove(Eq):
 
     Eq << algebra.ne_zero.imply.et.apply(Eq[-1])
 
-    Eq << algebra.ne_zero.imply.ne_zero.reciprocal.apply(Eq[-2])
+    Eq << algebra.ne_zero.imply.ne_zero.div.apply(Eq[-2])
 
     Eq << algebra.ne_zero.eq.imply.eq.mul.apply(Eq[-1], Eq[0])
 

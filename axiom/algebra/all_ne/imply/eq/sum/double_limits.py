@@ -28,7 +28,7 @@ def prove(Eq):
     x = Symbol(real=True)
     a = Symbol(real=True, shape=(oo,))
     f = Function(real=True)
-    s = a[:n].set_comprehension()
+    s = a[:n].cup_finiteset()
     Eq << apply(All[j:i, i:n](Unequal(a[i], a[j])), Sum[x:s](f(x)))
 
     Eq << algebra.imply.infer.eq.sum.induct.apply(Eq[1].lhs)

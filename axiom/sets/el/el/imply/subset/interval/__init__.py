@@ -23,11 +23,11 @@ def prove(Eq):
 
     Eq << sets.subset.given.all_el.apply(Eq[-1])
 
-    Eq << Eq[-1].this.expr.apply(sets.el.given.et.split.interval)
+    Eq << Eq[-1].this.expr.apply(sets.el_interval.given.et)
 
     Eq << algebra.all.given.ou.apply(Eq[-1])
 
-    Eq << Eq[-1].this.args[-1].apply(sets.notin.given.ou.split.interval)
+    Eq << Eq[-1].this.args[-1].apply(sets.notin_interval.given.ou)
 
     Eq << ~Eq[-1]
 
@@ -43,7 +43,7 @@ def prove(Eq):
 
     Eq << ~Eq[-1]
 
-    Eq <<= sets.el.imply.et.split.interval.apply(Eq[0]), sets.el.imply.et.split.interval.apply(Eq[1])
+    Eq <<= sets.el_interval.imply.et.apply(Eq[0]), sets.el_interval.imply.et.apply(Eq[1])
 
     Eq <<= Eq[-1] & Eq[-4]
 

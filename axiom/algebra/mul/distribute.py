@@ -8,9 +8,13 @@ def apply(self, index=0):
 
     for i, plus in enumerate(args):
         if plus.is_Add:
-            plus = Add(*(arg * factor for arg in plus.args))
-            args[i] = plus
-            return Equal(self, Mul(*args))
+            break
+    else:
+        return
+            
+    plus = Add(*(arg * factor for arg in plus.args))
+    args[i] = plus
+    return Equal(self, Mul(*args))
 
 
 @prove
@@ -22,7 +26,10 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.expand()
 
+    
+
 
 if __name__ == '__main__':
     run()
 # created on 2018-08-19
+# updated on 2022-01-23

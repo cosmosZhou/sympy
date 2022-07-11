@@ -17,7 +17,7 @@ def prove(Eq):
     Eq << apply(abs(x) < a)
 
     Eq << algebra.abs_lt.imply.et.apply(Eq[0])
-    Eq << sets.el.given.et.split.interval.apply(Eq[1])
+    Eq << sets.el_interval.given.et.apply(Eq[1])
 
 
 if __name__ == '__main__':

@@ -23,6 +23,7 @@ export default {
 		return {
 			issearch: false,
 			
+			keyword: '',
 			caseSensitive: false,
 			wholeWord: false, 
 			regularExpression: false,

@@ -17,7 +17,7 @@ def prove(Eq):
 
     Eq << sets.lt.imply.is_real.apply(Eq[0], simplify=None)
 
-    Eq << sets.el.imply.ou.split.interval.apply(Eq[-1], 0)
+    Eq << sets.el_interval.imply.ou.apply(Eq[-1], 0)
 
     Eq <<= Eq[0] & Eq[-1]
 

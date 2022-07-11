@@ -27,7 +27,7 @@ def prove(Eq):
     a, i, j, n, m, d = Symbol(integer=True)
     Eq << apply(Element(i, Range(d + j, n + j)), Element(j, Range(a, m)))
 
-    Eq <<= sets.el.given.et.split.range.apply(Eq[0]), sets.el.given.et.split.range.apply(Eq[1]), sets.el.imply.et.split.range.apply(Eq[-1])
+    Eq <<= sets.el_range.given.et.apply(Eq[0]), sets.el_range.given.et.apply(Eq[1]), sets.el_range.imply.et.apply(Eq[-1])
 
     Eq <<= algebra.ge_max.imply.et.ge.apply(Eq[-2]), algebra.lt_min.imply.et.lt.apply(Eq[-1])
 

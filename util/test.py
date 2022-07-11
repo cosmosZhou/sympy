@@ -23,7 +23,18 @@ def test():
             print(text)
             break
 
-if __name__ == '__main__':
+def sparsemax(z):
+    import numpy as np
+    z_sorted = sorted(z, reverse=True)
+    k = np.arange(len(z))
+    k_array = 1 + k * z_sorted
+    z_cumsum = np.cumsum(z_sorted) - z_sorted
+    k_selected = k_array > z_cumsum
+    k_max = np.where(k_selected)[0].max()
+    threshold = (z_cumsum[k_max] - 1) / (k_max + 1)
+    return np.maximum(z - threshold, 0)
+
+def delete_duplicate():
     
     for py in read_all_py(axiom_directory()):
         
@@ -45,3 +56,12 @@ if __name__ == '__main__':
                 
                 del lines[index]
                 Text(py).writelines(lines)
+
+
+if __name__ == '__main__':
+    z = [0.5, 0.3, 0.1, 0.1, 0, 0.9] * 10
+    
+    z = sparsemax(z)
+    _z = sparsemax(z, False)
+    print(sum(z), sum(_z))
+    print(z == _z)

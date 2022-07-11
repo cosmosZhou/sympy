@@ -64,7 +64,7 @@ def prove(Eq):
 
     Eq <<= Eq[-1].this.lhs.apply(sets.el.given.el.add, b)
 
-    Eq <<= Eq[-1].this.lhs.apply(sets.el.given.et.split.interval)
+    Eq <<= Eq[-1].this.lhs.apply(sets.el_interval.given.et)
 
     Eq << algebra.infer.imply.all.apply(Eq[-1])
 

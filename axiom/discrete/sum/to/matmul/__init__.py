@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(self, *, simplify=True):
     (former, latter), *limits = self.of(Sum[Expr * Expr])
-    
+
     former = Lamda(former, *limits)
     latter = Lamda(latter, *limits)
     if simplify:
@@ -29,4 +29,4 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2020-11-18
-from . import geometric_progression
+from . import arithmetic_progression

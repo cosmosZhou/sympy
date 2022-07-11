@@ -57,7 +57,7 @@ def split(cls, self, indices, wrt=None, simplify=True, evaluate=False):
     if not isinstance(indices, slice):
         if len(ab) == 1:
             universe = ab[0]
-            if universe.is_boolean:
+            if universe.is_bool:
                 universe = x.domain_conditioned(universe)
         elif len(ab) == 2:
             a, b = ab
@@ -68,7 +68,7 @@ def split(cls, self, indices, wrt=None, simplify=True, evaluate=False):
         else:
             universe = x.domain
 
-        if not isinstance(indices, set) and indices.is_boolean:
+        if not isinstance(indices, set) and indices.is_bool:
             indices = x.domain_conditioned(indices)
         intersection = universe & indices
         if intersection:
@@ -133,5 +133,4 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
-from . import complement
 # created on 2018-02-24

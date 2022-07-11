@@ -25,7 +25,7 @@ def prove(Eq):
     a, b, x = Symbol(real=True)
     Eq << apply(a < x, b >= x)
 
-    Eq << sets.el.imply.et.split.interval.apply(Eq[-1])
+    Eq << sets.el_interval.imply.et.apply(Eq[-1])
 
     Eq << Eq[-1].reversed
 

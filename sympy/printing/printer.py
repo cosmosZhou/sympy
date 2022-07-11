@@ -170,8 +170,6 @@ The output of the code above is::
     \\operatorname{Mod}{\\left( ModOpWrong(x, m),7 \\right)}
 """
 
-from __future__ import print_function, division
-
 from contextlib import contextmanager
 
 from sympy import Basic, Add

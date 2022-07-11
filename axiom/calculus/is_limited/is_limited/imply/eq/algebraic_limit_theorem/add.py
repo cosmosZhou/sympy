@@ -24,17 +24,17 @@ def prove(Eq):
     Eq << apply(Element(Limit[x:x0](f(x)), Reals), Element(Limit[x:x0](g(x)), Reals))
 
     ε = Symbol(real=True, positive=True)
-    ε0 = Symbol.ε_0(real=True, positive=True)
-    δ0 = Symbol.δ_0(real=True, positive=True)
-    Eq << calculus.is_limited.imply.any_all.limit_definition.symbol_subs.apply(Eq[0], ε0, δ0, var='A')
+    ε_0 = Symbol(real=True, positive=True)
+    δ_0 = Symbol(real=True, positive=True)
+    Eq << calculus.is_limited.imply.any_all.limit_definition.symbol_subs.apply(Eq[0], ε_0, δ_0, var='A')
 
-    Eq << Eq[-1].subs(ε0, ε / 2)
+    Eq << Eq[-1].subs(ε_0, ε / 2)
 
-    ε1 = Symbol.ε_1(real=True, positive=True)
-    δ1 = Symbol.δ_1(real=True, positive=True)
-    Eq << calculus.is_limited.imply.any_all.limit_definition.symbol_subs.apply(Eq[1], ε1, δ1, var='B')
+    ε_1 = Symbol(real=True, positive=True)
+    δ_1 = Symbol(real=True, positive=True)
+    Eq << calculus.is_limited.imply.any_all.limit_definition.symbol_subs.apply(Eq[1], ε_1, δ_1, var='B')
 
-    Eq << Eq[-1].subs(ε1, ε / 2)
+    Eq << Eq[-1].subs(ε_1, ε / 2)
 
     Eq << algebra.any_all.any_all.imply.any_all_et.limits_intersect.apply(Eq[-1], Eq[-3])
 
@@ -47,7 +47,7 @@ def prove(Eq):
     Eq << Eq[-1].this.expr.limits[0][1].args[1].simplify()
 
     δ = Symbol(real=True, positive=True)
-    Eq << algebra.any.imply.any.subs.apply(Eq[-1], Min(δ0, δ1), δ)
+    Eq << algebra.any.imply.any.subs.apply(Eq[-1], Min(δ_0, δ_1), δ)
 
     Eq << calculus.any_all.imply.eq.limit_definition.apply(Eq[-1])
 

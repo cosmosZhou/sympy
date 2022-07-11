@@ -7,7 +7,7 @@ def apply(x, w=None):
     i, j = Symbol(domain=Range(n))
 
     if w is None:
-        w = Symbol.w(Lamda[j, i](ShiftMatrix(n, i, j)))
+        w = Symbol(Lamda[j, i](ShiftMatrix(n, i, j)))
     else:
         assert w[i, j] == ShiftMatrix(n, i, j)
 

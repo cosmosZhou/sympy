@@ -10,7 +10,6 @@ from sympy.matrices.expressions.transpose import Transpose, transpose
 
 from sympy.matrices.expressions.inverse import Inverse
 from sympy.matrices import Matrix, ShapeError
-from sympy.core.logic import _fuzzy_group
 
 
 class BlockMatrix(MatrixExpr): 
@@ -19,11 +18,11 @@ class BlockMatrix(MatrixExpr):
     Examples
     ========
 
-    >>> n = Symbol.n(integer=True, positive=True)
-    >>> A = Symbol.A(shape=(n, n), real=True)
-    >>> B = Symbol.B(shape=(n, n), real=True)
-    >>> C = Symbol.C(shape=(n, n), real=True)
-    >>> D = Symbol.D(shape=(n, n), real=True)
+    >>> n = Symbol(integer=True, positive=True)
+    >>> A = Symbol(shape=(n, n), real=True)
+    >>> B = Symbol(shape=(n, n), real=True)
+    >>> C = Symbol(shape=(n, n), real=True)
+    >>> D = Symbol(shape=(n, n), real=True)
     >>> block1 = BlockMatrix([[A, B], [C, D]])
     >>> block1
     [[A, B], [C, D]]
@@ -38,6 +37,26 @@ class BlockMatrix(MatrixExpr):
     
     
     """
+
+    def _eval_template_is_attr(self, is_attr):
+        b = None
+        for expr in self.args:
+            a = getattr(expr, is_attr)
+            if a is None:
+                return
+            if b is None:
+                b = a
+            elif b != a:
+                return
+        return b
+
+    _eval_is_extended_integer = lambda self: self._eval_template_is_attr('is_extended_integer')
+    _eval_is_extended_rational = lambda self: self._eval_template_is_attr('is_extended_rational')
+    _eval_is_extended_real = lambda self: self._eval_template_is_attr('is_extended_real')
+    _eval_is_extended_complex = lambda self: self._eval_template_is_attr('is_extended_complex')
+    _eval_is_finite = lambda self: self._eval_template_is_attr('is_finite')
+    _eval_is_extended_positive = lambda self: self._eval_template_is_attr('is_extended_positive')
+    _eval_is_extended_negative = lambda self: self._eval_template_is_attr('is_extended_negative')
 
     @property
     def dtype(self):
@@ -77,7 +96,10 @@ class BlockMatrix(MatrixExpr):
         if len(args) == 1 and isinstance(args[0], (list, tuple)):
             args = args[0]
             if all(isinstance(arg, (list, tuple)) for arg in args):
-                args = [cls(*(x.T for x in arr)).T for arr in args]                
+                args = [cls(*(x.T for x in arr)).T for arr in args]
+                
+            if all(arg.is_DenseMatrix for arg in args):
+                return Matrix([arr.tolist() for arr in args])
         
         from sympy import sympify
         args = [*map(sympify, args)]
@@ -184,6 +206,15 @@ class BlockMatrix(MatrixExpr):
             return shape[:self.axis] + (dimension_axis,) + shape[self.axis + 1:max_length]
         else:
             shapes = [arg.shape for arg in self.args]
+            if max(len(s) for s in shapes) == 1:
+                cols = 0
+                for s in shapes:
+                    if s:
+                        cols += s[0]
+                    else:
+                        cols += 1
+                return (cols,)
+            
             from sympy.core.add import Add
             Add.broadcast(shapes)
             rows = sum(s[0] for s in shapes)
@@ -453,6 +484,7 @@ class BlockMatrix(MatrixExpr):
             
             b = None
             
+            from sympy import S
             start, stop = None, None
             mat = []
             for arg in self.args:
@@ -468,13 +500,13 @@ class BlockMatrix(MatrixExpr):
                             start, stop = arg.index
                         else:
                             start = arg.index
-                            stop = start + 1
+                            stop = start + S.One
                     else:
                         if arg.is_Sliced: 
                             _start, _stop = arg.index
                         else:
                             _start = arg.index
-                            _stop = _start + 1
+                            _stop = _start + S.One
                             
                         if _start != stop:
                             b = None
@@ -649,33 +681,6 @@ class BlockMatrix(MatrixExpr):
             return self.func(*(other * arg for arg in self.args), **self.kwargs)
         return MatrixExpr.__rmul__(self, other)
 
-    _eval_is_integer = lambda self: _fuzzy_group((a.is_integer for a in self.args), quick_exit=True)
-    
-    _eval_is_rational = lambda self: _fuzzy_group((a.is_rational for a in self.args), quick_exit=True)
-    
-    _eval_is_extended_real = lambda self: _fuzzy_group((a.is_extended_real for a in self.args), quick_exit=True)
-    
-    _eval_is_complex = lambda self: _fuzzy_group((a.is_complex for a in self.args), quick_exit=True)
-    
-    _eval_is_extended_positive = lambda self: _fuzzy_group((a.is_extended_positive for a in self.args), quick_exit=True)
-    
-    _eval_is_extended_negative = lambda self: _fuzzy_group((a.is_extended_negative for a in self.args), quick_exit=True)
-
-    def _eval_is_finite(self):
-        ret = None
-        for arg in self.args:
-            if arg.is_finite:
-                if ret == False:
-                    return
-                ret = True
-            elif arg.is_finite == False:
-                if ret == True:
-                    return
-                ret = False
-            else:
-                return
-        return ret
-            
     def _subs(self, old, new, **hints):
         if old.is_BlockMatrix and self.axis == old.axis:
             from sympy.utilities.misc import sunday

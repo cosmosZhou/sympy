@@ -5,8 +5,7 @@ from util import *
 def apply(given, t=None):
     (x, w), y = given.of(Equal[MatMul])
     [n] = x.shape
-    _n, i, j = w.of(SwapMatrix)
-    assert n == _n
+    i, j = w.of(SwapMatrix)
     assert i >= 0 and i < n
     assert j >= 0 and j < n
     if t is None:

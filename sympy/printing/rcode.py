@@ -8,8 +8,6 @@ using the functions defined in math.h where possible.
 
 """
 
-from __future__ import print_function, division
-
 from sympy.codegen.ast import Assignment
 
 from sympy.printing.codeprinter import CodePrinter

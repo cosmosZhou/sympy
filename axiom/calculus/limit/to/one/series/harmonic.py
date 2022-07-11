@@ -30,7 +30,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.expr.apply(sets.el.imply.el.inverse.interval)
 
-    Eq << Eq[-1].this.expr.apply(sets.el.imply.et.split.interval)
+    Eq << Eq[-1].this.expr.apply(sets.el_interval.imply.et)
 
     Eq << algebra.all_et.imply.et.all.apply(Eq[-1])
 

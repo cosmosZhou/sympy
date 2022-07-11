@@ -22,7 +22,7 @@ def prove(Eq):
     d = Symbol(integer=True, positive=True)
     Eq << apply(Element(x, Range(a, b)), d)
 
-    Eq << sets.el.imply.et.split.range.apply(Eq[0], right_open=False)
+    Eq << sets.el_range.imply.et.apply(Eq[0], right_open=False)
 
     Eq <<= Eq[-1] * d, Eq[-2] * d
 

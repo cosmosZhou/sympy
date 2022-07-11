@@ -14,8 +14,6 @@ TODO List:
 - Update the dictionary with a complete list of state-operator pairs
 """
 
-from __future__ import print_function, division
-
 from sympy.physics.quantum.cartesian import (XOp, YOp, ZOp, XKet, PxOp, PxKet,
                                              PositionKet3D)
 from sympy.physics.quantum.operator import Operator

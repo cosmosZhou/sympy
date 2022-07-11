@@ -1,5 +1,3 @@
-from __future__ import (absolute_import, division, print_function)
-
 from sympy import And, Gt, Lt, Abs, Dummy, oo, Tuple, Symbol
 from sympy.codegen.ast import (
     Assignment, AddAugmentedAssignment, CodeBlock, Declaration, FunctionDefinition,

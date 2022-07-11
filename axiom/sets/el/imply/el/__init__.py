@@ -1,7 +1,5 @@
 from . import cartesian_space
 from . import complement
-from . import st, split
-from . import finiteset
 from . import imageset
 from . import neg
 from . import add
@@ -17,3 +15,5 @@ from . import relax
 from . import right_close
 from . import left_close
 from . import floor
+from . import finiteset
+from . import st

@@ -12,3 +12,6 @@ from . import le
 
 from . import ge
 from . import eq
+from . import add_ge_zero
+from . import add_lt_zero
+from . import add_gt_zero

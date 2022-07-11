@@ -3,15 +3,15 @@ from util import *
 
 @apply
 def apply(nonoverlapping, x_equal, i=None, j=None):
-    a_set_comprehension, n = nonoverlapping.of(Equal[Card])
-    (xk, limit), _a_set_comprehension = x_equal.of(Equal[Cup[FiniteSet]])
+    a_cup_finiteset, n = nonoverlapping.of(Equal[Card])
+    (xk, limit), _a_cup_finiteset = x_equal.of(Equal[Cup[FiniteSet]])
     x = Lamda(xk, limit).simplify()
     [_n] = x.shape
     assert n == _n
 
-    assert _a_set_comprehension == a_set_comprehension
+    assert _a_cup_finiteset == a_cup_finiteset
 
-    ak, limit = a_set_comprehension.of(Cup[FiniteSet])
+    ak, limit = a_cup_finiteset.of(Cup[FiniteSet])
     a = Lamda(ak, limit).simplify()
     [_n] = a.shape
     assert n == _n
@@ -39,8 +39,8 @@ def prove(Eq):
 
     i, j = Symbol(domain=Range(n), given=True)
 
-    Eq << apply(Equal(Card(a[:n].set_comprehension(k)), n),
-                Equal(x[:n].set_comprehension(k), a[:n].set_comprehension(k)),
+    Eq << apply(Equal(Card(a[:n].cup_finiteset(k)), n),
+                Equal(x[:n].cup_finiteset(k), a[:n].cup_finiteset(k)),
                 i=i, j=j)
 
 

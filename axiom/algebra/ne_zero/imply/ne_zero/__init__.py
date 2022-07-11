@@ -1,3 +1,3 @@
 from . import sqrt
-from . import strip
-from . import reciprocal
+from . import div
+from . import abs

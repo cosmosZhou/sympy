@@ -16,7 +16,7 @@ def prove(Eq):
     x, a = Symbol(real=True, given=True)
     Eq << apply(abs(x) < a)
 
-    Eq << sets.el.imply.et.split.interval.apply(Eq[1])
+    Eq << sets.el_interval.imply.et.apply(Eq[1])
     Eq << algebra.lt.gt.imply.lt.abs.apply(Eq[-1], Eq[-2])
 
 

@@ -14,9 +14,9 @@ def prove(Eq):
     x = Symbol(real=True)
     Eq << apply(cos(x))
 
-    Eq << Eq[0].find(Exp).this.apply(geometry.expi.to.add.euler.formula)
+    Eq << Eq[0].find(Exp).this.apply(geometry.expi.to.add.Euler)
 
-    Eq << Eq[0].rhs.args[1].args[1].this.apply(geometry.expi.to.add.euler.formula)
+    Eq << Eq[0].rhs.args[1].args[1].this.apply(geometry.expi.to.add.Euler)
 
     Eq << Eq[-2] + Eq[-1]
 

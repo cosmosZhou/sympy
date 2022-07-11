@@ -1,5 +1,3 @@
-from __future__ import (absolute_import, division, print_function)
-
 import math
 from sympy import Interval
 from sympy.calculus.singularities import is_increasing, is_decreasing

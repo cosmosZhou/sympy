@@ -53,7 +53,7 @@ def prove(Eq):
 
     Eq << algebra.eq.imply.eq.sum.apply(Eq[-1], (k,))
 
-    _k = Symbol.k(integer=True)
+    _k = Symbol('k', integer=True)
     Eq << Eq[-1].this.lhs.limits_subs(k, _k)
 
     Eq << Eq[-1].this.rhs.limits_subs(k, _k)

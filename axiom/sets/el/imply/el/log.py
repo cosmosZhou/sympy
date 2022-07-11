@@ -33,14 +33,14 @@ def prove(Eq):
     a = Symbol(real=True, positive=True)
     Eq << apply(Element(x, Interval(a, b)))
 
-    Eq << sets.el.imply.et.split.interval.apply(Eq[0])
+    Eq << sets.el_interval.imply.et.apply(Eq[0])
 
     Eq << algebra.ge.imply.ge.log.apply(Eq[-2])
 
     Eq << algebra.ge.imply.gt_zero.apply(Eq[2])
     Eq << algebra.gt_zero.le.imply.le.log.apply(Eq[-1], Eq[3])
 
-    Eq << sets.el.given.et.split.interval.apply(Eq[1])
+    Eq << sets.el_interval.given.et.apply(Eq[1])
 
 
 if __name__ == '__main__':

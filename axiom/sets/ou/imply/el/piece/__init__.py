@@ -19,7 +19,7 @@ def prove(Eq):
     f, g, h = Function(shape=(k,), real=True)
     Eq << apply(Element(f(x), S) & Element(x, A) | Element(g(x), S) & Element(x, B - A) | Element(h(x), S) & NotElement(x, A | B), wrt=S)
 
-    Eq << Eq[0].this.args[1].args[1].apply(sets.el.imply.et.split.complement, simplify=None)
+    Eq << Eq[0].this.args[1].args[1].apply(sets.el_complement.imply.et, simplify=None)
 
     Eq << Eq[-1].this.args[2].args[1].apply(sets.notin.imply.et.split.union, simplify=None)
 

@@ -10,8 +10,6 @@ ever support anything else than sympy expressions (no Matrices, dictionaries
 and so on).
 """
 
-from __future__ import print_function, division
-
 import re
 from sympy import Symbol, NumberSymbol, I, zoo, oo
 from sympy.core.compatibility import exec_
@@ -310,7 +308,7 @@ class Lambdifier(object):
             print(newexpr)
         eval_str = 'lambda %s : ( %s )' % (argstr, newexpr)
         self.eval_str = eval_str
-        exec_("from __future__ import division; MYNEWLAMBDA = %s" % eval_str, namespace)
+        exec_("; MYNEWLAMBDA = %s" % eval_str, namespace)
         self.lambda_func = namespace['MYNEWLAMBDA']
 
     def __call__(self, *args, **kwargs):

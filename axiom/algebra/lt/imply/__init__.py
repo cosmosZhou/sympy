@@ -12,3 +12,4 @@ from . import sum_is_zero
 from . import gt_zero
 from . import lt_zero
 from . import ne_zero
+from . import all

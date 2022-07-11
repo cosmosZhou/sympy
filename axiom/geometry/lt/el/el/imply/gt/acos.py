@@ -35,7 +35,7 @@ def prove(Eq):
 
     Eq << sets.el.el.imply.el.sub.interval.apply(Eq[-2], Eq[-1])
 
-    Eq << sets.el.imply.ou.split.interval.apply(Eq[-1], 0, left_open=True)
+    Eq << sets.el_interval.imply.ou.apply(Eq[-1], 0, left_open=True)
 
     Eq << Eq[-1].this.args[1].apply(geometry.el.imply.sin_le_zero)
 

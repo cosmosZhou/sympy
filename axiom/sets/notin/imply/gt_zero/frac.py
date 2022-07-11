@@ -20,7 +20,7 @@ def prove(Eq):
 
     Eq << sets.ne.el.imply.el.apply(Eq[-2], Eq[-1])
 
-    Eq << sets.el.imply.et.split.interval.apply(Eq[-1])
+    Eq << sets.el_interval.imply.et.apply(Eq[-1])
 
 if __name__ == '__main__':
     run()

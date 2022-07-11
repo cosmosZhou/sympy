@@ -1,5 +1,3 @@
-from __future__ import division, print_function
-
 from sympy.core import Expr, S, Symbol, oo, pi, sympify
 from sympy.core.compatibility import as_int, ordered
 from sympy.core.symbol import _symbol, Dummy

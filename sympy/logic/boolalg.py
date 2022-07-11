@@ -62,7 +62,7 @@ def as_Boolean(e):
 class Boolean(Basic):
     """A boolean object is an object for which logic operations make sense."""
 
-    is_boolean = True
+    is_bool = True
     plausible = None
     __slots__ = ()
 
@@ -117,7 +117,7 @@ class Boolean(Basic):
         from sympy.stats.rv import RandomSymbol
         free_symbols = {*self.free_symbols}        
         for symbol in self.free_symbols:
-            if symbol.is_given:
+            if symbol.is_given or symbol.is_bool:
                 free_symbols.discard(symbol)
                 continue
                         
@@ -189,7 +189,7 @@ class Boolean(Basic):
 
     def __lshift__(self, other):
         """Overloading for <<"""
-        return Infer(other, self)
+        return Assuming(self, other)
 
     __rrshift__ = __lshift__
     __rlshift__ = __rshift__
@@ -1092,7 +1092,7 @@ class And(LatticeOp, BooleanFunction):
 
     def apply(self, axiom, *args, split=True, **kwargs):
         token = axiom.__name__.split(sep='.', maxsplit=4)
-        if token[2] in ('et', 'et_ou', 'et_lt', 'et_le', 'et_gt', 'et_ge') or token[-2] in ('imply', 'given'):
+        if token[2][:3] in ('et', 'et_') or token[-2] in ('imply', 'given'):
             split = False
             
         if split: 
@@ -1163,18 +1163,24 @@ class And(LatticeOp, BooleanFunction):
     def __new__(cls, *args, **options):
         valuable = set()
         for arg in args:
-            if arg:
-                continue            
+            if arg == True:
+                continue
             if arg == False:
                 return S.BooleanFalse.copy(**options)
-            valuable.add(arg)
+            
+            if arg.is_And:
+                valuable |= arg._argset
+            else:
+                valuable.add(arg)
 
         args = valuable
         if len(args) == 0:
             return S.BooleanTrue.copy(**options)
         if len(args) == 1:
-            eq, *_ = args
-            return eq.func(*eq.args, **options)
+            [eq] = args
+            if options:
+                return eq.func(*eq.args, **options)
+            return eq
 
         if set(v.invert() for v in args) & args:
             return S.BooleanFalse.copy(**options)
@@ -1468,19 +1474,25 @@ class Or(LatticeOp, BooleanFunction):
     def __new__(cls, *args, **options):
         valuable = set()
         for arg in args:
-            if arg.is_BooleanFalse:
+            if arg == False:
                 continue
-            if arg:
+            if arg == True:
                 return S.BooleanTrue.copy(**options)
-            valuable.add(arg)
+            
+            if arg.is_Or:
+                valuable |= arg._argset
+            else:
+                valuable.add(arg)
 
         if not valuable:
             return S.BooleanFalse.copy(**options)
         
         args = valuable
         if len(args) == 1:
-            eq, *_ = args
-            return eq.func(*eq.args, **options)
+            [eq] = args
+            if options:
+                return eq.func(*eq.args, **options)
+            return eq
 
         if set(v.invert() for v in args) & args:
             if 'plausible' in options:
@@ -1490,7 +1502,7 @@ class Or(LatticeOp, BooleanFunction):
 
         if options: 
             from sympy.core.inference import Inference   
-            return Inference(LatticeOp.__new__(cls, *args), **options)
+            return Inference(LatticeOp.__new__(cls, *args, evaluate=False), **options)
         return LatticeOp.__new__(cls, *args, **options)
 
     def invert(self):
@@ -1511,6 +1523,7 @@ class Or(LatticeOp, BooleanFunction):
                     return [S.true]
                 rel.append(c)
             newargs.append(x)
+            
         return LatticeOp._new_args_filter(newargs, Or)
 
     def _eval_as_set(self):
@@ -1544,7 +1557,7 @@ class Or(LatticeOp, BooleanFunction):
                     common_terms &= {eq}
                     
             if not common_terms: 
-                dict_contains = defaultdict(set)        
+                dict_contains = defaultdict(set)
                 dict_notcontains = defaultdict(set)
                 dict_domain = defaultdict(list)
                 for eq in self._argset:
@@ -1569,9 +1582,9 @@ class Or(LatticeOp, BooleanFunction):
                         _eqs = dict_notcontains[e]
                         sets = [contains.rhs for contains in eqs]
                         _sets = [contains.rhs for contains in _eqs]
-                        contains = NotElement(e, Intersection(*_sets) - Union(*sets))                
+                        contains = NotElement(e, Intersection(*_sets) - Union(*sets)).simplify()
                         argset = self._argset - eqs - _eqs
-                        return self.func(*argset, contains)                
+                        return self.func(*argset, contains)
                         
                 for e, eqs in dict_notcontains.items(): 
                     if len(eqs) > 1: 
@@ -1828,6 +1841,9 @@ class Not(BooleanFunction):
             return And._to_nnf(Or(a, ~c), Or(~a, ~b), simplify=simplify)
 
         raise ValueError("Illegal operator %s in expression" % func)
+    
+    def invert(self):
+        return self.arg
 
 
 class Xor(BooleanFunction):
@@ -2118,10 +2134,10 @@ class Infer(BooleanAssumption):
         if B.is_BooleanFalse:
             return A.invert()
         
-        if A:
+        if not A.is_symbol and A:
             return B
         
-        if A.is_BooleanFalse or B or A == B:
+        if A.is_BooleanFalse or not B.is_symbol and B or A == B:
             return S.true
         
         if A.is_Relational and B.is_Relational:

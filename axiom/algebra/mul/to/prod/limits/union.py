@@ -29,7 +29,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.expr.apply(algebra.mul.to.pow.add.exponent)
 
-    Eq << Eq[-1].this.find(Add).apply(algebra.add.inclusive_exclusive_principle)
+    Eq << Eq[-1].this.find(Add).apply(algebra.add.principle.inclusive_exclusive)
 
 
 if __name__ == '__main__':

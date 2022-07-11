@@ -1,7 +1,5 @@
 """Implementaton of :class:`GMPYIntegerRing` class. """
 
-from __future__ import print_function, division
-
 from sympy.polys.domains.groundtypes import (
     GMPYInteger, SymPyInteger,
     gmpy_factorial,

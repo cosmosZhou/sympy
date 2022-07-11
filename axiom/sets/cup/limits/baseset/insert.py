@@ -8,7 +8,7 @@ def baseset_insert(self):
 
     * limits, limit = limits
     x, cond = limit
-    assert cond.is_boolean
+    assert cond.is_bool
     baseset = function.domain_defined(x) & cond.domain_defined(x)
     return self.func(function, *limits, (x, cond, baseset))
 

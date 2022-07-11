@@ -57,7 +57,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.rhs.simplify()
 
-    Eq << Eq[-1].this.rhs.apply(algebra.eq.transposition, lhs=-1)
+    Eq << Eq[-1].this.rhs.apply(algebra.eq.transport, lhs=-1)
 
     Eq << Eq[-1].subs(t, t - 1)
 

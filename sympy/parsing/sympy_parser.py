@@ -1,7 +1,5 @@
 """Transform a string with Python-like source code into SymPy expression. """
 
-from __future__ import print_function, division
-
 from tokenize import (generate_tokens, untokenize, TokenError,
     NUMBER, STRING, NAME, OP, ENDMARKER, ERRORTOKEN, NEWLINE)
 

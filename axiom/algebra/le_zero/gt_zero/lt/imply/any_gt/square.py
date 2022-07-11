@@ -24,7 +24,7 @@ def prove(Eq):
 
     Eq << -Eq[0]
 
-    Eq << Eq[1].this.apply(algebra.gt.transposition).reversed
+    Eq << Eq[1].this.apply(algebra.gt.transport).reversed
 
     Eq << algebra.ge_zero.lt.lt.imply.any_gt.square.apply(Eq[-2], Eq[-1], Eq[2])
 

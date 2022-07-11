@@ -21,9 +21,9 @@ def prove(Eq):
 
     Eq << ~Eq[1]
 
-    Eq << algebra.ne_zero.imply.abs_gt_zero.apply(Eq[-1])
+    Eq << algebra.ne_zero.imply.gt_zero.abs.apply(Eq[-1])
 
-    Eq << algebra.gt_zero.imply.square_gt_zero.apply(Eq[-1])
+    Eq << algebra.gt_zero.imply.gt_zero.square.apply(Eq[-1])
 
     Eq << algebra.imply.ge_zero.square.apply(y)
 
@@ -35,7 +35,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq[0])
 
-    
+
 
 
 if __name__ == '__main__':

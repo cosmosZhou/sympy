@@ -40,9 +40,9 @@ def prove(Eq):
 
     Eq << Eq[2].this.expr.expr.apply(algebra.lt.imply.et.split.abs)
 
-    Eq << Eq[-1].this.expr.expr.args[0].apply(algebra.lt.transposition, lhs=0)
+    Eq << Eq[-1].this.expr.expr.args[0].apply(algebra.lt.transport, lhs=0)
 
-    Eq << Eq[-1].this.expr.expr.args[0].apply(algebra.gt.transposition, lhs=0)
+    Eq << Eq[-1].this.expr.expr.args[0].apply(algebra.gt.transport, lhs=0)
 
     Eq << Eq[-1].this.expr.expr.apply(sets.lt.gt.imply.el.interval)
 

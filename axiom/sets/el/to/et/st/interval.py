@@ -26,7 +26,7 @@ def prove(Eq):
 
     Eq << algebra.iff.given.et.apply(Eq[0])
 
-    Eq << Eq[-2].this.lhs.apply(sets.el.imply.et.split.interval, simplify=False)
+    Eq << Eq[-2].this.lhs.apply(sets.el_interval.imply.et, simplify=False)
 
     Eq << Eq[-1].this.rhs.apply(sets.le.ge.imply.el.interval)
 

@@ -21,7 +21,7 @@ def prove(Eq):
     #Eq << apply(b < x, a >= x)
     Eq << apply(x < b, x > a)
 
-    Eq << sets.el.given.et.split.interval.apply(Eq[-1])
+    Eq << sets.el_interval.given.et.apply(Eq[-1])
 
     #Eq << Eq[-1].reversed
     #Eq << Eq[-2].reversed

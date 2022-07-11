@@ -2,8 +2,6 @@
 Several methods to simplify expressions involving unit objects.
 """
 
-from __future__ import division
-
 from sympy.utilities.exceptions import SymPyDeprecationWarning
 
 from sympy import Add, Mul, Pow, Tuple, sympify

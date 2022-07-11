@@ -1,7 +1,5 @@
 """ Tools for doing common subexpression elimination.
 """
-from __future__ import print_function, division
-
 from sympy.core import Basic, Mul, Add, Pow, sympify, Symbol
 from sympy.core.compatibility import iterable
 from sympy.core.containers import Tuple, OrderedSet

@@ -6,7 +6,7 @@ def apply(n):
     from axiom.discrete.imply.all_et.mapping.Qu2v import predefined_symbols
     Q, w, x = predefined_symbols(n)
 
-    Pn1 = Symbol("P_{n+1}", conditionset(x[:n + 1], Equal(x[:n + 1].set_comprehension(), Range(n + 1))))
+    Pn1 = Symbol("P_{n+1}", conditionset(x[:n + 1], Equal(x[:n + 1].cup_finiteset(), Range(n + 1))))
 
     t = Q.definition.variable
     return Equal(Cup[t](Q[t]), Pn1)

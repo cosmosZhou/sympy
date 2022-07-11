@@ -11,7 +11,7 @@ def doit(Sum, self):
             ...
         elif len(ab) == 1:
             domain = ab[0]
-            if domain.is_boolean:
+            if domain.is_bool:
                 if j == i:
                     break
 
@@ -21,7 +21,7 @@ def doit(Sum, self):
             a, b = ab
             b = b._subs(i, i0)
 
-            if a.is_boolean:
+            if a.is_bool:
                 if j == i:
                     limits[t] = (j, a, b)
                     break

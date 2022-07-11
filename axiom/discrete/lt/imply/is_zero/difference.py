@@ -27,7 +27,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq[-2].variable, d)
 
-    Eq << Eq[-1].this.lhs.apply(sets.el.given.et.split.range)
+    Eq << Eq[-1].this.lhs.apply(sets.el_range.given.et)
 
     Eq << algebra.cond.infer.imply.cond.transit.apply(Eq[0], Eq[-1])
 

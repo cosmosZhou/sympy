@@ -8,7 +8,7 @@ def apply(x0, x1):
     mean0, std0 = pspace0.distribution.of(NormalDistribution)
     mean1, std1 = pspace1.distribution.of(NormalDistribution)
 
-    Y = Symbol.y(distribution=NormalDistribution(mean0 + mean1, sqrt(std0 * std0 + std1 * std1)))
+    Y = Symbol(distribution=NormalDistribution(mean0 + mean1, sqrt(std0 * std0 + std1 * std1)))
     y = pspace(Y).symbol
 
     return Equal(Probability(Equal(x0 + x1, y)), Probability(Equal(Y, y)).doit())
@@ -32,13 +32,13 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.find(Probability).doit()
 
-    Eq << Eq[-1].this.find(LessEqual).apply(algebra.le.transposition)
+    Eq << Eq[-1].this.find(LessEqual).apply(algebra.le.transport)
 
     Eq << Eq[-1].this.find(Integral, Integral).apply(calculus.integral.doit.bool)
 
     Eq << Eq[-1].this.find(Derivative).apply(calculus.derivative.to.integral)
 
-    Eq << Eq[-1].this.find(Derivative).apply(calculus.derivative.to.mul)
+    Eq << Eq[-1].this.find(Derivative).apply(calculus.derivative_integral.to.mul.derivative)
 
     Eq << Eq[-1].this.find(Derivative).doit()
 

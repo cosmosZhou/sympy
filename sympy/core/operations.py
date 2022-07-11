@@ -491,9 +491,6 @@ class AssocOp(Basic):
             if arg.is_random:
                 return True
 
-    def max_len_shape(self):
-        return max(len(arg.shape) for arg in self.args)    
-
     def getitem(self, indices, **_):
         args = []
         len_shape = self.max_len_shape()
@@ -600,21 +597,24 @@ class LatticeOp(AssocOp):
             # must be careful to handle as such; this
             # is done so short-circuiting can be done
             # without having to sympify all values
-            _args = frozenset(cls._new_args_filter(args))
+            if options.get('evaluate', True):
+                args = frozenset(cls._new_args_filter(args))
+            else:
+                args = frozenset(args)
         except ShortCircuit:
             return sympify(cls.zero)
-        if not _args:
+        if not args:
             return sympify(cls.identity)
-        elif len(_args) == 1:
-            obj = set(_args).pop()
+        elif len(args) == 1:
+            obj = set(args).pop()
             if obj.is_BooleanAtom:
                 obj = obj.copy(**options)
             return obj
         else:
             # XXX in almost every other case for __new__, *_args is
             # passed along, but the expectation here is for _args
-            obj = super(AssocOp, cls).__new__(cls, _args, **options)
-            obj._argset = _args
+            obj = super(AssocOp, cls).__new__(cls, args, **options)
+            obj._argset = args
             return cls.ensure_correctness_of_assumptions(obj, **options)
 
     @classmethod

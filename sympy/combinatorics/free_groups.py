@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import print_function, division
-
 from sympy.core import S
 from sympy.core.compatibility import is_sequence, as_int
 from sympy.core.expr import Expr

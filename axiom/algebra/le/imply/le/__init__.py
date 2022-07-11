@@ -11,3 +11,5 @@ from . import add
 from . import prod
 from . import relax
 from . import ceiling
+from . import exp
+from . import transport

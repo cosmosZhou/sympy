@@ -21,29 +21,29 @@ def prove(Eq):
 
     Eq << Eq[0].this.find(Or).apply(algebra.ou.invert)
 
-    Eq << Eq[-1].this.find(NotElement).apply(sets.notin.to.ou.split.range)
+    Eq << Eq[-1].this.find(NotElement).apply(sets.notin_range.to.ou)
 
     Eq << Eq[-1].this.find(Symbol < Symbol) - i
 
     Eq << Eq[-1].this.find(Or[~And]).apply(algebra.et.distribute, 1)
 
-    Eq << Eq[-1].this.find(Add < Add).apply(algebra.lt.transposition)
+    Eq << Eq[-1].this.find(Add < Add).apply(algebra.lt.transport)
 
     Eq << -Eq[-1].this.find(-Symbol < Add)
 
     Eq << Eq[-1].this.lhs.apply(algebra.et.invert)
 
-    
 
-    
 
-    Eq << Eq[-1].this.find(NotElement).apply(sets.notin.to.ou.split.range)
+
+
+    Eq << Eq[-1].this.find(NotElement).apply(sets.notin_range.to.ou)
 
     Eq << Eq[-1].this.find(Symbol < Symbol) - i
 
-    Eq << Eq[-1].this.find(Element).apply(sets.el.to.et.split.range)
+    Eq << Eq[-1].this.find(Element).apply(sets.el_range.to.et)
 
-    Eq << Eq[-1].this.find(Element).apply(sets.el.to.et.split.range)
+    Eq << Eq[-1].this.find(Element).apply(sets.el_range.to.et)
 
     Eq << Eq[-1].this.find(GreaterEqual[1 - Min]) - 1
 
@@ -55,7 +55,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(GreaterEqual) + 1
 
-    
+
 
 
 if __name__ == '__main__':

@@ -44,7 +44,7 @@ def prove(Eq):
     i = Symbol(integer=True)
     Eq << apply((y - Sum[i](x[i]) / n) ** 2)
 
-    x_ = Symbol.x(Lamda[i](y - x[i]))
+    x_ = Symbol('x', Lamda[i](y - x[i]))
     Eq << x_[i].this.definition
 
     Eq << Eq[-1] - y

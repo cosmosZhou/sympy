@@ -13,10 +13,11 @@ def prove(Eq):
 
     m, M = Symbol(real=True, given=True)
     x = Symbol(real=True)
-    f = Function(real=True)
     Eq << apply(x ** 3, Interval(m, M, right_open=True), x)
 
-    f = Function(real=True, eval=lambda x : x ** 3)
+    f = Function(real=True)
+    f[x] = x ** 3
+    
     Eq << Equal(f(x), -f(-x), plausible=True)
 
     Eq << Eq[-1].this.lhs.defun()

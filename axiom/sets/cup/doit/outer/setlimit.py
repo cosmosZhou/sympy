@@ -16,10 +16,10 @@ def prove(Eq):
     f, g = Function(real=True)
     Eq << apply(Cup[i:g(i, j) > 0, j:f(i, j) > 0, i:{a}](x[i, j]))
 
-    u = Function(eval=lambda a: Cup[i:g(i, j) > 0, j:f(a, j) > 0](x[i, j]))
+    u = Function(etype=dtype.real)
+    u[a] = Cup[i:g(i, j) > 0, j:f(a, j) > 0](x[i, j])
     Eq << u(i).this.defun()
 
-    print(u(i).dtype)
     Eq << sets.eq.imply.eq.cup.apply(Eq[-1], (i, {a}))
 
     Eq << Eq[-1].this.lhs.defun()

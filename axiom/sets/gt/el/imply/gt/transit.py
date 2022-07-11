@@ -16,7 +16,7 @@ def prove(Eq):
     a, b, x, y = Symbol(real=True)
     Eq << apply(x > y, Element(y, Interval(a, b)))
 
-    Eq << sets.el.imply.ge.split.interval.apply(Eq[1])
+    Eq << sets.el_interval.imply.ge.apply(Eq[1])
 
     Eq << algebra.gt.ge.imply.gt.transit.apply(Eq[0], Eq[-1])
 

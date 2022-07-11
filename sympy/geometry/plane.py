@@ -5,8 +5,6 @@ Contains
 Plane
 
 """
-from __future__ import division, print_function
-
 from sympy import simplify
 from sympy.core import Dummy, Rational, S, Symbol
 from sympy.core.symbol import _symbol

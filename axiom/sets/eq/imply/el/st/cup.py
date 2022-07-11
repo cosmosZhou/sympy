@@ -3,9 +3,9 @@ from util import *
 
 @apply
 def apply(given, index=None):
-    from axiom.sets.eq.given.eq.set_comprehension import of_set_comprehension
+    from axiom.sets.eq.given.eq.cup.finiteset import of_cup_finiteset
     cup, s = given.of(Equal)
-    x = of_set_comprehension(cup)
+    x = of_cup_finiteset(cup)
     n = x.shape[0]
     assert index >= 0 and index < n
     return Element(x[index], s)
@@ -15,13 +15,13 @@ def apply(given, index=None):
 def prove(Eq):
     from axiom import sets
     n = Symbol(integer=True)
-    s = Symbol.A(etype=dtype.integer)
+    s = Symbol('A', etype=dtype.integer)
     x = Symbol(integer=True, shape=(oo,))
     i = Symbol(domain=Range(n))
 
-    Eq << apply(Equal(x[:n].set_comprehension(), s), index=i)
+    Eq << apply(Equal(x[:n].cup_finiteset(), s), index=i)
 
-    Eq << Element(x[i], x[:n].set_comprehension(), plausible=True)
+    Eq << Element(x[i], x[:n].cup_finiteset(), plausible=True)
 
     Eq << Eq[-1].this.rhs.apply(sets.cup.to.union.split, cond={i})
 

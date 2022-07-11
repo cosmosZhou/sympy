@@ -28,8 +28,8 @@ def prove(Eq):
     i = Symbol(domain=Range(m))
     Eq << algebra.eq.given.eq.getitem.apply(Eq[0], i)
 
-    j = Symbol(domain=Range(n))
-    Eq << algebra.eq.given.eq.getitem.apply(Eq[-1], j)
+    
+    
 
 
 if __name__ == '__main__':
@@ -37,3 +37,4 @@ if __name__ == '__main__':
 # created on 2022-01-11
 
 from . import block
+# updated on 2022-03-30

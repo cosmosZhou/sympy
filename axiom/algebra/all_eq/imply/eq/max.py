@@ -16,7 +16,7 @@ def prove(Eq):
 
     Eq << apply(All[x:a:b](Equal(f(x), g(x))))
 
-    x_ = Symbol.x(domain=Interval(a, b))
+    x_ = Symbol('x', domain=Interval(a, b))
 
     Eq << algebra.all.imply.cond.subs.apply(Eq[0], x, x_)
 

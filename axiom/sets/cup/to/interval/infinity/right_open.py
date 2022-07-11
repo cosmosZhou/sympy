@@ -24,15 +24,15 @@ def prove(Eq):
 
     k = Eq[-1].rhs.variable
     x = Eq[-1].lhs.lhs
-    Eq <<= Eq[-2].this.lhs.expr.apply(sets.el.imply.ge.split.interval), Eq[-1].this.rhs.apply(algebra.any.given.cond.subs, k, Floor(x))
+    Eq <<= Eq[-2].this.lhs.expr.apply(sets.el_interval.imply.ge), Eq[-1].this.rhs.apply(algebra.any.given.cond.subs, k, Floor(x))
 
     Eq <<= Eq[-2].this.lhs.apply(algebra.any.imply.any_et.limits.unleash, simplify=None), algebra.infer.given.et.infer.apply(Eq[-1])
 
-    Eq <<= Eq[-3].this.lhs.expr.args[0].apply(sets.el.imply.ge.split.range), algebra.infer.given.cond.apply(Eq[-2]), Eq[-1].this.rhs.apply(sets.el.given.et.split.range)
+    Eq <<= Eq[-3].this.lhs.expr.args[0].apply(sets.el_range.imply.ge), algebra.infer.given.cond.apply(Eq[-2]), Eq[-1].this.rhs.apply(sets.el_range.given.et)
 
-    Eq << Eq[-1].this.lhs.apply(sets.el.imply.ge.split.interval)
+    Eq << Eq[-1].this.lhs.apply(sets.el_interval.imply.ge)
 
-    Eq <<= Eq[-3].this.lhs.expr.apply(algebra.ge.ge.imply.ge.transit), sets.el.given.et.split.interval.apply(Eq[-2])
+    Eq <<= Eq[-3].this.lhs.expr.apply(algebra.ge.ge.imply.ge.transit), sets.el_interval.given.et.apply(Eq[-2])
 
     Eq << Eq[-3].this.lhs.apply(sets.ge_zero.imply.is_nonnegative, simplify=None)
 

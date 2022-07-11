@@ -375,3 +375,15 @@ python -m pip install --upgrade pip
 使用  
 pip list  
 查看已安装的模块  
+
+## tesseract windows版本
+下载安装软件：  
+http://digi.bib.uni-mannheim.de/tesseract/tesseract-ocr-w64-setup-v4.1.0.20190314.exe  
+
+配置环境变量  
+![WSGIPythonHome](python/tesseract-path.jpg)  
+![WSGIPythonHome](python/tesseract-v.jpg)  
+
+https://github.com/simonflueckiger/tesserocr-windows_build/releases  
+下载链接  
+pip install https://github.com/simonflueckiger/tesserocr-windows_build/releases/download/tesserocr-v2.5.2-tesseract-4.1.1/tesserocr-2.5.2-cp36-cp36m-win_amd64.whl  

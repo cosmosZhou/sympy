@@ -7,8 +7,8 @@ def apply(x, lamda, w=None):
     i = Symbol(domain=Range(n))
 
     if w is None:
-        w = Symbol.w(Lamda[i](MulMatrix(n, i, lamda)))
-        w_quote = Symbol.w_quote(Lamda[i](MulMatrix(n, i, 1 / lamda)))
+        w = Symbol(Lamda[i](MulMatrix(n, i, lamda)))
+        w_quote = Symbol(Lamda[i](MulMatrix(n, i, 1 / lamda)))
     else:
         assert w[i] == MulMatrix(n, i, lamda)
         assert w_quote[i] == MulMatrix(n, i, 1 / lamda)

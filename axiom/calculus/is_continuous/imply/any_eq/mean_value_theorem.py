@@ -36,7 +36,7 @@ def prove(Eq):
 
     Eq << algebra.imply.all_le.minima.apply(m.definition)
 
-    Eq << algebra.all_le.imply.le.integral.apply(Eq[-1])
+    Eq << calculus.all_le.imply.le.integral.apply(Eq[-1])
 
     Eq << Eq[-1].subs(Eq.min.reversed) / (b - a)
 

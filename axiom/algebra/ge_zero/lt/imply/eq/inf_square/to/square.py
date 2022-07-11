@@ -23,7 +23,7 @@ def prove(Eq):
 
     Eq << sets.lt.imply.el.interval.average.apply(Eq[1])
 
-    Eq << sets.el.imply.et.split.interval.apply(Eq[-1])
+    Eq << sets.el_interval.imply.et.apply(Eq[-1])
 
     Eq << algebra.gt.ge.imply.gt.transit.apply(Eq[-2], Eq[0])
 
@@ -42,7 +42,7 @@ def prove(Eq):
 
     Eq <<= algebra.all.given.et.all.split.apply(Eq[-2], cond=y <= M ** 2), algebra.all.given.infer.apply(Eq[-1])
 
-    Eq <<= algebra.all.given.infer.apply(Eq[-2]), Eq[-3].subs(Eq.eq_max), Eq[-1].this.lhs.apply(sets.el.imply.gt.split.interval)
+    Eq <<= algebra.all.given.infer.apply(Eq[-2]), Eq[-3].subs(Eq.eq_max), Eq[-1].this.lhs.apply(sets.el_interval.imply.gt)
 
     Eq <<= Eq[-3].this.rhs.apply(algebra.any.given.cond.subs, x, (m + sqrt(y)) / 2), Eq[-2].this.expr.apply(algebra.any.given.cond.subs, x, (M + m) / 2), Eq[-1].this.lhs.apply(algebra.cond.imply.infer.et, cond=Eq[0])
 
@@ -50,7 +50,7 @@ def prove(Eq):
 
     Eq << algebra.cond.given.cond.subs.bool.apply(Eq[-2], cond=Eq[0], invert=True)
 
-    Eq <<= Eq[-5].this.lhs.apply(sets.el.imply.gt.split.interval), Eq[-4].this.rhs.apply(sets.el.given.el.sub, m / 2), Eq[-3].this.expr.apply(algebra.lt.given.gt_zero), Eq[-1].this.lhs.apply(algebra.ge_zero.gt.imply.gt.square)
+    Eq <<= Eq[-5].this.lhs.apply(sets.el_interval.imply.gt), Eq[-4].this.rhs.apply(sets.el.given.el.sub, m / 2), Eq[-3].this.expr.apply(algebra.lt.given.gt_zero), Eq[-1].this.lhs.apply(algebra.ge_zero.gt.imply.gt.square)
 
     Eq << Eq[-1].this.lhs.apply(algebra.gt.imply.ge.relax)
 
@@ -68,11 +68,11 @@ def prove(Eq):
 
     Eq <<= Eq[-5].this.lhs.apply(algebra.gt.imply.gt.sqrt), Eq[-4].this.rhs.apply(algebra.add_gt_zero.given.et), Eq[-2].subs(Eq.eq_abs_M), algebra.infer.given.et.infer.apply(Eq[-1])
 
-    Eq <<= Eq[-5].subs(Eq.eq_abs_m), Eq[-4].this.lhs.apply(algebra.gt.imply.gt.relax, lower=0), Eq[-3].this.rhs.apply(algebra.gt.transposition, lhs=slice(0, 2)), algebra.infer.given.cond.apply(Eq[-2]), Eq[-1].this.lhs.apply(algebra.gt.imply.gt.relax, lower=0)
+    Eq <<= Eq[-5].subs(Eq.eq_abs_m), Eq[-4].this.lhs.apply(algebra.gt.imply.gt.relax, lower=0), Eq[-3].this.rhs.apply(algebra.gt.transport, lhs=slice(0, 2)), algebra.infer.given.cond.apply(Eq[-2]), Eq[-1].this.lhs.apply(algebra.gt.imply.gt.relax, lower=0)
 
     Eq << Eq[-4].this.lhs.apply(algebra.gt.imply.gt_zero)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.gt_zero.imply.sqrt_gt_zero)
+    Eq << Eq[-1].this.lhs.apply(algebra.gt_zero.imply.gt_zero.sqrt)
 
     Eq <<= algebra.infer.given.et.infer.apply(Eq[-3]), Eq[-2].this.rhs.apply(algebra.gt.given.et.strengthen, M, strict=True)
 

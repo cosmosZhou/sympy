@@ -28,7 +28,7 @@ Mathematica, [Matlab](https://www.mathworks.com/products/matlab.html), sympy; �
 当然这绝对不是一个人的脑力在有生之年可以完成的。
 
 --------
-在2021年, 世界上首个公开的基于符号推理和神经网络的几何数学自动求解器诞生。  
+在2021年, 一个基于transformer，公开的基于符号推理和神经网络的几何数学自动求解器被设计出来。  
 项目说明文档地址为https://lupantech.github.io/inter-gps/  
 代码位于：https://github.com/lupantech/InterGPS  
 论文地址：https://arxiv.org/pdf/2105.04165.pdf  

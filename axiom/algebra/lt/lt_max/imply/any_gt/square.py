@@ -46,8 +46,8 @@ def prove(Eq):
         Eq[-2].this.rhs.args[:2].apply(algebra.eq.cond.imply.cond.subs), \
         algebra.infer.given.cond.apply(Eq[-1]).reversed
 
-    Eq <<= Eq[-3].this.rhs.rhs.args[0].apply(algebra.gt.transposition, lhs=0), \
-        Eq[-2].this.rhs.rhs.args[0].apply(algebra.le.transposition), \
+    Eq <<= Eq[-3].this.rhs.rhs.args[0].apply(algebra.gt.transport, lhs=0), \
+        Eq[-2].this.rhs.rhs.args[0].apply(algebra.le.transport), \
         Eq[-1].this.rhs.apply(algebra.ge_zero.lt.lt.imply.any_gt.square)
 
     Eq <<= Eq[-2].this.rhs.rhs.args[1:].apply(algebra.le_zero.gt.imply.eq.max, ret=1), \
@@ -74,7 +74,7 @@ def prove(Eq):
 
     Eq.is_negative = Eq[-2].this.rhs.rhs.apply(algebra.ge_zero.lt_zero.lt.imply.any_gt.square)
 
-    Eq << Eq[-1].this.rhs.rhs.args[0].apply(algebra.eq.transposition, lhs=0)
+    Eq << Eq[-1].this.rhs.rhs.args[0].apply(algebra.eq.transport, lhs=0)
 
     Eq << Eq[-1].this.rhs.rhs.apply(algebra.eq.cond.imply.cond.subs, ret=1)
 

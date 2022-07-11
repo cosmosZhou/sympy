@@ -1,6 +1,4 @@
 """Various algorithms for helping identifying numbers and sequences."""
-from __future__ import print_function, division
-
 from sympy.utilities import public
 
 from sympy.core import Function, Symbol

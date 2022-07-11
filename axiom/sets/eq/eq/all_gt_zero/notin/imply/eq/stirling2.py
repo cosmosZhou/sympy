@@ -32,7 +32,7 @@ def apply(equal_sum, equal_union, all_is_positive, notcontains, s1=None):
     a = Symbol(shape=(k,), etype=dtype.integer, finiteset=True)
 
     if s1 is None:
-        s1 = Symbol.s1(Stirling.conditionset(n - 1, k, x))
+        s1 = Symbol(Stirling.conditionset(n - 1, k, x))
 
     return Any[a:s1, j](Equal(x[i], Piecewise(({n - 1} | a[i], Equal(i, j)), (a[i], True))))
 
@@ -46,7 +46,7 @@ def prove(Eq):
     Eq << apply(Equal(Sum[i:k + 1](Card(x[i])), n + 1),
                 Equal(Cup[i:k + 1](x[i]), Range(n + 1)),
                 All[i:k + 1](Card(x[i]) > 0),
-                NotElement({n}, x[:k + 1].set_comprehension()))
+                NotElement({n}, x[:k + 1].cup_finiteset()))
     return
     Eq << sets.eq.eq.imply.is_empty.stirling2.apply(Eq[0], Eq[1])
 

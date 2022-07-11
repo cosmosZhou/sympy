@@ -3933,7 +3933,7 @@ class Expr(Basic, EvalfMixin):
                     return r"%s \le %s < %s" % (start.latex, self.latex, end.latex)
                 return r"%s \le %s \le %s" % (start.latex, self.latex, end.latex)
             
-        elif domain.is_boolean:
+        elif domain.is_bool:
             if baseset is None:
                 if domain.is_BinaryCondition:
                     free_symbols = domain.lhs.free_symbols
@@ -3951,7 +3951,7 @@ class Expr(Basic, EvalfMixin):
         if self.is_set:
             from sympy.sets.sets import Union
             return Union(self, exp)
-        if self.is_boolean and exp.is_boolean:
+        if self.is_bool and exp.is_bool:
             from sympy.logic import Or
             return Or(self, exp)
         
@@ -3960,7 +3960,7 @@ class Expr(Basic, EvalfMixin):
         from sympy.stats.rv import given
         return given(self, exp)
             
-    def set_comprehension(self, var=None):
+    def cup_finiteset(self, var=None):
         from sympy.concrete.sets import Cup
 
         i = self.generate_var(integer=True, var=var)
@@ -4056,8 +4056,8 @@ class Expr(Basic, EvalfMixin):
         ...
 
     def domain_conditioned(self, condition):
-        assert not self.is_boolean
-        assert condition.is_boolean
+        assert not self.is_bool
+        assert condition.is_bool
         if not condition._has(self):
             return self.domain
         return condition.domain_conditioned(self)

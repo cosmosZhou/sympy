@@ -59,7 +59,7 @@ export default {
             var indexFocused = parent.focusedIndex;
             this.focusedIndex = -1;
             
-            var self = parent.$children[indexFocused];
+            var self = parent.children[indexFocused];
             self.remove();
             parent.remove(indexFocused);                
         },
@@ -69,14 +69,13 @@ export default {
             parent.left = -1;
             
             var href = location.href;
-            var subFolder = href.match(/\/axiom.php(\/.*)\/(\w+)\/*$/)[2];
-            
+            var subFolder = href.match(/\/axiom\.php\?module=((?:\w+[.\/])+)(\w+)[.\/]?(?:#\w+)?$/)[2];
             var indexFocused = parent.focusedIndex;
             
-            promise(()=>{
+            parent.$nextTick(()=>{
                 
                 var packageSelector = null;
-                for (let child of parent.$children){
+                for (let child of parent.children){
                     if (child.$el.className == 'packageSelector-wrapper'){
                         packageSelector = child;
                         break;

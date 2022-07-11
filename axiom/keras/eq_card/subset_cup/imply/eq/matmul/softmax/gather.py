@@ -25,10 +25,10 @@ def prove(Eq):
     V = Symbol(shape=(n, d_z), real=True)
     d = Symbol(shape=(oo,), integer=True)
     i, j = Symbol(integer=True)
-    s = d[:m].set_comprehension(j)
+    s = d[:m].cup_finiteset(j)
     Eq << apply(Equal(Card(s), m), Subset(s, Range(n)), Q, K, V)
 
-    
+
     a = Symbol(Eq[2].find(Mul[MatMul]))
     Eq.a_def = a.this.definition
 
@@ -42,7 +42,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.subs(Eq.Xi_def.reversed, Eq.a_def[i].reversed)
 
-    Eq << Eq[-1].this.find(softmax).apply(keras.softmax.to.mul)
+    Eq << Eq[-1].this.find(softmax).apply(keras.softmax.to.mul.reducedSum)
 
     Eq << keras.imply.eq.bert.mask.theorem.apply(a[i], Xi, add=True)
 
@@ -113,8 +113,8 @@ def prove(Eq):
 
     Eq << algebra.eq.eq.imply.eq.transit.apply(Eq.z_def, Eq[-1])
 
-    
-    
+
+
 
 
 if __name__ == '__main__':

@@ -1,7 +1,5 @@
 """The anti-commutator: ``{A,B} = A*B + B*A``."""
 
-from __future__ import print_function, division
-
 from sympy import S, Expr, Mul, Integer
 from sympy.printing.pretty.stringpict import prettyForm
 

@@ -42,12 +42,12 @@ def prove(Eq):
 
     Eq << sets.el.el.imply.el.sub.interval.apply(Eq[-2], Eq[-1])
 
-    Eq << sets.el.imply.et.split.interval.apply(Eq[-1])
+    Eq << sets.el_interval.imply.et.apply(Eq[-1])
 
     Eq <<= algebra.gt.imply.ge.strengthen.apply(Eq[-2]), algebra.lt.imply.le.strengthen.apply(Eq[-1])
 
     Eq << algebra.ge.le.imply.eq.apply(Eq[-1], Eq[-2])
-    Eq << Eq[-1].this.apply(algebra.eq.transposition)
+    Eq << Eq[-1].this.apply(algebra.eq.transport)
 
 
 if __name__ == '__main__':

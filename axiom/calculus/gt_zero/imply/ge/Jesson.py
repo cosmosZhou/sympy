@@ -7,7 +7,7 @@ def apply(is_positive, w=None):
     assert d == 2
 
     if w is None:
-        w = Symbol.w(domain=Interval(0, 1))
+        w = Symbol(domain=Interval(0, 1))
     else:
         assert Element(w, Interval(0, 1))
 

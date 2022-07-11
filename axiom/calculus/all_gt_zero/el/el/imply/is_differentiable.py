@@ -29,8 +29,8 @@ def prove(Eq):
 
     Eq << calculus.all_gt_zero.imply.is_differentiable.apply(Eq[0])
 
-    x0_ = Symbol.x0(domain=domain)
-    x1_ = Symbol.x1(domain=domain)
+    x0_ = Symbol('x0', domain=domain)
+    x1_ = Symbol('x1', domain=domain)
     Eq << algebra.all.imply.all.limits.restrict.apply(Eq[-1], domain=Interval(x0_, x1_))
 
     Eq << Eq[-1].subs(x1_, x1)

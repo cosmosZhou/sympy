@@ -19,7 +19,7 @@ def prove(Eq):
     a, b = Symbol(shape=(n,), complex=True, zero=False)
     Eq << apply(a, b)
 
-    Eq << Symbol.L(Eq[0].lhs.arg).this.definition
+    Eq << Symbol('L', Eq[0].lhs.arg).this.definition
 
     Eq << Eq[-1].this.rhs.apply(algebra.lamda.to.matrix)
 

@@ -15,7 +15,7 @@ def apply(given, index=0):
         elif domain.is_set:
             cond = Element(var, domain).simplify()
         else:
-            assert domain.is_boolean
+            assert domain.is_bool
             cond = domain
         eqs.append(cond.invert().simplify())
 

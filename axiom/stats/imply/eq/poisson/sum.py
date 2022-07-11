@@ -9,7 +9,7 @@ def apply(x0, x1):
     lamda0 = pspace0.distribution.of(PoissonDistribution)
     lamda1 = pspace1.distribution.of(PoissonDistribution)
 
-    Y = Symbol.y(distribution=PoissonDistribution(lamda0 + lamda1))
+    Y = Symbol(distribution=PoissonDistribution(lamda0 + lamda1))
     y = pspace(Y).symbol
 
     return Equal(Probability(Equal(x0 + x1, y)), Probability(Equal(Y, y)).doit())

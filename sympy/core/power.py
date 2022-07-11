@@ -2002,13 +2002,12 @@ class Pow(Expr):
         res = Expr.of(self, cls)
         if res is None:
             if cls.is_Pow:
-                if cls.exp == -1:
-                    if self.exp._coeff_isneg():
-                        self = self.func(self.base, -self.exp)
-                        base = cls.base
-                        if not base.is_abstract:
-                            self = self.of(base)
-                        return self
+                base, exp = cls.args
+                if exp == -1 and self.exp._coeff_isneg():
+                    self = self.func(self.base, -self.exp)
+                    if not base.is_abstract:
+                        self = self.of(base)
+                    return self
                                              
         return res
     

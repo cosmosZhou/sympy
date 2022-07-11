@@ -3,7 +3,7 @@ from util import *
 
 @apply(simplify=False)
 def apply(given, *, cond=None):
-    assert cond.is_boolean
+    assert cond.is_bool
     return Infer(cond, given & cond), Infer(cond.invert(), given & cond.invert())
 
 

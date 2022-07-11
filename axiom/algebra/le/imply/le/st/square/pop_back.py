@@ -157,7 +157,7 @@ def prove(Eq):
 
     Eq.is_nonnegative = algebra.le.given.ge_zero.apply(Eq[-1])
 
-    x_ = Symbol.x(Lamda[i](y[m - 1] - x[i]))
+    x_ = Symbol('x', Lamda[i](y[m - 1] - x[i]))
     Eq <<= x_[i].this.definition, x_[j].this.definition
 
     Eq <<= Eq[-2] + x[i] - x_[i], Eq[-1] + x[j] - x_[j]

@@ -24,17 +24,17 @@ def prove(Eq):
     Eq << apply(Element(Limit[x:oo](f(x)), Reals), Element(Limit[x:oo](g(x)), Reals))
 
     ε, N = Symbol(real=True, positive=True)
-    ε0 = Symbol.ε_0(real=True, positive=True)
-    N0 = Symbol.N_0(real=True, positive=True)
-    Eq << calculus.is_limited.imply.any_all.limit_definition.symbol_subs.apply(Eq[0], ε0, N0, var='A')
+    ε_0 = Symbol(real=True, positive=True)
+    N0 = Symbol('N_0', real=True, positive=True)
+    Eq << calculus.is_limited.imply.any_all.limit_definition.symbol_subs.apply(Eq[0], ε_0, N0, var='A')
 
-    Eq << Eq[-1].subs(ε0, ε / 2)
+    Eq << Eq[-1].subs(ε_0, ε / 2)
 
-    ε1 = Symbol.ε_1(real=True, positive=True)
-    N1 = Symbol.N_1(real=True, positive=True)
-    Eq << calculus.is_limited.imply.any_all.limit_definition.symbol_subs.apply(Eq[1], ε1, N1, var='B')
+    ε_1 = Symbol(real=True, positive=True)
+    N1 = Symbol('N_1', real=True, positive=True)
+    Eq << calculus.is_limited.imply.any_all.limit_definition.symbol_subs.apply(Eq[1], ε_1, N1, var='B')
 
-    Eq << Eq[-1].subs(ε1, ε / 2)
+    Eq << Eq[-1].subs(ε_1, ε / 2)
 
     Eq << algebra.any_all.any_all.imply.any_all_et.limits_intersect.apply(Eq[-1], Eq[-3])
 

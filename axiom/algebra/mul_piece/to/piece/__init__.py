@@ -22,7 +22,7 @@ def apply(self, *, simplify=True):
     else:
         result = piecewise[0]
         for i in range(1, len(piecewise)):
-            result = result.mul(piecewise[i])
+            result = result.mul(piecewise[i], simplify=simplify)
 
         if not delta.is_One:
             result = result.func(*((e * delta, c) for e, c in result.args))

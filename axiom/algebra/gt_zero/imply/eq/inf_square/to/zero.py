@@ -32,23 +32,23 @@ def prove(Eq):
 
     Eq <<= Eq[-1].this.find(Less).apply(algebra.lt.given.gt_zero), Eq[-2].this.expr.apply(algebra.any.given.cond.subs, x, M / 2)
 
-    Eq <<= Eq[-2].this.find(Greater) * Rational(4, 3), Eq[-1].this.args[0].apply(sets.el.given.et.split.interval)
+    Eq <<= Eq[-2].this.find(Greater) * Rational(4, 3), Eq[-1].this.args[0].apply(sets.el_interval.given.et)
 
     Eq <<= algebra.all_et.given.et.all.apply(Eq[-2]), Eq[-1].this.args[0].apply(algebra.lt.given.gt_zero)
 
-    Eq <<= algebra.all.given.ou.apply(Eq[-3]), Eq[-2].this.expr.apply(sets.el.given.et.split.interval), algebra.et.given.et.apply(Eq[-1])
+    Eq <<= algebra.all.given.ou.apply(Eq[-3]), Eq[-2].this.expr.apply(sets.el_interval.given.et), algebra.et.given.et.apply(Eq[-1])
 
-    Eq <<= Eq[-4].this.args[1].apply(sets.notin.given.ou.split.interval)
+    Eq <<= Eq[-4].this.args[1].apply(sets.notin_interval.given.ou)
 
     Eq <<= algebra.all.given.infer.apply(Eq[-3]), Eq[-2] * 2, algebra.all.given.infer.apply(Eq[-1])
 
-    Eq <<= Eq[-2].this.lhs.apply(sets.el.imply.et.split.interval), Eq[-1].this.rhs * 4
+    Eq <<= Eq[-2].this.lhs.apply(sets.el_interval.imply.et), Eq[-1].this.rhs * 4
 
     Eq <<= Eq[-2].this.lhs.apply(algebra.gt_zero.le.imply.le.sqrt, ret=0), Eq[-1].this.rhs.reversed
 
     Eq <<= Eq[-2].subs(Eq[2]), Eq[-1].this.lhs.apply(algebra.gt.imply.gt.relax, lower=0, ret=0)
 
-    Eq <<= Eq[-2].this.lhs.args[0].apply(algebra.gt_zero.imply.sqrt_gt_zero), Eq[-1].this.lhs.args[0].apply(algebra.gt_zero.imply.gt.scale, 4)
+    Eq <<= Eq[-2].this.lhs.args[0].apply(algebra.gt_zero.imply.gt_zero.sqrt), Eq[-1].this.lhs.args[0].apply(algebra.gt_zero.imply.gt.scale, 4)
 
     Eq <<= Eq[-1].this.lhs.apply(algebra.gt.gt.imply.gt.transit)
 

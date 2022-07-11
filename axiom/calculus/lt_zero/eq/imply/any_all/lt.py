@@ -30,7 +30,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.expr.expr.apply(algebra.et.imply.cond)
 
-    Eq << Eq[-1].this.expr.expr.apply(algebra.lt.transposition, lhs=0)
+    Eq << Eq[-1].this.expr.expr.apply(algebra.lt.transport, lhs=0)
 
 
 if __name__ == '__main__':

@@ -18,18 +18,12 @@ import searchLink from "./searchLink.vue"
 
 export default {
 	components: {searchForm, searchLink},
-	
-	props : [
-		'modules',
-		'keyword',
-		'caseSensitive',			
-		'wholeWord',			
-		'regularExpression',			
-	],
+
+	props : ['modules', 'keyword', 'caseSensitive', 'wholeWord', 'regularExpression'],
 
 	computed: {
 	},
-	
+
 	methods: {
 	},		
 }

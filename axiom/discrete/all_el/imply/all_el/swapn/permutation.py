@@ -15,7 +15,7 @@ def apply(given):
 
     p = Symbol(shape=(oo,), integer=True, nonnegative=True)
 
-    P = Symbol(conditionset(p[:n], Equal(p[:n].set_comprehension(), Range(n))))
+    P = Symbol(conditionset(p[:n], Equal(p[:n].cup_finiteset(), Range(n))))
 
     return All[p[:n]:P, x:S](Element(Lamda[k:n](x[p[k]]), S))
 

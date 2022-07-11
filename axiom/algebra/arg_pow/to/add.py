@@ -24,9 +24,9 @@ def prove(Eq):
 
     Eq << algebra.infer.given.infer.subs.apply(Eq[-1])
 
-    Eq << Eq[-2].this.lhs.apply(algebra.ne_zero.imply.abs_gt_zero)
+    Eq << Eq[-2].this.lhs.apply(algebra.ne_zero.imply.gt_zero.abs)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.gt_zero.imply.pow_gt_zero, n)
+    Eq << Eq[-1].this.lhs.apply(algebra.gt_zero.imply.gt_zero.pow, n)
 
     Eq << Eq[-1].this.lhs.apply(algebra.gt_zero.imply.eq.arg, Eq[-1].find(Exp))
 

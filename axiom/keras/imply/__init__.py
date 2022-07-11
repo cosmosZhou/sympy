@@ -1,3 +1,3 @@
 from . import eq
-from . import et
 from . import ge
+from . import le

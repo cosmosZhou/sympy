@@ -17,9 +17,9 @@ def prove(Eq):
     a, b = Symbol(real=True, nonnegative=True)
     Eq << apply(Element(x, Interval(a, b, right_open=True)))
 
-    Eq << sets.el.given.et.split.interval.apply(Eq[1])
+    Eq << sets.el_interval.given.et.apply(Eq[1])
 
-    Eq << sets.el.imply.et.split.interval.apply(Eq[0])
+    Eq << sets.el_interval.imply.et.apply(Eq[0])
 
     Eq << algebra.ge.imply.ge.sqrt.apply(Eq[-2])
 

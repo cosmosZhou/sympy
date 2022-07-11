@@ -136,7 +136,7 @@ export default {
 		async debug(){
 			console.log("debug in sympy.vue");
 			var user = sympy_user();
-			var [[port]] = await form_post('php/request/mysql/select', {sql: `select port from tbl_login_py where user = '${user}'`});
+			var [[port]] = await form_post('php/request/mysql/select.php', {sql: `select port from tbl_login_py where user = '${user}'`});
 			port = parseInt(port);
 			
 			var href = location.href;

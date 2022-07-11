@@ -4,7 +4,7 @@ from util import *
 def matrix_to_tuple(self):
     if not self.shape:
         return self
-    n = self.shape[-1]
+    n = self.shape[0]
     n = int(n)
     return tuple(matrix_to_tuple(self[i]) for i in range(n))
 
@@ -19,7 +19,7 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol(shape=(4, 4), real=True)
+    x = Symbol(shape=(4, 3), real=True)
     Eq << apply(x)
 
     Eq << Eq[0].this.lhs.apply(algebra.expr.to.lamda)
@@ -32,3 +32,4 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2022-01-12
+# updated on 2022-07-02

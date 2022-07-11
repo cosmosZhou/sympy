@@ -37,7 +37,7 @@ def prove(Eq):
 
     Eq <<= algebra.infer.given.infer.subs.bool.apply(Eq[-2]), algebra.infer.given.infer.subs.bool.apply(Eq[-1], invert=True)
 
-    Eq <<= algebra.infer.given.et.infer_et.apply(Eq[-2], cond=Eq[0]), Eq[-1].this.lhs.apply(sets.notin.imply.ou.split.interval)
+    Eq <<= algebra.infer.given.et.infer_et.apply(Eq[-2], cond=Eq[0]), Eq[-1].this.lhs.apply(sets.notin_interval.imply.ou)
 
     Eq <<= Eq[-2].this.lhs.apply(sets.lt_zero.el.imply.eq.sup.st.quadratic, Eq[-2].find(Sup).expr, x), algebra.infer.given.et.infer.split.ou.apply(Eq[-1])
 
@@ -45,7 +45,7 @@ def prove(Eq):
 
     Eq <<= Eq[-2].this.find(Sup).expr.expand(), Eq[-1].this.find(Sup).expr.expand()
 
-    Eq <<= Eq[-2].this.find(Equal).apply(algebra.eq.transposition, lhs=0), Eq[-1].this.find(Equal).apply(algebra.eq.transposition, lhs=0)
+    Eq <<= Eq[-2].this.find(Equal).apply(algebra.eq.transport, lhs=0), Eq[-1].this.find(Equal).apply(algebra.eq.transport, lhs=0)
 
     Eq <<= Eq[-2].this.lhs.apply(algebra.le.imply.ge_zero), Eq[-1].this.lhs.apply(algebra.ge.imply.le_zero)
 
@@ -65,8 +65,8 @@ def prove(Eq):
     Eq <<= Eq[-2].this.rhs.apply(algebra.eq.eq.imply.eq.transit, reverse=True), Eq[-1].this.rhs.apply(algebra.eq.eq.imply.eq.transit, reverse=True)
 
     Eq <<= Eq[-2].this.rhs.rhs.expand(), Eq[-1].this.rhs.rhs.expand()
-    
-    
+
+
 
 
 if __name__ == '__main__':

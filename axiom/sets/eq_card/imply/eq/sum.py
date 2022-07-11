@@ -19,7 +19,7 @@ def prove(Eq):
     x = Symbol(real=True)
     a = Symbol(real=True, shape=(oo,))
     f = Function(real=True)
-    s = a[:n].set_comprehension()
+    s = a[:n].cup_finiteset()
     Eq << apply(Equal(Card(s), n), Sum[x:s](f(x)))
 
     Eq << sets.eq.imply.all_ne.apply(Eq[0])

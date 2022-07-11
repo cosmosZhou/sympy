@@ -24,13 +24,13 @@ def prove(Eq):
 
     k = Eq[-1].rhs.variable
     x = Eq[-1].lhs.lhs
-    Eq <<= Eq[-2].this.lhs.expr.apply(sets.el.imply.gt.split.interval), Eq[-1].this.rhs.apply(algebra.any.given.cond.subs, k, Ceiling(x) - 1)
+    Eq <<= Eq[-2].this.lhs.expr.apply(sets.el_interval.imply.gt), Eq[-1].this.rhs.apply(algebra.any.given.cond.subs, k, Ceiling(x) - 1)
 
     Eq <<= Eq[-2].this.lhs.apply(algebra.any.imply.any_et.limits.unleash, simplify=None), algebra.infer.given.et.infer.apply(Eq[-1])
 
-    Eq <<= Eq[-3].this.lhs.expr.args[0].apply(sets.el.imply.ge.split.range), algebra.infer.given.cond.apply(Eq[-2]), Eq[-1].this.rhs.apply(sets.el.given.et.split.range)
+    Eq <<= Eq[-3].this.lhs.expr.args[0].apply(sets.el_range.imply.ge), algebra.infer.given.cond.apply(Eq[-2]), Eq[-1].this.rhs.apply(sets.el_range.given.et)
 
-    Eq <<= Eq[-3].this.lhs.expr.apply(algebra.gt.ge.imply.gt.transit), sets.el.given.et.split.interval.apply(Eq[-2]), Eq[-1].this.rhs.apply(algebra.ge.transposition, lhs=0)
+    Eq <<= Eq[-3].this.lhs.expr.apply(algebra.gt.ge.imply.gt.transit), sets.el_interval.given.et.apply(Eq[-2]), Eq[-1].this.rhs.apply(algebra.ge.transport, lhs=0)
 
     Eq << Eq[-4].this.lhs.apply(sets.gt_zero.imply.is_positive, simplify=None)
 
@@ -40,7 +40,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.simplify()
 
-    Eq << Eq[-1].this.lhs.apply(algebra.gt_zero.imply.ceiling_gt_zero)
+    Eq << Eq[-1].this.lhs.apply(algebra.gt_zero.imply.gt_zero.ceiling)
     Eq << Eq[-1].this.lhs.apply(algebra.gt.imply.ge.strengthen)
 
 

@@ -473,7 +473,12 @@ class Relational(BinaryCondition, Expr, EvalfMixin):
 
     def invert(self):
         lhs, rhs = self.args
-        shape = lhs.shape
+        
+        if len(lhs.shape) < len(rhs.shape):
+            shape = rhs.shape
+        else:
+            shape = lhs.shape
+
         if shape:
             excludes = set()
             indices = []
@@ -484,7 +489,22 @@ class Relational(BinaryCondition, Expr, EvalfMixin):
                 indices.append(i)
                 limits.append((i, 0, n))
                 
-            eq = Boolean.__new__(self.invert_type, lhs[indices], rhs[indices])
+            indices = tuple(indices)
+            
+            if len(lhs.shape) < len(rhs.shape):
+                lhs_indices = indices[len(rhs.shape) - len(lhs.shape):]
+                if lhs_indices:
+                    lhs = lhs[lhs_indices]
+                rhs = rhs[indices]                
+            elif len(lhs.shape) > len(rhs.shape):
+                rhs_indices = indices[len(lhs.shape) - len(rhs.shape):]
+                if rhs_indices:
+                    rhs = rhs[rhs_indices]
+                lhs = lhs[indices]
+            else:
+                lhs, rhs = lhs[indices], rhs[indices]
+            
+            eq = Boolean.__new__(self.invert_type, lhs, rhs)
             from sympy.concrete.exists import Any
             return Any(eq, *limits[::-1])
         
@@ -585,7 +605,7 @@ class Equal(Relational):
             if Element(rhs, lhs.domain).is_BooleanFalse or Element(lhs, rhs.domain).is_BooleanFalse:
                 return S.false.copy(**options)
 
-            if isinstance(lhs, Expr) and isinstance(rhs, Expr) and not lhs.dtype.is_set and not rhs.dtype.is_set:
+            if isinstance(lhs, Expr) and isinstance(rhs, Expr) and not lhs.dtype.is_set and not rhs.dtype.is_set and not lhs.dtype.is_bool:
                 # see if the difference evaluates
                 if lhs.is_infinite:
                     if rhs.is_infinite:
@@ -1056,10 +1076,6 @@ class Equal(Relational):
             if rhs == pspace(lhs).symbol:
                 return p._print(lhs)
             
-        elif lhs.is_Probability and rhs.is_Probability:
-            lhs = lhs.arg
-            rhs = rhs.arg
-            
         return "%s = %s" % (p._print(lhs), p._print(rhs))
 
     def domain_conditioned(self, var):
@@ -1077,7 +1093,7 @@ class Equal(Relational):
     def of(self, cls):
         res = Boolean.of(self, cls)
         if res is None:
-            if cls.is_Equal:
+            if cls.is_Equal and len(cls.args) == 2:
                 a, b = cls.args
                 cls = Basic.__new__(Equal, b, a)
                 res = Boolean.of(self, cls)

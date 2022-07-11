@@ -18,7 +18,7 @@ There are three types of functions implemented in SymPy:
     Examples
     ========
 
-    >>> x = Symbol.x(real=True)
+    >>> x = Symbol(real=True)
     >>> f = Function.f(real=True)
     >>> g = Function.g(real=True)
     >>> f(x) * g(x)
@@ -26,7 +26,7 @@ There are three types of functions implemented in SymPy:
 
 """
 
-from typing import Any, Dict as tDict, Optional, Set as tSet, Tuple as tTuple, Union
+from types import FunctionType
 
 from .add import Add
 from .assumptions import ManagedProperties, _assume_defined
@@ -213,6 +213,26 @@ class FunctionClass(ManagedProperties):
             return Function(attr, **kwargs)
 
         return __new__
+    
+    def __setitem__(self, indices, value):
+        if isinstance(indices, tuple):
+            def eval(*args):
+                val = value
+                for x, _x in zip(indices, args):
+                    if x != _x:
+                        val = val._subs(x, _x)
+                        
+                return val
+        else:
+            def eval(_x):
+                if indices == _x:
+                    return value
+                return value._subs(indices, _x)
+            
+        if isinstance(self.eval, FunctionType):
+            del self.eval
+        self.eval = eval
+        
 
     
 class Application(Basic, metaclass=FunctionClass):
@@ -337,7 +357,7 @@ class Function(Application, Expr):
     function classes:
 
     >>> from sympy import Function, Symbol
-    >>> x = Symbol.x(real=True)
+    >>> x = Symbol(real=True)
     >>> f = Function.f(real=True)
     >>> g = Function.g(real=True)
     >>> g = g(x)
@@ -358,7 +378,7 @@ class Function(Application, Expr):
     >>> f_real = Function.f(real=True)
     >>> f_real(x).is_real
     True
-    >>> f_real_inherit = Function(Symbol.f(real=True))
+    >>> f_real_inherit = Function(Symbol('f', real=True))
     >>> f_real_inherit(x).is_real
     True
 
@@ -431,7 +451,7 @@ class Function(Application, Expr):
             return UndefinedFunction(*args, **options)
 
         args = [*map(sympify, args)]
-        n = len(args)        
+        n = len(args)
         if n == 1:
             arg = args[0]
             if arg.shape:
@@ -1119,7 +1139,7 @@ class UndefinedFunction(FunctionClass):
     The (meta)class of undefined functions.
     """
 
-    def __new__(mcl, name=None, bases=(AppliedUndef,), __dict__=None, **kwargs):
+    def __new__(cls, name=None, bases=(AppliedUndef,), __dict__=None, **kwargs):
         __dict__ = __dict__ or {}
         # put the `is_*` for into __dict__
         __dict__.update({'is_' + arg: val for arg, val in kwargs.items() if arg in _assume_defined})
@@ -1191,16 +1211,21 @@ class UndefinedFunction(FunctionClass):
         # do this for pickling
         __dict__['__module__'] = None
         
+        if isinstance(name, FunctionType):
+            func, name = name, None
+#             kwargs['eval'] = func
+            __dict__['eval'] = func
+            
         if name is None:
             import traceback, re
-            line = traceback.extract_stack()[-3].line            
-            name = re.match('(.+?) *= *Function\(.+\) *$', line)[1]
+            line = traceback.extract_stack()[-3].line
+            name = re.match('(.+?) *= *Function\(.+ *$', line)[1]
             if ',' in name:
                 return (Function(name.strip(), bases, __dict__=__dict__, **kwargs) for name in name.split(','))
             
-        obj = super().__new__(mcl, name, bases, __dict__)
+        obj = super().__new__(cls, name, bases, __dict__)
         obj.name = name
-        obj._sage_ = _undef_sage_helper
+#         obj._sage_ = _undef_sage_helper
         return obj
 
     def __instancecheck__(cls, instance):

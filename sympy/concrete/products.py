@@ -1138,7 +1138,7 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
                 a, b = ab
 
             if old.is_Sliced and len(ab) == 2:
-                from sympy import Interval
+                from sympy import Range
                 _x = x.copy(domain=Range(*ab))
                 function = self.expr.subs(x, _x)
                 _function = function.subs(old, new)

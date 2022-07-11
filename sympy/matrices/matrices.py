@@ -1,5 +1,3 @@
-from __future__ import division, print_function
-
 from types import FunctionType
 
 from mpmath.libmp.libmpf import prec_to_dps
@@ -1202,8 +1200,6 @@ class MatrixBase(MatrixCommon):
     def _sympystr(self, p):
         if self.rows == 0 or self.cols == 0:
             return '(%s, %s, [])' % (self.rows, self.cols)
-        if self.rows == 1:
-            return str(self.tolist()[0])
         return str(self.tolist())
 
     def _diagonalize_clear_subproducts(self):

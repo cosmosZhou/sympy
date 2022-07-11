@@ -3,24 +3,24 @@ from util import *
 
 @apply
 def apply(eq_max, eq_min, eq_K, eq_V, Q, K, V):
-    ((((i, l), d), S[i - l]), i_limit), β = eq_max.of(Equal[Lamda[Max[Mod[Expr - Expr]]]])
+    ((((i, l), d), S[i - l + 1]), i_limit), β = eq_max.of(Equal[Lamda[Max[Mod[Expr + 1 - Expr]]]])
     S[i], S[0], n = i_limit
 
-    ((iu1, S[n]), S[i_limit]), ζ = eq_min.of(Equal[Lamda[Min]])
-    u = iu1 - i - 1
+    (((S[i], u), S[n]), S[i_limit]), ζ = eq_min.of(Equal[Lamda[Min[Add]]])
+
     ((K_quote, S[i], j_index), j_limit, S[i_limit]), K_dquote = eq_K.of(Equal[Lamda[Indexed]])
     ((V_quote, S[i], S[j_index]), S[j_limit], S[i_limit]), V_dquote = eq_V.of(Equal[Lamda[Indexed]])
-    j, S[0], S[Min(n, l + u + 1)] = j_limit
+    j, S[0], S[Min(n, l + u - 1)] = j_limit
     (S[j], S[β[i]]), S[n - 1] = j_index.of(Min[Add])
 
     S[n], d_z = Q.shape
 
     indices = slice(β[i], ζ[i], d)
     indices0 = slice(0, ζ[i] - β[i], d)
-    return Equal(softmax(Q @ (K + K_quote).T / sqrt(d_z) + (BandPart[l, u, d](OneMatrix(n, n)) - 1) * oo) @ (V + V_quote), \
+    return Equal(softmax(Q @ (K + K_quote).T / sqrt(d_z) + (BandPart[l - 1, u - 1, d](OneMatrix(n, n)) - 1) * oo) @ (V + V_quote), \
                  Lamda[i:n](softmax(Q[i] @ (K[indices] + K_dquote[i][indices0]).T / sqrt(d_z)) @ (V[indices] + V_dquote[i][indices0])))
 
-        
+
 @prove
 def prove(Eq):
     from axiom import keras, algebra, sets, discrete
@@ -34,13 +34,13 @@ def prove(Eq):
     V_quote = Symbol(shape=(n, n, d_z), real=True)
     β, ζ = Symbol(shape=(n,), integer=True)
     i, j = Symbol(integer=True)
-    K_dquote = Symbol('K^\"', shape=(n, Min(n, l + u + 1), d_z))
-    V_dquote = Symbol('V^\"', shape=(n, Min(n, l + u + 1), d_z))
+    K_dquote = Symbol('K^\"', shape=(n, Min(n, l + u - 1), d_z))
+    V_dquote = Symbol('V^\"', shape=(n, Min(n, l + u - 1), d_z))
     (Eq.beta, Eq.zeta, Eq.K_dquote, Eq.V_dquote), Eq.objective = apply(
-        Equal(β, Lamda[i:n](Max(i - l, (i - l) % d))),
-        Equal(ζ, Lamda[i:n](Min(i + u + 1, n))),
-        Equal(K_dquote, Lamda[j:Min(n, l + u + 1), i:n](K_quote[i, Min(n - 1, j + β[i])])),
-        Equal(V_dquote, Lamda[j:Min(n, l + u + 1), i:n](V_quote[i, Min(n - 1, j + β[i])])),
+        Equal(β, Lamda[i:n](Max(i - l + 1, (i - l + 1) % d))),
+        Equal(ζ, Lamda[i:n](Min(i + u, n))),
+        Equal(K_dquote, Lamda[j:Min(n, l + u - 1), i:n](K_quote[i, Min(n - 1, j + β[i])])),
+        Equal(V_dquote, Lamda[j:Min(n, l + u - 1), i:n](V_quote[i, Min(n - 1, j + β[i])])),
         Q=Q, K=K, V=V)
 
     band_part = Eq.objective.find(BandPart)
@@ -65,7 +65,7 @@ def prove(Eq):
 
     Eq << Eq.z_definition.subs(a_quote.this.definition.reversed)[i]
 
-    Eq << Eq[-1].this.rhs.args[0].apply(keras.softmax.to.mul)
+    Eq << Eq[-1].this.rhs.args[0].apply(keras.softmax.to.mul.reducedSum)
 
     Eq.zi_definition = Eq[-1].this.rhs.subs(Eq[-3])
 
@@ -143,6 +143,6 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2021-12-26
-# updated on 2021-12-27
+# updated on 2022-03-30
 
 from . import compact

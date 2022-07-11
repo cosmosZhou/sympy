@@ -1,7 +1,5 @@
 """Implementation of the Kronecker product"""
 
-from __future__ import division, print_function
-
 from sympy.core import Add, Mul, Pow, prod, sympify
 
 from sympy.functions import adjoint

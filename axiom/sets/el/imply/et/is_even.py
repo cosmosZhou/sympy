@@ -32,7 +32,7 @@ def prove(Eq):
 
     Eq << sets.el.imply.el.mul.range.apply(Eq.contains, 2)
 
-    Eq << sets.el.imply.et.split.range.apply(Eq[-1], right_open=False)
+    Eq << sets.el_range.imply.et.apply(Eq[-1], right_open=False)
 
     Eq << algebra.ge.ge.imply.ge.transit.apply(Eq[-2], algebra.imply.ge.floor.integer.apply(a + 1, 2))
 

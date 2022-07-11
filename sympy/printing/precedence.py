@@ -1,7 +1,5 @@
 """A module providing information about the necessity of brackets"""
 
-from __future__ import print_function, division
-
 # Default precedence values for some basic types
 PRECEDENCE = {
     "Lambda": 1,

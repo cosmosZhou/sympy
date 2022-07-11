@@ -17,13 +17,13 @@ def prove(Eq):
 
     Eq << sets.subset.given.all_el.apply(Eq[1])
 
-    Eq << Eq[-1].this.expr.apply(sets.el.given.et.split.interval)
+    Eq << Eq[-1].this.expr.apply(sets.el_interval.given.et)
 
     Eq << algebra.all_et.given.et.all.apply(Eq[-1])
 
     Eq <<= algebra.all.given.ou.apply(Eq[-2]), algebra.all.given.ou.apply(Eq[-1])
 
-    Eq <<= Eq[-2].this.args[1].apply(sets.notin.given.ou.split.interval), Eq[-1].this.args[0].apply(sets.notin.given.ou.split.interval)
+    Eq <<= Eq[-2].this.args[1].apply(sets.notin_interval.given.ou), Eq[-1].this.args[0].apply(sets.notin_interval.given.ou)
 
     Eq << algebra.ou.given.ou.apply(Eq[-1], slice(0, 3, 2))
 

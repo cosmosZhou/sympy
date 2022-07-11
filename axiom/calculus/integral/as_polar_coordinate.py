@@ -4,9 +4,9 @@ from util import *
 @apply
 def apply(self, rho=None, theta=None):
     if rho is None:
-        rho = Symbol.rho(real=True)
+        rho = Symbol(real=True)
     if theta is None:
-        theta = Symbol.theta(real=True)
+        theta = Symbol(real=True)
 
     _x = rho * cos(theta)
     _y = rho * sin(theta)

@@ -7,7 +7,7 @@ def apply(n):
 
     p = Symbol(shape=(oo,), integer=True, nonnegative=True)
 
-    P = Symbol(conditionset(p[:n], Equal(p[:n].set_comprehension(), Range(n))))
+    P = Symbol(conditionset(p[:n], Equal(p[:n].cup_finiteset(), Range(n))))
 
     b = Symbol(integer=True, shape=(oo,), nonnegative=True)
 

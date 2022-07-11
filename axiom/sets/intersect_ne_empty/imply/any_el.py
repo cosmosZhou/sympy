@@ -27,7 +27,7 @@ def prove(Eq):
 
     Eq << algebra.et.imply.et.apply(Eq[-1])
 
-    Eq << Eq[-1].this.expr.apply(sets.el.imply.et.split.intersect, simplify=None)
+    Eq << Eq[-1].this.expr.apply(sets.el_intersect.imply.et, simplify=None)
 
     Eq << algebra.any_et.imply.any.limits_absorb.apply(Eq[-1], index=1, simplify=None)
 

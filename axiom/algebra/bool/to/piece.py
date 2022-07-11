@@ -7,7 +7,7 @@ def apply(self):
     return Equal(self, Piecewise((1, cond), (0, True)))
 
 
-@prove(provable=False)
+@prove
 def prove(Eq):
     x, y = Symbol(real=True)
     Eq << apply(Bool(x > y))

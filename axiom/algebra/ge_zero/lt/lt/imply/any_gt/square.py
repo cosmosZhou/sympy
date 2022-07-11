@@ -46,11 +46,11 @@ def prove(Eq):
 
     Eq << Eq.ge.this.rhs.apply(algebra.any.given.cond.subs, x, (sqrt(U) + M) / 2)
 
-    Eq << Eq[-1].this.find(Element).apply(sets.el.given.et.split.interval)
+    Eq << Eq[-1].this.find(Element).apply(sets.el_interval.given.et)
 
     Eq << algebra.infer.given.et.infer.apply(Eq[-1], index=None)
 
-    Eq <<= Eq[-3].this.rhs.apply(algebra.gt.given.gt_zero), Eq[-2].this.rhs.apply(algebra.lt.transposition, lhs=0)
+    Eq <<= Eq[-3].this.rhs.apply(algebra.gt.given.gt_zero), Eq[-2].this.rhs.apply(algebra.lt.transport, lhs=0)
 
     Eq <<= Eq[-2].this.find(Add).apply(algebra.add.to.mul.st.square_difference), Eq[-1].this.rhs * 2
 

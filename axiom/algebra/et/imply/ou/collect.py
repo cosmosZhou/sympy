@@ -24,14 +24,9 @@ def apply(self, *, cond=None):
 @prove
 def prove(Eq):
     from axiom import algebra
-    a, b, c, d = Symbol(integer=True, given=True)
 
-
-    x, y = Symbol(real=True, given=True)
-
-    f, g = Function(real=True)
-
-    Eq << apply(And((a < b) | (c < d), (f(x) < g(y)) | (c < d), (x < y) | (c < d)), cond=c < d)
+    p, q, r, s = Symbol(bool=True)
+    Eq << apply(And(q | p, r | p, s | p), cond=p)
 
     Eq << ~Eq[-1]
 
@@ -39,8 +34,11 @@ def prove(Eq):
 
     Eq << algebra.et.imply.ou.apply(Eq[-1])
 
+    
+
 
 if __name__ == '__main__':
     run()
 
 # created on 2019-05-05
+# updated on 2022-01-28

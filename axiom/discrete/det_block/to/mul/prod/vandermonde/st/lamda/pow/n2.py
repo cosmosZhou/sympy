@@ -7,7 +7,7 @@ def apply(self):
 
     S[j], S[0], S[n + 2:n > 0] = j_limit
 
-    return Equal(self, r * (1 - r) ** (2 * n) * Product[i:n](factorial(i)))
+    return Equal(self, r * (1 - r) ** (2 * n) * Product[j:n](factorial(j)))
 
 
 @prove
@@ -19,6 +19,8 @@ def prove(Eq):
     i, j = Symbol(integer=True)
     Eq << apply(Det(BlockMatrix([Lamda[j:n + 2](r ** j), Lamda[j:n + 2](j * r ** j), Lamda[j:n + 2, i:n](j ** i)])))
 
+    #reference:
+    #http://localhost/sympy/axiom.php?module=discrete.det_block.to.mul.prod.vandermonde.st.lamda.pow
     j, i = Eq[0].lhs.arg.args[2].variables
     E = Lamda[j:n + 2, i:n + 2]((-1) ** (j - i) * binomial(j, i))
     Eq << (Eq[0].lhs.arg @ E).this.apply(discrete.matmul.to.block)
@@ -31,55 +33,51 @@ def prove(Eq):
 
     Eq << Eq[-1].find(Lamda[Sum, Tuple[2]]).this().expr.simplify()
 
-    _i = i.copy(domain=Range(n))
-    _j = j.copy(domain=Range(n + 1))
-    Eq << discrete.stirling2.to.mul_sum.apply(i, j)
+    Eq << Eq[-1].this.rhs.expr.apply(discrete.sum_binom.to.mul.stirling2, simplify=None)
 
-    Eq << Eq[-1] * factorial(j)
+    Eq << Eq[-3].subs(Eq[-1])
 
-    Eq << Eq[-1].reversed
+    Eq << Eq[-1].this.rhs.find(Lamda[Sum, Tuple])().expr.simplify()
 
-    Eq << Eq[-4].subs(Eq[-1])
+    Eq << Eq[-1].this.rhs.args[1]().expr.simplify()
 
-    Eq << Eq[4].subs(Eq[-1])
+    Eq.eq_block = Eq[-1].this.find(Sum).apply(discrete.sum_binom.to.pow.Newton)
 
-    Eq << Eq[-1].find(Lamda[Sum, Tuple]).this().expr.simplify()
+    Eq << Eq.eq_block.rhs.args[1].expr.this.find(Pow).apply(algebra.pow.to.mul.split.exponent, simplify=None)
 
-    Eq << Eq[-2].subs(Eq[-1])
+    Eq << Eq[-1].this.rhs.apply(algebra.sum.to.mul)
 
-    Eq << Eq[-1].this.find(Sum).apply(discrete.sum_binom.to.pow.Newton)
+    Eq << Eq[-1].this.rhs.find(Sum).expr.apply(algebra.mul.simplify.pow.mul.base)
 
-    Eq << Eq[-1].this.find(Sum).apply(algebra.sum.to.mul)
+    Eq << Eq[-1].this.rhs.find(Sum).apply(discrete.sum_binom.to.mul.Newton)
 
-    Eq << Eq[-1].this.find(Sum).expr.powsimp()
+    Eq << Eq[-1].this.rhs.args[-1].apply(algebra.pow.to.mul.neg)
 
-    Eq << Eq[-1].this.find(Lamda[Mul[Sum]])().find(Sum).simplify()
-
-    Eq << Eq[-1].this.find(Sum).apply(discrete.sum_binom.to.mul.Newton)
-
-    Eq << Eq[-1].this.find(Add ** Add).apply(algebra.pow.to.mul.neg)
+    Eq << Eq.eq_block.subs(Eq[-1])
 
     Eq << ShiftMatrix(n + 2, 1, n + 1) @ Eq[-1]
 
     Eq << ShiftMatrix(n + 2, 0, n) @ Eq[-1]
 
+    Eq << Eq[-1].this.rhs.args[0].apply(algebra.lamda.to.block.split, n, axis=1)
+
+    Eq << Eq[-1].this.rhs.args[1].apply(algebra.lamda.to.block.split, n)
+
+    Eq << Eq[-1].this.rhs.args[2].apply(algebra.lamda.to.block.split, n)
+
+    Eq << Eq[-1].this.rhs.args[0].args[1].apply(algebra.lamda.doit.inner)
+
+    Eq << Eq[-1].this.rhs.args[0].args[1]().expr.simplify()
+
+    Eq << Eq[-1].this.rhs.args[1].args[1].apply(algebra.lamda.to.matrix)
+
+    Eq << Eq[-1].this.rhs.args[2].args[1].find(Lamda).apply(algebra.lamda.to.matrix)
+
+    Eq << Eq[-1].this.find(Mul[Matrix]).apply(discrete.mul.to.matrix)
+
     Eq << discrete.eq.imply.eq.det.apply(Eq[-1])
 
     Eq << Eq[-1].this.lhs.apply(discrete.det.to.mul)
-
-    Eq << Eq[-1].this.rhs.find(Lamda).apply(algebra.lamda.to.transpose.block, n)
-
-    Eq << Eq[-1].this.find(Lamda[Factorial * Stirling])().expr.args[1].simplify()
-
-    Eq << Eq[-1].this.find(Lamda[Pow[Add]]).apply(algebra.lamda.to.block.split, n)
-
-    Eq << Eq[-1].this.rhs.find(Lamda[2]).apply(algebra.lamda.to.matrix)
-
-    Eq << Eq[-1].this.find(Mul[Lamda[Mul]]).apply(algebra.mul.to.lamda)
-
-    Eq << Eq[-1].this.find(Lamda[Mul[Pow[Add]]]).apply(algebra.lamda.to.block.split, n)
-
-    Eq << Eq[-1].this.rhs.find(Lamda[2]).apply(algebra.lamda.to.matrix)
 
     Eq << Eq[-1].this.rhs.apply(discrete.det_block.to.mul)
 
@@ -89,11 +87,11 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Add ** Mul).apply(algebra.pow.neg)
 
-
-
+    
+    
 
 
 if __name__ == '__main__':
     run()
 # created on 2021-11-23
-# updated on 2021-11-25
+# updated on 2022-07-10

@@ -13,7 +13,7 @@ from sympy.core.containers import Tuple
 import string
 import re as _re
 import random
-from sympy.logic.boolalg import BooleanAtom
+from sympy.logic.boolalg import BooleanAtom, Infer, Assuming
 
 
 class Str(Atom):
@@ -185,9 +185,9 @@ class Symbol(ManagedProperties):
 
 class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
     """
-    >>> a = Symbol.a(real=True)
-    >>> b = Symbol.b(real=True)
-    >>> c = Symbol.c(real=True)
+    >>> a = Symbol(real=True)
+    >>> b = Symbol(real=True)
+    >>> c = Symbol(real=True)
     >>> (b - sqrt(b * b - 4 * a * c)) / (2 * a)
     (b - √(-4*a*c + b**2))/(2*a)
     """
@@ -686,6 +686,8 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
             assumptions['negative'] = True
         elif self._assumptions.get('nonpositive'):
             assumptions['nonpositive'] = True
+        elif self._assumptions.get('bool'):
+            return dtype.bool
              
         if self.is_super_integer:
             if self.is_integer:
@@ -851,6 +853,53 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
     def __iter__(self):
         raise TypeError
 
+    def __setitem__(self, indices, value):
+        from sympy import Indexed, Sliced
+        if isinstance(indices, tuple):
+            if isinstance(indices[-1], slice):
+                
+                value, *slices = value.of(Sliced)
+                
+                size = len(slices)
+                for i in range(size):
+                    start, stop = slices[i].of(Tuple)
+                    index = indices[i - size]
+                    _start = index.start
+                    if _start is None:
+                        _start = 0
+                         
+                    _stop = index.stop
+                    if _stop is None:
+                        _stop = value.shape[i]
+                        
+                    assert _start == start 
+                    assert _stop == stop
+                    
+                indices = indices[:-size]
+                self[indices] = value
+            else:
+                args = value.of(Indexed)
+                assert self == args[0]
+                assert args[1:] == indices
+        elif isinstance(indices, slice):
+            value, sliced = value.of(Sliced)
+            
+            start, stop = sliced.of(Tuple)
+            _start = indices.start
+            if _start is None:
+                _start = 0
+                 
+            _stop = indices.stop
+            if _stop is None:
+                _stop = value.shape[0]
+                
+            assert _start == start 
+            assert _stop == stop
+        else:
+            base, index = value.of(Indexed)
+            assert self == base
+            assert index == indices
+        
     def __getitem__(self, indices, **kw_args):
         if (indices := self.simplify_slice(indices)) is None:
             return self 
@@ -949,7 +998,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
                     if len(definition.limits) == 1 and isinstance(definition.expr, RandomSymbol):
                         return definition[indices]
             boolean = indices < self.shape[0]
-            assert boolean is True or not boolean.is_BooleanFalse
+            assert boolean is True or boolean != False
             return Indexed(self, indices, **kw_args)
 
     def __invert__(self):
@@ -1005,7 +1054,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
 
     @staticmethod
     def ascii2greek(x):
-        if x.lower() in {'alpha', 'beta', 'gamma', 'delta', 'epsilon', 'zeta', 'eta', 'theta', 'iota', 'kappa', 'lambda', 'mu', 'nu', 'xi', 'omicron', 'pi', 'rho', 'sigma', 'tau', 'upsilon', 'phi', 'chi', 'psi', 'omega'}:
+        if x.lower() in {'alpha', 'beta', 'gamma', 'delta', 'epsilon', 'zeta', 'eta', 'theta', 'iota', 'kappa', 'lamda', 'mu', 'nu', 'xi', 'omicron', 'pi', 'rho', 'sigma', 'tau', 'upsilon', 'phi', 'chi', 'psi', 'omega'}:
             if x[0].isupper():
                 x = eval("'\\N{GREEK CAPITAL LETTER %s}'" % x)
             else:
@@ -1400,6 +1449,23 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
                 return ReducedMax(self)
             return self
         return definition.min()
+    
+    def invert(self):
+        from sympy.logic.boolalg import Not
+        return Not(self)
+
+    @property
+    def is_bool(self):
+        return self._assumptions.get('bool')
+    
+    def __rshift__(self, other):
+        """Overloading for >>"""
+        return Infer(self, other)
+    
+    def __lshift__(self, other):
+        """Overloading for <<"""
+        return Assuming(self, other)
+    
     
 class Dummy(Symbol):
     """Dummy symbols are each unique, even if they have the same name:
@@ -2088,6 +2154,7 @@ class Dtype:
 class DtypeSuperComplex(Dtype):
     
     is_super_complex = True
+    is_bool = False
 
     def as_Set(self):
         return S.SuperComplexes        
@@ -2930,7 +2997,7 @@ class DtypeMatrix(Dtype):
 
 
 class DtypeBoolean(Dtype):
-    is_boolean = True
+    is_bool = True
     
     def __str__(self):
         return 'bool'

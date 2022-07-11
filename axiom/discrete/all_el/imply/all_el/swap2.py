@@ -22,7 +22,7 @@ def prove(Eq):
     S = Symbol(etype=dtype.integer * n)
     x = Symbol(**S.element_symbol().type.dict)
     i, j = Symbol(integer=True)
-    w = Symbol(Lamda[j, i](SwapMatrix(n, i, j)))
+    w = Symbol(Lamda[j:n, i:n](SwapMatrix(n, i, j)))
     Eq << apply(All[x:S](Element(w[0, j] @ x, S)))
 
     j_ = j.copy(domain=Range(n))
@@ -45,7 +45,7 @@ def prove(Eq):
 
     Eq.final_statement = algebra.cond.imply.all.restrict.apply(Eq[-1], (i_,), (j_,))
 
-    Eq << discrete.imply.all_eq.swap2.eq.apply(n, w)
+    Eq << discrete.eq_lamda_swapMatrix.imply.all_eq.swap2.eq.apply(w.this.definition)
 
     Eq << Eq[-1].this.expr @ x
 
@@ -75,8 +75,12 @@ def prove(Eq):
 
     Eq << algebra.all.given.et.apply(Eq[2], cond=Equal(j, 0))
 
+    
+    
+
 
 if __name__ == '__main__':
     run()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html
 # created on 2020-08-25
+# updated on 2022-04-01

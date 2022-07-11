@@ -23,8 +23,8 @@ def prove(Eq):
     A = Symbol(shape=(k, m), complex=True)
     B = Symbol(shape=(m,), complex=True)
 
-    #A = Symbol.A(shape=(m,), complex=True)
-    #B = Symbol.B(shape=(m, n), complex=True)
+    #A = Symbol(shape=(m,), complex=True)
+    #B = Symbol(shape=(m, n), complex=True)
     Eq << apply(exp(A) @ exp(B))
 
     Eq << Eq[-1].this.lhs.apply(discrete.matmul.to.lamda)

@@ -277,8 +277,10 @@ if (! \std\endsWith($path_info, '/')) {
             // https://www.php.net/manual/en/function.preg-match-all.php
             $regexp = '/Eq\.\w+|Eq\[-\d+:\]/u';
             if (array_key_exists('module', $dict)) {
-                switch (count($matches)) {
+                $count = count($matches);
+                switch ($count) {
                     case 1:
+                        $lengthOfGiven = $lengthOfWhere = 0;                        
                         break;
                     case 2:
                         if ($numOfRequisites) {
@@ -290,25 +292,19 @@ if (! \std\endsWith($path_info, '/')) {
                             $lengthOfWhere = count($matchWhere);
                             $lengthOfGiven = 0;
                         }
-
-                        preg_match_all($regexp, $matches[1], $matchImply, PREG_SET_ORDER);
-                        $lengthOfImply = count($matchImply);
-
-                        $lengths[] = $lengthOfGiven + $lengthOfWhere + $lengthOfImply;
                         break;
                     case 3:
-                        
                         preg_match_all($regexp, $matches[0], $matchGiven, PREG_SET_ORDER);
                         $lengthOfGiven = count($matchGiven);
 
                         preg_match_all($regexp, $matches[1], $matchWhere, PREG_SET_ORDER);
                         $lengthOfWhere = count($matchWhere);
-
-                        preg_match_all($regexp, $matches[2], $matchImply, PREG_SET_ORDER);
-                        $lengthOfImply = count($matchImply);
-                        $lengths[] = $lengthOfGiven + $lengthOfWhere + $lengthOfImply;
                         break;
                 }
+                
+                preg_match_all($regexp, $matches[$count - 1], $matchImply, PREG_SET_ORDER);
+                $lengthOfImply = count($matchImply);
+                $lengths[] = $lengthOfGiven + $lengthOfWhere + $lengthOfImply;
             } else {
                 $assgnment_count = 0;
                 foreach ($matches as $text){

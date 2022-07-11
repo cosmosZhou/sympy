@@ -15,7 +15,7 @@ def prove(Eq):
     x = Symbol(hyper_real=True)
     Eq << apply(Element(x, Interval(0, oo, left_open=True) | Interval(-oo, 0, right_open=True)))
 
-    Eq << sets.el.imply.ou.split.union.apply(Eq[0])
+    Eq << sets.el_union.imply.ou.apply(Eq[0])
 
     Eq << Eq[-1].this.args[0].apply(sets.is_negative.imply.is_negative.div)
 

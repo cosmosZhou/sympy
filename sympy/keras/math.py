@@ -6,4 +6,4 @@ def logsumexp(x):
 def shape(self):
     return self.arg.shape[:-1]
 
-logsumexp = Function(shape=property(shape), eval=logsumexp, is_finite=True)
+logsumexp = Function(logsumexp, shape=property(shape), is_finite=True)

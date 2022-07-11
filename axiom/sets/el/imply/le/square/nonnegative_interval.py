@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(given):
     x, interval = given.of(Element)
-    m, M = interval.of(Interval, None)
+    m, M = interval.of(Interval)
     assert not interval.left_open
     assert not interval.right_open
 
@@ -19,7 +19,7 @@ def prove(Eq):
     x, M = Symbol(real=True)
     Eq << apply(Element(x, Interval(0, M)))
 
-    Eq << sets.el.imply.et.split.interval.apply(Eq[0])
+    Eq << sets.el_interval.imply.et.apply(Eq[0])
 
 
 

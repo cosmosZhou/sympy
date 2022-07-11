@@ -94,7 +94,7 @@ class Conditioned(Expr):
         return self.func(condition, self.rhs)
     
     def __bool__(self):
-        if self.is_boolean:
+        if self.is_bool:
             return False
         return True
 
@@ -148,8 +148,8 @@ class Conditioned(Expr):
         return self.lhs.is_extended_positive
 
     @property
-    def is_boolean(self):
-        return self.lhs.is_boolean
+    def is_bool(self):
+        return self.lhs.is_bool
 
     def domain_definition(self):
         return Unequal(Probability(self.rhs), 0)
@@ -158,7 +158,7 @@ class Conditioned(Expr):
         return self.func(self.lhs.invert(), self.rhs)
         
     def as_boolean(self):
-        if not self.is_boolean:
+        if not self.is_bool:
             return self.func(self.lhs.as_boolean(), self.rhs)
 
 
@@ -339,7 +339,7 @@ class Probability(Expr):
         return self.arg.domain_definition()
     
     def _subs(self, old, new, **hints):
-        if old.is_Conditioned and not old.lhs.is_boolean or new.is_Conditioned and not new.lhs.is_boolean:
+        if old.is_Conditioned and not old.lhs.is_bool or new.is_Conditioned and not new.lhs.is_bool:
             old = old.as_boolean()
             new = new.as_boolean()
         return Expr._subs(self, old, new, **hints)

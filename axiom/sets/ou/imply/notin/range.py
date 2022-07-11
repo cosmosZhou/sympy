@@ -31,7 +31,7 @@ def prove(Eq):
     e, a, b = Symbol(integer=True, given=True)
     Eq << apply((e < a) | (e >= b))
 
-    Eq <<= sets.notin.given.ou.split.range.apply(Eq[1])
+    Eq <<= sets.notin_range.given.ou.apply(Eq[1])
 
 
 

@@ -32,7 +32,7 @@ def prove(Eq):
     a, b = Symbol(real=True, shape=(oo,))
     f = Function(real=True)
     n = Card(X)
-    Eq << apply(Equal(X, a[:n].set_comprehension()), Equal(X - {y}, b[:n - 1].set_comprehension()), Equal(y, a[i]), Element(i, Range(n)), Sum[j:Range(n) - {i}](f(a[j])))
+    Eq << apply(Equal(X, a[:n].cup_finiteset()), Equal(X - {y}, b[:n - 1].cup_finiteset()), Equal(y, a[i]), Element(i, Range(n)), Sum[j:Range(n) - {i}](f(a[j])))
 
     Eq.contains = sets.eq_cup.imply.el.apply(Eq[1])
 
@@ -50,7 +50,7 @@ def prove(Eq):
 
     Eq << algebra.cond.cond.imply.cond.subs.apply(Eq.contains, Eq[-1])
 
-    Eq << Eq[-1].this.apply(algebra.eq.transposition, lhs=0)
+    Eq << Eq[-1].this.apply(algebra.eq.transport, lhs=0)
 
     Eq << Eq[-1].this.rhs.subs(Eq[2])
 

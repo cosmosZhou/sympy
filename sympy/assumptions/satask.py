@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from sympy.assumptions.ask_generated import get_known_facts_cnf
 from sympy.assumptions.assume import global_assumptions, AppliedPredicate
 from sympy.assumptions.sathandlers import fact_registry

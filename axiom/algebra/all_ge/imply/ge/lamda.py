@@ -2,9 +2,14 @@ from util import *
 
 
 @apply
-def apply(given):
+def apply(given, *, simplify=True):
     (lhs, rhs), *limits = given.of(All[GreaterEqual])
-    return Lamda(lhs, *limits) >= Lamda(rhs, *limits)
+    lhs = Lamda(lhs, *limits)
+    rhs = Lamda(rhs, *limits)
+    if simplify:
+        lhs = lhs.simplify(squeeze=True)
+        rhs = rhs.simplify(squeeze=True)
+    return lhs >= rhs
 
 
 @prove
@@ -13,12 +18,16 @@ def prove(Eq):
     i = Symbol(integer=True)
     f, g = Function(real=True)
     Eq << apply(All[i:n](f(i) >= g(i)))
-    
+
     Eq << ~Eq[1]
-    
+
     Eq << ~Eq[-1]
+
+    
+    
 
 
 if __name__ == '__main__':
     run()
 # created on 2022-01-01
+# updated on 2022-04-01

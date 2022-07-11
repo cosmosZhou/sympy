@@ -48,7 +48,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.reversed
 
-    Eq << Eq[-1].this.lhs.apply(sets.el.imply.el.split.intersect)
+    Eq << Eq[-1].this.lhs.apply(sets.el_intersect.imply.el)
 
 
 if __name__ == '__main__':

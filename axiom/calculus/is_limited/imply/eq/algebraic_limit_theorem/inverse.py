@@ -17,8 +17,8 @@ def prove(Eq):
     g = Function(real=True)
     Eq << apply(Element(Limit[x:x0](g(x)), Reals - {0}))
 
-    epsilon0 = Symbol.epsilon_0(real=True, positive=True)
-    delta0 = Symbol.delta_0(real=True, positive=True)
+    epsilon0 = Symbol('epsilon_0', real=True, positive=True)
+    delta0 = Symbol('delta_0', real=True, positive=True)
     Eq << calculus.is_limited.imply.any_all.limit_definition.symbol_subs.apply(Eq[0], epsilon0, delta0, var='A')
 
     A = Eq[-1].expr.expr.find(Add[-~Symbol])
@@ -39,7 +39,7 @@ def prove(Eq):
     delta1 = Symbol(positive=True)
     Eq << calculus.eq.el.imply.any_all.lt.half.apply(Eq.is_limited, Eq.is_nonzero_real, delta=delta1)
 
-    Eq.A_is_positive = sets.is_nonzero_real.imply.abs_gt_zero.apply(Eq.is_nonzero_real)
+    Eq.A_is_positive = sets.is_nonzero_real.imply.gt_zero.abs.apply(Eq.is_nonzero_real)
 
     Eq << algebra.cond.any_all.imply.any_all_et.apply(Eq.A_is_positive / 2, Eq[-1])
 
@@ -70,7 +70,7 @@ def prove(Eq):
     epsilon, delta = Symbol(positive=True)
     Eq << algebra.cond.imply.ou.subs.apply(Eq[-1], epsilon0, abs(A) ** 2 / 2 * epsilon)
 
-    Eq << algebra.gt_zero.imply.square_gt_zero.apply(Eq.A_is_positive) * epsilon / 2
+    Eq << algebra.gt_zero.imply.gt_zero.square.apply(Eq.A_is_positive) * epsilon / 2
 
     Eq << algebra.cond.ou.imply.cond.apply(Eq[-1], Eq[-2])
 

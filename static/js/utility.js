@@ -236,6 +236,7 @@ function hint(cm, options) {
 						case 'keras':
 						case 'sets':
 						case 'stats':
+						case 'patent':
 							url += `suggest.php`;
 							break;
 						default:
@@ -448,6 +449,7 @@ function find_and_jump(event) {
 			case 'keras':
 			case 'sets':
 			case 'stats':
+			case 'patent':
 				href = `/${user}/axiom.php?module=${module}`;
 				break;
 			default:

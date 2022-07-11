@@ -38,3 +38,6 @@ from . import all_is_positive
 from . import limit_is_infinite
 from . import sum_binom
 from . import derivative_sigmoid
+from . import derivative_mul
+from . import derivative_integral
+from . import all_le

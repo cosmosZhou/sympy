@@ -5,7 +5,7 @@ from util import *
 def apply(given, k=None):
     n = given.of(Equal[Expr % 2, 0])
     if k is None:
-        k = Symbol.k(integer=True)
+        k = Symbol(integer=True)
 
     return Any[k](Equal(n, k * 2))
 

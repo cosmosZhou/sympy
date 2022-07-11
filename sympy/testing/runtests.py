@@ -12,8 +12,6 @@ Goals:
 
 """
 
-from __future__ import print_function, division
-
 import os
 import sys
 import platform
@@ -96,7 +94,7 @@ class DependencyError(Exception):
 
 
 # add more flags ??
-future_flags = division.compiler_flag
+# future_flags = division.compiler_flag
 
 
 def _indent(s, indent=4):

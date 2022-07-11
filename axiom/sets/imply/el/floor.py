@@ -15,7 +15,7 @@ def prove(Eq):
     d = Symbol(real=True, positive=True)
     Eq << apply(n, d)
 
-    Eq << sets.el.given.et.split.interval.apply(Eq[0])
+    Eq << sets.el_interval.given.et.apply(Eq[0])
 
     Eq << algebra.imply.le.floor.apply(Eq[0].find(Floor).arg)
 

@@ -6,6 +6,24 @@ def sympify(arg):
         from sympy import Integer
         return Integer(arg)
     
+    if isinstance(arg, float):
+        from sympy import Rational
+        arg10 = arg * 10
+        if arg10 == 5:
+            return Rational(1, 2)
+        
+        if arg10 == -5:
+            return Rational(-1, 2)
+        
+        if arg10 == 2:
+            return Rational(1, 5)
+        
+        if arg10 == -2:
+            return Rational(-1, 5)
+        
+        from sympy import Float
+        return Float(arg)
+    
     if arg.is_IndexedOperator:
         return arg.basic
     return arg
@@ -25,7 +43,7 @@ class Basic:
     
     is_ConditionSet = False
     
-    is_boolean = False
+    is_bool = False
     
     is_Matrix = False
     
@@ -613,6 +631,14 @@ class Basic:
     def __add__(self, other):
         from sympy import Add
         other = sympify(other)
+        if other.is_Integer: 
+            if self.is_Add:
+                args = (other, *self.args)
+            else:
+                args = (other, self)
+            
+            return Basic.__new__(Add, *args)
+            
         if self.is_Add:
             return Basic.__new__(Add, *self.args, other)
         return Basic.__new__(Add, self, other)
@@ -657,10 +683,15 @@ class Basic:
         
         if other.is_Integer: 
             if not self.is_Number:
-                return Basic.__new__(Add, other, self)
+                if self.is_Add:
+                    args = (other, *self.args)
+                else:
+                    args = (other, self)
+                
+                return Basic.__new__(Add, *args)
             
         if self.is_Add:
-            args = (*self.args, other)            
+            args = (*self.args, other)
         else:
             args = (self, other)
         return Basic.__new__(Add, *args)
@@ -668,7 +699,10 @@ class Basic:
     def __neg__(self):
         from sympy import Mul, S
         if self.is_Mul:
-            args = (S.NegativeOne,) + self.args
+            if self.args[0].is_Number:
+                args = (-self.args[0], *self.args[1:])
+            else:
+                args = (S.NegativeOne,) + self.args
         else:
             args = (S.NegativeOne, self)
             

@@ -2,8 +2,6 @@
 Unit system for physical quantities; include definition of constants.
 """
 
-from __future__ import division
-
 from sympy.utilities.exceptions import SymPyDeprecationWarning
 
 from .dimensions import DimensionSystem

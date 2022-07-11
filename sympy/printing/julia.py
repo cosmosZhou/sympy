@@ -9,7 +9,6 @@ complete source code files.
 
 """
 
-from __future__ import print_function, division
 from sympy.core import Mul, Pow, S, Rational
 
 from sympy.core.mul import _keep_coeff

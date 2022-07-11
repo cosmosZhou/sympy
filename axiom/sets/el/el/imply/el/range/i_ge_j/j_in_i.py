@@ -26,9 +26,9 @@ def prove(Eq):
     a, i, j, n, d = Symbol(integer=True)
     Eq << apply(Element(j, Range(a, i - d + 1)), Element(i, Range(a + d, n)))
 
-    Eq <<= sets.el.given.et.split.range.apply(Eq[-2]), sets.el.given.et.split.range.apply(Eq[-1])
+    Eq <<= sets.el_range.given.et.apply(Eq[-2]), sets.el_range.given.et.apply(Eq[-1])
 
-    Eq <<= sets.el.imply.et.split.range.apply(Eq[0]), sets.el.imply.et.split.range.apply(Eq[1])
+    Eq <<= sets.el_range.imply.et.apply(Eq[0]), sets.el_range.imply.et.apply(Eq[1])
 
     Eq << Eq[-2] + d
 

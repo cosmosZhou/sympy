@@ -16,7 +16,7 @@ def apply(self):
     for i in range(diff):
         array.append(function._subs(x, sympify(i)))
 
-    return Equal(self, BlockMatrix(*array))
+    return Equal(self, BlockMatrix(array, shape=self.shape))
 
 
 @prove
@@ -69,7 +69,7 @@ def prove(Eq):
 
     Eq << algebra.et.given.et.apply(Eq[-1])
 
-    _i = Symbol.i(domain=Range(4))
+    _i = Symbol('i', domain=Range(4))
     Eq << Eq.all_et.limits_subs(i, _i)
 
     Eq << algebra.eq.imply.eq.lamda.apply(Eq[-1], (_i, 0, 4))

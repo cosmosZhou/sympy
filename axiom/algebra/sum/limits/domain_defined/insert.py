@@ -5,17 +5,26 @@ def limits_insert(self):
     function, *limits = self.args
 
     * limits, limit = limits
-    assert len(limit) == 1
     x = limit[0]
-
     domain_defined = function.domain_defined(x)
-
-    return self.func(function, *limits, (x, domain_defined))
+    
+    if len(limit) == 1:
+        limit = (x, domain_defined)
+    elif len(limit) == 2:
+        cond = limit[1]
+        assert cond.is_bool
+        limit = (x, cond, domain_defined)
+    else:
+        _, a, b = limit
+        cond = (Range if x.is_integer else Interval)(a, b)
+        limit = (x, cond & domain_defined)
+    
+    return self.func(function, *limits, limit)
 
 @apply
 def apply(self):
     assert self.is_Sum
-    return Equal(self, limits_insert(self))
+    return Equal(self, limits_insert(self), evaluate=False)
 
 
 @prove

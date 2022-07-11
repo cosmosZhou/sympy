@@ -53,7 +53,7 @@ def prove(Eq):
     x = Symbol(x + a / 3)
     Eq.x_def = x.this.definition
 
-    Eq << Eq.x_def.this.apply(algebra.eq.transposition, rhs=0).reversed
+    Eq << Eq.x_def.this.apply(algebra.eq.transport, rhs=0).reversed
 
     Eq << Eq[0].subs(Eq[-1])
 
@@ -69,7 +69,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq.x_def)
 
-    Eq << Eq[-1].this.apply(algebra.eq.transposition, lhs=0)
+    Eq << Eq[-1].this.apply(algebra.eq.transport, lhs=0)
 
 
 if __name__ == '__main__':

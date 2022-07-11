@@ -5,3 +5,4 @@ from . import algebra
 from . import discrete
 from . import calculus
 from . import geometry
+from . import patent

@@ -15,7 +15,7 @@ def prove(Eq):
     f = Function(real=True)
     Eq << apply(Maxima[x:a:b](f(x)) <= M)
 
-    Eq << algebra.all_le.imply.le_maxima.apply(Eq[1])
+    Eq << algebra.all_le.imply.le.maxima.apply(Eq[1])
 
 
 if __name__ == '__main__':

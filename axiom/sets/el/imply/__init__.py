@@ -14,7 +14,6 @@ from . import le
 from . import ge
 from . import et
 from . import lt
-from . import gt
 from . import ne_empty
 from . import notin
 from . import gt_zero

@@ -1,7 +1,5 @@
 """Symbolic primitives + unicode/ASCII abstraction for pretty.py"""
 
-from __future__ import print_function, division
-
 import sys
 import warnings
 from string import ascii_lowercase, ascii_uppercase

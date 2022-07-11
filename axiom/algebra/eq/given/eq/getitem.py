@@ -2,8 +2,8 @@ from util import *
 
 
 @apply
-def apply(imply, i=None):
-    x, y = imply.of(Equal)
+def apply(self, i=None):
+    x, y = self.of(Equal)
     assert x.shape == y.shape
 
     if isinstance(i, (tuple, Tuple, list)):

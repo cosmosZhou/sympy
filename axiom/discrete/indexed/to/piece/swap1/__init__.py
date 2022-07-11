@@ -7,7 +7,7 @@ def apply(x, w=None):
     i, j = Symbol(domain=Range(n))
 
     if w is None:
-        w = Symbol.w(Lamda[j](SwapMatrix(n, 0, j)))
+        w = Symbol(Lamda[j](SwapMatrix(n, 0, j)))
 
     assert w.shape == (n, n, n)
     assert w[j].definition == SwapMatrix(n, 0, j)

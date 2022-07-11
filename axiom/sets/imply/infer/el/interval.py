@@ -87,7 +87,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.infer.flatten)
 
-    w_ = Symbol.w(Lamda[i:n](w[i] / (1 - w[n])))
+    w_ = Symbol('w', Lamda[i:n](w[i] / (1 - w[n])))
     Eq << (w_[i].this.definition * (1 - w[n])).reversed
 
     Eq << Eq[-2].subs(Eq[-1])

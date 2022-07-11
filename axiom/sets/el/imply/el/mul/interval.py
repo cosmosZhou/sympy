@@ -23,7 +23,7 @@ def prove(Eq):
     d = Symbol(real=True, positive=True)
     Eq << apply(Element(x, Interval(a, b, right_open=True)), d)
 
-    Eq << sets.el.imply.et.split.interval.apply(Eq[0])
+    Eq << sets.el_interval.imply.et.apply(Eq[0])
 
     Eq <<= Eq[-2] * d, Eq[-1] * d
 

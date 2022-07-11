@@ -4,13 +4,13 @@ from util import *
 @apply
 def apply(given, i=None, j=None, w=None):
     from axiom.discrete.eq.imply.et.index import index_function
-    x_set_comprehension, interval = given.of(Equal)
+    x_cup_finiteset, interval = given.of(Equal)
     n = interval.max() + 1
     assert interval.min() == 0
-    assert len(x_set_comprehension.limits) == 1
-    k, a, b = x_set_comprehension.limits[0]
+    assert len(x_cup_finiteset.limits) == 1
+    k, a, b = x_cup_finiteset.limits[0]
     assert b - a == n
-    x = Lamda(x_set_comprehension.expr.arg, *x_set_comprehension.limits).simplify()
+    x = Lamda(x_cup_finiteset.expr.arg, *x_cup_finiteset.limits).simplify()
 
     if j is None:
         j = Symbol(domain=Range(n), given=True)
@@ -25,7 +25,7 @@ def apply(given, i=None, j=None, w=None):
     if w is None:
         _i = Symbol("i", integer=True)
         _j = Symbol("j", integer=True)
-        w = Symbol.w(Lamda[_j, _i](SwapMatrix(n, _i, _j)))
+        w = Symbol(Lamda[_j, _i](SwapMatrix(n, _i, _j)))
 
     return Equal(index[i](w[index[i](x[:n]), index[j](x[:n])] @ x[:n]), index[j](x[:n]))
 
@@ -38,7 +38,7 @@ def prove(Eq):
     x = Symbol(shape=(n,), integer=True)
     k = Symbol(integer=True)
     j, i = Symbol(domain=Range(n), given=True)
-    Eq << apply(Equal(x[:n].set_comprehension(k), Range(n)), i, j)
+    Eq << apply(Equal(x[:n].cup_finiteset(k), Range(n)), i, j)
 
     _, di, dj = Eq[2].lhs.arg.args[0].args
     dj = Symbol("d_j", dj)
@@ -81,7 +81,7 @@ def prove(Eq):
 
     Eq.piecewise_equality = Eq.piecewise_equality.this.lhs.apply(discrete.matmul.to.sum)
 
-    Eq << Eq.piecewise_equality.lhs.args[-1].this.apply(algebra.sum.to.add.split.complement)
+    Eq << Eq.piecewise_equality.lhs.args[-1].this.apply(algebra.sum_complement.to.add)
 
     Eq << Eq[-1].subs(Eq.eq_intersection)
 
@@ -104,8 +104,8 @@ def prove(Eq):
     Eq << discrete.eq.imply.eq.index.kroneckerDelta.indexOf.apply(Eq[0], i, j)
     Eq << Eq[-1].subs(Eq.di_definition.reversed).subs(Eq.dj_definition.reversed)
     Eq << Eq[-3].subs(Eq[-1].reversed)
-    
-    
+
+
 
 
 if __name__ == '__main__':

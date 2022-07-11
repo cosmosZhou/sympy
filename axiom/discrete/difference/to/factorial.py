@@ -42,7 +42,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Factorial).apply(discrete.factorial.to.mul)
 
-    _k = Symbol.k(domain=Range(n))
+    _k = Symbol('k', domain=Range(n))
     Eq.hypothesis_k = Eq[0].subs(n, _k)
 
     Eq << discrete.eq.imply.eq.difference.apply(Eq.hypothesis_k, (x, n - _k))

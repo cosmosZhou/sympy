@@ -210,7 +210,7 @@ class Quantifier(Boolean, ExprWithLimits):
                     if any(limit._has(x) for limit in self.limits[:t]):
                         continue
                     
-                    if len(domain) == 1 and domain[0].is_boolean:
+                    if len(domain) == 1 and domain[0].is_bool:
                         continue
                     
                     [index] = index
@@ -459,7 +459,7 @@ class Quantifier(Boolean, ExprWithLimits):
                                                                 
                 elif len(ab) == 1:
                     [cond] = ab
-                    if not cond.is_boolean and cond._has(x):
+                    if not cond.is_bool and cond._has(x):
                         return True
                 break
             
@@ -481,7 +481,7 @@ class Quantifier(Boolean, ExprWithLimits):
                     limits[j] = (t, a, b)                                        
                 elif len(ab) == 1:
                     [cond] = ab
-                    if not cond.is_boolean:
+                    if not cond.is_bool:
                         cond = cond._subs(x, y)
                         limits[j] = (t, cond)
 
@@ -508,7 +508,7 @@ class Quantifier(Boolean, ExprWithLimits):
                     
                     limits = [*self.limits]
                     del limits[i]
-                    if cond.is_boolean:
+                    if cond.is_bool:
                         # conditionset
                         cond = self.reduced_cond(x, cond, baseset)
                     else:
@@ -531,7 +531,7 @@ class Quantifier(Boolean, ExprWithLimits):
                 else:
                     return self.expr.simplify()
                     
-            if cond.is_boolean:
+            if cond.is_bool:
                 if cond.is_Equal and x in cond.args:
                     y = cond.rhs if x == cond.lhs else cond.lhs
                     return self.subs_with_independent_variable(i, x, y)
@@ -597,5 +597,8 @@ class Quantifier(Boolean, ExprWithLimits):
         latex = r"\%s_{%s}{%s}" % (self.latexname, limit, latex)
         return latex
 
-
+    @property
+    def canonical(self):
+        return self
+    
 from sympy.concrete.limits import *

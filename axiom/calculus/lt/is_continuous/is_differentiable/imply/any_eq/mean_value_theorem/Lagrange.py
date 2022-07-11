@@ -29,11 +29,14 @@ def prove(Eq):
     from axiom.calculus.lt.is_continuous.is_differentiable.eq.imply.any_eq.Rolle import is_differentiable
     from axiom.calculus.all_eq.imply.all_any_eq.intermediate_value_theorem import is_continuous
     a, b = Symbol(real=True, given=True)
+    x = Symbol(real=True)
     f = Function(real=True)
+    
     Eq << apply(a < b, is_continuous(f, a, b), is_differentiable(f, a, b))
 
-    g = Function(eval=lambda x: (b - a) * f(x) - (f(b) - f(a)) * x)
-    x = Symbol(real=True)
+    g = Function(real=True)
+    g[x] = (b - a) * f(x) - (f(b) - f(a)) * x
+    
     Eq.g_definition = g(x).this.defun()
 
     Eq << Eq.g_definition.subs(x, a)

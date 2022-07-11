@@ -534,19 +534,56 @@ class Bool(Function):
     """IversonBracket function
     https://en.wikipedia.org/wiki/Iverson_bracket     
     """
-    is_extended_nonnegative = True
-    is_integer = True
 
+    def __new__(cls, arg):
+        obj = Function.__new__(cls, arg)
+        if not arg.is_bool:
+            if 'super_complex' in obj._assumptions:
+                del obj._assumptions['super_complex']
+        return obj
+    
     @classmethod
     def eval(cls, cond):
         """
         Evaluates IversonBracket function
         """
-        if cond:
-            return S.One
-        if cond.is_BooleanFalse:
-            return S.Zero
+        if cond.dtype.is_bool:
+            if cond:
+                return S.One
+            if cond.is_BooleanFalse:
+                return S.Zero
+        else:
+            if cond.shape:
+                if cond.is_DenseMatrix:
+                    args = []
+                    for arg in cond.args:
+                        arg = cls.eval(arg)
+                        if arg is None:
+                            return
+                        args.append(arg)
+                    
+                    return cond.func(*args, shape=cond.shape)
+            else:
+                if cond.is_nonzero:
+                    return S.true
+                if cond.is_zero:
+                    return S.false
 
+    def _eval_is_extended_integer(self):
+        return self.arg.is_bool
+        
+    def _eval_is_super_complex(self):
+        return self.arg.is_bool
+    
+    def _eval_is_finite(self):
+        return True
+        
+    def _eval_is_bool(self):
+        return not self.arg.is_bool
+        
+    def _eval_is_extended_nonnegative(self):
+        return self.arg.is_bool
+        
     def domain_nonzero(self, x):
         domain = x.domain_conditioned(self.arg)
         if domain.is_ConditionSet:
@@ -555,16 +592,18 @@ class Bool(Function):
 
     @property
     def shape(self):
-        return ()
+        return self.arg.shape
 
     @property
     def dtype(self):
         from sympy.core.symbol import dtype
-        return dtype.integer
+        if self.arg.is_bool:
+            return dtype.integer
+        else:
+            return dtype.bool
 
     def _sympystr(self, p):
-        return '|%s|' % p._print(self.arg)
-        
+        return '|%s|' % p._print(self.arg)        
         
     def _latex(self, p, exp=None):
         cond = p._print(self.arg)
@@ -576,8 +615,17 @@ class Bool(Function):
     @property
     def domain(self):
         from sympy.sets.sets import FiniteSet
-        return FiniteSet(0, 1)
+        if self.arg.is_bool:
+            return FiniteSet(S.Zero, S.One)
+        else:
+            shape = self.shape
+            domain = FiniteSet(S.false, S.true)
+            if shape:
+                from sympy.sets.sets import CartesianSpace
+                domain = CartesianSpace(domain, *shape)
+            return domain
 
     def inference_status(self, child):
         raise Exception("boolean conditions within Bool are not applicable for inequivalent inference!")
     
+        

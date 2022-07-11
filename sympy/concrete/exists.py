@@ -296,7 +296,10 @@ class Exists(Quantifier):
             return Unequal(cond, x.emptySet)
         return self.func[x](cond)
 
-
+    @property
+    def canonical(self):
+        return self
+    
 from sympy.concrete.forall import All     
 Any = Exists
 Any.invert_type = All

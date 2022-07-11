@@ -20,8 +20,8 @@ def prove(Eq):
     #Eq << apply(Cup[x:A](f(x) | g(x)))
     Eq << sets.eq.given.et.infer.apply(Eq[0], wrt=y)
 
-    Eq <<= Eq[-2].this.rhs.apply(sets.el.given.ou.split.union, simplify=False), \
-    Eq[-1].this.lhs.apply(sets.el.imply.ou.split.union, simplify=False)
+    Eq <<= Eq[-2].this.rhs.apply(sets.el_union.given.ou, simplify=False), \
+    Eq[-1].this.lhs.apply(sets.el_union.imply.ou, simplify=False)
 
     Eq <<= Eq[-2].this.rhs.args[0].apply(sets.el_cup.given.any_el), \
     Eq[-1].this.lhs.args[0].apply(sets.el_cup.imply.any_el)

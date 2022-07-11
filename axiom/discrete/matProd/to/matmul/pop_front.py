@@ -29,7 +29,7 @@ def prove(Eq):
 
     Eq << algebra.infer.given.all.apply(Eq[1])
 
-    n_ = Symbol.n(integer=True, positive=True)
+    n_ = Symbol('n', integer=True, positive=True)
     Eq << algebra.all.given.cond.subs.apply(Eq[-1], Eq[-1].variable, n_)
 
     Eq << Eq[-1].this.lhs.apply(discrete.matProd.to.matmul.pop_back)

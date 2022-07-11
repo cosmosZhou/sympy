@@ -12,14 +12,20 @@ def apply(self):
     A, B = self.of(MatMul)
     if len(A.shape) == 2:
         m, n = A.shape
-        _n, l = B.shape
-        assert n == _n
-    
-        prod = [[0] * l for i in range(m)]
-        for i in range(m):
-            for j in range(l):
+        if len(B.shape) == 2:
+            S[n], l = B.shape
+            prod = [[0] * l for i in range(m)]
+            for i in range(m):
+                for j in range(l):
+                    for k in range(n):
+                        prod[i][j] += A[i, k] * B[k, j]
+        elif len(B.shape) == 1:
+            S[n] = B.shape[0]
+            prod = [0 for i in range(m)]
+            for i in range(m):
                 for k in range(n):
-                    prod[i][j] += A[i, k] * B[k, j]
+                    prod[i] += A[i, k] * B[k]
+            
     elif len(B.shape) == 2:
         [n] = A.shape
         _n, l = B.shape

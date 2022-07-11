@@ -156,7 +156,7 @@ class Cup(Set, ExprWithLimits):
             x, domain = limit
 
             if not self.expr._has(x):
-                if domain.is_boolean:
+                if domain.is_bool:
                     domain = conditionset(x, domain).simplify()
                 return Piecewise((self.expr, Unequal(domain, x.emptySet).simplify()), (self.expr.etype.emptySet, True)).simplify()
             
@@ -190,7 +190,7 @@ class Cup(Set, ExprWithLimits):
                 for e, c in domain.args: 
                     tuples.append((self.func(self.expr, (x, e)).simplify(), c))    
                 return domain.func(*tuples)
-            if domain.is_boolean:
+            if domain.is_bool:
                 if domain.is_Equal:
                     if domain.lhs == x:
                         return self.expr._subs(x, domain.rhs)
@@ -401,7 +401,7 @@ class Cup(Set, ExprWithLimits):
                 return limit
             if len(limit) == 3: 
                 x, a, b = limit
-                if a.is_boolean:
+                if a.is_bool:
                     return x, conditionset(x, a, b)
                 is_integer = limit[0].is_integer                 
                 return x, (Range if is_integer else Interval)(a, b) 
@@ -768,7 +768,7 @@ class Cup(Set, ExprWithLimits):
         
         if self.is_ConditionSet:
             cond = self.condition
-            if cond.is_boolean:
+            if cond.is_bool:
                 variable = self.variable
                 baseset = self.base_set
                 baseset += other
@@ -782,28 +782,24 @@ class Cup(Set, ExprWithLimits):
         if s.is_ConditionSet:
             if e == s.variable:
                 cond = s.condition
-                if not s.base_set.is_UniversalSet:
-                    from sympy import Element
-                    cond = And(cond, Element(e, s.base_set)) 
-            else: 
-                if s.variable.is_Sliced:
-                    cond = s.condition._subs_sliced(s.variable, e)
-                else:
-                    cond = s.condition._subs(s.variable, e)
-                if not s.base_set.is_UniversalSet:
-                    cond = And(cond, self.func(e, s.base_set).simplify())
-            return cond        
+            elif s.variable.is_Sliced:
+                cond = s.condition._subs_sliced(s.variable, e)
+            else:
+                cond = s.condition._subs(s.variable, e)
+
+            return And(cond, self.func(e, s.base_set).simplify())
     
     @classmethod
     def simplify_NotElement(cls, self, e, s):
         if s.is_ConditionSet:
             if e == s.variable:
-                cond = s.condition.invert()
-            else: 
-                cond = s.condition._subs(s.variable, e).invert()
-                if not s.base_set.is_UniversalSet:
-                    cond = Or(cond, self.func(e, s.base_set).simplify())
-            return cond
+                cond = s.condition
+            elif s.variable.is_Sliced:
+                cond = s.condition._subs_sliced(s.variable, e)
+            else:
+                cond = s.condition._subs(s.variable, e)
+
+            return Or(cond.invert(), self.func(e, s.base_set).simplify())
         
     def _eval_Subset(self, rhs):
         if self.is_ConditionSet:
@@ -854,7 +850,7 @@ class Cup(Set, ExprWithLimits):
                 if p and p.degree() == 1:
                     if len(ab) == 1:
                         [domain] = ab
-                        if domain.is_boolean:
+                        if domain.is_bool:
                             from sympy import conditionset
                             domain = conditionset(i, domain)
                     elif len(ab) == 2:
@@ -1141,7 +1137,7 @@ class Cap(Set, ExprWithLimits):
             x, domain = limit
 
             if not self.expr._has(x): 
-                if domain.is_boolean:
+                if domain.is_bool:
                     from sympy import conditionset
                     domain = conditionset(x, domain).simplify()
                 return Piecewise((self.expr, Unequal(domain, x.emptySet).simplify()), (self.expr.etype.universalSet, True)).simplify()
@@ -1176,7 +1172,7 @@ class Cap(Set, ExprWithLimits):
                 for e, c in domain.args: 
                     tuples.append((self.func(self.expr, (x, e)).simplify(), c))    
                 return domain.func(*tuples)
-            if domain.is_boolean:
+            if domain.is_bool:
                 if domain.is_Equal:
                     if domain.lhs == x:
                         return self.expr._subs(x, domain.rhs)

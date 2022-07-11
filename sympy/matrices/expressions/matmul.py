@@ -4,8 +4,7 @@ from sympy.core import Mul, Basic, sympify
 from sympy.functions import adjoint
 from sympy.strategies import (rm_id, unpack, typed, flatten, exhaust,
         do_one, new)
-from sympy.matrices.expressions.matexpr import (MatrixExpr, ShapeError,
-        Identity, ZeroMatrix, GenericIdentity)
+from sympy.matrices.expressions.matexpr import (MatrixExpr, ShapeError, Identity, ZeroMatrix)
 from sympy.matrices.expressions.blockmatrix import BlockMatrix
 from sympy.matrices.expressions.matpow import MatPow
 from sympy.matrices.matrices import MatrixBase
@@ -21,31 +20,28 @@ class MatMul(MatrixExpr):
 
     >>> m = 2
     >>> n = 2    
-    >>> a = Symbol.a(real=True, shape=(m, n))
+    >>> a = Symbol(real=True, shape=(m, n))
     >>> m1 = Matrix([[a[i, j] for j in range(n)] for i in range(m)])
     >>> m1
     >>> l = 2
-    >>> b = Symbol.b(real=True, shape=(n, l))
+    >>> b = Symbol(real=True, shape=(n, l))
     >>> m2 = Matrix([[b[i, j] for j in range(l)] for i in range(n)])
     >>> m2
     >>> discrete.matmul.to.matrix.apply(MatMul(m1, m2))    
     """
 
     precedence = 45
-    identity = GenericIdentity()
 
     def __new__(cls, *args, **kwargs):
 #         check = kwargs.get('check', True)
         check = kwargs.get('check', False)
 
-        if not args:
-            return cls.identity
+        assert args
 
         if len(args) == 1:
             return args[0]
 
-        # This must be removed aggressively in the constructor to avoid
-        # TypeErrors from GenericIdentity().shape        
+        # This must be removed aggressively in the constructor
         args = list(map(sympify, args))
         
         if any(arg.is_MatMul for arg in args):
@@ -118,9 +114,6 @@ class MatMul(MatrixExpr):
             if check:
                 validate(*matrices)
             if not matrices:
-                # Should it be
-                #
-                # return Basic.__neq__(cls, factor, GenericIdentity()) ?
                 mat = factor            
         
         if coeffs: 
@@ -190,6 +183,18 @@ class MatMul(MatrixExpr):
                 stop = self.shape[0]
                 
             return
+        
+        if isinstance(j, slice):
+            start, stop = j.start, j.stop
+            if start is None:
+                if stop is None:
+                    return self.func(*self.args[:-1]) @ self.args[-1][:, j]
+                start = 0
+            if stop is None:
+                stop = self.shape[0]
+                
+            return self.func(*self.args[:-1])[i] @ self.args[-1][:, start:stop]
+        
         if expand: 
             from sympy import Dummy, Sum, ImmutableMatrix, Integer
     
@@ -346,13 +351,17 @@ class MatMul(MatrixExpr):
         for i, prod in enumerate(self.args):
             if prod.is_MatProduct:
                 before = self.func(*self.args[:i])
-                after = self.func(*self.args[i + 1:])
+                latter = self.args[i + 1:]
+                if latter:
+                    latter = self.func(*latter)
+                else:
+                    latter = Identity(self.shape[-1])
                 
                 _prod = prod.try_absorb_forward(before)
                 if _prod:
-                    return _prod @ after                
+                    return _prod @ latter
                 
-                _prod = prod.try_absorb_backward(after)
+                _prod = prod.try_absorb_backward(latter)
                 if _prod:
                     return before @ _prod
 

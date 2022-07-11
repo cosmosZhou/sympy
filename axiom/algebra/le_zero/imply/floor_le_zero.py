@@ -16,7 +16,7 @@ def prove(Eq):
 
     Eq << sets.imply.any_el.real.apply(x)
 
-    Eq << Eq[-1].this.expr.apply(sets.el.imply.et.split.interval)
+    Eq << Eq[-1].this.expr.apply(sets.el_interval.imply.et)
 
     Eq << algebra.cond.any.imply.any_et.apply(Eq[0], Eq[-1], simplify=None)
 

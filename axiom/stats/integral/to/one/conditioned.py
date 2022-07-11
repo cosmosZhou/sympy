@@ -14,7 +14,7 @@ def prove(Eq):
     from axiom import stats
 
     x, y = Symbol(integer=True, random=True)
-    x_ = Symbol.x(integer=True)
+    x_ = Symbol('x', integer=True)
     Eq << apply(Integral[x_](Probability(x | y)))
 
     Eq << Eq[-1].this.lhs.expr.apply(stats.probability.to.mul)

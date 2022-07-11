@@ -3,9 +3,8 @@ from util import *
 
 @apply(given=None)
 def apply(self):
-    (((j, i), (S[0], (n, u))), ((S[i], S[n - Min(n, u)]), (S[j], S[i]))), ((S[j], S[i]), (S[i], S[n - Min(n, u)])) = self.of((Element[Expr - Expr, Range[Min]] | GreaterEqual & GreaterEqual) & (GreaterEqual | (Less)))
-    assert i in Range(n)
-    assert j in Range(n)
+    (((j, i), (S[0], u)), ((S[i], (n, S[u])), (S[j], S[i]))), ((S[j], S[i]), (S[i], S[n - u])) = self.of((Element[Expr - Expr, Range] | (Symbol >= Expr - Expr) & GreaterEqual) & (GreaterEqual | (Less)))
+    assert i in Range(n) and j in Range(n)
     return Equivalent(self, Element(j - i, Range(0, u)))
 
 
@@ -15,11 +14,12 @@ def prove(Eq):
 
     n, u = Symbol(domain=Range(2, oo), given=True)
     i, j = Symbol(domain=Range(n), given=True)
-    Eq << apply(And(And(j >= i, i >= n - Min(n, u)) | Element(j - i, Range(Min(n, u))), Or(j >= i, i < n - Min(n, u))))
+    #i, j = Symbol(integer=True, nonnegative=True)
+    Eq << apply(And(And(j >= i, i >= n - u) | Element(j - i, Range(u)), Or(j >= i, i < n - u)))
 
     Eq << Eq[0].this.find(Or).apply(algebra.ou.invert)
 
-    Eq << Eq[-1].this.find(NotElement).apply(sets.notin.to.ou.split.range)
+    Eq << Eq[-1].this.find(NotElement).apply(sets.notin_range.to.ou)
 
     Eq << Eq[-1].this.find(Symbol >= Symbol) - i
 
@@ -27,25 +27,16 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Or[~And]).apply(algebra.et.distribute, 1)
 
-    Eq << Eq[-1].this.find(GreaterEqual).apply(algebra.ge.transposition)
+    Eq << Eq[-1].this.find(GreaterEqual).apply(algebra.ge.transport)
 
     Eq << -Eq[-1].this.find(GreaterEqual)
 
     Eq << Eq[-1].this.lhs.apply(algebra.et.invert)
 
-    Eq << Eq[-1].this.find(NotElement).apply(sets.notin.to.ou.split.range)
+    Eq << Eq[-1].this.find(NotElement).apply(sets.notin_range.to.ou)
 
-    Eq << Eq[-1].this.find(Range).apply(sets.range_min.to.intersect)
 
-    Eq << Eq[-1].this.find(Element).apply(sets.el.to.et.split.intersect)
 
-    Eq << Eq[-1].this.lhs.find(Element).apply(sets.el.to.et.split.range)
-
-    Eq << Eq[-1].this.find(Element).apply(sets.el.to.et.split.range)
-
-    Eq << Eq[-1].this.find(Element).apply(sets.el.to.et.split.range)
-
-    
 
 
 if __name__ == '__main__':
@@ -54,4 +45,5 @@ if __name__ == '__main__':
 
 
 from . import offset
-# updated on 2022-01-08
+# updated on 2022-03-30
+from . import min

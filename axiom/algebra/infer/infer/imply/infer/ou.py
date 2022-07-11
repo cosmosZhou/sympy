@@ -13,9 +13,9 @@ def apply(x_imply_P, y_imply_P):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x, y, a, b = Symbol(real=True, given=True)
 
-    Eq << apply(Infer(x > 0, a > 0), Infer(y > 0, b > 0))
+    p0, p1, q0, q1 = Symbol(bool=True)
+    Eq << apply(Infer(p0, q0), Infer(p1, q1))
 
     Eq << Eq[-1].apply(algebra.infer.given.ou)
 
@@ -31,12 +31,10 @@ def prove(Eq):
 
     Eq <<= Eq[-2] & Eq[-1]
 
-
-
-
-
+    
 
 
 if __name__ == '__main__':
     run()
 # created on 2018-02-09
+# updated on 2022-01-27

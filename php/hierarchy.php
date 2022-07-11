@@ -33,6 +33,7 @@ switch ($keyInput) {
 }
 
 $module = $_GET[$keyInput];
+$module = str_replace('/', '.', $module);
 
 $graph = mysql\establish_hierarchy($module, $invert);
 

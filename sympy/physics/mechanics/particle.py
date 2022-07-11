@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from sympy.core.backend import sympify
 
 from sympy.physics.vector import Point

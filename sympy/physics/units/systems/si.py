@@ -5,8 +5,6 @@ Added kelvin, candela and mole.
 
 """
 
-from __future__ import division
-
 from sympy.physics.units.definitions import (
     K, cd, lux, mol,hertz, newton, pascal, joule, watt, coulomb, volt, farad,
     ohm, siemens, weber, tesla, henry, candela, becquerel, gray, katal)

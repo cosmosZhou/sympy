@@ -20,7 +20,7 @@ def prove(Eq):
 
     Eq << geometry.cos_is_zero.el.imply.eq.apply(Eq[-1], Eq[-2])
 
-    Eq << Eq[-1].this.apply(algebra.eq.transposition)
+    Eq << Eq[-1].this.apply(algebra.eq.transport)
 
     #https://en.wikipedia.org/wiki/Argument_(complex_analysis)
 

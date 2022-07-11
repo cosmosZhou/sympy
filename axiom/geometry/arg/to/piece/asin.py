@@ -26,7 +26,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(acos).apply(geometry.acos.to.piece.asin)
 
-    Eq << Eq[-1].this.find(-Piecewise).apply(algebra.mul_piece.to.piece)
+    Eq << Eq[-1].this.find(-Piecewise).apply(algebra.mul.to.piece)
 
     Eq.eq = Eq[-1].this.lhs.apply(algebra.piece.invert)
 
@@ -96,11 +96,10 @@ def prove(Eq):
     Eq << Eq[-1].this.lhs.apply(algebra.piece.swap, 2)
 
     
-
     
 
 
 if __name__ == '__main__':
     run()
 # created on 2018-07-24
-# updated on 2022-01-08
+# updated on 2022-01-23

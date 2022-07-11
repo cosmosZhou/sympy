@@ -4,9 +4,9 @@ from util import *
 @apply
 def apply(given):
     (((x, ((w, i, j, k), (S[k], (S[k], S[0], n)))), (S[k], S[0], S[n])), s), (S[x], S[s]) = given.of(All[Element[Lamda[Indexed[MatMul[Indexed, Lamda]]]]])
-    assert n == s.etype.shape[0]
+    [S[n]] = s.etype.shape
 
-    (S[n], S[i], S[j]), (S[j], *j_limits), (S[i], *i_limits) = w.definition.of(Lamda[SwapMatrix])
+    (S[i], S[j]), (S[j], *j_limits), (S[i], *i_limits) = w.definition.of(Lamda[SwapMatrix])
 
     if j_limits:
         S[0], S[n - 1] = j_limits
@@ -16,7 +16,7 @@ def apply(given):
 
     p = Symbol(shape=(oo,), integer=True, nonnegative=True)
 
-    P = Symbol(conditionset(p[:n], Equal(p[:n].set_comprehension(), Range(n))))
+    P = Symbol(conditionset(p[:n], Equal(p[:n].cup_finiteset(), Range(n))))
 
     return All[p[:n]:P, x:s](Element(Lamda[k:n](x[p[k]]), s))
 

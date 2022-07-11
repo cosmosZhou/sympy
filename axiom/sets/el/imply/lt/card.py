@@ -19,7 +19,7 @@ def prove(Eq):
     Eq << apply(Element(x, Interval(-a, a, left_open=True, right_open=True)))
 
     Eq << algebra.lt_abs.given.et.apply(Eq[1])
-    Eq << sets.el.imply.et.split.interval.apply(Eq[0])
+    Eq << sets.el_interval.imply.et.apply(Eq[0])
 
 
 if __name__ == '__main__':

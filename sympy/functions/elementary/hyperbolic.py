@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from sympy.core import S, sympify, cacheit
 from sympy.core.add import Add
 from sympy.core.function import Function, ArgumentIndexError
@@ -30,6 +28,11 @@ class HyperbolicFunction(Function):
     """
 
     unbranched = True
+    def __iter__(self):
+        raise TypeError
+
+    def __getitem__(self, index):
+        return self.func(self.arg[index])
 
 
 def _peeloff_ipi(arg):

@@ -1,7 +1,5 @@
 """ Linear Solver for Holonomic Functions"""
 
-from __future__ import print_function, division
-
 from sympy.core import S
 from sympy.matrices.common import ShapeError
 from sympy.matrices.dense import MutableDenseMatrix

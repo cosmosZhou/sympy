@@ -9,7 +9,7 @@ def apply(x, d, w=None):
     i, j, k = Symbol(integer=True)
 
     if w is None:
-        w = Symbol.w(Lamda[j, i](SwapMatrix(n, i, j)))
+        w = Symbol(Lamda[j, i](SwapMatrix(n, i, j)))
     else:
         assert len(w.shape) == 4 and all(s == n for s in w.shape)
         assert w[i, j].is_SwapMatrix or w[i, j].definition.is_SwapMatrix

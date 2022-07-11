@@ -21,13 +21,13 @@ def prove(Eq):
     i = Symbol(integer=True)
     n = Symbol(integer=True, positive=True)
     f = Function(complex=True)
-    Eq << apply(All[i:n](Unequal(y, x[i])), Sum[t:x[:n].set_comprehension()](f(t)))
+    Eq << apply(All[i:n](Unequal(y, x[i])), Sum[t:x[:n].cup_finiteset()](f(t)))
 
     Eq << sets.all_ne.imply.intersect_is_empty.apply(Eq[0])
 
     Eq << sets.intersect_is_empty.imply.eq.sum.apply(Eq[-1], Eq[1].rhs.args[1])
 
-    Eq << Eq[-1].this.apply(algebra.eq.transposition, rhs=0)
+    Eq << Eq[-1].this.apply(algebra.eq.transport, rhs=0)
     Eq << Eq[-1].reversed
 
 

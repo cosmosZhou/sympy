@@ -2359,7 +2359,7 @@ class Mul(Expr, AssocOp):
                 for i, term in enumerate(args):
                     term_tex = p._print(term)
 
-                    if not term.is_Product and p._needs_mul_brackets(term, first=(i == 0), last=(i == len(args) - 1)):
+                    if not term.is_Product and p._needs_mul_brackets(term, first=(i == 0), last=(i == len(args) - 1)) or term.is_Reduced and i < len(args) - 1:
                         term_tex = r"\left(%s\right)" % term_tex
 
                     if _between_two_numbers_p[0].search(last_term_tex) and _between_two_numbers_p[1].match(term_tex):
@@ -2369,7 +2369,7 @@ class Mul(Expr, AssocOp):
                         prev = args[i - 1]
                         if prev.is_OneMatrix or \
                         term.is_OneMatrix or \
-                        (prev.is_Atom or prev.is_Lamda) and term.is_Lamda or \
+                        (prev.is_Atom or prev.is_Lamda) and (term.is_Lamda or term.is_Mod) or \
                         prev.is_Product and term.is_ExprWithLimits:
                             _tex += " \cdot "
                         else:
@@ -2636,7 +2636,7 @@ class Mul(Expr, AssocOp):
                     return
                 
                 if len(cls.args) == 2:
-                    a, b = cls.args                    
+                    a, b = cls.args
                     cls = Basic.__new__(Mul, b, a)
                     args = Expr.of(self, cls)
                     if args is not None:

@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 import pyglet.gl as pgl
 from sympy.plotting.pygletplot.plot_rotation import get_spherical_rotatation
 from sympy.plotting.pygletplot.util import get_model_matrix, model_to_screen, \

@@ -24,7 +24,7 @@ def prove(Eq):
     d = Symbol(integer=True, positive=True)
     Eq << apply(Element(d * x, Range(a, b + 1)), d)
 
-    Eq << sets.el.imply.et.split.range.apply(Eq[0])
+    Eq << sets.el_range.imply.et.apply(Eq[0])
 
     Eq << algebra.lt.imply.le.strengthen.apply(Eq[-1])
 

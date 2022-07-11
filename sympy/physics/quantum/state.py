@@ -1,7 +1,5 @@
 """Dirac notation for states."""
 
-from __future__ import print_function, division
-
 from sympy import (cacheit, conjugate, Expr, Function, integrate, oo, sqrt,
                    Tuple)
 

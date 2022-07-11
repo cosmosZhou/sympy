@@ -15,7 +15,7 @@ def prove(Eq):
     x = Symbol(shape=(n,), real=True)
     Eq << apply(exp(x))
 
-    Eq << Eq[-1].this.find(Softmax).apply(keras.softmax.to.mul)
+    Eq << Eq[-1].this.find(Softmax).apply(keras.softmax.to.mul.reducedSum)
 
 
 

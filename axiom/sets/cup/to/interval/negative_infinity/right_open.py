@@ -24,13 +24,13 @@ def prove(Eq):
 
     k = Eq[-1].rhs.variable
     x = Eq[-1].lhs.lhs
-    Eq <<= Eq[-2].this.lhs.expr.apply(sets.el.imply.lt.split.interval), Eq[-1].this.rhs.apply(algebra.any.given.cond.subs, k, -Floor(x) - 1)
+    Eq <<= Eq[-2].this.lhs.expr.apply(sets.el_interval.imply.lt), Eq[-1].this.rhs.apply(algebra.any.given.cond.subs, k, -Floor(x) - 1)
 
     Eq <<= Eq[-2].this.lhs.apply(algebra.any.imply.any_et.limits.unleash, simplify=None), algebra.infer.given.et.infer.apply(Eq[-1])
 
-    Eq <<= Eq[-3].this.lhs.expr.args[0].apply(sets.el.imply.le.split.range), Eq[-2].this.rhs.apply(sets.el.given.et.split.range), algebra.infer.given.cond.apply(Eq[-1])
+    Eq <<= Eq[-3].this.lhs.expr.args[0].apply(sets.el_range.imply.le), Eq[-2].this.rhs.apply(sets.el_range.given.et), algebra.infer.given.cond.apply(Eq[-1])
 
-    Eq <<= Eq[-3].this.lhs.expr.apply(algebra.le.lt.imply.lt.add), Eq[-2].this.rhs.apply(algebra.ge.transposition, lhs=0), sets.el.given.et.split.interval.apply(Eq[-1])
+    Eq <<= Eq[-3].this.lhs.expr.apply(algebra.le.lt.imply.lt.add), Eq[-2].this.rhs.apply(algebra.ge.transport, lhs=0), sets.el_interval.given.et.apply(Eq[-1])
 
     Eq << Eq[-4].this.lhs.apply(sets.lt_zero.imply.is_negative, simplify=None)
 
@@ -42,7 +42,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.le.given.lt.one)
 
-    Eq << Eq[-1].this.lhs.apply(sets.el.imply.lt.split.interval)
+    Eq << Eq[-1].this.lhs.apply(sets.el_interval.imply.lt)
     Eq << Eq[-1].this.lhs.apply(algebra.lt_zero.imply.floor_lt_zero)
 
 

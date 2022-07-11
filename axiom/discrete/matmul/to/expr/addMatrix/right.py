@@ -7,8 +7,8 @@ def apply(x, lamda, w=None):
     i, j = Symbol(domain=Range(n))
 
     if w is None:
-        w = Symbol.w(Lamda[j, i](AddMatrix(n, i, j, lamda)))
-        w_quote = Symbol.w_quote(Lamda[j, i](AddMatrix(n, i, j, -lamda)))
+        w = Symbol(Lamda[j, i](AddMatrix(n, i, j, lamda)))
+        w_quote = Symbol(Lamda[j, i](AddMatrix(n, i, j, -lamda)))
     else:
         assert w[i, j] == AddMatrix(n, i, j, lamda)
         assert w_quote[i, j] == AddMatrix(n, i, j, -lamda)

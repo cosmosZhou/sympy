@@ -38,12 +38,12 @@ keywords += ['axiom',
              'negative', 'nonempty', 'nonnegative', 'nonpositive', 'nonzero',
              'plausible', 'positive', 'prime', 'provable', 'proved'
              'real', 'right_open',
-             'set_comprehension', 'simplify', 'singular',
+             'cup_finiteset', 'simplify', 'singular',
              'this',
              'uncountable', 
              'zero']
 
-sections = ['algebra', 'calculus', 'discrete', 'geometry', 'keras', 'sets', 'stats']
+sections = ['algebra', 'calculus', 'discrete', 'geometry', 'keras', 'sets', 'stats', 'patent']
 
 from sympy import *
 import sympy
@@ -72,8 +72,12 @@ def local_eval(python, __globals__):
     try:
         if hasattr(result, "is_Basic"):
             latex = r'\[%s\]' % result.latex
+            if result.is_Boolean:
+                __globals__['Eq'].append(result)
         else:
-            latex = str(result)    
+            latex = str(result)
+            
+            
     except Exception as e:
         print(e)
         latex = str(e)
@@ -81,7 +85,7 @@ def local_eval(python, __globals__):
     return latex
     
 if __name__ == '__main__':
-    vocab = keywords + sections    
+    vocab = keywords + sections
     
     symbols = [symbol for symbol in sympy.__dict__ if re.match('^[A-Za-z]+$', symbol)]
     vocab += symbols
@@ -111,10 +115,14 @@ if __name__ == '__main__':
     data = []
     __globals__ = globals()
     for symbol in symbols:
+#         if symbol != 'BandPart':
+#             continue
+        
         script = extract_latex(symbol)
         if not script:
             continue
-        __locals__ = {**__globals__}
+        __locals__ = {**__globals__}        
+        __locals__['Eq'] = []
         
         latex = []
         for line in script:

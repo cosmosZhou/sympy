@@ -10,8 +10,6 @@ no time dimension (but a velocity dimension instead) - in the basis - so the
 question of adding time to length has no meaning.
 """
 
-from __future__ import division
-
 import collections
 
 from sympy import Integer, Matrix, S, Symbol, sympify, Basic, Tuple, Dict, default_sort_key

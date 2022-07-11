@@ -1,15 +1,15 @@
 <template>
 	<form name=search enctype="multipart/form-data" method=post :action=action @keydown=keydown>
-		<input v-focus tabindex=1 type=text spellcheck=false name=keyword size=48 v-model=keyword placeholder='input a hint for search of a theorem/axiom'>
+		<input v-focus tabindex=1 type=text spellcheck=false name=keyword size=48 :value=keyword placeholder='input a hint for search of a theorem/axiom' @input=input>
 		<br>
 			 
-		<input tabindex=-1 type=checkbox name=caseSensitive v-model=caseSensitive><u>C</u>ase 
+		<input tabindex=-1 type=checkbox name=caseSensitive :checked=caseSensitive><u>C</u>ase 
 			
-		<input tabindex=-1 type=checkbox name=wholeWord v-model=wholeWord><u>W</u>holeWord 
+		<input tabindex=-1 type=checkbox name=wholeWord :checked=wholeWord><u>W</u>holeWord 
 		
-		<input tabindex=-1 type=checkbox name=regularExpression v-model=regularExpression>Rege<u>x</u>
+		<input tabindex=-1 type=checkbox name=regularExpression :checked=regularExpression>Rege<u>x</u>
 		
-		<input tabindex=-1 type=checkbox name=nlp v-model=nlp><u>N</u>lp
+		<input tabindex=-1 type=checkbox name=nlp :checked=nlp><u>N</u>lp
 	</form>
 </template>
 
@@ -29,6 +29,10 @@ export default {
 	},
 	
 	methods: {
+		input(event){
+			setAttribute(this, 'keyword', event.target.value);
+		},
+		
 		keydown(event){
 			if (event.altKey){
 				switch(event.key){

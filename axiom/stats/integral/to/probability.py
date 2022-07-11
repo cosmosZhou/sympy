@@ -20,7 +20,7 @@ def apply(self):
 @prove(provable=False)
 def prove(Eq):
     x, y, z = Symbol(real=True, random=True)
-    x_ = Symbol.x(real=True)
+    x_ = Symbol('x', real=True)
     Eq << apply(Integral[x_](Probability(x, y, z)))
 
 

@@ -23,7 +23,7 @@ def prove(Eq):
     domain = Interval(a, b, left_open=True)
     Eq << apply(Element(w, Interval(0, 1, left_open=True, right_open=True)), Element(x0, domain), Element(x1, domain))
 
-    Eq.w_is_positive, Eq.w1_is_positive = sets.el.imply.et.split.interval.apply(Eq[0])
+    Eq.w_is_positive, Eq.w1_is_positive = sets.el_interval.imply.et.apply(Eq[0])
 
     Eq.w1_is_positive = -Eq.w1_is_positive + 1
 

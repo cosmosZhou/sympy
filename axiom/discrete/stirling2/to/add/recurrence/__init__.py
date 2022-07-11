@@ -18,7 +18,7 @@ def prove(Eq):
 
     Eq << algebra.et.given.et.apply(Eq[-1])
 
-    k_ = Symbol.k(domain=Range(1, n))
+    k_ = Symbol('k', domain=Range(1, n))
     Eq << discrete.stirling2.to.add.recurrence.k_less_than_n.apply(n, k_)
 
     Eq << Eq[-1].apply(algebra.cond.imply.all.restrict, (k_,))

@@ -28,13 +28,13 @@ def prove(Eq):
 
     Eq.is_differentiable = algebra.all.imply.all.limits.restrict.apply(Eq[-1], Interval(a, b, left_open=True, right_open=True))
 
-    Eq.le = Element(t, Interval(a, b, left_open=True)).this.apply(sets.el.imply.le.split.interval)
+    Eq.le = Element(t, Interval(a, b, left_open=True)).this.apply(sets.el_interval.imply.le)
 
     Eq <<= algebra.cond.infer.imply.infer.et.rhs.apply(Eq.is_continuous, Eq.le), algebra.cond.infer.imply.infer.et.rhs.apply(Eq.is_differentiable, Eq.le)
 
     Eq <<= Eq[-2].this.rhs.apply(algebra.le.all.imply.all.limits.restrict), Eq[-1].this.rhs.apply(algebra.le.all.imply.all.limits.restrict)
 
-    Eq <<= Element(t, Interval(a, b, left_open=True)).this.apply(sets.el.imply.lt.split.interval) & Eq[-1] & Eq[-2]
+    Eq <<= Element(t, Interval(a, b, left_open=True)).this.apply(sets.el_interval.imply.lt) & Eq[-1] & Eq[-2]
 
     Eq << Eq[-1].this.rhs.apply(calculus.lt.is_continuous.is_differentiable.imply.any_eq.mean_value_theorem.Lagrange)
 

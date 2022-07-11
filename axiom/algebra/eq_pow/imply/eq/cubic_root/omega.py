@@ -24,7 +24,7 @@ def prove(Eq):
     d = Symbol(Eq[1].find(Ceiling - Ceiling))
     Eq << d.this.definition
 
-    Eq.difference = Eq[-1].this.apply(algebra.eq.transposition, rhs=-1).reversed
+    Eq.difference = Eq[-1].this.apply(algebra.eq.transport, rhs=-1).reversed
 
     Eq << Eq[1].this.lhs.apply(algebra.expr.to.mul.expi)
 

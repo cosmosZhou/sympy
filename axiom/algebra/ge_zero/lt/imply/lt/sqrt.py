@@ -19,7 +19,7 @@ def prove(Eq):
 
     Eq << algebra.ge.lt.imply.gt.transit.apply(Eq[0], Eq[1])
 
-    Eq << algebra.gt_zero.imply.sqrt_gt_zero.apply(Eq[-1])
+    Eq << algebra.gt_zero.imply.gt_zero.sqrt.apply(Eq[-1])
 
     Eq << algebra.ge_zero.imply.sqrt_ge_zero.apply(Eq[0])
 

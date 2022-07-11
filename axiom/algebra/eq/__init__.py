@@ -9,6 +9,6 @@ from . import cond
 from . import simplify
 from . import rsolve
 from . import infer
-from . import transposition
 from . import reverse
 from . import to
+from . import transport

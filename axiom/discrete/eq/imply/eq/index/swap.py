@@ -7,28 +7,28 @@ from axiom.discrete.eq.imply.et.index import index_function
 @apply
 def apply(given, i=None, j=None, w=None):
     assert given.is_Equal
-    x_set_comprehension, interval = given.args
+    x_cup_finiteset, interval = given.args
     n = interval.max() + 1
     assert interval.min() == 0
-    assert len(x_set_comprehension.limits) == 1
-    k, a, b = x_set_comprehension.limits[0]
+    assert len(x_cup_finiteset.limits) == 1
+    k, a, b = x_cup_finiteset.limits[0]
     assert b - a == n
-    x = Lamda(x_set_comprehension.expr.arg, *x_set_comprehension.limits).simplify()
+    x = Lamda(x_cup_finiteset.expr.arg, *x_cup_finiteset.limits).simplify()
 
     if j is None:
-        j = Symbol.j(domain=Range(n), given=True)
+        j = Symbol(domain=Range(n), given=True)
 
     if i is None:
-        i = Symbol.i(domain=Range(n), given=True)
+        i = Symbol(domain=Range(n), given=True)
 
     assert j >= 0 and j < n
     assert i >= 0 and i < n
 
     index = index_function(n)
     if w is None:
-        _i = Symbol.i(integer=True)
-        _j = Symbol.j(integer=True)
-        w = Symbol.w(Lamda[_j, _i](SwapMatrix(n, _i, _j)))
+        _i = Symbol('i', integer=True)
+        _j = Symbol('j', integer=True)
+        w = Symbol(Lamda[_j, _i](SwapMatrix(n, _i, _j)))
 
     return Equal(index[i](w[index[i](x[:n]), index[j](x[:n])] @ x[:n]), index[j](x[:n]))
 
@@ -41,7 +41,7 @@ def prove(Eq):
     x = Symbol(shape=(n,), integer=True)
     k = Symbol(integer=True)
     j, i = Symbol(domain=Range(n), given=True)
-    Eq << apply(Equal(x[:n].set_comprehension(k), Range(n)), i, j)
+    Eq << apply(Equal(x[:n].cup_finiteset(k), Range(n)), i, j)
 
     _, di, dj = Eq[2].lhs.arg.args[0].args
     dj = Symbol("d_j", dj)

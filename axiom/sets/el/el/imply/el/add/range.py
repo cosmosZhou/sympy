@@ -18,11 +18,11 @@ def prove(Eq):
     a, b, c, d, x0, x1 = Symbol(integer=True)
     Eq << apply(Element(x0, Range(a, b)), Element(x1, Range(c, d)))
 
-    Eq << sets.el.imply.et.split.range.apply(Eq[0])
+    Eq << sets.el_range.imply.et.apply(Eq[0])
 
     Eq << algebra.lt.imply.le.strengthen.apply(Eq[-1])
 
-    Eq << sets.el.imply.et.split.range.apply(Eq[1])
+    Eq << sets.el_range.imply.et.apply(Eq[1])
 
     Eq << algebra.lt.imply.le.strengthen.apply(Eq[-1])
 

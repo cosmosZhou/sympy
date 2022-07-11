@@ -7,8 +7,6 @@ Factorials, binomial coefficients and related functions are located in
 the separate 'factorials' module.
 """
 
-from __future__ import print_function, division
-
 from sympy.core import S, Symbol, Rational, Integer, Add, Dummy
 from sympy.core.cache import cacheit
 from sympy.core.compatibility import as_int, SYMPY_INTS

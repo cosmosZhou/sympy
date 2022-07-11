@@ -36,7 +36,7 @@ def prove(Eq):
 
     Eq << algebra.infer.given.et.infer.apply(Eq[-1])
 
-    Eq << Eq[-1].this.rhs.apply(sets.el.given.et.split.interval)
+    Eq << Eq[-1].this.rhs.apply(sets.el_interval.given.et)
 
     Eq << algebra.infer.given.cond.apply(Eq[-1])
 
@@ -46,17 +46,17 @@ def prove(Eq):
 
     Eq << algebra.infer.given.et.infer.apply(Eq[-1])
 
-    Eq <<= Eq[-2].this.rhs.apply(algebra.gt.given.gt_zero), Eq[-1].this.rhs.apply(sets.el.given.et.split.interval)
+    Eq <<= Eq[-2].this.rhs.apply(algebra.gt.given.gt_zero), Eq[-1].this.rhs.apply(sets.el_interval.given.et)
 
     Eq <<= Eq[-2].this.find(Add).apply(algebra.add.to.mul.st.square_difference), algebra.infer.given.et.infer.apply(Eq[-1])
 
     Eq <<= Eq[-3].this.rhs.apply(algebra.mul_gt_zero.given.et.gt_zero), Eq[-2].this.rhs * 2, Eq[-1].this.rhs * 2
 
-    Eq <<= algebra.infer.given.et.infer.apply(Eq[-3]), Eq[-2].this.rhs.apply(algebra.lt.transposition, lhs=0), Eq[-1].this.rhs.apply(algebra.gt.given.gt_zero)
+    Eq <<= algebra.infer.given.et.infer.apply(Eq[-3]), Eq[-2].this.rhs.apply(algebra.lt.transport, lhs=0), Eq[-1].this.rhs.apply(algebra.gt.given.gt_zero)
 
     Eq <<= Eq[-3].this.rhs * 2, Eq[-2].this.rhs * 2, Eq[-1].this.rhs.apply(algebra.add_gt_zero.given.et, index=0)
 
-    Eq <<= Eq[-3].this.rhs.apply(algebra.add_gt_zero.given.et, index=0), Eq[-2].this.rhs.apply(algebra.gt.transposition), algebra.infer.given.et.infer.apply(Eq[-1])
+    Eq <<= Eq[-3].this.rhs.apply(algebra.add_gt_zero.given.et, index=0), Eq[-2].this.rhs.apply(algebra.gt.transport), algebra.infer.given.et.infer.apply(Eq[-1])
 
     Eq <<= algebra.infer.given.et.infer.apply(Eq[-4]), Eq[-3].this.rhs.reversed, Eq[-2].this.rhs / 3, Eq[-1].this.lhs.apply(algebra.ge_zero.imply.sqrt_ge_zero)
 

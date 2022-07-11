@@ -6,7 +6,7 @@ def apply(n, a=0, b=None, x=None):
     assert n.is_integer
 
     if x is None:
-        x = Symbol.x(real=True)
+        x = Symbol(real=True)
 
     return Equal(Integral(x ** n, (x, a, b)), (b ** (n + 1) - a * (n + 1)) / (n + 1))
 

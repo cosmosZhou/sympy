@@ -20,7 +20,7 @@ def prove(Eq):
 
     Eq << Eq[0].this.lhs.apply(algebra.mod.to.add)
 
-    Eq << sets.el.given.et.split.range.apply(Eq[-1], right_open=False)
+    Eq << sets.el_range.given.et.apply(Eq[-1], right_open=False)
 
     Eq << algebra.ge.given.gt.apply(Eq[-2])
 

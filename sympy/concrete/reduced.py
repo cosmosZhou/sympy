@@ -1,8 +1,10 @@
 from sympy.core.function import Function
 from sympy.concrete.summations import Sum
 
-
-class ReducedSum(Function):
+class Reduced(Function):
+    ...
+    
+class ReducedSum(Reduced):
     r"""Represents unevaluated reduced summation.
     input must be a multi-dimensional tensor
     """

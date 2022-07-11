@@ -6,7 +6,7 @@ def apply(given, q=None):
     mod, r = given.of(Equal)
     n, d = mod.of(Mod)
     if q is None:
-        q = Symbol.q(integer=True)
+        q = Symbol(integer=True)
 
     return Any[q](Equal(n, q * d + r))
 

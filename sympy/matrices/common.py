@@ -154,7 +154,10 @@ class MatrixShaping(MatrixRequired):
                                          lambda i, j: entry(i, j))
 
     def _eval_tolist(self):
-        return [list(self[i,:]) for i in range(self.rows)]
+        array = [list(self[i,:]) for i in range(self.rows)]
+        if self.rows == 1:
+            return array[0] 
+        return array
 
     def _eval_vec(self):
         rows = self.rows
@@ -2090,6 +2093,11 @@ class MatrixArithmetic(MatrixRequired):
         return self._new(self.rows, self.cols, lambda i, j: self[i,j]*other[i,j])
 
     def _eval_matrix_rmul(self, other):
+        if other.is_Symbol:
+            if isinstance(other, _MatrixWrapper):
+                other = other.mat
+            return MatrixRequired.__rmatmul__(self, other)
+        
         def entry(i, j):
             return sum(other[i,k]*self[k,j] for k in range(other.cols))
         return self._new(other.rows, self.cols, entry)
@@ -2252,8 +2260,8 @@ class MatrixArithmetic(MatrixRequired):
                 return self._eval_scalar_mul(other)
             except TypeError:
                 pass
-
-        return NotImplemented
+        from sympy.core.mul import Mul
+        return Mul(other, self)
 
     def __neg__(self):
         return self._eval_scalar_mul(-1)
@@ -2305,7 +2313,8 @@ class MatrixArithmetic(MatrixRequired):
 
     @call_highest_priority('__mul__')
     def __rmul__(self, other):
-        other = _matrixify(other)
+        if not isinstance(other, _MatrixWrapper):
+            other = _matrixify(other)
         # matrix-like objects can have shapes.  This is
         # our first sanity check.
         if hasattr(other, 'shape') and len(other.shape) == 2:

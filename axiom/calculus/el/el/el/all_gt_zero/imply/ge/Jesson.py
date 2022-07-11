@@ -30,8 +30,8 @@ def prove(Eq):
     domain = Interval(a, b, left_open=True, right_open=True)
     Eq << apply(Element(w, Interval(0, 1, right_open=True)), Element(x0, domain), Element(x1, domain), All[x:domain](Derivative(f(x), (x, 2)) > 0))
 
-    w_ = Symbol.w(domain=Eq[0].rhs)
-    x_ = Symbol.x(domain=domain)
+    w_ = Symbol('w', domain=Eq[0].rhs)
+    x_ = Symbol('x', domain=domain)
     Eq << algebra.all.imply.cond.subs.apply(Eq[3], x, x_)
 
     Eq << calculus.gt_zero.imply.ge.Jesson.apply(Eq[-1], w=w_)

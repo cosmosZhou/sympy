@@ -6,8 +6,6 @@ TODO:
 * Document default basis functionality.
 """
 
-from __future__ import print_function, division
-
 from sympy import Add, Expr, I, integrate, Mul, Pow
 from sympy.physics.quantum.dagger import Dagger
 from sympy.physics.quantum.commutator import Commutator

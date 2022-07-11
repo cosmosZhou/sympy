@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from sympy.core import Mul, sympify
 from sympy.matrices.expressions.matexpr import (
     MatrixExpr, ShapeError, Identity, OneMatrix, ZeroMatrix

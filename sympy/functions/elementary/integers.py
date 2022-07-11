@@ -91,6 +91,13 @@ class RoundFunction(Function):
         else:
             return dtype.extended_integer
 
+    def __iter__(self):
+        raise TypeError
+    
+    def __getitem__(self, indices):
+        from sympy.core.operations import AssocOp
+        return AssocOp.getitem(self, indices)
+
 
 class Floor(RoundFunction):
     """

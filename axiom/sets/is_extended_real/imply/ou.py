@@ -22,11 +22,11 @@ def prove(Eq):
     x = Symbol(hyper_real=True)
     Eq << apply(Element(x, ExtendedReals))
 
-    Eq << sets.el.imply.ou.split.interval.apply(Eq[0], oo)
+    Eq << sets.el_interval.imply.ou.apply(Eq[0], oo)
 
     Eq << Eq[-1].this.args[1].simplify()
 
-    Eq << Eq[-1].this.args[1].apply(sets.el.imply.ou.split.interval, -oo, simplify=None, left_open=True)
+    Eq << Eq[-1].this.args[1].apply(sets.el_interval.imply.ou, -oo, simplify=None, left_open=True)
     Eq << Eq[-1].this.args[-1].simplify()
 
 

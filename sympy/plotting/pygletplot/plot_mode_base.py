@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 import pyglet.gl as pgl
 from sympy.core import S
 from sympy.core.compatibility import is_sequence

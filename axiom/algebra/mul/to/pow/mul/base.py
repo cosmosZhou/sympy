@@ -1,44 +1,52 @@
 from util import *
 
-def determine_exp(args):
-    exponent = set()
-    for arg in args:
-        if arg.is_Pow:
-            exponent.add(arg.exp)
-            if len(exponent) > 1:
-                return
+def determine_args(args, simplify):
+    e2b = {}
 
-    [exponent] = exponent
-    return exponent
-
-@apply
-def apply(self, *, simplify=True):
-    args = self.of(Mul)
-    exponent = determine_exp(args)
-    base = []
-    unrealCount = 0
-
+    others = []
     for arg in args:
         if arg.is_Pow:
             b, e = arg.args
-            if not b.is_extended_real:
-                unrealCount += 1
+            if e not in e2b:
+                e2b[e] = []
+            e2b[e].append(b)
         else:
-            if arg > 0:
-                if arg.is_Rational:
-                    b = arg ** (1 / exponent)
-                    assert b.is_Rational
-            else:
-                return
+            others.append(arg)
 
-        base.append(b)
-    assert unrealCount < 2
+    indices_to_delete = []
+    for i, arg in enumerate(others):
+        if arg.is_Rational and arg > 0:
+            for e in e2b:
+                b = arg ** (1 / e)
+                if b.is_Rational:
+                    indices_to_delete.append(i)
+                    e2b[e].append(b)
+                    break
+               
+    if indices_to_delete:
+        indices_to_delete.reverse()
+        for i in indices_to_delete:
+            del others[i]
+            
+    for e, bs in e2b.items():
+        assert sum(int(not b.is_extended_real) for b in bs) < 2
+               
+    args = []
+    for e, b in e2b.items():
+        arg = Mul(*b)
+        if simplify:
+            arg = arg.simplify()
+        args.append(arg ** e)
+         
+    return args, others
 
-    base = Mul(*base)
-    if simplify:
-        base = base.simplify()
 
-    return Equal(self, base ** exponent, evaluate=False)
+@apply
+def apply(self, *, simplify=True):
+    args, others = determine_args(self.of(Mul), simplify=simplify)
+    assert not others
+    [ret] = args
+    return Equal(self, ret, evaluate=False)
 
 
 @prove
@@ -51,8 +59,11 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.pow.to.mul.split.base)
 
+    
+
 
 if __name__ == '__main__':
     run()
 
 # created on 2018-11-13
+# updated on 2022-07-07

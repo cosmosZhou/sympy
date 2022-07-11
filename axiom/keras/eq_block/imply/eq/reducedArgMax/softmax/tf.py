@@ -64,8 +64,6 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Piecewise[2]).apply(algebra.piece.swap, 0)
 
-    Eq << Eq[-1].this.find(Add[Piecewise]).apply(algebra.add_piece.to.piece)
-
     Eq.block0 = Eq[-1].this.rhs.apply(algebra.lamda_piece.to.block)
 
     Eq << Eq.four_blocks.find(ExprCondPair[2]).find(BlockMatrix).this.apply(algebra.expr.to.lamda, j)
@@ -76,27 +74,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Piecewise).apply(algebra.piece.swap, 0)
 
-    Eq << Eq[-1].this.find(Piecewise[2]).apply(algebra.piece.swap, 0)
+    Eq << Eq[-1].this.find(Piecewise).apply(algebra.piece.swap, 0)
 
-    Eq << Eq[-1].this.find(Less) - i
-
-    Eq << Eq[-1].this.find(Less) - i
-
-    Eq << Eq[-1].this.find(GreaterEqual) - i
-
-    Eq << Eq[-1].this.find(Symbol >= Symbol) - i
-
-    Eq << Eq[-1].this.find(And).apply(sets.et.to.el.range)
-
-    Eq << Eq[-1].this.find(And).apply(sets.et.to.el.range)
-
-    Eq << Eq[-1].this.find(Element).apply(sets.el.to.et.split.range)
-
-    Eq << Eq[-1].this.find(Piecewise).apply(algebra.piece.swap)
-
-    Eq << Eq[-1].this.find(Piecewise).apply(algebra.piece.split.ou)
-
-    Eq << Eq[-1].this.rhs.apply(algebra.lamda_piece.to.block)
+    Eq << Eq[-1].this.find(And).apply(algebra.et.to.ou)
 
     Eq.block2 = Eq[-1].this.find(Lamda).apply(algebra.lamda_piece.to.block)
 
@@ -133,11 +113,13 @@ def prove(Eq):
     Eq << Eq[-1].this.rhs.apply(algebra.piece.swap, -2)
 
     Eq << Eq[-1].this.rhs.apply(algebra.piece.invert, 1)
+
     Eq << Eq[-1].this.rhs.apply(algebra.piece.invert)
 
     Eq << Eq[-1].this.find(And).apply(algebra.et_lt.to.lt.min)
 
     Eq << Eq[-1].this.find(And).apply(sets.et.to.el.range)
+
     Eq.four_blocks = Eq[-1].this.find(And).apply(algebra.et_ge.to.ge.max)
 
     Eq << keras.eq_block.imply.et.infer.block.tf.apply(Eq[0])
@@ -149,11 +131,11 @@ def prove(Eq):
 
     Eq.block3 = Eq[-3].this.rhs.find(ReducedArgMax[BlockMatrix]).apply(algebra.reducedArgMax_block.to.reducedArgMax)
 
-    Eq.block0 = Eq[-2].this.rhs.apply(algebra.eq.transposition, rhs=slice(0, 3))
+    Eq.block0 = Eq[-2].this.rhs.apply(algebra.eq.transport, rhs=slice(0, 3))
 
     Eq << Eq[-1].this.rhs.find(ReducedArgMax[BlockMatrix]).apply(algebra.reducedArgMax_block.to.reducedArgMax)
 
-    Eq.block1 = Eq[-1].this.rhs.apply(algebra.eq.transposition, rhs=slice(0, 3))
+    Eq.block1 = Eq[-1].this.rhs.apply(algebra.eq.transport, rhs=slice(0, 3))
 
     Eq << algebra.infer.imply.eq.piece.apply(Eq.block0, Eq.four_blocks.rhs, index=0, reverse=True)
 
@@ -173,7 +155,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq.z_quote_def)
 
-    Eq << Eq[-1].this.apply(algebra.eq.transposition, rhs=3)
+    Eq << Eq[-1].this.apply(algebra.eq.transport, rhs=3)
 
 
 
@@ -182,4 +164,4 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 # created on 2022-01-04
-# updated on 2022-01-13
+# updated on 2022-01-28

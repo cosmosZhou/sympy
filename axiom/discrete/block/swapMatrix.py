@@ -15,7 +15,7 @@ def prove(Eq):
     n = Symbol(domain=Range(2, oo))
     Eq << apply(n)
 
-    _, i, j = Eq[0].rhs.args
+    i, j = Eq[0].rhs.args
     _i = i.copy(domain=Range(n))
     _j = j.copy(domain=Range(n))
     W = Symbol(Eq[0].lhs._subs(i, _i)._subs(j, _j))

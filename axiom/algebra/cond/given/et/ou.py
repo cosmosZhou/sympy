@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given, *, cond=None):
-    assert cond.is_boolean
+    assert cond.is_bool
 
     _eq = cond.invert()
     return Or(cond, given), Or(_eq, given)

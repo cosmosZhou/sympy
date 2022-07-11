@@ -177,7 +177,7 @@ def run(package, debug=True):
             print(e)
 
     
-def import_module(package, debug=False):
+def import_module(package):
     try: 
         module = axiom
         for attr in package.split('.'):
@@ -192,7 +192,7 @@ def import_module(package, debug=False):
         assert m 
         create_module(*m.groups())
         print(package, 'is created newly')
-        return run(package, debug=debug)
+        return -1
 
 
 def prove_with_timing(module, **kwargs):
@@ -202,22 +202,35 @@ def prove_with_timing(module, **kwargs):
     return state, lapse, latex            
 
 
-def interpret_int_from_import(module):
-    if module < 0:
-        return RetCode.failed
-    elif module:
-        return RetCode.proved
-    else:
-        return RetCode.plausible    
-
-
+def tackle_type_error(package, debug=True):
+    from sympy import FunctionClass
+    if not isinstance(import_module(package), FunctionClass):
+        return
+    
+    print("package =", package)
+    index = package.rindex('.')
+    __init__ = package[:index]
+    func = package[index + 1:]
+    __init__ = import_module(__init__)
+    __init__ = __init__.__file__
+    print("__init__.__file__ =", __init__)
+    
+    file = Text(__init__)
+    index = file.find('from . import ' + func, False)
+    if index < 0:
+        return
+    
+    print("editing on line", index, __init__, ":", 'del ' + func)
+    file.insert(index, 'del ' + func)
+    return run(package, debug=debug)
+    
 @singledispatch    
 def process(package, debug=False):
     module = import_module(package)    
 #     https://www.geeksforgeeks.org/try-except-vs-if-in-python/
 # We often hear that python always encourages EAFP(
-# “It’s easier to ask for forgiveness than permission”) 
-# style over LBYL ( “Look before you leap ” ) style used in most of the languages like C.
+# "It's easier to ask for forgiveness than permission") 
+# style over LBYL ( "Look before you leap " ) style used in most of the languages like C.
     try: 
         file = module.__file__
         if debug:
@@ -226,11 +239,10 @@ def process(package, debug=False):
         state, lapse, latex = prove_with_timing(module, debug=debug)
                                 
     except AttributeError as e:
-        lapse = None
+        lapse = 0
         latex = None 
-        if isinstance(module, int):
-            state = interpret_int_from_import(module)
-        else:
+        
+        if module is not None:
             print(module, 'from', module)
             print(e)
             print('importing errors found in', package)
@@ -239,10 +251,16 @@ def process(package, debug=False):
             _package, module = m.groups()
             _package = 'axiom.' + _package
             create_module(_package, module)
-            state = RetCode.failed
-        
-        file = project_directory() + sep + package.replace('.', sep) + '.py'        
             
+        state = RetCode.failed
+        file = project_directory() + sep + package.replace('.', sep) + '.py'        
+    except TypeError:
+        lapse = 0
+        latex = None        
+        tackle_type_error(package, debug)
+        state = RetCode.failed
+        file = project_directory() + sep + package.replace('.', sep) + '.py'        
+        
     return package, file, state, lapse, latex
 
 
@@ -437,8 +455,8 @@ def run_with_module(*modules, debug=True):
             package = package.replace('/', '.').replace('\\', '.')
             module = import_module(package)
             
-            if isinstance(module, int):
-                state = interpret_int_from_import(module)                    
+            if module is None:
+                state = RetCode.failed                    
                 file = project_directory() + '/' + package.replace('.', '/') + '.py'
                 lapse = None
                 latex = None         

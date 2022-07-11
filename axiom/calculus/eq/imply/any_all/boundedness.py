@@ -7,7 +7,7 @@ def apply(given, M=None):
     expr, (n, *_) = lim.args
     assert n.is_integer
     if M is None:
-        M = Symbol.M(positive=True)
+        M = Symbol(positive=True)
     else:
         assert M.domain == Interval(0, oo, left_open=True)
     return Any[M](All[n](abs(expr) <= M))

@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 __all__ = ['Linearizer']
 
 from sympy.core.backend import Matrix, eye, zeros

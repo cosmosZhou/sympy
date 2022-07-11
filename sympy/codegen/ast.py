@@ -122,8 +122,6 @@ There is a function constructing a loop (or a complete function) like this in
 
 """
 
-from __future__ import print_function, division
-
 from itertools import chain
 from collections import defaultdict
 from sympy.core import Symbol, Tuple, Dummy

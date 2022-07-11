@@ -229,8 +229,6 @@ code is tested extensively in ``test_ode.py``, so if anything is broken, one
 of those tests will surely fail.
 
 """
-from __future__ import print_function, division
-
 from collections import defaultdict
 from itertools import islice
 

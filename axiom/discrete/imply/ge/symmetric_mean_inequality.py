@@ -5,7 +5,7 @@ from util import *
 def apply(x, k=None):
     n = x.shape[0]
     if k is None:
-        k = Symbol.k(integer=True)
+        k = Symbol(integer=True)
 
     return All[k:1:n](GreaterEqual((sigma[k](x[:n]) / binomial(n, k)) ** (1 / k),
                                       (sigma[k + 1](x[:n]) / binomial(n, k + 1)) ** (1 / (k + 1))))
@@ -51,8 +51,10 @@ def prove(Eq):
 
     Eq << algebra.ge_zero.imply.ge.apply(Eq[-1])
 
-    k_ = Symbol.k(domain=Range(2, n))
-    t = Function(eval=lambda k: (sigma[k](x[:n]) / binomial(n, k)) ** (1 / k), real=True)
+    t = Function(real=True)
+    t[k] = (sigma[k](x[:n]) / binomial(n, k)) ** (1 / k)
+    k_ = Symbol("k", domain=Range(2, n))
+    
     Eq << t(k_).this.defun()
 
     Eq << algebra.eq.imply.eq.pow.apply(Eq[-1], exp=k_)

@@ -14,7 +14,7 @@ def prove(Eq):
     x = Symbol(real=True, given=True)
     Eq << apply(Equal(Ceiling(x), 0))
 
-    Eq << sets.el.given.et.split.interval.apply(Eq[-1])
+    Eq << sets.el_interval.given.et.apply(Eq[-1])
 
     Eq << algebra.imply.le.ceiling.apply(x)
 

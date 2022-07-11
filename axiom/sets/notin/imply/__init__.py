@@ -3,8 +3,6 @@ from . import notin
 from . import all_notin
 from . import is_empty
 from . import et
-from . import ou
-from . import le
 from . import ne
 from . import all_ne
 from . import gt
@@ -13,3 +11,4 @@ from . import lt
 from . import el
 from . import gt_zero
 from . import ne_zero
+from . import le

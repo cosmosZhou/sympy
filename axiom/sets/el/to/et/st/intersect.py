@@ -28,7 +28,7 @@ def prove(Eq):
 
     Eq << algebra.iff.given.et.infer.apply(Eq[-1])
 
-    Eq << Eq[-1].this.lhs.apply(sets.el.imply.el.split.intersect)
+    Eq << Eq[-1].this.lhs.apply(sets.el_intersect.imply.el)
 
 
 if __name__ == '__main__':

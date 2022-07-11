@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 import io
 from io import BytesIO
 import os

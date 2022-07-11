@@ -10,8 +10,6 @@ are_coplanar
 are_similar
 
 """
-from __future__ import division, print_function
-
 from sympy import Function, Symbol, solve
 from sympy.core.compatibility import is_sequence, ordered
 from sympy.core.containers import OrderedSet

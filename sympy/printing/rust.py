@@ -31,8 +31,6 @@ complete source code files.
 # .. _Rational64: http://rust-num.github.io/num/num/rational/type.Rational64.html
 # .. _BigRational: http://rust-num.github.io/num/num/rational/type.BigRational.html
 
-from __future__ import print_function, division
-
 from sympy.core import S, Rational, Float, Lambda
 
 from sympy.printing.codeprinter import CodePrinter

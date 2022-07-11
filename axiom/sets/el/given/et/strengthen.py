@@ -24,9 +24,9 @@ def prove(Eq):
     a, b, c = Symbol(integer=True, given=True)
     Eq << apply(Element(x, Interval(a, b, right_open=True)), c, strict=True)
 
-    Eq << sets.el.given.et.split.interval.apply(Eq[0])
+    Eq << sets.el_interval.given.et.apply(Eq[0])
 
-    Eq << sets.el.imply.et.split.interval.apply(Eq[1])
+    Eq << sets.el_interval.imply.et.apply(Eq[1])
 
     Eq << algebra.lt.le.imply.lt.transit.apply(Eq[2], Eq[-1])
 

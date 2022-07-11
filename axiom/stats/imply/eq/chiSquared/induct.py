@@ -30,7 +30,7 @@ def prove(Eq):
     X = Symbol(shape=(oo,), distribution=NormalDistribution(0, 1))
     k = Symbol(integer=True, positive=True, given=False)
     Y = Symbol(distribution=ChiSquaredDistribution(k))
-    _Y = Symbol.Y(Lamda[k](Sum[i:k](X[i] * X[i])))
+    _Y = Symbol('Y', Lamda[k](Sum[i:k](X[i] * X[i])))
     Eq << apply(_Y, Y)
 
     Eq.induct = Eq[-1].subs(k, k + 1)

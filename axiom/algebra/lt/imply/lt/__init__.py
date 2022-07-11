@@ -9,3 +9,5 @@ from . import floor
 from . import prod
 from . import mul
 from . import relax
+from . import log
+from . import transport

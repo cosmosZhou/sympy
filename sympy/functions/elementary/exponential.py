@@ -454,6 +454,12 @@ class Exp(ExpBase):
     def is_continuous(self, *args):
         return True
     
+    def monotonicity(self, x):
+        arg, monotonicity = self.arg.monotonicity(x)
+        if arg is None:
+            return None, 0
+        return self.func(arg, evaluate=False), monotonicity
+    
 exp = Exp
     
 def match_real_imag(expr):
