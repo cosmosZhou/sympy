@@ -37,10 +37,10 @@ class AssumptionsContext(set):
         for a in assumptions:
             super(AssumptionsContext, self).add(a)
 
-    def _sympystr(self, printer):
+    def _sympystr(self, p):
         if not self:
             return "%s()" % self.__class__.__name__
-        return "%s(%s)" % (self.__class__.__name__, printer._print_set(self))
+        return "%s(%s)" % (self.__class__.__name__, p._print_set(self))
 
 global_assumptions = AssumptionsContext()
 
@@ -94,8 +94,7 @@ class AppliedPredicate(Boolean):
 
     @cacheit
     def sort_key(self, order=None):
-        return (self.class_key(), (2, (self.func.name, self.arg.sort_key())),
-                S.One.sort_key(), S.One)
+        return self.class_key(), (1, (self.arg.class_key(),), (self.func.name, self.arg.sort_key())), S.One.sort_key(), S.One
 
     def __eq__(self, other):
         if type(other) is AppliedPredicate:
@@ -172,7 +171,7 @@ class Predicate(Boolean):
 
     @cacheit
     def sort_key(self, order=None):
-        return self.class_key(), (1, (self.name,)), S.One.sort_key(), S.One
+        return self.class_key(), (0, (), (self.name,)), S.One.sort_key(), S.One
 
     def eval(self, expr, assumptions=True):
         """

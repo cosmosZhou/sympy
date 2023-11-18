@@ -39,7 +39,7 @@ def sub_func_doit(eq, func, new):
     reps= {func: new}
     for d in eq.atoms(Derivative):
         if d.expr == func:
-            reps[d] = new.diff(*d.variable_count)
+            reps[d] = new.diff(*d.limits)
         else:
             reps[d] = d.xreplace({func: new}).doit(deep=False)
     return eq.xreplace(reps)

@@ -5,7 +5,6 @@ A Printer which converts an expression into its LaTeX equivalent.
 import itertools
 
 from sympy.core import S, Add, Symbol
-from sympy.core.alphabets import greeks
 from sympy.core.containers import Tuple
 from sympy.core.function import Derivative
 from sympy.core.sympify import SympifyError
@@ -13,7 +12,7 @@ from sympy.core.sympify import SympifyError
 # sympy.printing imports
 from sympy.printing.precedence import precedence_traditional
 from sympy.printing.printer import Printer
-from sympy.printing.conventions import split_super_sub, requires_partial
+from sympy.printing.conventions import split_super_sub
 from sympy.printing.precedence import precedence, PRECEDENCE
 
 import mpmath.libmp as mlib
@@ -109,7 +108,7 @@ modifier_dict = {
     'mag': lambda s: r'\left|{' + s + r'}\right|',
 }
 
-greek_letters_set = frozenset(greeks)
+from std.unicode import greeks
 
 _between_two_numbers_p = (
     re.compile(r'[0-9][} ]*$'),  # search
@@ -300,16 +299,8 @@ class LatexPrinter(Printer):
         else:
             return expr
 
-    def _print_Basic(self, expr):
-        ls = [self._print(o) for o in expr.args]
-        return self._deal_with_super_sub(expr.__class__.__name__) + \
-            r"\left(%s\right)" % ", ".join(ls)
-
     def _print_bool(self, e):
         return r"\text{%s}" % e
-
-    _print_BooleanTrue = _print_bool
-    _print_BooleanFalse = _print_bool
 
     def rotate_arrow(self, arrow):
         return {r'\Rightarrow': r'\Downarrow',
@@ -463,16 +454,6 @@ class LatexPrinter(Printer):
             outstr = outstr[1:]
         return outstr
 
-    def _print_Subs(self, subs):
-        expr, old, new = subs.args
-        latex_expr = self._print(expr)
-        latex_old = (self._print(e) for e in old)
-        latex_new = (self._print(e) for e in new)
-        latex_subs = r'\\ '.join(
-            e[0] + '=' + e[1] for e in zip(latex_old, latex_new))
-        return r'\left. %s \right|_{\substack{ %s }}' % (latex_expr,
-                                                         latex_subs)
-
     def _hprint_Function(self, func):
         r'''
         Logic to decide how to render a function to latex
@@ -483,12 +464,16 @@ class LatexPrinter(Printer):
         '''
         func = self._deal_with_super_sub(func)
         if func in accepted_latex_functions:
-            name = r"\%s" % func
-        elif len(func) == 1 or func.startswith('\\'):
-            name = func
+            func = r"\%s" % func
+        elif len(func) == 1:
+            from std.unicode import ascii2greek
+            if func == ascii2greek('phi'):
+                func = '\\phi'
+        elif func.startswith('\\'):
+            ...
         else:
-            name = r"\operatorname{%s}" % func
-        return name
+            func = r"\operatorname{%s}" % func
+        return func
 
     def _print_UndefinedFunction(self, expr):
         return self._hprint_Function(str(expr))
@@ -534,7 +519,7 @@ class LatexPrinter(Printer):
     def _hprint_variadic_function(self, expr, exp=None):
         args = sorted(expr.args, key=default_sort_key)
         texargs = [r"%s" % self._print(symbol) for symbol in args]
-        tex = r"\%s\left(%s\right)" % (self._print((str(expr.func)).lower()),
+        tex = r"\%s\left(%s\right)" % (self._print(expr.func.__name__.lower()),
                                        ", ".join(texargs))
         if exp is not None:
             return r"%s^{%s}" % (tex, exp)
@@ -542,33 +527,6 @@ class LatexPrinter(Printer):
             return tex
 
     _print_Min = _print_Max = _hprint_variadic_function
-
-    def _print_log(self, expr, exp=None):
-        if not self._settings["ln_notation"]:
-            from sympy import MatMul, Mul
-            if isinstance(expr.args[0], (MatMul, Add, Mul)):
-                tex = r"\log{\left(%s \right)}" % self._print(expr.args[0])
-            else:
-                tex = r"\log{%s}" % self._print(expr.args[0])
-
-        else:
-            tex = r"\ln{\left(%s \right)}" % self._print(expr.args[0])
-
-        if exp is not None:
-            return r"%s^{%s}" % (tex, exp)
-        else:
-            return tex
-
-    def _print_Not(self, e):
-        from sympy import Equivalent, Infer
-        if isinstance(e.args[0], Equivalent):
-            return self._print_Equivalent(e.args[0], r"\not\Leftrightarrow")
-        if isinstance(e.args[0], Infer):
-            return self._print_Imply(e.args[0], r"\not\Rightarrow")
-        if (e.args[0].is_Boolean):
-            return r"\neg (%s)" % self._print(e.args[0])
-        else:
-            return r"\neg %s" % self._print(e.args[0])
 
     def _print_LogOp(self, args, char):
 
@@ -713,14 +671,6 @@ class LatexPrinter(Printer):
 
         if exp is not None:
             return r"\left(%s\right)^{%s}" % (tex, exp)
-        else:
-            return tex
-
-    def _print_factorial2(self, expr, exp=None):
-        tex = r"%s!!" % self.parenthesize(expr.args[0], PRECEDENCE["Func"])
-
-        if exp is not None:
-            return r"%s^{%s}" % (tex, exp)
         else:
             return tex
 
@@ -937,19 +887,6 @@ class LatexPrinter(Printer):
             tex = r"\left(" + tex + r"\right)^{%s}" % (self._print(exp))
         return tex
 
-    def _print_Rational(self, expr):
-        if expr.q != 1:
-            sign = ""
-            p = expr.p
-            if expr.p < 0:
-                sign = "- "
-                p = -p
-            if self._settings['fold_short_frac']:
-                return r"%s%d / %d" % (sign, p, expr.q)
-            return r"%s\frac{%d}{%d}" % (sign, p, expr.q)
-        else:
-            return self._print(expr.p)
-
     def _print_Order(self, expr):
         s = self._print(expr.expr)
         if expr.point and any(p != S.Zero for p in expr.point) or \
@@ -1007,20 +944,9 @@ class LatexPrinter(Printer):
                 latexslice(expr.rowslice) + ', ' + 
                 latexslice(expr.colslice) + r'\right]')
 
-    def _print_BlockMatrix(self, expr):
-        return self._print(expr.blocks)
-
     def _print_Trace(self, expr):
         mat = expr.arg
         return r"\operatorname{tr}\left(%s \right)" % self._print(mat)
-
-    def _print_Adjoint(self, expr):
-        mat = expr.arg
-        from sympy.matrices import MatrixSymbol
-        if not isinstance(mat, MatrixSymbol):
-            return r"\left(%s\right)^{\dagger}" % self._print(mat)
-        else:
-            return r"%s^{\dagger}" % self._print(mat)
 
     def _print_HadamardProduct(self, expr):
         args = expr.args
@@ -1045,10 +971,6 @@ class LatexPrinter(Printer):
     def _print_MatrixSymbol(self, expr):
         return self._print_Symbol(expr, style=self._settings[
             'mat_symbol_style'])
-
-    def _print_OneMatrix(self, O):
-        return r"\mathbb{1}" if self._settings[
-            'mat_symbol_style'] == 'plain' else r"\mathbf{1}"
 
     def _print_NDimArray(self, expr):
 
@@ -1169,26 +1091,17 @@ class LatexPrinter(Printer):
             self._print(expr.args[0])
         )
 
-    def _print_UniversalSet(self, expr):
-        return r"\mathbb{U}"
-
     def _print_tuple(self, expr):
-        return r"\left( %s\right)" % r", \  ".join([self._print(i) for i in expr])
+        return r"\left( %s\right)" % r", \  ".join(self._print(i) for i in expr)
 
     def _print_TensorProduct(self, expr):
-        elements = [self._print(a) for a in expr.args]
-        return r' \otimes '.join(elements)
+        return r' \otimes '.join(self._print(a) for a in expr.args)
 
     def _print_WedgeProduct(self, expr):
-        elements = [self._print(a) for a in expr.args]
-        return r' \wedge '.join(elements)
-
-    def _print_Tuple(self, expr):
-        return self._print_tuple(expr)
+        return r' \wedge '.join(self._print(a) for a in expr.args)
 
     def _print_list(self, expr):
-        return r"\left[ %s\right]" % \
-            r", \  ".join([self._print(i) for i in expr])
+        return r"\left[ %s\right]" % r", \  ".join(self._print(i) for i in expr)
 
     def _print_dict(self, d):
         keys = sorted(d.keys(), key=default_sort_key)
@@ -1246,34 +1159,12 @@ class LatexPrinter(Printer):
         else:
             return self._print(None)
 
-    def _print_FiniteSet(self, s):
-        items = sorted(s.args, key=default_sort_key)
-        return self._print_set(items)
-
     def _print_set(self, s):
         items = sorted(s, key=default_sort_key)
         items = ", ".join(map(self._print, items))
         return r"\left\{%s\right\}" % items
 
     _print_frozenset = _print_set
-
-    def _print_Range(self, s):
-        dots = r'\ldots'
-
-        if s.start.is_infinite:
-            printset = dots, s[-1] - s.step, s[-1]
-        elif s.stop.is_infinite:
-            it = iter(s)
-            printset = next(it), next(it), dots
-        elif abs(s) > 4:
-            it = iter(s)
-            printset = next(it), next(it), dots, s[-1]
-        else:
-            printset = tuple(s)
-
-        return (r"\left\{" + 
-                r", ".join(self._print(el) for el in printset) + 
-                r"\right\}")
 
     def _print_bernoulli(self, expr, exp=None):
         tex = r"B_{%s}" % self._print(expr.args[0])
@@ -1741,7 +1632,7 @@ def translate(s):
     tex = tex_greek_dictionary.get(s)
     if tex:
         return tex
-    elif s.lower() in greek_letters_set:
+    elif s.lower() in greeks:
         return "\\" + s.lower()
     elif s in other_symbols:
         return "\\" + s

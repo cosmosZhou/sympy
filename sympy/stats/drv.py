@@ -5,7 +5,7 @@ from sympy import (Basic, sympify, symbols, Dummy, Lambda, summation,
 from sympy.polys.polyerrors import PolynomialError
 from sympy.stats.crv import reduce_rational_inequalities_wrap
 from sympy.stats.rv import (NamedArgsMixin, SinglePSpace, SingleDomain,
-                            random_symbols, PSpace, ConditionalDomain, RandomDomain,
+                            PSpace, ConditionalDomain, RandomDomain,
                             ProductDomain, Distribution)
 from sympy.stats.symbolic_probability import Probability
 from sympy.sets.fancysets import Range, FiniteSet
@@ -270,30 +270,7 @@ class SingleDiscreteDistribution(DiscreteDistribution, NamedArgsMixin):
         """ Expectation of expression over distribution """
         # TODO: support discrete sets with non integer stepsizes
 
-        return Sum[var:self.domain.min(): self.domain.max() + 1](expr * self.pdf(var)).doit(evaluate=evaluate)
-        if evaluate:
-            return Sum[var:self.domain.min(): self.domain.max() + 1](expr * self.pdf(var)).doit()
-            try:
-                p = poly(expr, var)
-
-                t = Dummy('t', real=True)
-
-                mgf = self.moment_generating_function(t)
-                deg = p.degree()
-                taylor = poly(series(mgf, t, 0, deg + 1).removeO(), t)
-                result = 0
-                for k in range(deg + 1):
-                    result += p.coeff_monomial(var ** k) * taylor.coeff_monomial(t ** k) * factorial(k)
-
-                return result
-
-            except PolynomialError:
-                return summation(expr * self.pdf(var),
-                                 (var, self.set.inf, self.set.sup), **kwargs)
-
-        else:
-            return Sum(expr * self.pdf(var),
-                         (var, self.set.inf, self.set.sup), **kwargs)
+        return Sum[var:self.domain.min(): self.domain.max() + 1](expr * self(var)).doit(evaluate=evaluate)
 
     def __call__(self, *args):
         return self.pdf(*args)
@@ -353,7 +330,7 @@ class DiscretePSpace(PSpace):
         return self.density(*self.symbols)
 
     def where(self, condition):
-        rvs = random_symbols(condition)
+        rvs = condition.random_symbols
         assert all(r in self.values for r in rvs)
         if len(rvs) > 1:
             raise NotImplementedError(filldedent('''Multivariate discrete

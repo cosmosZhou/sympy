@@ -1,14 +1,16 @@
 from sympy import Number
 from sympy.core import Mul, Basic, sympify
 
-from sympy.functions import adjoint
 from sympy.strategies import (rm_id, unpack, typed, flatten, exhaust,
         do_one, new)
-from sympy.matrices.expressions.matexpr import (MatrixExpr, ShapeError, Identity, ZeroMatrix)
+from sympy.matrices.expressions.matexpr import MatrixExpr, Identity, ZeroMatrix
+from sympy.matrices.common import ShapeError
 from sympy.matrices.expressions.blockmatrix import BlockMatrix
 from sympy.matrices.expressions.matpow import MatPow
 from sympy.matrices.matrices import MatrixBase
 from sympy.core.logic import fuzzy_and
+from sympy.core.cache import cacheit
+from sympy.core.containers import Tuple
 
 
 class MatMul(MatrixExpr): 
@@ -19,7 +21,7 @@ class MatMul(MatrixExpr):
     ========
 
     >>> m = 2
-    >>> n = 2    
+    >>> n = 2
     >>> a = Symbol(real=True, shape=(m, n))
     >>> m1 = Matrix([[a[i, j] for j in range(n)] for i in range(m)])
     >>> m1
@@ -47,9 +49,21 @@ class MatMul(MatrixExpr):
         if any(arg.is_MatMul for arg in args):
 
             def generator():
-                for arg in args:
+                size = len(args)
+                for i, arg in enumerate(args):
                     if arg.is_MatMul:
-                        yield from arg.args
+                        if i + 1 < size and len(arg.args[-1].shape) == 1:
+#                             len(args[i + 1].shape) == 1
+                            for t in reversed(arg.args):
+                                yield t.T
+
+                        elif i and len(arg.args[0].shape) == 1:
+#                             if len(args[i - 1].shape) == 1:
+                            for t in reversed(arg.args):
+                                yield t.T
+
+                        else:
+                            yield from arg.args
                     else:
                         yield arg
                         
@@ -69,6 +83,7 @@ class MatMul(MatrixExpr):
                     elif last.base == mat: 
                         matrices[-1] = last.func(last.base, last.exp + 1)
                         return
+
                 elif last == mat:
                     if mat.is_square:
                         if mat._eval_inverse() == last:
@@ -76,45 +91,67 @@ class MatMul(MatrixExpr):
                         else:
                             matrices[-1] = MatPow(last, 2)
                         return
-            
+                    
+                elif len(last.shape) == 1 and len(mat.shape) > 1:
+                    if len(matrices) > 1:
+                        second_last = matrices[-2]
+                        if len(second_last.shape) > 1:
+                            matrices[-1], matrices[-2] = second_last.T, last
+                    
             if mat.is_ZeroMatrix:
                 from sympy import S
                 coeffs.append(S.Zero)
             
-            matrices.append(mat)
+            if mat.is_MatMul:
+                args = mat.args
+                if matrices:
+                    if last.is_square and last.inverse() == args[0]:
+                        matrices.pop()
+                        args = args[1:]
+                matrices.extend(args) 
+            else:
+                matrices.append(mat)
                 
         for arg in args:
-            if not arg.is_Mul:
-                append(arg)
-                continue
-            
-            coeff = []
-            matrix = []
-            for t in arg.args:
-                if t.shape:
-                    matrix.append(t)                        
+            if arg.is_Mul:
+                coeff = []
+                matrix = []
+                for t in arg.args:
+                    if t.shape:
+                        matrix.append(t)
+                    else:
+                        coeff.append(t)
+                if coeff:
+                    coeffs.append(Mul(*coeff))
+                    append(Mul(*matrix))
                 else:
-                    coeff.append(t)
-            if coeff:
-                coeffs.append(Mul(*coeff))
-                append(Mul(*matrix))
+                    append(arg)
             else:
-                append(arg)
+                if arg.shape:
+                    append(arg)
+                else:
+                    coeffs.append(arg)
                 
         if not matrices:
-            return Identity(args[0].shape[-1])
+            coeffs = Mul(*coeffs)
+            if args[0].shape:
+                return coeffs * Identity(args[0].shape[-1])
+            return coeffs
+
         matrices = [*filter(lambda X: not X.is_Identity, matrices)]
                         
         if len(matrices) == 1:
             mat = matrices.pop()
+        elif not matrices:
+            return Identity(args[0].shape[-1])
+        
         else:
-            
             mat = Basic.__new__(cls, *matrices)
             factor, matrices = mat.as_coeff_matrices()
             if check:
                 validate(*matrices)
             if not matrices:
-                mat = factor            
+                mat = factor
         
         if coeffs: 
             mat = Mul(*coeffs) * mat
@@ -131,18 +168,24 @@ class MatMul(MatrixExpr):
         len_rhs_shape = len(rhs_shape)
         
         if len_lhs_shape > len_rhs_shape:
-            *batch_size, n, k = lhs_shape
-            * _batch_size, _k = rhs_shape
-            assert k == _k            
-            if len(batch_size) == len(_batch_size):
-                assert batch_size == _batch_size
+            if len_rhs_shape == 2:
+                *batch_size, n, k = lhs_shape
+                _k, m = rhs_shape
+                assert k == _k
+                return (*batch_size, n, m)               
             else:
-                assert batch_size[:-len(_batch_size)] == _batch_size
-            return (*batch_size, n)                
+                *batch_size, n, k = lhs_shape
+                * _batch_size, _k = rhs_shape
+                assert k == _k
+                if len(batch_size) == len(_batch_size):
+                    assert batch_size == _batch_size
+                else:
+                    assert batch_size[:-len(_batch_size)] == _batch_size
+                return (*batch_size, n)                
         elif len_lhs_shape < len_rhs_shape:
             *_batch_size, k = lhs_shape
             * batch_size, _k, n = rhs_shape
-            assert k == _k   
+            assert k == _k
             if len(batch_size) == len(_batch_size):
                 assert batch_size == _batch_size, "%s, %s, batch_size mismatch!" % (lhs_shape, rhs_shape)
             else:
@@ -152,46 +195,99 @@ class MatMul(MatrixExpr):
             if len_lhs_shape == 1:
                 assert lhs_shape == rhs_shape
                 return ()
-            * batch_size, n, k = lhs_shape 
+            * batch_size, n, k = lhs_shape
             * _batch_size, _k, m = rhs_shape
             assert k == _k, f"{lhs_shape}, {rhs_shape} are not compatible in matrix multiplication"
             assert batch_size == _batch_size
             return (*batch_size, n, m)
             
-    @property
-    def shape(self):
+    @cacheit
+    def _eval_shape(self):
         shape = self.args[0].shape
         for i in range(1, len(self.args)):
             shape = self.matmul_shape(shape, self.args[i].shape)
         return shape
 
+    def _entry_multiple(self, i, j=None, *rest):
+        len_shape = self.max_len_shape()
+        args = [*self.args]
+        for t, arg in enumerate(args):
+            if len(arg.shape) == len_shape:
+                args[t] = arg[i]
+        
+        if isinstance(i, slice):
+            if len_shape > 3:
+                for t, arg in enumerate(args):
+                    if len(arg.shape) == len_shape:
+                        args[t] = arg[:, j]
+                    elif len(arg.shape) == len_shape - 1:
+                        args[t] = arg[j]
+
+                raise Exception("unresolved case")
+            else:
+                if len(args[0].shape) == len_shape:
+                    args[0] = args[0][:, j]
+                else:
+                    for t, arg in enumerate(args):
+                        if len(arg.shape) == len_shape:
+                            args[t] = arg[:, j]
+                            break
+                        
+                args[-1] = args[-1][tuple(*[slice(None)] * (len(args[-1].shape) - 1), *rest)]
+            
+            return MatMul(*args)
+        else:
+            return MatMul(*args)[tuple(j, *rest)]
+        
     def _entry(self, i, j=None, expand=True, **kwargs):
         if j is None:
             if len(self.args[0].shape) == 1:
                 return self.args[0] @ self.func(*self.args[1:])[:, i]
             rhs = self.func(*self.args[1:])
-            if len(rhs.shape) == 3:
+            if len(rhs.shape) > 2:
                 rhs = rhs[i]
             return self.args[0][i] @ rhs
-        if isinstance(i, slice):
-            start, stop = i.start, i.stop
-            if start is None:
-                if stop is None:
+        
+        if len(self.shape) > 2:
+            len_shape = self.max_len_shape()
+            args = [*self.args]
+            for t, arg in enumerate(args):
+                if len(arg.shape) == len_shape:
+                    args[t] = arg[i]
+            
+            if isinstance(i, Tuple):
+                if len_shape > 3:
+                    for t, arg in enumerate(args):
+                        if len(arg.shape) == len_shape:
+                            args[t] = arg[:, j]
+                        elif len(arg.shape) == len_shape - 1:
+                            args[t] = arg[j]
+                else:
+                    if len(args[0].shape) == len_shape:
+                        args[0] = args[0][:, j]
+                    else:
+                        for t, arg in enumerate(args):
+                            if len(arg.shape) == len_shape:
+                                args[t] = arg[:, j]
+                                break
+                            
+                return MatMul(*args)
+            else:
+                return MatMul(*args)[j]
+        
+        if isinstance(i, Tuple):
+            start, stop, step = i.slice_args
+            if start == 0:
+                if stop == self.shape[0] and step == 1:
                     return self.func(*self.args[:-1]) @ self.args[-1][:, j]
-                start = 0
-            if stop is None:
-                stop = self.shape[0]
                 
             return
         
-        if isinstance(j, slice):
-            start, stop = j.start, j.stop
-            if start is None:
-                if stop is None:
+        if isinstance(j, Tuple):
+            start, stop, step = j.slice_args
+            if start == 0:
+                if stop == self.shape[1] and step == 1:
                     return self.func(*self.args[:-1]) @ self.args[-1][:, j]
-                start = 0
-            if stop is None:
-                stop = self.shape[0]
                 
             return self.func(*self.args[:-1])[i] @ self.args[-1][:, start:stop]
         
@@ -254,7 +350,8 @@ class MatMul(MatrixExpr):
         return coeff, MatMul(*matrices)
 
     def _eval_adjoint(self):
-        return MatMul(*[adjoint(arg) for arg in self.args[::-1]]).doit()
+        from sympy import Adjoint
+        return MatMul(*[Adjoint(arg) for arg in self.args[::-1]]).doit()
 
     def _eval_trace(self):
         factor, mmul = self.as_coeff_mmul()
@@ -283,6 +380,7 @@ class MatMul(MatrixExpr):
 
     # Needed for partial compatibility with Mul
     def args_cnc(self, **kwargs):
+        return self.args, []
         coeff_c = [x for x in self.args if x.is_commutative]
         coeff_nc = [x for x in self.args if not x.is_commutative]
         return [coeff_c, coeff_nc]
@@ -366,7 +464,17 @@ class MatMul(MatrixExpr):
                     return before @ _prod
 
         return self
-                
+
+    @staticmethod
+    def generate_k_limit(A, B, excludes=None, **kwargs):
+        if excludes is None:
+            excludes = set()
+            
+        if A.is_Lamda or not B.is_Lamda:
+            return A.generate_int_limit(0, excludes | B.free_symbols, **kwargs)
+        
+        return B.generate_int_limit(0 if len(B.shape) == 1 else 1, excludes | A.free_symbols, **kwargs)
+           
     def expand(self, var=None, deep=True, **_):
         if not deep:
             return MatrixExpr.expand(self)
@@ -451,31 +559,15 @@ class MatMul(MatrixExpr):
         if B.is_BlockMatrix:
             if len(B.shape) == 2 and B.axis == 1:
                 return (B.T @ A.T).expand().T
-            return self     
+            return self
               
         if A.is_MatProduct:
             return self
         
         kwargs = {'var': var, 'generator': self}
         
-        def generate_k_limit(A, B, excludes=None, **kwargs):
-            if A.is_Lamda or not B.is_Lamda:
-                if excludes:
-                    excludes |= B.free_symbols
-                else:
-                    excludes = B.free_symbols
-                    
-                return A.generate_int_limit(0, excludes, **kwargs)
-            
-            if excludes:
-                excludes |= A.free_symbols
-            else:
-                excludes = A.free_symbols
-            
-            return B.generate_int_limit(0 if len(B.shape) == 1 else 1, excludes, **kwargs)
-
         if len(A.shape) == 1 and len(B.shape) > 1 and B.shape[-1].is_Integer:
-            k_limit = generate_k_limit(A, B, **kwargs)
+            k_limit = MatMul.generate_k_limit(A, B, **kwargs)
             k, *_ = k_limit
             
             args = []                    
@@ -491,9 +583,9 @@ class MatMul(MatrixExpr):
             
         return self
 
-    def _eval_is_integer(self):
+    def _eval_is_extended_integer(self):
         for elem in self.args:
-            is_integer = elem.is_integer
+            is_integer = elem.is_extended_integer
             if is_integer:
                 continue
             return is_integer
@@ -501,11 +593,9 @@ class MatMul(MatrixExpr):
 
     @property
     def domain(self):
-        from sympy import Interval, oo, Range, CartesianSpace
-        shape = self.shape
-        interval = (Range if self.is_integer else Interval)(-oo, oo)
-        
-        if shape: 
+        interval = self.dtype.universalSet
+        if shape := self.shape:
+            from sympy import CartesianSpace 
             return CartesianSpace(interval, *shape)
         return interval
 
@@ -521,7 +611,13 @@ class MatMul(MatrixExpr):
             sign = ""
             level = precedence(self)
 
-        return sign + ' @ '.join(p.parenthesize(arg, level) for arg in self.args)
+        args = [p.parenthesize(arg, level) for arg in self.args]
+        if self.args[0].is_DenseMatrix or self.args[0].is_BlockMatrix:
+            if self.args[1].is_DenseMatrix or self.args[1].is_BlockMatrix:
+                #sympify the first element
+                args[0] = 'S' + args[0]
+
+        return sign + ' @ '.join(args)
 
     def _pretty(self, p):
         args = list(self.args)
@@ -536,13 +632,9 @@ class MatMul(MatrixExpr):
         return prettyForm.__matmul__(*args)
     
     def _latex(self, p):
-        from sympy import MatMul
+        parens = lambda x: r"\left(%s\right)" % p._print(x) if x.is_Add or x.is_Mul else p._print(x)
 
-        from sympy.printing.precedence import precedence_traditional
-        parens = lambda x: p.parenthesize(x, precedence_traditional(self), False)
-
-        args = self.args
-        args = list(args)
+        args = [*self.args]
 
         if isinstance(self, MatMul) and self._coeff_isneg():
             if args[0] == -1:
@@ -559,6 +651,15 @@ class MatMul(MatrixExpr):
     def _eval_is_extended_real(self):
         return fuzzy_and(arg.is_extended_real for arg in self.args)
 
+    def _eval_is_hyper_real(self):
+        return fuzzy_and(arg.is_hyper_real for arg in self.args)
+    
+    def _eval_is_super_real(self):
+        return fuzzy_and(arg.is_super_real for arg in self.args)
+    
+    def _eval_is_hyper_complex(self):
+        return fuzzy_and(arg.is_hyper_complex for arg in self.args)
+    
     def _eval_is_extended_positive(self):
         return fuzzy_and(arg.is_extended_positive for arg in self.args)
 
@@ -566,12 +667,23 @@ class MatMul(MatrixExpr):
         return fuzzy_and(arg.is_extended_negative for arg in self.args)
 
     def _eval_is_finite(self):
+        if self._has_infinite_dimension():
+            return
         return fuzzy_and(arg.is_finite for arg in self.args)
 
     @classmethod
     def class_key(cls):
         return 3, 0, cls.__name__
     
+    @cacheit
+    def _has_infinite_dimension(self):
+        args = self.args
+        for i in range(len(args) - 1):
+            expr = args[i]
+            s = expr.shape[-1]
+            if not isinstance(s, int) and s.is_infinite:
+                return True
+        
     @property
     def dtype(self):
         dtype = None
@@ -579,21 +691,30 @@ class MatMul(MatrixExpr):
             _dtype = arg.dtype
             if dtype is None or dtype in _dtype:
                 dtype = _dtype
+
+        if self._has_infinite_dimension():
+            return dtype.extended_type()
+
         return dtype
     
+    @cacheit
     def _eval_domain_defined(self, x, **_):
         if x.dtype.is_set:
             return x.universalSet
         
         domain = x.domain
         for arg in self.args:
-            domain &= arg.domain_defined(x)
+            if any(s._has(x) for s in arg.shape):
+                kwargs = dict(allow_empty=True)
+            else:
+                kwargs = {}
+            domain &= arg.domain_defined(x, **kwargs)
         return domain
     
-    def domain_definition(self):
+    def domain_definition(self, **_):
         eq = MatrixExpr.domain_definition(self)
         for arg in self.args:
-            eq &= arg.domain_definition()        
+            eq &= arg.domain_definition(allow_empty=True)
         return eq
 
     def _eval_transpose(self, axis=-1):
@@ -621,11 +742,87 @@ class MatMul(MatrixExpr):
     def _subs(self, old, new, **hints):
         if old.is_MatMul:
             args = old.args
-            from sympy.utilities.misc import sunday
+            from std.search import sunday
             i = sunday(self.args, args)
             if i >= 0:
                 return self.func(*self.args[:i] + (new.args if new.is_MatMul else (new,)) + self.args[i + len(args):]).simplify()
-        return MatrixExpr._subs(self, old, new, **hints)
+            
+        [*args] = self.args
+        hit = False
+        for i, arg in enumerate(args):
+            try:
+                arg = arg._subs(old, new)
+                if self.args[i] != arg:
+                    args[i] = arg
+                    hit = True
+            except Exception as e:
+                if str(e) == 'empty slices':
+                    if any(s._has(old) for s in arg.shape):
+                        return ZeroMatrix(*self.shape)
+                
+                raise e
+        if hit:
+            return self.func(*args)
+        return self
+
+    def _eval_torch(self):
+        from functools import reduce
+        return reduce(lambda x, y: x @ y if len(y.shape) > 1 else (x @ y.unsqueeze(-1)).squeeze(-1), (arg.torch for arg in self.args))
+    
+    @staticmethod
+    def simplify_Lamda(self, squeeze=False):
+        expr = self.expr
+        var = self.limits[0]
+        *former, last = expr.args
+        if last._has(var) and not any(e._has(var) for e in former):
+            last = self.func(last, var)
+            _last = last.simplify()
+            if last != _last:
+                if len(_last.shape) == 2:
+                    _last = _last.T
+                independent = expr.func(*former, _last).simplify()
+                limits = self.limits[1:]
+                if limits:
+                    independent = self.func(independent, *limits)
+                return independent
+            
+        var = self.limits[-1][0]
+        
+        first, *latter = expr.args
+        if first._has(var) and not any(arg._has(var) for arg in latter):
+# consider the complex case:
+# [i:n - Min(l, n) + 1](Q[i + Min(l, n) - 1] @ W @ K[i:i + Min(l, n)].T)
+            first = self.func(expr.args[0], self.limits[-1])
+            _first = first.simplify()
+            if first != _first:
+                independent = expr.func(_first, *latter).simplify()
+                limits = self.limits[:-1]
+                if limits:
+                    independent = self.func(independent, *limits)
+                return independent
+
+        return self
+        
+    @cacheit
+    def sort_key(self, order=None):
+        args = self._sorted_args
+        args = len(args), tuple(arg.class_key() for arg in args), tuple(arg.sort_key(order=order) for arg in args)
+        from sympy import S
+        return self.class_key(), args, S.One.sort_key(), S.One
+
+    def _eval_is_extended_complex(self):
+        for arg in self.args:
+            if arg.is_extended_complex:
+                continue
+
+            return
+                
+        return True
+
+    def _eval_conjugate(self):
+        if len(self.shape) < 2:
+            return MatMul(*(~arg for arg in self.args), evaluate=False)
+        return MatrixExpr._eval_conjugate(self)
 
 
 def validate(*matrices):

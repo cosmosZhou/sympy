@@ -12,8 +12,6 @@ References
 from sympy import Symbol, I, Mul, Pow, Add
 from sympy.physics.quantum import TensorProduct
 
-__all__ = ['evaluate_pauli_product']
-
 
 def delta(i, j):
     """

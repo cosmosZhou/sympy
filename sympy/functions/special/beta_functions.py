@@ -109,8 +109,7 @@ class beta(Function):
     def _eval_conjugate(self):
         return self.func(self.args[0].conjugate(), self.args[1].conjugate())
 
-    @property
-    def shape(self):
+    def _eval_shape(self):
         return ()
     
     @property

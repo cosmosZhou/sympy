@@ -1007,7 +1007,11 @@ def trig_substitution_rule(integral):
     theta = sympy.Dummy("theta")
     target_pattern = A + B * symbol ** 2
 
-    matches = integrand.find(target_pattern)
+    try:
+        matches = integrand.find(target_pattern)
+    except:
+        return
+
     for expr in matches:
         match = expr.match(target_pattern)
         a = match.get(A, ZERO)
@@ -1481,7 +1485,7 @@ def eval_trigsubstitution(theta, func, rewritten, substep, restriction, integran
 @evaluates(DerivativeRule)
 def eval_derivativerule(integrand, symbol):
     # isinstance(integrand, Derivative) should be True
-    variable_count = list(integrand.variable_count)
+    variable_count = list(integrand.limits)
     for i, (var, count) in enumerate(variable_count):
         if var == symbol:
             variable_count[i] = (var, count - 1)

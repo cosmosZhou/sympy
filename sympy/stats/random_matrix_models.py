@@ -1,28 +1,10 @@
 from sympy import (Basic, exp, pi, Lambda, Trace, S, MatrixSymbol, Integral,
-                   gamma, Product, Dummy, Sum, Abs, IndexedBase, I)
+                   Gamma, Product, Dummy, Sum, Abs, IndexedBase, I)
 from sympy.core.sympify import _sympify
-from sympy.stats.rv import _symbol_converter, PDF, RandomMatrixSymbol, is_random
+from sympy.stats.rv import _symbol_converter, RandomMatrixSymbol
 from sympy.stats.joint_rv_types import JointDistributionHandmade
 from sympy.stats.random_matrix import RandomMatrixPSpace
 from sympy.tensor.array import ArrayComprehension
-
-__all__ = [
-    'CircularEnsemble',
-    'CircularUnitaryEnsemble',
-    'CircularOrthogonalEnsemble',
-    'CircularSymplecticEnsemble',
-    'GaussianEnsemble',
-    'GaussianUnitaryEnsemble',
-    'GaussianOrthogonalEnsemble',
-    'GaussianSymplecticEnsemble',
-    'joint_eigen_distribution',
-    'JointEigenDistribution',
-    'level_spacing_distribution'
-]
-
-@is_random.register(RandomMatrixSymbol)
-def _(x):
-    return True
 
 
 class RandomMatrixEnsembleModel(Basic):
@@ -72,7 +54,7 @@ class GaussianEnsembleModel(RandomMatrixEnsembleModel):
         .. [1] https://en.wikipedia.org/wiki/Selberg_integral#Mehta's_integral
         """
         n = S(n)
-        prod_term = lambda j: gamma(1 + beta*S(j)/2)/gamma(S.One + beta/S(2))
+        prod_term = lambda j: Gamma(1 + beta*S(j)/2)/Gamma(S.One + beta/S(2))
         j = Dummy('j', integer=True, positive=True)
         term1 = Product(prod_term(j), (j, 1, n)).doit()
         term2 = (2/(beta*n))**(beta*n*(n - 1)/4 + n/2)
@@ -247,7 +229,7 @@ class CircularEnsembleModel(RandomMatrixEnsembleModel):
         circular ensembles.
         """
         n = self.dimension
-        Zbn = ((2*pi)**n)*(gamma(beta*n/2 + 1)/S(gamma(beta/2 + 1))**n)
+        Zbn = ((2*pi)**n)*(Gamma(beta*n/2 + 1)/S(Gamma(beta/2 + 1))**n)
         t = IndexedBase('t')
         i, j, k = (Dummy('i', integer=True), Dummy('j', integer=True),
                    Dummy('k', integer=True))
@@ -407,7 +389,7 @@ def JointEigenDistribution(mat):
 
     """
     eigenvals = mat.eigenvals(multiple=True)
-    if any(not is_random(eigenval) for eigenval in set(eigenvals)):
+    if any(not eigenval.is_random for eigenval in set(eigenvals)):
         raise ValueError("Eigen values don't have any random expression, "
                          "joint distribution cannot be generated.")
     return JointDistributionHandmade(*eigenvals)

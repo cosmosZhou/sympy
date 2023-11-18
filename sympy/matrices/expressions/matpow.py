@@ -1,11 +1,14 @@
-from .matexpr import MatrixExpr, ShapeError, Identity, ZeroMatrix
+from .matexpr import MatrixExpr, Identity, ZeroMatrix
+from ..common import ShapeError
 from sympy.core import S
 
 from sympy.core.sympify import _sympify
 from sympy.matrices import MatrixBase
+from sympy.core.cache import cacheit
 
 
 class MatPow(MatrixExpr):
+    precedence = 4
     
     @property
     def is_Inverse(self):
@@ -13,14 +16,20 @@ class MatPow(MatrixExpr):
     
     def __new__(cls, base, exp):
         base = _sympify(base)
-        assert base.is_square, str(base)        
+        assert base.is_square, str(base)
 #         if not base.is_Matrix:
 #             raise TypeError("Function parameter should be a matrix")
         exp = _sympify(exp)
+        
+        if base.is_MatPow:
+            base, e = base.args
+            exp *= e
+
         if exp.is_zero:
             return Identity(base.shape[-1])
         elif exp.is_One:
             return base
+        
         return super(MatPow, cls).__new__(cls, base, exp)
 
     @property
@@ -31,8 +40,7 @@ class MatPow(MatrixExpr):
     def exp(self):
         return self.args[1]
 
-    @property
-    def shape(self):
+    def _eval_shape(self):
         return self.base.shape
 
     def _entry(self, i, j=None, **kwargs):
@@ -87,6 +95,9 @@ class MatPow(MatrixExpr):
         # Note: just evaluate cases we know, return unevaluated on others.
         # E.g., MatrixSymbol('x', n, m) to power 0 is not an error.
         elif exp is S(-1) and base.is_square:
+            if self.base == base:
+                return self
+
             return Inverse(base).doit(**kwargs)
         elif exp is S.One:
             return base
@@ -137,7 +148,7 @@ class MatPow(MatrixExpr):
             for line in lines:
                 line.first_pointer *= -self.T
                 line.second_pointer *= self
-            return lines            
+            return lines
 #             return Inverse(self.base)._eval_derivative_matrix_lines(x)
         elif (exp < 0) == True:
             newexpr = MatMul.fromiter([Inverse(self.base) for i in range(-exp)])
@@ -151,7 +162,7 @@ class MatPow(MatrixExpr):
         if self.exp is S.NegativeOne:
             return self.base
 
-    def _eval_determinant(self):
+    def _eval_determinant(self, **kwargs):
         from sympy.matrices.expressions.determinant import det
         return det(self.base) ** self.exp
 
@@ -160,20 +171,30 @@ class MatPow(MatrixExpr):
         return self.base.dtype
 
     def _sympystr(self, p):
-        from sympy.printing.precedence import precedence
-        PREC = precedence(self)
 #         deliberately to distinguish from x ** y which is element-wise power operator
-        return '%s ^ %s' % (p.parenthesize(self.base, PREC, strict=False),
-                         p.parenthesize(self.exp, PREC, strict=False))
+        lhs, rhs = self.args
+        _lhs = p._print(lhs)
+        if lhs.is_Add or lhs.is_Mul or lhs.is_MatMul:
+            _lhs = "(%s)" % _lhs
+            
+        _rhs = p._print(rhs)
+        if rhs.is_Add or rhs.is_Mul or rhs.is_MatMul:
+            _rhs = "(%s)" % _rhs
+            
+        if lhs.is_DenseMatrix or lhs.is_BlockMatrix:
+            if rhs.is_Integer:
+                _lhs = 'S' + _lhs
+
+        return '%s ^ %s' % (_lhs, _rhs)
 
     def _latex(self, p):
         base, exp = self.base, self.exp
-        if base.is_symbol:
-            return r"%s^{\left[%s\right]}" % (p._print(base), p._print(exp))            
+        if base.is_symbol or base.is_BlockMatrix or base.is_DenseMatrix or base.is_Function:
+            return r"%s^{\color{magenta} %s}" % (p._print(base), p._print(exp))
         else:
-            return r"\left(%s\right)^{\left[%s\right]}" % (p._print(base), p._print(exp))
+            return r"\left(%s\right)^{\color{magenta} %s}" % (p._print(base), p._print(exp))
 
-    def domain_definition(self):
+    def domain_definition(self, **_):
         if self.exp.is_extended_negative:
             from sympy import Unequal
             base = self.base
@@ -181,3 +202,13 @@ class MatPow(MatrixExpr):
                 return S.true
             return Unequal(base.det(), S.Zero)
         return MatrixExpr.domain_definition(self)
+    
+    def _eval_is_singular(self):
+        exp = self.exp
+        if exp.is_Integer and exp < 0:
+            return False
+
+    def _eval_is_finite(self):
+        exp = self.exp
+        if exp.is_Integer and exp < 0:
+            return True

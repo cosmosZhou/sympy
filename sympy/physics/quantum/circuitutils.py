@@ -5,17 +5,6 @@ from sympy.utilities import numbered_symbols
 from sympy.core.compatibility import reduce
 from sympy.physics.quantum.gate import Gate
 
-__all__ = [
-    'kmp_table',
-    'find_subcircuit',
-    'replace_subcircuit',
-    'convert_to_symbolic_indices',
-    'convert_to_real_indices',
-    'random_reduce',
-    'random_insert'
-]
-
-
 def kmp_table(word):
     """Build the 'partial match' table of the Knuth-Morris-Pratt algorithm.
 

@@ -1,10 +1,8 @@
 from sympy.core import Mul, sympify
-from sympy.matrices.expressions.matexpr import (
-    MatrixExpr, ShapeError, Identity, OneMatrix, ZeroMatrix
-)
-from sympy.strategies import (
-    unpack, flatten, condition, exhaust, do_one, rm_id, sort
-)
+from sympy.matrices.expressions.matexpr import MatrixExpr, Identity, OneMatrix, ZeroMatrix
+from ..common import ShapeError
+from sympy.strategies import unpack, flatten, condition, exhaust, do_one, rm_id, sort
+from sympy.core.cache import cacheit
 
 
 def hadamard_product(*matrices):
@@ -67,8 +65,8 @@ class HadamardProduct(MatrixExpr):
             return args[0]
         return super(HadamardProduct, cls).__new__(cls, *args)
 
-    @property
-    def shape(self):
+    @cacheit
+    def _eval_shape(self):
         return self.args[0].shape
 
     def _entry(self, i, j, **kwargs):
@@ -300,8 +298,7 @@ class HadamardPower(MatrixExpr):
     def exp(self):
         return self._args[1]
 
-    @property
-    def shape(self):
+    def _eval_shape(self):
         return self.base.shape
 
     def _entry(self, i, j, **kwargs):

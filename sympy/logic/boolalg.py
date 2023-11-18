@@ -70,7 +70,7 @@ class Boolean(Basic):
         return self
         
     def sanctity_check(self, *limits):
-        from sympy.concrete.expr_with_limits import limits_dict        
+        from sympy.concrete.expr_with_limits import limits_dict
         for x, domain in limits_dict(limits).items():
             if isinstance(domain, list):
                 continue
@@ -78,7 +78,7 @@ class Boolean(Basic):
                 return False
         return True
         
-    def simplify(self, deep=False, wrt=None):
+    def simplify(self, deep=False, wrt=None, **kwargs):
         if wrt is not None:
             domain_defined = self.domain_defined(wrt)
             if domain_defined != wrt.domain:
@@ -130,7 +130,7 @@ class Boolean(Basic):
             deletes |= y.domain.free_symbols
             
         free_symbols -= deletes
-        return free_symbols        
+        return free_symbols
 
     def limits_exists(self):
         return [(s,) for s in self.existent_symbols()]
@@ -250,7 +250,7 @@ class Boolean(Basic):
         from sympy.core.relational import Relational
         free = self.free_symbols
         if len(free) == 1:
-            x = free.pop()
+            x, = free
             reps = {}
             for r in self.atoms(Relational):
                 if periodicity(r, x) not in (0, None):
@@ -278,8 +278,7 @@ class Boolean(Basic):
         from sympy.core.symbol import dtype
         return dtype.bool
 
-    @property
-    def shape(self): 
+    def _eval_shape(self): 
         return ()
 
     def overwrite(self, origin, **assumptions):
@@ -294,10 +293,9 @@ class Boolean(Basic):
             if arg.is_random:
                 return True
 
-    @property    
+    @property
     def wrt(self):
-        wrt, *_ = self.free_symbols
-        return wrt
+        return next(iter(self.free_symbols))
 
     def subs_assumptions_for_equality(self, eq, result, simplify=True):
         if eq.plausible:
@@ -317,12 +315,26 @@ class Boolean(Basic):
 
     def domain_conditioned(self, x):
         if self._has(x):
-            from sympy.sets import conditionset       
+            from sympy.sets import conditionset
             return conditionset(x, self, x.domain)
         return x.domain
         from sympy.functions.elementary.piecewise import Piecewise
         return Piecewise((x.domain, self), (x.emptySet, True))
-        
+
+    @classmethod
+    def unnest(cls, expr, limits, symbols, evaluate=True, **assumptions):
+    # unnest any nested calls
+        if evaluate:
+            while cls == type(expr):
+                limits = list(expr.limits) + limits
+                expr = expr.expr
+
+        if not limits and symbols:
+            return expr.copy(**assumptions)
+
+        return Boolean.__new__(cls, expr, *limits, **assumptions)
+
+
 class BinaryCondition(Boolean):
     """Base class for all binary relation types.
     """
@@ -359,10 +371,11 @@ class BinaryCondition(Boolean):
         a, b = self.args
         return self.reversed_type(b, a, evaluate=False)
 
+    @cacheit
     def _eval_domain_defined(self, x, **_):
         return self.lhs.domain_defined(x) & self.rhs.domain_defined(x)
 
-    def domain_definition(self):
+    def domain_definition(self, **_):
         return self.lhs.domain_definition() & self.rhs.domain_definition()
     
     def __nonzero__(self):
@@ -399,8 +412,7 @@ class BinaryCondition(Boolean):
         free_symbols = self.lhs.free_symbols
         if not free_symbols:
             free_symbols = self.rhs.free_symbols
-        wrt, *_ = free_symbols
-        return wrt
+        return next(iter(free_symbols))
     
     def subs(self, *args, **kwargs):
         if all(isinstance(arg, Boolean) for arg in args):
@@ -422,6 +434,20 @@ class BinaryCondition(Boolean):
 
         return self.func(self.lhs._subs(*args, **kwargs).simplify(), self.rhs._subs(*args, **kwargs).simplify())
 
+    @property
+    def variables(self):
+        return {*self.lhs.variables} | {*self.rhs.variables}
+
+    @cacheit
+    def sort_key(self, order=None):
+        args = self.args
+        args = len(args), tuple(arg.class_key() for arg in args), tuple(arg.sort_key(order=order) for arg in args)
+        
+        exp = S.One
+        exp = exp.sort_key(order=order)
+
+        return self.class_key(), args, exp, 1
+
 
 class BooleanAssumption(BinaryCondition):
     ...
@@ -435,7 +461,7 @@ class BooleanAtom(Boolean):
     is_Atom = True
     _op_priority = 11  # higher than Expr
     
-    def simplify(self, *a, **kw):
+    def simplify(self, *a, **kwargs):
         return self
 
     def expand(self, *a, **kw):
@@ -480,8 +506,13 @@ class BooleanAtom(Boolean):
     def _pretty(self, p):
         return p._print(self.func.__name__)
 
+    def _eval_torch(self):
+        import torch
+        data = torch.from_numpy(self.numpy)
+        if torch.cuda.is_available():
+            data = data.cuda()
+        return data
 
-    # \\\
 
 class BooleanTrue(with_metaclass(Singleton, BooleanAtom)):
     """
@@ -597,7 +628,7 @@ class BooleanTrue(with_metaclass(Singleton, BooleanAtom)):
         >>> true.as_set()
         UniversalSet
         """
-        from sympy import UniversalSet
+        from sympy.sets.sets import UniversalSet
         return UniversalSet()
 
     def copy(self, **kwargs):
@@ -615,7 +646,18 @@ class BooleanTrue(with_metaclass(Singleton, BooleanAtom)):
     def _pretty(self, p): 
         return p._print('True')
 
-        
+    @property
+    def numpy(self):
+        import numpy as np
+        return np.array(True)
+    
+    def _sympystr(self, p):
+        return "True"
+
+    def _latex(self, p):
+        return r"\text{True}"
+
+
 class BooleanFalse(with_metaclass(Singleton, BooleanAtom)):
     """
     SymPy version of False, a singleton that can be accessed via S.false.
@@ -680,7 +722,7 @@ class BooleanFalse(with_metaclass(Singleton, BooleanAtom)):
         >>> false.as_set()
         EmptySet()
         """
-        from sympy import EmptySet 
+        from sympy import EmptySet
         return EmptySet()
 
     def copy(self, **kwargs):
@@ -695,7 +737,18 @@ class BooleanFalse(with_metaclass(Singleton, BooleanAtom)):
     def domain_conditioned(self, x):
         return x.emptySet
 
+    @property
+    def numpy(self):
+        import numpy as np
+        return np.array(False)
+    
+    def _sympystr(self, p):
+        return "False"
 
+    def _latex(self, p):
+        return r"\text{False}"
+
+    
 true = BooleanTrue()
 false = BooleanFalse()
 # We want S.true and S.false to work, rather than S.BooleanTrue and
@@ -733,10 +786,6 @@ class BooleanFunction(Application, Boolean):
                                           rational=rational, inverse=inverse)
                          for a in self.args])
         return simplify_logic(rv)
-
-#     def simplify(self, ratio=1.7, measure=count_ops, rational=False,
-#                  inverse=False):
-#         return self._eval_simplify(ratio, measure, rational, inverse)
 
     # /// drop when Py2 is no longer supported
     def __lt__(self, other):
@@ -935,6 +984,7 @@ class BooleanFunction(Application, Boolean):
                      +nonRel + nonRealRel))
         return rv
 
+    @cacheit
     def _eval_domain_defined(self, x, **_):
         domain = Boolean._eval_domain_defined(self, x)
         for arg in self.args:
@@ -998,11 +1048,11 @@ class And(LatticeOp, BooleanFunction):
         parent = {}
         for lhs, rhs in args:
             if lhs in child:
-                break                
+                break
             child[lhs] = rhs
             
             if rhs in parent:
-                break                
+                break
             parent[rhs] = lhs
         else:
             root = lhs
@@ -1031,44 +1081,75 @@ class And(LatticeOp, BooleanFunction):
             if eq1.is_Less:
                 a, x = eq1.args
                 if eq2.is_Less:
-                    _x, b = eq2.args                        
+                    _x, b = eq2.args
                     if x == _x: 
                         return render('lt', 'lt', a, x, b)
+                    if a == b:
+                        x, b, a = a, x, _x
+                        return render('lt', 'lt', a, x, b)
+                        
                 if eq2.is_LessEqual:
                     _x, b = eq2.args
                     if x == _x:
                         return render('lt', 'le', a, x, b)
+                    if a == b:
+                        x, b, a = a, x, _x
+                        return render('le', 'lt', a, x, b)
+                    
             elif eq1.is_LessEqual:
                 a, x = eq1.args
                 if eq2.is_Less:
-                    _x, b = eq2.args                        
+                    _x, b = eq2.args
                     if x == _x:
                         return render('le', 'lt', a, x, b)
+                    if a == b:
+                        x, b, a = a, x, _x
+                        return render('lt', 'le', a, x, b)
+                    
                 if eq2.is_LessEqual:
                     _x, b = eq2.args
                     if x == _x:
                         return render('le', 'le', a, x, b)
+                    if a == b:
+                        x, b, a = a, x, _x
+                        return render('le', 'le', a, x, b)
+                    
             elif eq1.is_Greater:
                 a, x = eq1.args
                 if eq2.is_Greater:
                     _x, b = eq2.args
                     if x == _x:
                         return render('gt', 'gt', a, x, b)
+                    if a == b:
+                        x, b, a = a, x, _x
+                        return render('gt', 'gt', a, x, b)
+                    
                 if eq2.is_GreaterEqual:
                     _x, b = eq2.args
                     if x == _x:
                         return render('gt', 'ge', a, x, b)
+                    if a == b:
+                        x, b, a = a, x, _x
+                        return render('ge', 'gt', a, x, b)
+                    
             elif eq1.is_GreaterEqual:
                 a, x = eq1.args
                 if eq2.is_Greater:
                     _x, b = eq2.args
                     if x == _x:
                         return render('ge', 'gt', a, x, b)
+                    if a == b:
+                        x, b, a = a, x, _x
+                        return render('gt', 'ge', a, x, b)
+                    
                 if eq2.is_GreaterEqual:
                     _x, b = eq2.args
                     if x == _x:
                         return render('ge', 'ge', a, x, b)
-    
+                    if a == b:
+                        x, b, a = a, x, _x
+                        return render('ge', 'ge', a, x, b)
+
         args = []
         is_all_eq = True
         for arg in self.args:
@@ -1080,19 +1161,25 @@ class And(LatticeOp, BooleanFunction):
                 if not arg.is_Equal:
                     is_all_eq = False
 
+        wedge = r'\wedge '
         if is_all_eq:
-            children = And.connected_equations([eq.args for eq in self.args])
+            conds = [eq.args for eq in self.args]
+            children = And.connected_equations(conds)
             if children:
-                return " = ".join([p._print(next) for next in children])    
+                return " = ".join([p._print(next) for next in children])
+            if all(lhs.is_random and lhs.is_symbol and (rhs == lhs.var or rhs.is_Surrogate and rhs.arg == lhs) for lhs, rhs in conds):
+                wedge = ','
             
-        return r"\wedge ".join(args)
+        return wedge.join(args)
 
     def invert(self):
         return self.invert_type(*(arg.invert() for arg in self.args))
 
     def apply(self, axiom, *args, split=True, **kwargs):
-        token = axiom.__name__.split(sep='.', maxsplit=4)
-        if token[2][:3] in ('et', 'et_') or token[-2] in ('imply', 'given'):
+        token = axiom.__name__.split(sep='.')
+        i, type = inference_type(token)
+        
+        if token[2][:3] == 'et' or type in ('imply', 'given') and i == 3:
             split = False
             
         if split: 
@@ -1123,22 +1210,27 @@ class And(LatticeOp, BooleanFunction):
                     else:
                         _args.append(eq)
                         
-            function = axiom.apply(*_args, *args, **kwargs)
-            if isinstance(function, tuple): 
-                clue = {f.clue for f in function}
+            cond = axiom.apply(*_args, *args, **kwargs)
+            if isinstance(cond, tuple): 
+                clue = {f.clue for f in cond}
                 assert len(clue) == 1
                 [clue] = clue
-                function = And(*function, **{clue: self})
+                cond = And(*cond, **{clue: self})
+
             else:
-                clue = function.clue
-                function.set_clause(clue, self, force=True)
+                if cond.is_Equivalent and type == 'to':
+                    if cond.clue is None:
+                        return cond.rhs
                 
-            if function.is_BooleanAtom:
-                return function.copy(**{clue: self})
+                clue = cond.clue
+                cond.set_clause(clue, self, force=True)
+                
+            if cond.is_BooleanAtom:
+                return cond.copy(**{clue: self})
             
             if kwargs.get('simplify', True):
-                function = function.simplify()
-            return function
+                cond = cond.simplify()
+            return cond
         else:
             return Boolean.apply(self, axiom, *args, **kwargs)
 
@@ -1186,14 +1278,10 @@ class And(LatticeOp, BooleanFunction):
             return S.BooleanFalse.copy(**options)
 
         if options: 
-            from sympy.core.inference import Inference   
+            from sympy.core.inference import Inference
             return Inference(LatticeOp.__new__(cls, *args), **options)
 
         return LatticeOp.__new__(cls, *args, **options)
-
-    zero = false
-    
-    identity = S.true
 
     nargs = None
 
@@ -1209,7 +1297,7 @@ class And(LatticeOp, BooleanFunction):
     def _new_args_filter(cls, args):
         newargs = []
         rel = []
-#         args = BooleanFunction.binary_check_and_simplify(*args)
+
         for x in reversed(args):
             if x.is_Relational:
                 c = x.canonical
@@ -1287,7 +1375,7 @@ class And(LatticeOp, BooleanFunction):
         from sympy.sets.sets import Intersection
         return Intersection(*[arg.as_set() for arg in self.args])
 
-    def simplify(self, deep=False):
+    def simplify(self, deep=False, **kwargs):
         dict_contains = defaultdict(set)
         dict_notcontains = defaultdict(set)
         dict_domain = defaultdict(set)
@@ -1342,6 +1430,9 @@ class And(LatticeOp, BooleanFunction):
 
     def __and__(self, other):
         """Overloading for & operator"""
+        if not other.is_bool and self.is_random and other.is_random:
+            return self & other.as_boolean()
+
         lhs = tuple(self._argset)
         
         rhs = None
@@ -1377,6 +1468,10 @@ class And(LatticeOp, BooleanFunction):
         return And(*argset)
 
     def __or__(self, other):
+        if not other.is_bool and self.is_random and other.is_random:
+            from sympy import Conditioned
+            return Conditioned(self, other.as_boolean())
+
         if other.is_And:
             intersect = other._argset & self._argset
             if intersect:
@@ -1422,7 +1517,12 @@ class And(LatticeOp, BooleanFunction):
                 return And(*complement)
         return LatticeOp._subs(self, old, new, **hints)
 
-        
+    @classmethod
+    def class_key(cls):
+        """Nice order of classes. """
+        return 6, 0, cls.__name__
+
+
 class Or(LatticeOp, BooleanFunction):
     """
     Logical OR function
@@ -1451,10 +1551,6 @@ class Or(LatticeOp, BooleanFunction):
     y
 
     """
-    zero = true
-    
-    identity = S.false
-
     @classmethod
     def _need_to_be_raised(cls, self):
         return self == S.true
@@ -1501,7 +1597,7 @@ class Or(LatticeOp, BooleanFunction):
                 return S.BooleanTrue.copy(**options)
 
         if options: 
-            from sympy.core.inference import Inference   
+            from sympy.core.inference import Inference
             return Inference(LatticeOp.__new__(cls, *args, evaluate=False), **options)
         return LatticeOp.__new__(cls, *args, **options)
 
@@ -1699,6 +1795,7 @@ class Or(LatticeOp, BooleanFunction):
             return BooleanFunction.__or__(self, other)
         return BooleanFunction.__or__(self, other)                
 
+    @cacheit
     def _eval_domain_defined(self, x, **_):
         domain = x.emptySet
         for arg in self.args:
@@ -1716,6 +1813,15 @@ class Or(LatticeOp, BooleanFunction):
             from sympy.core.inference import Inference
             return Inference(self, **kwargs)
         return self
+
+    def domain_definition(self, **_):
+        from sympy import Or
+        return Or(*(arg.domain_definition() for arg in self.args))
+
+    @classmethod
+    def class_key(cls):
+        """Nice order of classes. """
+        return 6, 1, cls.__name__
 
 
 And.invert_type = Or
@@ -1844,6 +1950,19 @@ class Not(BooleanFunction):
     
     def invert(self):
         return self.arg
+
+    def _sympystr(self, p):
+        from sympy.printing.precedence import PRECEDENCE
+        return '~%s' % (p.parenthesize(self.arg, PRECEDENCE["Not"]))
+
+    def _latex(self, p):
+        cond = self.arg
+        if isinstance(cond, Equivalent):
+            return p._print_Equivalent(cond, r"\not\Leftrightarrow")
+        if isinstance(cond, Infer):
+            return p._print_Imply(cond, r"\not\Rightarrow")
+        
+        return r"\neg %s" % p._print(cond)
 
 
 class Xor(BooleanFunction):
@@ -2107,10 +2226,10 @@ class Infer(BooleanAssumption):
     False
 
     """
-
+    # check if p => q holds?
     def __new__(cls, p, q, **assumptions):
         if assumptions.get('plausible') and p.is_Inference and q.is_Inference:
-            if q.given_by(p): 
+            if q.given_by(p):
                 from sympy.core.inference import Inference
                 return Inference(BinaryCondition.__new__(cls, p, q), plausible=None)
             
@@ -2125,7 +2244,7 @@ class Infer(BooleanAssumption):
                     newargs.append(True if x else False)
                 else:
                     newargs.append(x)
-            A, B = newargs                            
+            A, B = newargs
         except ValueError:
             raise ValueError(
                 "%d operand(s) used for an Infer "
@@ -2134,10 +2253,10 @@ class Infer(BooleanAssumption):
         if B.is_BooleanFalse:
             return A.invert()
         
-        if not A.is_symbol and A:
+        if not A.is_symbol and not A.is_Function and A:
             return B
         
-        if A.is_BooleanFalse or not B.is_symbol and B or A == B:
+        if A.is_BooleanFalse or not B.is_symbol and not B.is_Function and B or A == B:
             return S.true
         
         if A.is_Relational and B.is_Relational:
@@ -2167,7 +2286,17 @@ class Infer(BooleanAssumption):
         return Or._to_nnf(~a, b, simplify=simplify)
 
     def _sympystr(self, p): 
-        return "%s \N{RIGHTWARDS DOUBLE ARROW} %s" % (p._print(self.lhs), p._print(self.rhs))
+        #\N{RIGHTWARDS DOUBLE ARROW}
+        lhs, rhs = self.args
+        _lhs = p._print(lhs)
+        _rhs = p._print(rhs)
+        if lhs.is_Inequality or lhs.is_And or lhs.is_Or:
+            _lhs = f"({_lhs})"
+            
+        if rhs.is_Inequality or rhs.is_And or rhs.is_Or:
+            _rhs = f"({_rhs})"
+            
+        return "%s >> %s" % (_lhs, _rhs)
     
     def _latex(self, p, altchar='\Rightarrow', rotate=False):
         A = p.conditions_wrapper(self.lhs, rotate=rotate)
@@ -2211,7 +2340,7 @@ class Infer(BooleanAssumption):
         else:
             return p, {p}
           
-    def simplify(self):
+    def simplify(self, **kwargs):
         q = self.args[1]
         
         if q.is_And:
@@ -2225,7 +2354,7 @@ class Infer(BooleanAssumption):
                     or_eqs = []
                     for e in eq.args:
                         if e in p_set:
-                            continue                        
+                            continue
                         or_eqs.append(e)
                     if len(or_eqs) == len(eq.args):
                         eqs.append(eq)
@@ -2258,9 +2387,9 @@ class Infer(BooleanAssumption):
         return self
 
     def inference_status(self, child):
-        return child == 0       
+        return child == 0
 
-# http://www.frdic.com/dicts/fr/quand        
+
 class Assuming(BooleanAssumption):
     """
     Logical implication.
@@ -2284,8 +2413,18 @@ class Assuming(BooleanAssumption):
         b, a = self.args
         return Or._to_nnf(a.invert(), b, simplify=simplify)
 
-    def _sympystr(self, p): 
-        return "%s \N{LEFTWARDS DOUBLE ARROW} %s" % (p._print(self.lhs), p._print(self.rhs))
+    def _sympystr(self, p):
+        #\N{LEFTWARDS DOUBLE ARROW}
+        lhs, rhs = self.args
+        _lhs = p._print(lhs)
+        _rhs = p._print(rhs)
+        if lhs.is_Inequality or lhs.is_And or lhs.is_Or:
+            _lhs = f"({_lhs})"
+            
+        if rhs.is_Inequality or rhs.is_And or rhs.is_Or:
+            _rhs = f"({_rhs})"
+            
+        return "%s << %s" % (_lhs, _rhs)
 
     def _pretty(self, p, altchar=None): 
         if p._use_unicode:
@@ -2309,7 +2448,7 @@ class Assuming(BooleanAssumption):
         return BinaryCondition.__and__(self, other)
 
     def inference_status(self, child):
-        return child == 1       
+        return child == 1
 
 
 class Equivalent(BooleanAssumption):
@@ -2384,8 +2523,9 @@ class Equivalent(BooleanAssumption):
         args.append(Or(~self.args[-1], self.args[0]))
         return And._to_nnf(*args, simplify=simplify)
 
-    def _sympystr(self, p): 
-        return "%s \N{LEFT RIGHT DOUBLE ARROW} %s" % (p._print(self.lhs), p._print(self.rhs))
+    def _sympystr(self, p):
+        # \N{LEFT RIGHT DOUBLE ARROW} 
+        return "Equivalent(%s, %s)" % (p._print(self.lhs), p._print(self.rhs))
 
     def _latex(self, p, rotate=False):
         return Infer._latex(self, p, '\Leftrightarrow', rotate=rotate)
@@ -2409,8 +2549,9 @@ class NotInfer(BooleanAssumption):
     def eval(cls, *args):
         ...
         
-    def _sympystr(self, p): 
-        return "%s \N{RIGHTWARDS DOUBLE ARROW WITH STROKE} %s" % (p._print(self.lhs), p._print(self.rhs))
+    def _sympystr(self, p):
+        # \N{RIGHTWARDS DOUBLE ARROW WITH STROKE} 
+        return "NotInfer(%s, %s)" % (p._print(self.lhs), p._print(self.rhs))
     
     def _latex(self, p, rotate=False):
         A = p.conditions_wrapper(self.lhs)
@@ -2430,8 +2571,9 @@ class Unnecessary(BooleanAssumption):
     def eval(cls, *args):
         ...
 
-    def _sympystr(self, p): 
-        return "%s \N{LEFTWARDS DOUBLE ARROW WITH STROKE} %s" % (p._print(self.lhs), p._print(self.rhs))
+    def _sympystr(self, p):
+        # \N{LEFTWARDS DOUBLE ARROW WITH STROKE} 
+        return "Unnecessary(%s, %s)" % (p._print(self.lhs), p._print(self.rhs))
 
     def _latex(self, p, altchar='\nLeftarrow', rotate=False):
         return Infer._latex(self, p, altchar, rotate=rotate)
@@ -2442,8 +2584,9 @@ class Unnecessary(BooleanAssumption):
 
 class Inequivalent(BooleanAssumption):
 
-    def _sympystr(self, p): 
-        return "%s \N{LEFT RIGHT DOUBLE ARROW WITH STROKE} %s" % (p._print(self.lhs), p._print(self.rhs))
+    def _sympystr(self, p):
+        # \N{LEFT RIGHT DOUBLE ARROW WITH STROKE} 
+        return "Inequivalent(%s, %s)" % (p._print(self.lhs), p._print(self.rhs))
 
     def _latex(self, p, altchar='\nLeftrightarrow', rotate=False):
         return Infer._latex(self, p, altchar, rotate=rotate)
@@ -2464,7 +2607,7 @@ Infer.invert_type = NotInfer
 Assuming.invert_type = Unnecessary
 Equivalent.invert_type = Inequivalent
 
-NotInfer.invert_type = Infer 
+NotInfer.invert_type = Infer
 Unnecessary.invert_type = Assuming
 Inequivalent.invert_type = Equivalent
 
@@ -3743,3 +3886,10 @@ def simplify_patterns_xor():
                       And(Lt(a, Max(b, c)), Ge(a, Min(b, c)))),
                      )
     return _matchers_xor
+
+def inference_type(tokens):
+    for i, token in enumerate(tokens):
+        if token in ('imply', 'given', 'to'):
+            return i, token
+        
+    return -1, 'to'

@@ -313,7 +313,7 @@ class Add(Expr, AssocOp):
         if shapes:
             Add.broadcast(shapes)
             for shape in shapes:
-                if shape[0] > 1:
+                if shape[0] != 1:
                     break
             if shape[0] == 1:
                 shape = shape[1:]
@@ -331,7 +331,9 @@ class Add(Expr, AssocOp):
             if len(shape) > 2:
                 ...
             else:
-                if shape[-1] > cols:
+                if cols == 0:
+                    cols = shape[-1]
+                elif shape[-1] > cols:
                     cols = shape[-1]
             if len(shape) > length:
                 length = len(shape)
@@ -594,15 +596,33 @@ class Add(Expr, AssocOp):
     
     def _eval_is_extended_integer(self):
         nonintegers = []
+        pieces = []
         for arg in self.args:
             integer = arg.is_extended_integer
             if integer is None:
                 return
             if integer:
                 continue
-            nonintegers.append(arg)
+            
+            if arg.is_Piecewise:
+                pieces.append(arg)
+            else:
+                nonintegers.append(arg)    
+
+        if len(pieces) > 1:
+            return
+        
+        if pieces:
+            piece, = pieces
+            if nonintegers:
+                self = self.func(*nonintegers)
+                piece = piece.func(*((e + self, c) for e, c in piece.args))
+
+            return piece.is_extended_integer
+
         if not nonintegers:
             return True
+
         if len(nonintegers) < len(self.args):
             self = self.func(*nonintegers)
         num, den = self.as_numer_denom()
@@ -676,6 +696,9 @@ class Add(Expr, AssocOp):
             if all(arg.is_extended_negative for arg in self.args):
                 return True
             
+        if self.is_odd:
+            return True
+
         return super(Add, self)._eval_is_nonzero()
          
     def _eval_is_zero(self):
@@ -686,14 +709,14 @@ class Add(Expr, AssocOp):
             if all(arg.is_extended_negative for arg in self.args):
                 return False
             
-            return 
+            return
         
         if len(self.args) == 2:
             if self.is_extended_real:
                 if self.min().is_extended_positive:
                     return False
                 if self.max().is_extended_negative:
-                    return False    
+                    return False
 
     def _eval_is_irrational(self):
         for t in self.args:
@@ -709,10 +732,10 @@ class Add(Expr, AssocOp):
         return False
     
     def _eval_is_extended_positive(self):
-        is_infinitesimal = self.is_infinitesimal
-        if is_infinitesimal is True:
+        infinitesimality = self.infinitesimality
+        if infinitesimality is True:
             return self.clear_infinitesimal()[0].is_extended_nonnegative
-        elif is_infinitesimal is False:
+        elif infinitesimality is False:
             return self.clear_infinitesimal()[0].is_extended_positive
         
         if self.is_number:
@@ -727,16 +750,16 @@ class Add(Expr, AssocOp):
         
         if all(arg.is_extended_nonnegative for arg in self.args):
             if any(arg.is_extended_positive for arg in self.args):
-                return True    
+                return True
             
         if all(arg.is_extended_nonpositive for arg in self.args):
             return False
     
     def _eval_is_extended_negative(self):
-        is_infinitesimal = self.is_infinitesimal
-        if is_infinitesimal is True:
+        infinitesimality = self.infinitesimality
+        if infinitesimality is True:
             return self.clear_infinitesimal()[0].is_extended_negative
-        elif is_infinitesimal is False:
+        elif infinitesimality is False:
             return self.clear_infinitesimal()[0].is_extended_nonpositive
             
         if self.is_number: 
@@ -751,7 +774,7 @@ class Add(Expr, AssocOp):
         
         if all(arg.is_extended_nonpositive for arg in self.args):
             if any(arg.is_extended_negative for arg in self.args):
-                return True            
+                return True
 
         if all(arg.is_extended_nonnegative for arg in self.args):
             return False
@@ -761,7 +784,7 @@ class Add(Expr, AssocOp):
             if old is S.Infinity and -old in self.args:
                 # foo - oo is foo + (-oo) internally
                 return self.xreplace({-old:-new})
-            return None
+            return
 
         coeff_self, terms_self = self.as_coeff_Add()
         coeff_old, terms_old = old.as_coeff_Add()
@@ -861,7 +884,7 @@ class Add(Expr, AssocOp):
             re, im = term.as_real_imag(deep=deep)
             re_part.append(re)
             im_part.append(im)
-        return (self.func(*re_part), self.func(*im_part))
+        return self.func(*re_part), self.func(*im_part)
 
     def _eval_as_leading_term(self, x, cdir=0):
         from sympy import expand_mul, factor_terms
@@ -897,14 +920,37 @@ class Add(Expr, AssocOp):
             return rv
 
     def _eval_adjoint(self):
-        return self.func(*[t.adjoint() for t in self.args])
+        return self.func(*(t.adjoint() for t in self.args))
 
     def _eval_conjugate(self):
-        return self.func(*[t.conjugate() for t in self.args])
+        return self.func(*(t.conjugate() for t in self.args))
 
     def _eval_transpose(self, axis=-1):
         if axis == self.default_axis:
-            return self.func(*[t.T for t in self.args])
+            scalar = []
+            vector = []
+            matrix = []
+            for arg in self.args:
+                if not arg.shape:
+                    scalar.append(arg)
+                elif len(arg.shape) == 1:
+                    vector.append(arg)
+                else:
+                    matrix.append(arg)
+                
+            if not vector:
+                return self.func(*(arg.T for arg in self.args))
+
+            from sympy import OneMatrix
+            one = OneMatrix(*self.shape)
+            vector = [v * one for v in vector]
+            matrix += vector
+
+            matrix = self.func(*(arg.T for arg in matrix))
+            if scalar:
+                matrix += self.func(*scalar)
+
+            return matrix
 
     def __neg__(self):
         return self * (-1)
@@ -1159,12 +1205,12 @@ class Add(Expr, AssocOp):
                     rhs = -rhs
                     return self.func(lhs, rhs).simplify()
 
-    def simplifyKroneckerDelta(self): 
+    def simplify_KroneckerDelta(self): 
         dic = {}
        
         for expr in self.enumerate_KroneckerDelta():
             if expr not in dic:
-                dic[expr] = 0    
+                dic[expr] = 0
             dic[expr] += 1
         
         dic = {key: value for key, value in dic.items() if value > 1}
@@ -1205,11 +1251,11 @@ class Add(Expr, AssocOp):
             else:
                 coefficient = _coefficient
                 if coefficient.is_Add:
-                    coefficient = coefficient.simplifyKroneckerDelta()     
+                    coefficient = coefficient.simplify_KroneckerDelta()     
                         
             this = coefficient * delta + p.nth(0)
             if this.is_Add:
-                this = this.simplifyKroneckerDelta()
+                this = this.simplify_KroneckerDelta()
             
         return this
 
@@ -1231,9 +1277,9 @@ class Add(Expr, AssocOp):
         if this is not self:
             if deep:
                 return this.simplify(deep=deep)
-            return this         
+            return this
 
-        this = self.simplifyKroneckerDelta()
+        this = self.simplify_KroneckerDelta()
         if this != self:
             return this
 
@@ -1249,7 +1295,7 @@ class Add(Expr, AssocOp):
         if this is not self:
             return this
         
-        return self             
+        return self
             
     def simplifyPiecewise(self): 
         piecewise = [arg for arg in self.args if arg.is_Piecewise]
@@ -1258,11 +1304,6 @@ class Add(Expr, AssocOp):
         
         if len(piecewise) == 1:
             return self
-            piecewise, *_ = piecewise
-            args = [*self.args]
-            args.remove(piecewise)
-            this = self.func(*args, evaluate=False)
-            return piecewise.func(*((e + this, c) for e, c in piecewise.args)).simplify()
                  
         for i in range(1, len(piecewise)):
             new = piecewise[i - 1].try_add(piecewise[i])
@@ -1297,7 +1338,7 @@ class Add(Expr, AssocOp):
         return self
     
     def simplifySummations(self):
-        from sympy.concrete.summations import Sum 
+        from sympy.concrete.summations import Sum
         from sympy import Wild
         dic = {}
         ceoffs = []
@@ -1308,7 +1349,7 @@ class Add(Expr, AssocOp):
                     arg = arg.func(-arg.expr, *arg.limits)
                     key = S.NegativeOne
                 else:
-                    key = S.One                    
+                    key = S.One
                     
                 if key in dic:
                     dic[key].append(arg)
@@ -1337,7 +1378,7 @@ class Add(Expr, AssocOp):
 
             if negativeInfinity:
                 if positiveInfinity:
-                    return self 
+                    return self
                 return S.NegativeInfinity
             if positiveInfinity:
                 return S.Infinity
@@ -1347,7 +1388,7 @@ class Add(Expr, AssocOp):
         hit = False
         for coeff in dic:
             if -coeff not in dic:
-                continue            
+                continue
             if coeff._coeff_isneg():
                 continue
 
@@ -1417,7 +1458,7 @@ class Add(Expr, AssocOp):
                         if positive[i].limits == positive[j].limits:
                             positive[i] *= 2
                             del positive[j]
-                            return True                            
+                            return True
                         continue
                     limits = positive[i].limits_union(positive[j])
                     positive[i] = positive[i].func(positive[i].expr, *limits)
@@ -1449,7 +1490,7 @@ class Add(Expr, AssocOp):
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rdiv__')
     def __div__(self, other):
-        if self.is_infinitesimal is not None:
+        if self.infinitesimality is not None:
             return self.func(*self.args[:-1]) / other + self.args[-1] / other
 
         return Expr.__div__(self, other)
@@ -1457,7 +1498,7 @@ class Add(Expr, AssocOp):
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rmul__')
     def __mul__(self, other):
-        if self.is_infinitesimal is not None:
+        if self.infinitesimality is not None:
             return self.func(*self.args[:-1]) * other + self.args[-1] * other
 
         return Expr.__mul__(self, other)
@@ -1471,18 +1512,20 @@ class Add(Expr, AssocOp):
             if is_even == False:
                 even = not even
                 continue
-            return None
+            return
         return even
 
     @property
-    def is_infinitesimal(self):
+    def infinitesimality(self):
         if self.args[-1].is_Infinitesimal:
             return True
         if self.args[-1].is_NegativeInfinitesimal:
             return False
 
     def clear_infinitesimal(self):
-        assert self.is_infinitesimal is not None
+        if self.infinitesimality is None:
+            return super().clear_infinitesimal()
+
         return self.func(*self.args[:-1]), self.args[-1]        
 
     def __iter__(self):
@@ -1502,11 +1545,20 @@ class Add(Expr, AssocOp):
         for i, term in enumerate(terms):
             if i == 0:
                 pass
-            elif term._coeff_isneg():
-                tex += " - "
-                term = -term
             else:
-                tex += " + "
+                if i == len(terms) - 1 and term.is_infinitesimal and len(terms) == 2:
+                    first = terms[0]
+                    if first.is_Mul or first.is_ExprWithLimits:
+                        ...
+                    else:
+                        tex = "%s^%s" % (tex, '+' if term.is_Infinitesimal else '-')
+                        break
+
+                if term._coeff_isneg():
+                    tex += " - "
+                    term = -term
+                else:
+                    tex += " + "
             term_tex = p._print(term)
             if p._needs_add_brackets(term):
                 term_tex = r"\left(%s\right)" % term_tex
@@ -1516,11 +1568,11 @@ class Add(Expr, AssocOp):
 
     def _sympystr(self, p, order=None):
         if p.order == 'none':
-            terms = list(self.args)
+            terms = [*self.args]
         else:
             terms = p._as_ordered_terms(self, order=order)
 
-        from sympy.printing.precedence import precedence 
+        from sympy.printing.precedence import precedence
         PREC = precedence(self)
         l = []
         for term in terms:
@@ -1539,7 +1591,7 @@ class Add(Expr, AssocOp):
             sign = ""
         return sign + ' '.join(l)
 
-    def _eval_determinant(self):
+    def _eval_determinant(self, **kwargs):
         if self.is_upper or self.is_lower:
             from sympy.concrete.products import Product
             i = self.generate_var(integer=True)
@@ -1550,7 +1602,7 @@ class Add(Expr, AssocOp):
     def is_lower(self):
         for arg in self.args:
             if not arg.shape:
-                return False            
+                return False
             if len(arg.shape) == 1:
                 return False
             if arg.is_lower:
@@ -1574,44 +1626,31 @@ class Add(Expr, AssocOp):
         if all(arg.is_nonnegative for arg in self.args):
             return self
         
-    def of(self, cls):
-        from sympy.core.of import Basic 
-        res = Expr.of(self, cls)
+        if self.has(S.Infinity, S.NegativeInfinity):
+            if any(a.is_infinite for a in self.as_real_imag()):
+                return S.Infinity
+            
+        conj = ~self
+        from sympy import Conjugate, Abs
+        new_conj = conj.atoms(Conjugate) - self.atoms(Conjugate)
+        if new_conj or self in (conj, -conj):
+            return Abs(self, evaluate=False)
+        
+        return (self * conj).expand(power_base=False, power_exp=False, log=False, multinomial=False, basic=False) ** S.Half
+        
+    def of(self, cls, **kwargs):
+        from sympy.core.of import Basic
+        if isinstance(cls, Basic):
+            indices = kwargs.get('indices', [None] * len(cls.args))
+            res = Expr.of(self, cls, indices=indices)
+        else:
+            res = Expr.of(self, cls)
+            indices = []
+
         if res is None:
             if cls.is_Add:
-                if len(cls.args) == 2:
-                    a, b = cls.args
-                    cls = Basic.__new__(Add, b, a)
-                    args = Expr.of(self, cls)
-                    if args is not None:
-                        if b.is_Number:  # b.is_constant()
-                            return args
-                        if isinstance(args, tuple):
-                            if len(args) == 2:
-                                b, a = args
-                                return a, b
-                    return args
-                if len(cls.args) == 3:
-                    a, b, c = cls.args
-                    if a.is_Number:
-                        cls = Basic.__new__(Add, a, c, b)
-                    else:
-                        cls = Basic.__new__(Add, b, a, c)
-                    args = Expr.of(self, cls)
-                    if args is not None:
-                        if a.is_Number:
-                            _c, _b = args
-                            return _b, _c
-                        else:
-                            _b, _a, _c = args
-                            return _a, _b, _c
-                    
-                    cls = Basic.__new__(Add, b, c, a)
-                    args = Expr.of(self, cls)
-                    if args is not None:
-                        _b, _c, _a = args
-                        return (_a, _b, _c)
-                    return args
+                return self.rotary_match(cls, indices)
+
             elif cls.is_Mul:
                 args = []
                 common_terms = set()
@@ -1620,8 +1659,8 @@ class Add(Expr, AssocOp):
                     args.append(a)
                     common_terms.add(c)
                     if len(common_terms) > 1:
-                        return         
-                [c] = common_terms
+                        return
+                c, = common_terms
                 return Add(*args), c
                     
         elif isinstance(res, tuple):
@@ -1666,7 +1705,7 @@ class Add(Expr, AssocOp):
     def monotonicity(self, x):
         '''
         determine the Monotonicity of a function wrt to x
-        (-l + Min(l, n - Min(n, u))).monotonicity(x) = -1 
+        (-l + Min(l, n - Min(n, u))).monotonicity(x) = -1
         (x ** 2).monotonicity(x) = 0
         (a * x + b).monotonicity(x) = 1 if a > 0
         (a * x + b).monotonicity(x) = -1 if a < 0
@@ -1690,6 +1729,37 @@ class Add(Expr, AssocOp):
                         const = Add(*self.args[:i] + self.args[i + 1:], evaluate=False)
                         return fx.func(*(arg + const for arg in fx.args), evaluate=False).monotonicity(x)
                         
+                    if isinstance(expr, tuple):
+                        lower, upper = expr
+                        [*args] = self.args
+                        args[i] = lower
+                        lower = Add(*args)
+                        expr_lower, mon_lower = lower.monotonicity(x)
+                        
+                        args[i] = upper
+                        upper = Add(*args)
+                        expr_upper, mon_upper = upper.monotonicity(x)
+
+                        if mon_lower < 0:
+                            if mon_upper > 0:
+                                ...
+                            elif mon_upper < 0:
+                                ...
+                            else:
+                                if not upper._has(x):
+                                    return (expr_lower, upper), 0
+                        elif mon_lower > 0:
+                            ...
+                        else:
+                            if mon_upper > 0:
+                                if not lower._has(x):
+                                    return (lower, expr_upper), 0
+                            elif mon_upper < 0:
+                                ...
+                            else:
+                                if not lower._has(x):
+                                    if not upper._has(x):
+                                        return (lower, upper), 0
                     return None, 0
             else:
                 coeff.append(fx)
@@ -1748,7 +1818,7 @@ class Add(Expr, AssocOp):
                         
                     continue
                 
-                i += 1                
+                i += 1
                 
         if not monotonic_decreasing:
             return Add(*coeff, *monotonic_increasing, evaluate=False), 1
@@ -1763,9 +1833,9 @@ class Add(Expr, AssocOp):
     def __call__(self, other):
         return self * other
 
-    def is_continuous(self, *args):
+    def is_continuous_at(self, *args):
         from sympy.core.logic import fuzzy_and
-        return fuzzy_and(x.is_continuous(*args) for x in self.args)
+        return fuzzy_and(x.is_continuous_at(*args) for x in self.args)
 
     def as_coeff_Mul(self, rational=False):
         if all(arg._coeff_isneg() for arg in self.args):
@@ -1773,7 +1843,58 @@ class Add(Expr, AssocOp):
             
         return S.One, self
         
+    def _eval_torch(self):
+        return sum(arg.torch for arg in self.args)
 
+    @staticmethod
+    def simplify_Lamda(self, squeeze=False):
+        vars = self.variables
+        limits = self.limits
+        modified = []
+        unmodified = []
+        constants = []
+        for arg in self.expr.args:
+            if arg.has(*vars):
+                if arg.is_Mul:
+                    unmodified.append(arg)
+                else:
+                    lamda = self.func(arg, *limits)
+                    _lamda = lamda.simplify()
+                    if _lamda != lamda:
+                        modified.append(_lamda)
+                    else:
+                        unmodified.append(arg)
+            else:
+                constants.append(arg)
+    
+        if modified or constants:
+            if unmodified:
+                if max(len(expr.shape) for expr in unmodified) < len(self.expr.shape):
+                    return self
+                
+                if len(unmodified) == 1:
+                    unmodified, = unmodified
+                    if unmodified.is_Mul:
+                        lamda = self.func(unmodified, *limits)
+                        _lamda = lamda.simplify()
+                        if _lamda != lamda:
+                            modified.append(_lamda)
+                            unmodified = S.Zero
+                            
+                    if unmodified:
+                        unmodified = self.func(unmodified, *limits)
+                else:
+                    unmodified = self.func(Add(*unmodified), *limits)
+            else:
+                unmodified = S.Zero
 
+            return Add(*modified, *constants, unmodified)
+        return self
+
+    @property
+    def is_comparable(self):
+        return all(arg.is_comparable for arg in self.args)
+
+    
 from .mul import Mul, _keep_coeff, prod
 from sympy.core.numbers import Rational

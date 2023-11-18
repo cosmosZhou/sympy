@@ -4,7 +4,6 @@ from sympy.combinatorics.graycode import GrayCode
 from sympy.core import Basic
 
 
-
 class Subset(Basic):
     """
     Represents a basic subset object.

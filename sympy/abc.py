@@ -56,7 +56,7 @@ from typing import Any, Dict
 import string
 
 from .core import Symbol, symbols
-from .core.alphabets import greeks
+from std.unicode import greeks
 from .core.compatibility import exec_
 
 ##### Symbol definitions #####

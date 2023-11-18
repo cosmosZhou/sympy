@@ -13,6 +13,7 @@ from sympy.core.compatibility import as_int, MutableSet
 from sympy.core.sympify import sympify, converter
 from sympy.utilities.iterables import iterable
 from sympy.core.logic import fuzzy_or
+from sympy.core.cache import cacheit
 
 
 class Tuple(Basic):
@@ -141,6 +142,7 @@ class Tuple(Basic):
         else:
             return self.args.index(value, start, stop)
 
+    @cacheit
     def _eval_domain_defined(self, x, **_):
         domain = Basic._eval_domain_defined(self, x)
         for arg in self.args:
@@ -159,7 +161,7 @@ class Tuple(Basic):
                             return r"%s \leq %s \leq %s" % tuple([p._print(s) for s in (a, x, b - 1)])
                         else:
                             return r"%s \leq %s \lt %s" % tuple([p._print(s) for s in (a, x, b)])
-                    return r"%s \leq %s \leq %s" % tuple([p._print(s) for s in (a, x, b)])
+                    return r"%s \lt %s \lt %s" % tuple([p._print(s) for s in (a, x, b)])
             elif len(self) == 2:
                 x, cond = self
                 if cond.is_set:
@@ -179,8 +181,13 @@ class Tuple(Basic):
             elif len(self) == 2:
                 e, s = self
                 if s.is_Range:
-                    start, stop, step = s.args
-                    if step.is_One:
+                    start, stop, *step = s.args
+                    if step:
+                        step, = step
+                    else:
+                        step = 1
+
+                    if step == 1:
                         if start.is_Zero:
                             return r"%s:%s" % tuple([p._print(s) for s in (e, stop)])
                         return r"%s:%s:%s" % tuple([p._print(s) for s in (e, start, stop)])
@@ -198,7 +205,6 @@ class Tuple(Basic):
             else:
                 return str(self[0])
                         
-
     def domain_latex(self, domain=None):
         if domain.is_Range:
             start, end = domain.start, domain.stop
@@ -233,7 +239,7 @@ class Tuple(Basic):
                     return r"%s \le %s < %s" % (start.latex, self.latex, end.latex)
                 return r"%s \le %s \le %s" % (start.latex, self.latex, end.latex)
         elif domain.is_bool:
-            return r"%s \left| %s \right." % (self.latex, domain.latex)
+            return r"%s : %s" % (self.latex, domain.latex)
         else:
             return r"%s \in %s" % (self.latex, domain.latex)
 
@@ -268,26 +274,53 @@ class Tuple(Basic):
     @property
     def is_intlimit(self):
         x, *ab = self
-        return x.is_integer and len(ab) == 2 and not x.shape and not x.is_set                
-        
+        return x.is_integer and len(ab) == 2 and not x.shape and not x.is_set
+
     def to_setlimit(self):
         x, *ab = self
         if len(ab) == 2 and not ab[1].is_set:
-            from sympy import Interval, Range
-            return (x, (Range if x.is_integer else Interval)(*ab))
+            return x, x.range(*ab)
         if not ab:
             return x, x.universalSet
         return self
     
+    @property
+    def slice_args(self):
+        start, stop, *step = self
+        if step:
+            [step] = step
+        else:
+            step = 1
+        return start, stop, step
+    
+    @property
+    def slice(self):
+        return slice(*self.slice_args)
+
+    @classmethod
+    def from_slice(cls, slice, size=None):
+        start, stop, step = slice.start, slice.stop, slice.step
+        if start is None:
+            start = 0
+            
+        if stop is None:
+            if size:
+                stop = size
+            
+        if step is None:
+            step = 1
+            
+        return cls(start, stop) if step == 1 else cls(start, stop, step)
+        
     @classmethod
     def as_setlimit(cls, self):
         x, *ab = self
         if len(ab) == 2 and not ab[1].is_set:
-            from sympy import Interval, Range
-            return (x, (Range if x.is_integer else Interval)(*ab))
+            return x, x.range(*ab)
         return self
-    
-    def coerce_setlimit(self, function=None):
+
+    @classmethod
+    def to_coerce_setlimit(cls, self, function=None, dir=None):
         x, *ab = self
         if not ab:
             if function is None:
@@ -303,15 +336,50 @@ class Tuple(Basic):
             if b.is_set:
                 domain = b & x.domain_conditioned(a)
             else:
-                from sympy import Interval, Range
-                domain = (Range if x.is_integer else Interval)(a, b)
+                if x.is_integer:
+                    from sympy import Range
+                    domain = Range(a, b)
+                else:
+                    from sympy import Interval
+                    if dir:
+                        if a <= b:
+                            return x, Interval.open(a, b), 1
+                        elif a > b:
+                            return x, Interval.open(b, a), -1
+                        else:
+                            return
+
+                    return x, Interval.open(a, b)
         return x, domain
+
+    def coerce_setlimit(self, function=None):
+        return Tuple.to_coerce_setlimit(self, function)
     
     def limit(self, x, xlim, dir=1):
         """ Compute limit x->xlim.
         """
         from sympy.series.limits import limit
         return Tuple(*[limit(f, x, xlim, dir) for f in self.args])
+    
+    @classmethod
+    def is_nonemptyset(cls, limits):
+        for limit in limits:
+            args = Tuple.to_coerce_setlimit(limit)
+            if not args:
+                continue
+
+            x, domain, *dir = args
+            if not domain.is_nonempty:
+                return False
+
+        return True
+    
+    def _sympystr(self, p):
+        return p._print_tuple(self)
+
+    def _latex(self, p):
+        return p._print_tuple(self)
+
 
 converter[tuple] = lambda tup: Tuple(*tup)
 

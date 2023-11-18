@@ -21,7 +21,6 @@ from sympy.polys.polytools import Poly
 from sympy.printing import sstr
 from sympy.simplify.hyperexpand import hyperexpand
 
-from .linearsolver import NewMatrix
 from .recurrence import HolonomicSequence, RecurrenceOperator, RecurrenceOperators
 from .holonomicerrors import (NotPowerSeriesError, NotHyperSeriesError,
     SingularityError, NotHolonomicError)
@@ -583,10 +582,10 @@ class HolonomicFunction(object):
                     p.append(K.new(expr.listofpoly[i].rep))
             r.append(p)
 
-        r = NewMatrix(r).transpose()
+        r = Matrix(r).transpose()
 
         homosys = [[S(0) for q in range(dim + 1)]]
-        homosys = NewMatrix(homosys).transpose()
+        homosys = Matrix(homosys).transpose()
 
         # solving the linear system using gauss jordan solver
         solcomp = r.gauss_jordan_solve(homosys)
@@ -616,10 +615,10 @@ class HolonomicFunction(object):
                         p.append(K.new(expr.listofpoly[i].rep))
                 r.append(p)
 
-            r = NewMatrix(r).transpose()
+            r = Matrix(r).transpose()
 
             homosys = [[S(0) for q in range(dim + 1)]]
-            homosys = NewMatrix(homosys).transpose()
+            homosys = Matrix(homosys).transpose()
 
             solcomp = r.gauss_jordan_solve(homosys)
             sol = solcomp[0]
@@ -977,9 +976,9 @@ class HolonomicFunction(object):
         lin_sys = [[coeff_mul[i][j] for i in range(a) for j in range(b)]]
 
         homo_sys = [[S(0) for q in range(a * b)]]
-        homo_sys = NewMatrix(homo_sys).transpose()
+        homo_sys = Matrix(homo_sys).transpose()
 
-        sol = (NewMatrix(lin_sys).transpose()).gauss_jordan_solve(homo_sys)
+        sol = (Matrix(lin_sys).transpose()).gauss_jordan_solve(homo_sys)
 
         # until a non trivial solution is found
         while sol[0].is_zero:
@@ -1013,7 +1012,7 @@ class HolonomicFunction(object):
             lin_sys.append([coeff_mul[i][j] for i in range(a)
                             for j in range(b)])
 
-            sol = (NewMatrix(lin_sys).transpose()).gauss_jordan_solve(homo_sys)
+            sol = (Matrix(lin_sys).transpose()).gauss_jordan_solve(homo_sys)
 
 
         sol_ann = _normalize(sol[0][0:], self.annihilator.parent, negative=False)
@@ -2345,11 +2344,11 @@ def expr_to_holonomic(func, x=None, x0=0, y0=None, lenics=None, domain=None, ini
 
     if not x:
         if len(syms) == 1:
-            x= syms.pop()
+            x, = syms
         else:
             raise ValueError("Specify the variable for the function")
     elif x in syms:
-        syms.remove(x)
+        syms = syms - {x}        
 
     extra_syms = list(syms)
 
@@ -2752,7 +2751,7 @@ def _convert_poly_rat_alg(func, x, x0=0, y0=None, lenics=None, domain=QQ, initco
                 break
             if isinstance(coeff, (PolyElement, FracElement)):
                 coeff = coeff.as_expr()
-            y0 = {indicial: S([coeff])}
+            y0 = {indicial: [coeff]}
 
     if y0 or not initcond:
         return HolonomicFunction(sol, x, x0, y0)

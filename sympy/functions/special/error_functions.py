@@ -1,5 +1,5 @@
 """ This module contains various functions that are special cases
-    of incomplete gamma functions. It should probably be renamed. """
+    of incomplete Gamma functions. It should probably be renamed. """
 
 from sympy.core import Add, S, sympify, cacheit, pi, I
 
@@ -1032,7 +1032,7 @@ class Ei(Function):
     Ci: Cosine integral.
     Shi: Hyperbolic sine integral.
     Chi: Hyperbolic cosine integral.
-    sympy.functions.special.gamma_functions.uppergamma: Upper incomplete gamma function.
+    sympy.functions.special.gamma_functions.uppergamma: Upper incomplete Gamma function.
 
     References
     ==========
@@ -1113,7 +1113,7 @@ class expint(Function):
 
     .. math:: \operatorname{E}_\nu(z) = z^{\nu - 1} \Gamma(1 - \nu, z),
 
-    where `\Gamma(1 - \nu, z)` is the upper incomplete gamma function
+    where `\Gamma(1 - \nu, z)` is the upper incomplete Gamma function
     (``uppergamma``).
 
     Hence for :math:`z` with positive real part we have
@@ -1123,11 +1123,11 @@ class expint(Function):
 
     which explains the name.
 
-    The representation as an incomplete gamma function provides an analytic
+    The representation as an incomplete Gamma function provides an analytic
     continuation for :math:`\operatorname{E}_\nu(z)`. If :math:`\nu` is a
     non-positive integer the exponential integral is thus an unbranched
     function of :math:`z`, otherwise there is a branch point at the origin.
-    Refer to the incomplete gamma function documentation for details of the
+    Refer to the incomplete Gamma function documentation for details of the
     branching behavior.
 
     Examples
@@ -1169,7 +1169,7 @@ class expint(Function):
     z**4*expint(1, z)/24 + (-z**3 + z**2 - 2*z + 6)*exp(-z)/24
 
     The generalised exponential integral is essentially equivalent to the
-    incomplete gamma function:
+    incomplete Gamma function:
 
     >>> from sympy import uppergamma
     >>> expint(nu, z).rewrite(uppergamma)
@@ -1181,7 +1181,7 @@ class expint(Function):
     >>> expint(4, z*exp_polar(2*pi*I))
     I*pi*z**3/3 + expint(4, z)
     >>> expint(nu, z*exp_polar(2*pi*I))
-    z**(nu - 1)*(exp(2*I*pi*nu) - 1)*gamma(1 - nu) + expint(nu, z)
+    z**(nu - 1)*(exp(2*I*pi*nu) - 1)*Gamma(1 - nu) + expint(nu, z)
 
     See Also
     ========
@@ -1208,7 +1208,7 @@ class expint(Function):
 
     @classmethod
     def eval(cls, nu, z):
-        from sympy import (unpolarify, expand_mul, uppergamma, exp, gamma,
+        from sympy import (unpolarify, expand_mul, uppergamma, exp, Gamma,
                            factorial)
         nu2 = unpolarify(nu)
         if nu != nu2:
@@ -1227,7 +1227,7 @@ class expint(Function):
             return expint(nu, z) \
                 - 2*pi*I*n*(-1)**(nu - 1)/factorial(nu - 1)*unpolarify(z)**(nu - 1)
         else:
-            return (exp(2*I*pi*nu*n) - 1)*z**(nu - 1)*gamma(1 - nu) + expint(nu, z)
+            return (exp(2*I*pi*nu*n) - 1)*z**(nu - 1)*Gamma(1 - nu) + expint(nu, z)
 
     def fdiff(self, argindex):
         from sympy import meijerg
@@ -2123,9 +2123,9 @@ class fresnels(FresnelIntegral):
 
     Defining the Fresnel functions via an integral
 
-    >>> from sympy import integrate, pi, sin, gamma, expand_func
+    >>> from sympy import integrate, pi, sin, Gamma, expand_func
     >>> integrate(sin(pi*z**2/2), z)
-    3*fresnels(z)*gamma(3/4)/(4*gamma(7/4))
+    3*fresnels(z)*Gamma(3/4)/(4*Gamma(7/4))
     >>> expand_func(integrate(sin(pi*z**2/2), z))
     fresnels(z)
 
@@ -2261,9 +2261,9 @@ class fresnelc(FresnelIntegral):
 
     Defining the Fresnel functions via an integral
 
-    >>> from sympy import integrate, pi, cos, gamma, expand_func
+    >>> from sympy import integrate, pi, cos, Gamma, expand_func
     >>> integrate(cos(pi*z**2/2), z)
-    fresnelc(z)*gamma(1/4)/(4*gamma(5/4))
+    fresnelc(z)*Gamma(1/4)/(4*Gamma(5/4))
     >>> expand_func(integrate(cos(pi*z**2/2), z))
     fresnelc(z)
 

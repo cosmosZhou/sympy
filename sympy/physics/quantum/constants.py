@@ -10,11 +10,6 @@ import mpmath.libmp as mlib
 # Constants
 #-----------------------------------------------------------------------------
 
-__all__ = [
-    'hbar'
-]
-
-
 class HBar(with_metaclass(Singleton, NumberSymbol)):
     """Reduced Plank's constant in numerical and symbolic form [1]_.
 

@@ -29,11 +29,6 @@ from sympy.utilities import default_sort_key, numbered_symbols
 from sympy.utilities.misc import filldedent
 
 
-
-# these are imported with 'from sympy.solvers.diophantine import *
-__all__ = ['diophantine', 'classify_diop']
-
-
 class DiophantineSolutionSet(set):
     """
     Container for a set of solutions to a particular diophantine equation.

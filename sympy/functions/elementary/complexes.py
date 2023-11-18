@@ -11,6 +11,7 @@ from sympy.functions.elementary.integers import ceiling
 from sympy.core.power import sqrt
 from sympy.functions.elementary.piecewise import Piecewise
 from sympy.functions.elementary.trigonometric import atan, atan2
+from sympy.core.cache import cacheit
 
 ###############################################################################
 ######################### REAL and IMAGINARY PARTS ############################
@@ -50,48 +51,63 @@ class Re(Function):
     def eval(cls, arg):
         if arg is S.NaN:
             return S.NaN
-        elif arg is S.ComplexInfinity:
+        if arg is S.ComplexInfinity:
             return S.NaN
-        elif arg.is_extended_real:
+        if arg.is_super_real:
             return arg
-        elif arg.is_imaginary or (S.ImaginaryUnit * arg).is_extended_real:
+        if arg.is_imaginary or (S.ImaginaryUnit * arg).is_extended_real:
             return S.Zero
-        elif arg.is_Matrix:
+        if arg.is_DenseMatrix:
             return arg.as_real_imag()[0]
-        elif arg.is_Function and isinstance(arg, conjugate):
-            return Re(arg.args[0])
-        else:
+        if arg.is_MatMul:
+            return
+        if arg.is_Mul:
+            import std
+            reals, unreals = std.array_split(arg.args, lambda x: x.is_super_real)
+            if reals:
+                return cls(Mul(*unreals)) * Mul(*reals)
+            return
 
-            included, reverted, excluded = [], [], []
-            args = Add.make_args(arg)
-            for term in args:
-                coeff = term.as_coefficient(S.ImaginaryUnit)
+        if arg.is_Conjugate:
+            return cls(arg.arg)
 
-                if coeff is not None:
-                    if not coeff.is_extended_real:
-                        reverted.append(coeff)
-                elif not term.has(S.ImaginaryUnit) and term.is_extended_real:
-                    excluded.append(term)
+        if arg.is_Exp:
+            exp = arg.arg / S.ImaginaryUnit
+            if exp.is_super_real:
+                from sympy import cos
+                return cos(exp)
+            return
+
+        included, reverted, excluded = [], [], []
+        args = Add.make_args(arg)
+        for term in args:
+            coeff = term.as_coefficient(S.ImaginaryUnit)
+
+            if coeff is not None:
+                if not coeff.is_extended_real:
+                    reverted.append(coeff)
+            elif not term.has(S.ImaginaryUnit) and term.is_extended_real:
+                excluded.append(term)
+            else:
+                # Try to do some advanced expansion.  If
+                # impossible, don't try to do Re(arg) again
+                # (because this is what we are trying to do now).
+                real_imag = term.as_real_imag(ignore=arg)
+                if real_imag:
+                    excluded.append(real_imag[0])
                 else:
-                    # Try to do some advanced expansion.  If
-                    # impossible, don't try to do Re(arg) again
-                    # (because this is what we are trying to do now).
-                    real_imag = term.as_real_imag(ignore=arg)
-                    if real_imag:
-                        excluded.append(real_imag[0])
-                    else:
-                        included.append(term)
+                    included.append(term)
 
-            if len(args) != len(included):
-                a, b, c = (Add(*xs) for xs in [included, reverted, excluded])
+        if len(args) != len(included):
+            a, b, c = (Add(*xs) for xs in [included, reverted, excluded])
 
-                return cls(a) - Im(b) + c
+            return cls(a) - Im(b) + c
 
     def as_real_imag(self, deep=True, **hints):
         """
         Returns the real number with a zero imaginary part.
         """
-        return (self, S.Zero)
+        return self, S.Zero
 
     def _eval_derivative(self, x):
         if x.is_extended_real or self.args[0].is_extended_real:
@@ -114,9 +130,8 @@ class Re(Function):
         if self.args[0].is_finite:
             return True
 
-    def _eval_is_complex(self):
-        if self.args[0].is_finite:
-            return True
+    def _eval_is_extended_complex(self):
+        return self.arg.is_extended_complex
 
     def _sage_(self):
         import sage.all as sage
@@ -130,6 +145,10 @@ class Re(Function):
             tex = r"\operatorname{{Re}}{{{}}}".format(p.parenthesize(self.args[0], PRECEDENCE['Atom']))
 
         return p._do_exponent(tex, exp)
+
+    @classmethod
+    def sub_class_key(cls):
+        return 41
 
 
 class Im(Function):
@@ -166,41 +185,49 @@ class Im(Function):
     def eval(cls, arg):
         if arg is S.NaN:
             return S.NaN
-        elif arg is S.ComplexInfinity:
+
+        if arg is S.ComplexInfinity:
             return S.NaN
-        elif arg.is_extended_real:
+
+        if arg.is_extended_real:
             return S.Zero
-        elif arg.is_imaginary or (S.ImaginaryUnit * arg).is_extended_real:
+
+        if arg.is_imaginary or (S.ImaginaryUnit * arg).is_extended_real:
             return -S.ImaginaryUnit * arg
-        elif arg.is_Matrix:
+
+        if arg.is_DenseMatrix:
             return arg.as_real_imag()[1]
-        elif arg.is_Function and isinstance(arg, conjugate):
-            return -Im(arg.args[0])
-        else:
-            included, reverted, excluded = [], [], []
-            args = Add.make_args(arg)
-            for term in args:
-                coeff = term.as_coefficient(S.ImaginaryUnit)
 
-                if coeff is not None:
-                    if not coeff.is_extended_real:
-                        reverted.append(coeff)
-                    else:
-                        excluded.append(coeff)
-                elif term.has(S.ImaginaryUnit) or not term.is_extended_real:
-                    # Try to do some advanced expansion.  If
-                    # impossible, don't try to do Im(arg) again
-                    # (because this is what we are trying to do now).
-                    real_imag = term.as_real_imag(ignore=arg)
-                    if real_imag:
-                        excluded.append(real_imag[1])
-                    else:
-                        included.append(term)
+        if arg.is_MatMul:
+            return
 
-            if len(args) != len(included):
-                a, b, c = (Add(*xs) for xs in [included, reverted, excluded])
+        if arg.is_Conjugate:
+            return -Im(arg.arg)
 
-                return cls(a) + Re(b) + c
+        included, reverted, excluded = [], [], []
+        args = Add.make_args(arg)
+        for term in args:
+            coeff = term.as_coefficient(S.ImaginaryUnit)
+
+            if coeff is not None:
+                if not coeff.is_extended_real:
+                    reverted.append(coeff)
+                else:
+                    excluded.append(coeff)
+            elif term.has(S.ImaginaryUnit) or not term.is_extended_real:
+                # Try to do some advanced expansion.  If
+                # impossible, don't try to do Im(arg) again
+                # (because this is what we are trying to do now).
+                real_imag = term.as_real_imag(ignore=arg)
+                if real_imag:
+                    excluded.append(real_imag[1])
+                else:
+                    included.append(term)
+
+        if len(args) != len(included):
+            a, b, c = (Add(*xs) for xs in [included, reverted, excluded])
+
+            return cls(a) + Re(b) + c
 
     def as_real_imag(self, deep=True, **hints):
         """
@@ -214,7 +241,7 @@ class Im(Function):
         >>> Im(2 + 3*I).as_real_imag()
         (3, 0)
         """
-        return (self, S.Zero)
+        return self, S.Zero
 
     def _eval_derivative(self, x):
         if x.is_extended_real or self.args[0].is_extended_real:
@@ -240,9 +267,8 @@ class Im(Function):
         if self.args[0].is_finite:
             return True
 
-    def _eval_is_complex(self):
-        if self.args[0].is_finite:
-            return True
+    def _eval_is_extended_complex(self):
+        return self.arg.is_extended_complex
 
     def _latex(self, p, exp=None):
         from sympy.printing.precedence import PRECEDENCE
@@ -253,13 +279,16 @@ class Im(Function):
 
         return p._do_exponent(tex, exp)
 
+    @classmethod
+    def sub_class_key(cls):
+        return 42
 
 ###############################################################################
 ############### SIGN, ABSOLUTE VALUE, ARGUMENT and CONJUGATION ################
 ###############################################################################
 
 
-class sign(Function):
+class Sign(Function):
     """
     Returns the complex sign of an expression:
 
@@ -335,6 +364,11 @@ class sign(Function):
             return s * cls(arg._new_rawargs(*unk))
         if arg is S.NaN:
             return S.NaN
+        
+        if arg.is_DenseMatrix:
+            from sympy import Matrix
+            return Matrix(*(Sign(arg) for arg in arg.args), shape=arg.shape)
+            
         if arg.is_zero:  # it may be an Expr that is zero
             return S.Zero
         if arg.is_extended_positive:
@@ -381,13 +415,16 @@ class sign(Function):
             return True
 
     def _eval_is_imaginary(self):
-        return self.args[0].is_imaginary
+        return self.arg.is_imaginary
 
-    def _eval_is_integer(self):
-        return self.args[0].is_extended_real
+    def _eval_is_finite(self):
+        return self.arg.is_finite
+
+    def _eval_is_extended_integer(self):
+        return self.arg.is_extended_real
 
     def _eval_is_zero(self):
-        return self.args[0].is_zero
+        return self.arg.is_zero
 
     def _eval_power(self, other):
         if (
@@ -413,6 +450,23 @@ class sign(Function):
     def _eval_simplify(self, ratio, measure, rational, inverse):
         return self.func(self.args[0].factor())
 
+    def _latex(self, p, exp=None):
+        tex = r"sign\left({%s}\right)" % p._print(self.args[0])
+        if exp is not None:
+            return r"%s^{%s}" % (tex, exp)
+        else:
+            return tex
+
+    def _sympystr(self, p):
+        return "sign(%s)" % p._print(self.arg)
+
+    def __iter__(self):
+        raise TypeError
+
+    def __getitem__(self, index):
+        return self.func(self.arg[index])
+
+sign = Sign
 
 class Abs(Function):
     """
@@ -482,7 +536,7 @@ class Abs(Function):
     def eval(cls, arg):
         from sympy.simplify.simplify import signsimp
         from sympy.core.function import expand_mul
-        assert not arg.is_set
+
         if hasattr(arg, '_eval_Abs'):
             obj = arg._eval_Abs()
             if obj is not None:
@@ -495,11 +549,11 @@ class Abs(Function):
             return S.Infinity
         if isinstance(arg, exp):
             return exp(Re(arg.args[0]))
-        if isinstance(arg, AppliedUndef) or arg.is_set:
+        if isinstance(arg, AppliedUndef):
             return
-        if arg.is_Add and arg.has(S.Infinity, S.NegativeInfinity):
-            if any(a.is_infinite for a in arg.as_real_imag()):
-                return S.Infinity
+        if arg.is_MatMul:
+            return
+
         if arg.is_zero:
             return S.Zero
         if arg.is_extended_nonnegative:
@@ -523,12 +577,11 @@ class Abs(Function):
             if not unk or not all(conj.has(conjugate(u)) for u in unk):
                 return sqrt(expand_mul(arg * conj))
 
-    def _eval_is_integer(self):
-        if self.args[0].is_extended_real:
-            return self.args[0].is_integer
-
     def _eval_is_zero(self):
         return self._args[0].is_zero
+
+    def _eval_is_extended_integer(self):
+        return self.arg.is_extended_integer
 
     def _eval_is_extended_positive(self):
         is_z = self.is_zero
@@ -537,7 +590,7 @@ class Abs(Function):
 
     def _eval_is_rational(self):
         if self.arg.is_set:
-            return True                
+            return True
         return self.args[0].is_rational
 
     def _eval_is_finite(self):
@@ -577,7 +630,7 @@ class Abs(Function):
                     args.append(t)
                 else:
                     x = Mul(*args)
-                    return abs(x) ** exponent.p 
+                    return abs(x) ** exponent.p
         return
 
     def _eval_nseries(self, x, n, logx):
@@ -626,7 +679,7 @@ class Abs(Function):
         return S.Zero
     
     def _sympystr(self, p):
-        return "|%s|" % p._print(self.arg)
+        return "abs(%s)" % p._print(self.arg)
     
     def _latex(self, p, exp=None):
         tex = r"\left|{%s}\right|" % p._print(self.args[0])
@@ -641,6 +694,11 @@ class Abs(Function):
 
     def __getitem__(self, index):
         return self.func(self.arg[index])
+
+    @classmethod
+    def _eval_simplify_Lamda(cls, self, squeeze=False):
+        return exp._eval_simplify_Lamda(self)
+
 
 class Norm(Function):
     """
@@ -658,8 +716,8 @@ class Norm(Function):
         from sympy.core.symbol import dtype
         return dtype.real(nonnegative=True)
 
-    @property
-    def shape(self):
+    @cacheit
+    def _eval_shape(self):
         return self.arg.shape[:-1]
     
     def fdiff(self, argindex=1):
@@ -686,12 +744,8 @@ class Norm(Function):
             if obj is not None:
                 return obj
 
-    def _eval_is_integer(self):
-        if self.args[0].is_extended_real:
-            return self.args[0].is_integer
-
     def _eval_is_zero(self):
-        return self._args[0].is_zero
+        return self.arg.is_zero
 
     def _eval_is_extended_positive(self):
         is_z = self.is_zero
@@ -700,7 +754,7 @@ class Norm(Function):
 
     def _eval_is_rational(self):
         if self.arg.is_set:
-            return True                
+            return True
         return self.args[0].is_rational
 
     def _eval_is_finite(self):
@@ -726,7 +780,7 @@ class Norm(Function):
         ...
 
     def _sympystr(self, p):
-        return "||%s||" % p._print(self.arg)
+        return "Norm(%s)" % p._print(self.arg)
 
     def _latex(self, p, exp=None):
         left_vert = r"\left|\kern-0.25ex" * 2
@@ -753,7 +807,23 @@ class Norm(Function):
                 return abs(Mul(*coeff)) * self.func(Mul(*args))
         return Function.simplify(self, deep=deep, **kwargs)
     
-
+    def _subs(self, old, new, **hints):
+        arg = self.arg
+        try:
+            arg = arg._subs(old, new)
+            if self.arg == arg:
+                return self
+        except Exception as e:
+            if str(e) == 'empty slices':
+                if any(s._has(old) for s in arg.shape):
+                    from sympy import ZeroMatrix
+                    return ZeroMatrix(*self.shape)
+            
+            raise e
+        if len(arg.shape) < len(self.arg.shape):
+            return abs(arg)
+        return self.func(arg)
+        
     
 class Arg(Function):
     """
@@ -820,7 +890,7 @@ class Arg(Function):
             if i_exp.is_Mul:
                 args = i_exp.args
                 if len(args) == 2:
-                    i, arg = args                 
+                    i, arg = args
                     if i.is_ImaginaryUnit:
                         if arg.is_Arg:
 #                             Arg(exp(i * Arg(z))) = Arg(z)
@@ -828,6 +898,21 @@ class Arg(Function):
             
         return Function.simplify(self, deep, **kwargs)
     
+    @classmethod
+    def sub_class_key(cls):
+        return 43
+    
+    def _latex(self, p, exp=None):
+        tex = r"arg\left({%s}\right)" % p._print(self.args[0])
+        if exp is not None:
+            return r"%s^{%s}" % (tex, exp)
+        else:
+            return tex
+    
+    def _sympystr(self, p):
+        return "arg(%s)" % p._print(self.arg)
+
+
 arg = Arg
 
 class Conjugate(Function):
@@ -882,7 +967,8 @@ class Conjugate(Function):
 
     def _eval_transpose(self, axis=-1):
         if axis == self.default_axis:
-            return adjoint(self.args[0])
+            from sympy import Adjoint
+            return Adjoint(self.args[0])
 
     def _eval_is_algebraic(self):
         return self.args[0].is_algebraic
@@ -936,79 +1022,25 @@ class Conjugate(Function):
             s = "(%s)" % s
         return "~%s" % s
 
+    def __iter__(self):
+        raise TypeError
+
+    def __getitem__(self, indices):
+        return self.func(self.arg[indices])
+
+    @classmethod
+    def _eval_simplify_Lamda(cls, self, squeeze=False):
+        return exp._eval_simplify_Lamda(self)
+
+    @classmethod
+    def sub_class_key(cls):
+        return 40
+
+    def domain_definition(self, allow_empty=False):
+        return self.arg.domain_definition(allow_empty=allow_empty)
+
+
 conjugate = Conjugate
-
-class transpose(Function):
-    """
-    Linear map transposition.
-    """
-
-    @classmethod
-    def eval(cls, arg):
-        obj = arg._eval_transpose()
-        if obj is not None:
-            return obj
-
-    @property
-    def dtype(self):
-        return self.arg.dtype
-
-    def _sympystr(self, p):
-        return p.parenthesize(self.arg, 0) + ".T"
-
-    def _latex(self, p): 
-        return r"{%s}^{\color{red} T}" % p._print(self.arg)
-
-    def _eval_adjoint(self):
-        return conjugate(self.args[0])
-
-    def _eval_conjugate(self):
-        return adjoint(self.args[0])
-
-    def _eval_transpose(self, axis=-1):
-        if axis == self.default_axis:
-            return self.args[0]
-
-
-class adjoint(Function):
-    """
-    Conjugate transpose or Hermite conjugation.
-    """
-
-    @classmethod
-    def eval(cls, arg):
-        obj = arg._eval_adjoint()
-        if obj is not None:
-            return obj
-        obj = arg._eval_transpose()
-        if obj is not None:
-            return conjugate(obj)
-
-    def _eval_adjoint(self):
-        return self.args[0]
-
-    def _eval_conjugate(self):
-        return transpose(self.args[0])
-
-    def _eval_transpose(self, axis=-1):
-        if axis == self.default_axis:
-            return conjugate(self.args[0])
-
-    def _latex(self, printer, exp=None, *args):
-        arg = printer._print(self.args[0])
-        tex = r'%s^{\dagger}' % arg
-        if exp:
-            tex = r'\left(%s\right)^{%s}' % (tex, printer._print(exp))
-        return tex
-
-    def _pretty(self, printer, *args):
-        from sympy.printing.pretty.stringpict import prettyForm
-        pform = printer._print(self.args[0], *args)
-        if printer._use_unicode:
-            pform = pform ** prettyForm(u'\N{DAGGER}')
-        else:
-            pform = pform ** prettyForm('+')
-        return pform
 
 ###############################################################################
 ############### HANDLING OF POLAR NUMBERS #####################################

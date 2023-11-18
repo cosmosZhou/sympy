@@ -124,7 +124,7 @@ def heurisch_wrapper(f, x, rewrite=False, hints=None, mappings=None, retries=3,
     from sympy.solvers.solvers import solve, denoms
     f = sympify(f)
     if x not in f.free_symbols:
-        return f*x
+        return f * x
 
     res = heurisch(f, x, rewrite, hints, mappings, retries, degree_offset,
                    unnecessary_permutations)
@@ -343,7 +343,7 @@ def heurisch(f, x, rewrite=False, hints=None, mappings=None, retries=3,
     """
     f = sympify(f)
     if x not in f.free_symbols:
-        return f*x
+        return f * x
 
     if not f.is_Add:
         indep, f = f.as_independent(x)
@@ -711,7 +711,7 @@ def heurisch(f, x, rewrite=False, hints=None, mappings=None, retries=3,
         if antideriv.is_Add:
             antideriv = antideriv.as_independent(x)[1]
 
-        return indep*antideriv
+        return indep * antideriv
     else:
         if retries >= 0:
             result = heurisch(f, x, mappings=mappings, rewrite=rewrite, hints=hints, retries=retries - 1, unnecessary_permutations=unnecessary_permutations)

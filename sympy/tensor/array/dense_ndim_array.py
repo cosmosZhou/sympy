@@ -4,6 +4,7 @@ from sympy import Basic, Tuple, S
 from sympy.core.sympify import _sympify
 from sympy.tensor.array.mutable_ndim_array import MutableNDimArray
 from sympy.tensor.array.ndim_array import NDimArray, ImmutableNDimArray
+from sympy.core.cache import cacheit
 
 
 class DenseNDimArray(NDimArray):
@@ -194,6 +195,6 @@ class MutableDenseNDimArray(DenseNDimArray, MutableNDimArray):
     def as_immutable(self):
         return ImmutableDenseNDimArray(self)
 
-    @property
-    def free_symbols(self):
+    @cacheit
+    def _eval_free_symbols(self):
         return {i for j in self._array for i in j.free_symbols}

@@ -23,7 +23,7 @@ from sympy.integrals.risch import (gcdex_diophantine, frac_in, derivation,
     recognize_log_derivative)
 from sympy.matrices import zeros, eye
 from sympy.polys import Poly, lcm, cancel, sqf_list
-from sympy.polys.polymatrix import PolyMatrix as Matrix
+from sympy.matrices.dense import Matrix
 from sympy.solvers import solve
 
 
@@ -1145,7 +1145,7 @@ def is_log_deriv_k_t_radical(fa, fd, DE, Df=True):
     if not A:
         return
     if not u.shape and not derivation(u, DE, basic=True).is_zero:
-        return            
+        return
     if not all(derivation(i, DE, basic=True).is_zero for i in u._mat):
         # If the elements of u are not all constant
         # Note: See comment in constant_system

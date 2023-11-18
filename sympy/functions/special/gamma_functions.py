@@ -24,7 +24,7 @@ def intlike(n):
 ############################ COMPLETE GAMMA FUNCTION ##########################
 ###############################################################################
 
-class gamma(Function):
+class Gamma(Function):
     r"""
     The gamma function
 
@@ -167,6 +167,19 @@ class gamma(Function):
     def _eval_conjugate(self):
         return self.func(self.args[0].conjugate())
 
+    def _eval_is_zero(self):
+        if self.arg.is_finite:
+            return False
+
+    def _eval_is_finite(self):  
+        x = self.arg
+        if x.is_positive:
+            return True
+
+        if x.is_extended_nonpositive:
+            if x.is_extended_integer:
+                return False
+
     def _eval_is_extended_real(self):
         x = self.args[0]
         if x.is_nonpositive and x.is_integer:
@@ -222,11 +235,12 @@ class gamma(Function):
         return self.func(arg)
 
     def _sympystr(self, p):
-        return 'Γ(%s)' % p._print(self.arg)
+        return 'Gamma(%s)' % p._print(self.arg)
 ###############################################################################
 ################## LOWER and UPPER INCOMPLETE GAMMA FUNCTIONS #################
 ###############################################################################
 
+gamma = Gamma
 
 class lowergamma(Function):
     r"""
@@ -690,10 +704,11 @@ class polygamma(Function):
         if self.args[0].is_extended_positive and self.args[1].is_extended_positive:
             return True
 
-    def _eval_is_complex(self):
+    def _eval_is_extended_complex(self):
         z = self.args[1]
-        is_negative_integer = fuzzy_and([z.is_negative, z.is_integer])
-        return fuzzy_and([z.is_complex, fuzzy_not(is_negative_integer)])
+        is_negative_integer = fuzzy_and([z.is_extended_negative, z.is_extended_integer])
+        return fuzzy_and([z.is_extended_complex, fuzzy_not(is_negative_integer)])
+
     def _eval_is_extended_positive(self):
         if self.args[0].is_extended_positive and self.args[1].is_extended_positive:
             return self.args[0].is_odd
@@ -868,8 +883,7 @@ class polygamma(Function):
         else:
             return self.func(n, z)
 
-    @property
-    def shape(self):
+    def _eval_shape(self):
         return ()
 
 class loggamma(Function):
@@ -1129,9 +1143,8 @@ class digamma(Function):
         z = self.args[0]
         return polygamma(0, z).fdiff()
 
-    def _eval_is_real(self):
-        z = self.args[0]
-        return polygamma(0, z).is_real
+    def _eval_is_extended_real(self):
+        return polygamma(0, self.arg).is_extended_real
 
     def _eval_is_positive(self):
         z = self.args[0]
@@ -1222,9 +1235,8 @@ class trigamma(Function):
         z = self.args[0]
         return polygamma(1, z).fdiff()
 
-    def _eval_is_real(self):
-        z = self.args[0]
-        return polygamma(1, z).is_real
+    def _eval_is_extended_real(self):
+        return polygamma(1, self.arg).is_extended_real
 
     def _eval_is_positive(self):
         z = self.args[0]
@@ -1348,10 +1360,10 @@ class multigamma(Function):
         x, p = self.args
         return self.func(x.conjugate(), p)
 
-    def _eval_is_real(self):
+    def _eval_is_extended_real(self):
         x, p = self.args
-        y = 2*x
-        if y.is_integer and (y <= (p - 1)) is True:
+        y = 2 * x
+        if y.is_extended_integer and (y <= (p - 1)) is True:
             return False
         if intlike(y) and (y <= (p - 1)):
             return False

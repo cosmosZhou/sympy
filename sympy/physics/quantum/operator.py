@@ -15,15 +15,6 @@ from sympy.physics.quantum.dagger import Dagger
 from sympy.physics.quantum.qexpr import QExpr, dispatch_method
 from sympy.matrices import eye
 
-__all__ = [
-    'Operator',
-    'HermitianOperator',
-    'UnitaryOperator',
-    'IdentityOperator',
-    'OuterProduct',
-    'DifferentialOperator'
-]
-
 #-----------------------------------------------------------------------------
 # Operators and outer products
 #-----------------------------------------------------------------------------
@@ -599,8 +590,7 @@ class DifferentialOperator(Operator):
 
         return self.args[0]
 
-    @property
-    def free_symbols(self):
+    def _eval_free_symbols(self):
         """
         Return the free symbols of the expression.
         """

@@ -3,7 +3,6 @@
 from sympy.core.numbers import I
 from sympy.polys.polyerrors import CoercionFailed
 from sympy.polys.domains import ZZ, QQ
-from sympy.polys.domains.algebraicfield import AlgebraicField
 from sympy.polys.domains.domainelement import DomainElement
 from sympy.polys.domains.field import Field
 from sympy.polys.domains.ring import Ring
@@ -369,6 +368,7 @@ class GaussianRationalField(GaussianDomain, Field):
 
     def as_AlgebraicField(self):
         """Get equivalent domain as an ``AlgebraicField``. """
+        from sympy.polys.domains.realfield import AlgebraicField
         return AlgebraicField(self.dom, I)
 
     def numer(self, a):

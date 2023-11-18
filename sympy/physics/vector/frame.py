@@ -5,8 +5,6 @@ from sympy import (trigsimp, solve, Symbol, Dummy)
 from sympy.physics.vector.vector import Vector, _check_vector
 from sympy.utilities.misc import translate
 
-__all__ = ['CoordinateSym', 'ReferenceFrame']
-
 
 class CoordinateSym(Symbol):
     """

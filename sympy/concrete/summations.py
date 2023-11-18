@@ -11,7 +11,7 @@ from sympy.core.relational import Eq
 from sympy.core.singleton import S
 from sympy.core.symbol import Dummy, Wild, Symbol
 from sympy.functions.special.zeta_functions import zeta
-from sympy.functions.elementary.piecewise import Piecewise
+from sympy.functions.elementary.piecewise import Piecewise, piecewise_fold
 from sympy.logic.boolalg import And
 from sympy.polys import apart, PolynomialError, together
 from sympy.series.limitseq import limit_seq
@@ -23,6 +23,8 @@ from sympy.simplify.powsimp import powsimp
 from sympy.solvers import solve
 from sympy.solvers.solveset import solveset
 import itertools
+from sympy.core.cache import cacheit
+from sympy.core.expr import Expr
 
 
 class Sum(AddWithLimits, ExprWithIntLimits):
@@ -134,12 +136,8 @@ class Sum(AddWithLimits, ExprWithIntLimits):
     __slots__ = ['is_commutative']
     operator = Add
 
-    def __new__(cls, function, *symbols, **assumptions):
-        obj = AddWithLimits.__new__(cls, function, *symbols, **assumptions)
-        if not hasattr(obj, 'limits'):
-            return obj
-
-        return obj
+    def __new__(cls, expr, *symbols, **assumptions):
+        return ExprWithIntLimits.__new__(cls, expr, *symbols, **assumptions)
 
     def _eval_is_zero(self):
         # a Sum is only zero if its function is zero or if all terms
@@ -154,7 +152,10 @@ class Sum(AddWithLimits, ExprWithIntLimits):
 
     def doit(self, **hints):
         if hints.get('deep', True):
-            f = self.expr.doit(**hints)
+            try:
+                f = self.expr.doit(**hints)
+            except:
+                f = self.expr
         else:
             f = self.expr
 
@@ -795,14 +796,14 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                     domain = ab[0]
                     if not old._has(x) or new._has(x):
                         _domain = domain._subs(old, new, **hints)
-                        function = self.expr._subs(old, new, **hints)
-                        if _domain != domain or function != self.expr: 
+                        expr = self.expr._subs(old, new, **hints)
+                        if _domain != domain or expr != self.expr: 
                             if x.is_Indexed or x.is_Sliced:
                                 indices = tuple(index._subs(old, new, **hints) for index in x.indices)
                                 if x.indices != indices:
                                     x = x.func(x.base, *indices)                
 
-                            return self.func(function, (x, _domain)).simplify()
+                            return self.func(expr, (x, _domain)).simplify()
                     else:
                         if domain.is_set:
                             _domain = domain._subs(old, new, **hints)
@@ -824,25 +825,45 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                             if domain is False:
                                 return self
                 
-                function = self.expr._subs(old, new, **hints).simplify()
-
+                expr = self.expr._subs(old, new, **hints).simplify()
                 if ab:
+                    hit = expr != self.expr
                     if x.is_Indexed or x.is_Sliced:
                         indices = tuple(index._subs(old, new, **hints) for index in x.indices)
                         if x.indices != indices:
-                            x = x.func(x.base, *indices)                
-            
-                    return self.func(function, (x, a._subs(old, new, **hints), b._subs(old, new, **hints))).simplify()
+                            x = x.func(x.base, *indices)
+                            hit = True                
+                    
+                    a = a._subs(old, new, **hints)
+                    b = b._subs(old, new, **hints)
+                    
+                    hit |= a != ab[0]
+                    hit |= b != ab[1]
+                    
+                    if hit:
+                        self = self.func(expr, (x, a, b))
+                        if hints.get('simplify', True):
+                            self = self.simplify()
+                    return self
 
-                if (x.is_Sliced or x.is_Indexed) and x.base != old:
+                if x.is_Sliced and x.base != old:
+                    try:
+                        x = x._subs(old, new, **hints)
+                    except Exception as e:
+                        if e.args[0] == 'empty slices':
+                            return expr
+                        raise e
+
+                elif x.is_Indexed and x.base != old:
                     x = x._subs(old, new, **hints)
+
                 domain = self.expr.domain_defined(x)
-                _domain = function.domain_defined(x)
+                _domain = expr.domain_defined(x)
                 if domain != _domain:
                     limit = (x, domain)
                 else:
                     limit = (x,)
-                return self.func(function, limit)
+                return self.func(expr, limit)
 
             if new._has(x):
                 diff = old - new
@@ -853,11 +874,11 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                     alpha = p.coeff_monomial(x)
                     diff /= alpha
 
-                function = self.expr.subs(x, x - diff)
+                expr = self.expr.subs(x, x - diff)
                 if ab:
-                    return self.func(function, (x, a + diff, b + diff))
+                    return self.func(expr, (x, a + diff, b + diff))
                 else:
-                    return self.func(function, (x,))
+                    return self.func(expr, (x,))
 
             if old != x:
                 sol = solve(old - new, x)
@@ -871,7 +892,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 return self
             _x, *_ = _x
 
-            function = self.expr._subs(x, new, **hints)
+            expr = self.expr._subs(x, new, **hints)
 
             if ab:
                 a = solve(new - a, _x)
@@ -883,39 +904,15 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 p = new.as_poly(_x)
                 alpha = p.coeff_monomial(_x)
                 if alpha > 0:
-                    return self.func(function, (_x, a, b))
+                    return self.func(expr, (_x, a, b))
                 elif alpha < 0:
-                    return self.func(function, (_x, b, a))
+                    return self.func(expr, (_x, b, a))
                 else:
                     return self
 
-            return self.func(function, (_x))
+            return self.func(expr, (_x))
 
-        elif len(self.limits) == 0:
-            function = self.expr._subs(old, new, **hints)
-
-            return self.func(function, *self.limits)
-        else:
-            limits = [*self.limits]
-            hit = False
-            
-            for i, limit in enumerate(limits):
-                x, *ab = limit
-#                 p = old.as_poly(x)
-#                 if p is None:
-#                     continue
-#                 
-#                 if p.degree() == 0:
-                limits[i] = (x, *[a._subs(old, new, **hints) for a in ab])
-                hit |= limits[i] != self.limits[i] 
-            
-            function = self.expr._subs(old, new, **hints)
-            hit |= function != self.expr
-            
-            if hit:
-                return self.func(function, *limits)
-
-        return self
+        return AddWithLimits._subs(self, old, new, **hints)
 
     def try_sub(self, autre):
         if isinstance(autre, Sum) and self.expr == autre.expr and len(self.limits) == len(autre.limits) == 1 and len(self.limits[0]) == len(autre.limits[0]) == 3:
@@ -970,7 +967,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
 
         return AddWithLimits.__add__(self, expr)        
 
-# precondition: domain.is_Complement        
+# precondition: domain.is_Complement
     def simplify_complement_domain(self, domain): 
         from sympy import Unequal, KroneckerDelta
         from sympy.sets.contains import NotElement, Element
@@ -979,7 +976,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         A, B = domain.args
         if A.is_FiniteSet:
             if len(A) != 1:
-                return        
+                return
             a, *_ = A
             if B.is_FiniteSet and len(B) == 1:
                 b, *_ = B
@@ -1005,7 +1002,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             function = self.expr
             reps = {}
             for x, domain in self.limits_dict.items():
-                if not isinstance(domain, list) and domain.is_set and domain.is_integer:
+                if not isinstance(domain, list) and domain and domain.is_set and domain.etype.is_integer:
                     _x = x.copy(domain=domain)
                     function = function._subs(x, _x)                  
                     if 'wrt' in kwargs:
@@ -1023,13 +1020,14 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             this = ExprWithIntLimits.simplify(self, deep=True, **kwargs)
             if this is not self:
                 return this
+
         if len(self.limits) >= 2:
             limit0, *limits = self.limits
             if len(limit0) == 1:
-                limit1, *limits = limits 
+                limit1, *limits = limits
                 if len(limit1) == 1 and not limits:
-                    x_slice = limit0[0]
-                    x = limit1[0]
+                    x_slice, = limit0
+                    x, = limit1
                     if x_slice.is_Sliced and x.is_Indexed:
                         start, stop = x_slice.index
                         if len(x.indices) == 1 and x.indices[0] == stop:
@@ -1046,32 +1044,25 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 if len(limit_last) == 2:
                     x, domain = limit_last
                     if domain.is_FiniteSet and len(domain) == 1:
-                        [e] = domain
-                        return Sum(self.expr, *limits).simplify()._subs(x, e)                        
-            return self
-
-        if not self.limits:
-            if self.expr.is_Lamda:
-                if len(self.expr.limits) == 1 and not self.expr.variable.shape:
-                    function = self.expr.expr
-                    self = self.func(function, *self.expr.limits).simplify(**kwargs)
-            elif self.expr.is_Piecewise:
-                self = self.expr.func(*((self.func(e).simplify(), c) for e, c in self.expr.args)).simplify()
-            elif self.expr.is_Mul:
-                args = []
+                        e, = domain
+                        return Sum(self.expr, *limits).simplify()._subs(x, e)
+                    
+            if self.expr.is_Mul:
+                vars = self.variables
                 coeff = []
+                args = []
                 for arg in self.expr.args:
-                    if arg.shape:
+                    if arg.has(*vars):
                         args.append(arg)
                     else:
                         coeff.append(arg)
-                                    
+                        
                 if coeff:
-                    coeff = self.expr.func(*coeff)
-                    function = self.expr.func(*args)
-                    return coeff * self.func(function)
+                    return Mul(*coeff) * self.func(Mul(*args), *self.limits)
+                                        
             return self
-        limit = self.limits[0]
+
+        limit, = self.limits
         if len(limit) == 2:
             if self.expr.is_zero:
                 return self.expr
@@ -1096,9 +1087,12 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             if not domain.is_symbol:
                 if domain.is_ConditionSet and domain.variable == x:
                     return self.func[x:domain.condition:domain.base_set](self.expr).simplify()
-                
-            domain_nonzero = self.expr.domain_nonzero(x)
-            domain &= domain_nonzero
+            
+            if x.shape:
+                domain_nonzero = domain
+            else:
+                domain_nonzero = self.expr.domain_nonzero(x)
+                domain &= domain_nonzero
             
             assert domain in limit[1], """\
 domain = %s, 
@@ -1145,7 +1139,7 @@ domain & limit[1] = %s
             
             if domain_nonzero.is_Complement and domain_nonzero.args[0].is_FiniteSet:
                 if len(domain_nonzero.args[0]) == 1:
-                    e, *_ = domain_nonzero.args[0].args 
+                    e, *_ = domain_nonzero.args[0].args
                     return Piecewise((self.simplify_finiteset(x, domain_nonzero.args[0]), Element(e, limit[1])), (0, True))
                
             if domain.is_FiniteSet:
@@ -1160,7 +1154,7 @@ domain & limit[1] = %s
             x = limit[0]
             domain = x.domain & self.expr.domain_defined(x)
             if domain.is_Range: 
-                limit = x, domain.start, domain.stop 
+                limit = x, domain.start, domain.stop
         
         if len(limit) > 1:
             x, a, b = limit
@@ -1235,7 +1229,7 @@ domain & limit[1] = %s
                     elif not any(c.has(x) for _, c in piecewise1.args):
                         tmp = piecewise0
                         piecewise0 = piecewise1
-                        piecewise1 = tmp                        
+                        piecewise1 = tmp
                     else:
                         scope_variables = piecewise0.scope_variables & piecewise1.scope_variables
                         if len(scope_variables) != 1:
@@ -1268,7 +1262,7 @@ domain & limit[1] = %s
             domain &= universe
             if not domain:
                 return S.Zero
-            assert domain.is_super_integer, domain
+            assert domain.etype.is_super_integer, domain
 
             if domain.is_Piecewise:
                 domain = Union(*(e for e, _ in domain.args)) & universe
@@ -1302,14 +1296,14 @@ domain & limit[1] = %s
             
             if len(self.limits[0]) > 1:
                 if self.expr.domain_defined(x) in domain:
-                    return self.func(self.expr, (x,))
+                    return self.func(self.expr, (x,)).simplify()
             
             if domain.is_Range:
                 _a, _b = domain.start, domain.stop
                 if not _b.is_Min:
                     b = _b
                 if not _a.is_Max:
-                    a = _a                
+                    a = _a
                 limit = x, a, b
         x = limit[0]
 
@@ -1377,16 +1371,13 @@ domain & limit[1] = %s
     def max(self):
         return self.func(self.expr.max(), *self.limits).doit()
     
-    @property
-    def shape(self):
-        if self.limits:
-            return self.expr.shape
-        return self.expr.shape[:-1]
+    def _eval_shape(self):
+        return self.expr.shape
 
     def _pretty(self, p):
         from sympy.printing.pretty.stringpict import stringPict, prettyForm
         return prettyForm(self.__str__())
-        ascii_mode = not p._use_unicode        
+        ascii_mode = not p._use_unicode
 
         def asum(hrequired, lower, upper, use_ascii):
 
@@ -1502,22 +1493,60 @@ domain & limit[1] = %s
 
     def _sympystr(self, p):
         limits = ','.join((limit._format_ineq(p) for limit in self.limits))
-        if limits:
-            return '\N{N-ARY SUMMATION}[%s](%s)' % (limits, p._print(self.expr))
-        return '\N{N-ARY SUMMATION}(%s)' % p._print(self.expr)
+        return 'Sum[%s](%s)' % (limits, p._print(self.expr))
+        #return '\N{N-ARY SUMMATION}[%s](%s)' % (limits, p._print(self.expr))
 
     latex_name_of_operator = 'sum'
     
     def _eval_is_finite(self):
-        function = self.expr                
+        expr = self.expr
         for x, domain in self.limits_dict.items():
-            if not isinstance(domain, list) and not domain.is_bool:
-                if domain.is_infinite:
+            if not isinstance(domain, list) and domain and domain.is_set:
+                if domain.is_infiniteset:
                     return
-                    
+
                 _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_finite
+                expr = expr._subs(x, _x)
+        return expr.is_finite
+
+    def _eval_is_extended_complex(self):
+        expr = self.expr
+        for x, domain in self.limits_dict.items():
+            if not isinstance(domain, list) and domain and domain.is_set and not x.shape:
+                _x = x.copy(domain=domain)
+                if _x != x:
+                    expr = expr._subs(x, _x)
+                
+        return expr.is_extended_complex
+        
+    def _eval_is_extended_real(self):
+        expr = self.expr
+        for x, domain in self.limits_dict.items():
+            if not isinstance(domain, list) and domain and domain.is_set and not x.shape:
+                _x = x.copy(domain=domain)
+                if _x != x:
+                    expr = expr._subs(x, _x)
+                
+        return expr.is_extended_real
+    
+    def _eval_is_extended_positive(self):
+        expr = self.expr
+        for x, domain in self.limits_dict.items():
+            if not isinstance(domain, list) and domain and domain.is_set and not x.shape:
+                _x = x.copy(domain=domain)
+                if _x != x:
+                    expr = expr._subs(x, _x)
+        return expr.is_extended_positive
+
+    def _eval_is_extended_negative(self):
+        expr = self.expr
+        for x, domain in self.limits_dict.items():
+            if not isinstance(domain, list) and domain and domain.is_set and not x.shape:
+                _x = x.copy(domain=domain)
+                if _x != x:
+                    expr = expr._subs(x, _x)
+                    
+        return expr.is_extended_negative
 
     def _eval_exp(self):
         from sympy import log
@@ -1530,11 +1559,53 @@ domain & limit[1] = %s
         from sympy import ZeroMatrix
         return ZeroMatrix(*self.shape)
 
-    def __iter__(self):
-        raise TypeError
+    @classmethod
+    def is_identity(cls, self, **_):
+        if self.shape:
+            return self.is_ZeroMatrix
+        return self.is_Zero
 
-    def __getitem__(self, indices):
-        return self.func(self.expr[indices], *self.limits)
+    def _eval_torch(self):
+        expr = self.expr
+        limits = self.limits
+        
+        ranges = []
+        for x, *args in limits:
+            assert x.is_integer
+            ranges.append([t.torch for t in args])
+
+        from sympy.concrete.expr_with_limits import Lamda
+        self = Lamda(expr, *limits).torch
+        return sum(self[indices] for indices in itertools.product(*(range(*args) for args in ranges)))
+    
+    @classmethod
+    def unnest(cls, expr, limits, symbols, evaluate=True, **assumptions):
+    # unnest any nested calls
+        if evaluate:
+            while cls == type(expr):
+                limits = list(expr.limits) + limits
+                expr = expr.expr
+
+        if not limits and symbols or cls.is_identity(expr):
+            return expr.copy(**assumptions)
+        # Any embedded piecewise functions need to be brought out to the
+        # top level. We only fold Piecewise that contain the integration
+        # variable.
+        reps = {}
+        symbols_of_integration = set([i[0] for i in limits])
+        for p in expr.atoms(Piecewise):
+            if not p.has(*symbols_of_integration):
+                reps[p] = Dummy(**p.dtype.dict)
+                
+#         if reps:
+        # mask off those that don't
+        expr = expr.xreplace(reps)
+        # do the fold
+        expr = piecewise_fold(expr)
+        # remove the masking
+        expr = expr.xreplace({v: k for k, v in reps.items()})
+
+        return Expr.__new__(cls, expr, *limits, **assumptions)
 
 
 def summation(f, *symbols, **kwargs):

@@ -250,7 +250,7 @@ class Range(Set):
     def structurally_equal(self, other):
         if not isinstance(other, self.func) or len(self.args) != len(other.args):
             return False
-        if self.left_open != other.left_open or self.right_open != other.right_open or self.is_integer != other.is_integer:
+        if self.left_open != other.left_open or self.right_open != other.right_open:
             return False
         for x, y in zip(self.args[:3], other.args[:3]):
             if not x.structurally_equal(y):
@@ -269,10 +269,9 @@ class Range(Set):
                 args[i] = _arg
             if hit:
                 return self.func(*args).simplify()
-        
-        if self.is_integer:
-            if self.left_open:
-                return self.copy(start=self.start + 1, left_open=False)
+
+        if self.left_open:
+            return self.copy(start=self.start + 1, left_open=False)
         return self
 
     @property
@@ -293,30 +292,69 @@ class Range(Set):
         # We can't intersect [0,3] with [x,6] -- we don't know if x>0 or x<0
         if not self._is_comparable(b):
             from sympy import Min, Max
-            integer = b.is_integer
+            integer = b.is_Range
             if integer:
-                a_start = self.start
-                b_start = b.start
-                if self.step == b.step:
-                    step = self.step
-                elif b.step.is_One:
-                    if b_start.is_finite:
-                        b_start += (a_start - b_start) % self.step
-                    step = self.step
-                elif self.step.is_One:
-                    if a_start.is_finite:
-                        a_start += (b_start - a_start) % b.step
-                    step = b.step
+                if self.step > 0:
+                    if b.step > 0:
+                        a_start = self.start
+                        b_start = b.start
+                        if self.step == b.step:
+                            step = self.step
+                        elif b.step.is_One:
+                            if b_start.is_finite:
+                                b_start += (a_start - b_start) % self.step
+                            step = self.step
+                        elif self.step.is_One:
+                            if a_start.is_finite:
+                                a_start += (b_start - a_start) % b.step
+                            step = b.step
+                        else:
+                            return
+                        start = Max(a_start, b_start)
+            
+                        a_end = self.stop
+                        b_end = b.stop
+            
+                        stop = Min(a_end, b_end)
+                        return Range(start, stop, step)
+                    
+                    elif b.step < 0:
+                        if self.left_open or b.left_open:
+                            return
+
+                        if self.start > b.start:
+                            return self.etype.emptySet
+                        elif self.start < b.start:
+                            #too complex to evaluate
+                            return
+                        elif self.start == b.start:
+                            return {self.start}
+
+                        return 
+                    else:
+                        return
+
+                elif self.step < 0:
+                    if b.step > 0:
+                        if self.left_open or b.left_open:
+                            return
+
+                        if b.start > self.start:
+                            return self.etype.emptySet
+                        elif b.start < self.start:
+                            #too complex to evaluate
+                            return
+                        elif self.start == b.start:
+                            return {self.start}
+
+                        return
+                     
+                    elif b.step < 0:
+                        ...
+                    else:
+                        return
                 else:
                     return
-                start = Max(a_start, b_start)
-    
-                a_end = self.stop
-                b_end = b.stop
-    
-                stop = Min(a_end, b_end)
-                return Range(start, stop, step=step)
-                        
             else:
                 if b.left_open:
                     if self.start <= b.start:
@@ -333,7 +371,7 @@ class Range(Set):
                     
                 if b.right_open: 
                     stop = Min(self.stop, b.stop)
-                    right_open = True                            
+                    right_open = True
                 else:
                     if self.stop > b.stop:
                         stop = b.stop
@@ -343,43 +381,183 @@ class Range(Set):
                         stop = self.stop
                         right_open = True
                     else: 
-                        return                            
+                        return
                             
                 return Range(start, stop, left_open=left_open, right_open=right_open)
 
         empty = False
+        if b.is_Interval:
+            b = Range(b.start, b.stop, left_open=b.left_open, right_open=b.right_open)
 
-        if self.start <= b.stop and b.start <= self.stop:
-            # Get topology right.
-            if self.start < b.start:
-                start = b.start
-                left_open = b.left_open
-            elif self.start > b.start:
-                start = self.start
-                left_open = self.left_open
-            else:
-                start = self.start
-                left_open = self.left_open or b.left_open
+        step = self.step
+        if step > 0:
+            if b.step > 0:
+                if self.start <= b.stop and b.start <= self.stop:
+                    if self.start < b.start:
+                        start = b.start
+                        left_open = b.left_open
+                        if not left_open:
+                            if step > 1:
+                                if b.step > 1:
+                                    if b.step != step:
+                                        return
+                                elif b.step.is_One:
+                                    start += (self.start - start) % step
+            
+                            elif step.is_One:
+                                if b.step > 1:
+                                    step = b.step
+        
+                    elif self.start > b.start:
+                        start = self.start
+                        left_open = self.left_open
+                        if not left_open:
+                            if step > 1:
+                                if b.step > 1:
+                                    if b.step != step:
+                                        return
+            
+                            elif step.is_One:
+                                if b.step > 1:
+                                    step = b.step
+                                    start += (b.start - start) % step
+                        
+                    else:
+                        start = self.start
+                        left_open = self.left_open or b.left_open
+                        if not left_open:
+                            if step > 1:
+                                if b.step > 1:
+                                    if b.step != step:
+                                        return
+            
+                            elif step.is_One:
+                                if b.step > 1:
+                                    step = b.step
+        
+                    if self.stop < b.stop:
+                        stop = self.stop
+                        right_open = self.right_open
+                    elif self.stop > b.stop:
+                        stop = b.stop
+                        right_open = b.right_open
+                    else:
+                        stop = self.stop
+                        right_open = self.right_open or b.right_open
+        
+                    if stop == start and (left_open or right_open):
+                        empty = True
+                else:
+                    empty = True
+            elif b.step < 0:
+                if b.step.is_NegativeOne and step > 1:
+                    return self.reversed.intersection_sets(b)
 
-            if self.stop < b.stop:
-                stop = self.stop
-                right_open = self.right_open
-            elif self.stop > b.stop:
-                stop = b.stop
-                right_open = b.right_open
-            else:
-                stop = self.stop
-                right_open = self.right_open or b.right_open
+                if self.start <= b.physical_stop and b.physical_start <= self.stop:
+                    if step.is_One:
+                        step = b.step
+                        if self.start <= b.stop:
+                            stop = b.stop
+                            right_open = self.right_open
+            
+                        elif self.start > b.start:
+                            stop = self.start
+                            right_open = b.right_open
+                            
+                        else:
+                            if self.left_open:
+                                stop = self.start
+                                right_open = True
+                            else:
+                                stop = self.start - 1
+                                right_open = b.right_open
+            
+                        if self.stop <= b.start:
+                            start = self.stop - 1
+                            start += (b.start - start) % step
 
-            if stop - start == 0 and (left_open or right_open):
-                empty = True
-        else:
-            empty = True
+                            left_open = b.left_open
+                        elif self.stop > b.start:
+                            start = b.start
+                            left_open = self.left_open
+                        else:
+                            start = self.stop
+                            left_open = self.left_open or b.left_open
+            
+                        if stop == start and (left_open or right_open):
+                            empty = True
+                    else:
+                        ...
+                else:
+                    empty = True
+        elif step < 0:
+            if b.step > 0:
+                if step.is_NegativeOne and b.step > 1:
+                    return self.intersection_sets(b.reversed)
+                return b.intersection_sets(self)
 
+            elif b.step < 0:
+                if self.start >= b.stop and b.start >= self.stop:
+                    if self.start > b.start:
+                        start = b.start
+                        left_open = b.left_open
+                        if not left_open:
+                            if step < -1:
+                                if b.step < -1:
+                                    if b.step != step:
+                                        return
+                                elif b.step.is_NegativeOne:
+                                    start += (self.start - start) % step
+            
+                            elif step.is_NegativeOne:
+                                if b.step < -1:
+                                    step = b.step
+        
+                    elif self.start < b.start:
+                        start = self.start
+                        left_open = self.left_open
+                        if not left_open:
+                            if step < -1:
+                                if b.step < -1:
+                                    if b.step != step:
+                                        return
+            
+                            elif step.is_NegativeOne:
+                                if b.step < -1:
+                                    step = b.step
+                                    start += (b.start - start) % step
+                        
+                    else:
+                        start = self.start
+                        left_open = self.left_open or b.left_open
+                        if not left_open:
+                            if step < -1:
+                                if b.step < -1:
+                                    if b.step != step:
+                                        return
+            
+                            elif step.is_NegativeOne:
+                                if b.step < -1:
+                                    step = b.step
+        
+                    if self.stop > b.stop:
+                        stop = self.stop
+                        right_open = self.right_open
+                    elif self.stop < b.stop:
+                        stop = b.stop
+                        right_open = b.right_open
+                    else:
+                        stop = self.stop
+                        right_open = self.right_open or b.right_open
+        
+                    if stop == start and (left_open or right_open):
+                        empty = True
+                else:
+                    empty = True
         if empty:
             return self.etype.emptySet
 
-        return self.func(start, stop, left_open=left_open, right_open=right_open)
+        return self.func(start, stop, step, left_open=left_open, right_open=right_open)
 
     def _union_sets(self, b):
         from sympy import Min, Max
@@ -395,36 +573,134 @@ class Range(Set):
     def union_sets(self, b):
         from sympy.functions.elementary.miscellaneous import Min, Max
         if b.is_Range:
+            step = self.step
             if self._is_comparable(b):
                 # Non-overlapping intervals
-                stop = Min(self.stop, b.stop)
-                start = Max(self.start, b.start)
-                if (stop < start or
-                   (stop == start and (stop not in self and stop not in b))):
-                    return 
-                else:
-                    start = Min(self.start, b.start)
-                    stop = Max(self.stop, b.stop)
+                if step > 0:
+                    if b.step > 0:
+                        if step != b.step:
+                            if step.is_One and self.start <= b.start and self.stop >= b.stop:
+                                return self
 
-                    left_open = ((self.start != start or self.left_open) and
-                                 (b.start != start or b.left_open))
-                    right_open = ((self.stop != stop or self.right_open) and
-                                  (b.stop != stop or b.right_open))
-                    return self.func(start, stop, left_open=left_open, right_open=right_open)
-            else:
-                if b.left_open:
-                    if self.stop == b.start:
-                        return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open) - FiniteSet(b.start)
-                else:
-                    if self.stop == b.start - 1:
-                        if b.start <= b.stop: 
-                            return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open) - FiniteSet(self.stop)
-                    if self.stop == b.start:
-                        if self.stop >= self.start and b.stop >= b.start:
-                            return self.copy(stop=b.stop)
+                            if b.step.is_One and b.start <= self.start and b.stop >= self.stop:
+                                return b
+                            return
                     
-                return self._union_sets(b)
-            
+                        if not self.start.is_infinite and not b.start.is_infinite and self.start % step != b.start % step:
+                            if step == 2:
+                                size = self.size
+                                if size != b.size:
+                                    return
+                                
+                                diff = self.start - b.start
+                                if diff == 1:
+                                    start = b.start
+                                elif diff == -1:
+                                    start = self.start
+                                else:
+                                    return
+                                return Range(start, start + step * size)
+                            return
+                        
+                        stop = Min(self.stop, b.stop)
+                        start = Max(self.start, b.start)
+                        if stop < start or (stop == start and (stop not in self and stop not in b)):
+                            return
+                        
+                        start = Min(self.start, b.start)
+                        stop = Max(self.stop, b.stop)
+        
+                        left_open = (self.start != start or self.left_open) and (b.start != start or b.left_open)
+                        right_open = (self.stop != stop or self.right_open) and (b.stop != stop or b.right_open)
+                        return self.func(start, stop, step, left_open=left_open, right_open=right_open)
+
+                    elif b.step < 0:
+                        return
+                        
+                elif step < 0:
+                    if b.step > 0:
+                        return
+
+                    elif b.step < 0:
+                        if step != b.step:
+                            #complex case
+                            return
+
+                        if self.start % step != b.start % step:
+                            if step == -2:
+                                size = self.size
+                                if size != b.size:
+                                    return
+                                
+                                diff = self.start - b.start
+                                if diff == 1:
+                                    start = self.start
+                                elif diff == -1:
+                                    start = b.start
+                                else:
+                                    return
+                                return Range(start, start + step * size, -1)
+                            return
+                        
+                        stop = Max(self.stop, b.stop)
+                        start = Min(self.start, b.start)
+                        if stop > start or (stop == start and (stop not in self and stop not in b)):
+                            return
+                        
+                        start = Max(self.start, b.start)
+                        stop = Min(self.stop, b.stop)
+        
+                        left_open = (self.start != start or self.left_open) and (b.start != start or b.left_open)
+                        right_open = (self.stop != stop or self.right_open) and (b.stop != stop or b.right_open)
+                        return self.func(start, stop, step, left_open=left_open, right_open=right_open)
+            else:
+                if step > 0:
+                    if b.step > 0:
+                        if step != b.step:
+                            if step.is_One and self.start <= b.start and self.stop >= b.stop:
+                                return self
+
+                            if b.step.is_One and b.start <= self.start and b.stop >= self.stop:
+                                return b
+                            return
+                        
+                        if b.left_open:
+                            if self.stop == b.start:
+                                return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open) - FiniteSet(b.start)
+                        else:
+                            if self.stop == b.start - 1:
+                                if b.start <= b.stop: 
+                                    return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open) - FiniteSet(self.stop)
+                            if self.stop == b.start:
+                                if self.stop >= self.start and b.stop >= b.start:
+                                    return self.copy(stop=b.stop)
+                            
+                        return self._union_sets(b)
+                    elif b.step < 0:
+                        return
+                        
+                elif step < 0:
+                    if b.step > 0:
+                        return
+
+                    elif b.step < 0:
+                        if step != b.step:
+                            #complex case
+                            return
+    
+                        if b.left_open:
+                            if self.stop == b.start:
+                                return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open) - FiniteSet(b.start)
+                        else:
+                            if self.stop == b.start - 1:
+                                if b.start <= b.stop: 
+                                    return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open) - FiniteSet(self.stop)
+                            if self.stop == b.start:
+                                if self.stop >= self.start and b.stop >= b.start:
+                                    return self.copy(stop=b.stop)
+                            
+                        return self._union_sets(b)
+
         if b.is_Interval:
             if self._is_comparable(b): 
                 # Non-overlapping intervals
@@ -432,7 +708,7 @@ class Range(Set):
                 start = Max(self.start, b.start)
                 if (stop < start or
                    (stop == start and (stop not in self and stop not in b))):
-                    return 
+                    return
                 else:
                     start = Min(self.start, b.start)
                     stop = Max(self.stop, b.stop)
@@ -458,11 +734,11 @@ class Range(Set):
         if b.is_UniversalSet:
             return b
         if b.is_Complement:
-            U, A = b.args             
+            U, A = b.args
             if (U.is_Range or U.is_Interval) and not A & self:
                 combined = self | U
                 if combined.is_Range or combined.is_Interval:
-                    return combined - A 
+                    return combined - A
 
         # If I have open end points and these endpoints are contained in b
         # But only in case, when endpoints are finite. Because
@@ -476,7 +752,7 @@ class Range(Set):
         if open_left_in_b_and_finite or open_right_in_b_and_finite:
             # Fill in my end points and return
             left_open = self.left_open and self.start not in b
-            right_open = self.right_open and self.stop not in b            
+            right_open = self.right_open and self.stop not in b
             new_a = self.copy(left_open=left_open, right_open=right_open)
             return set((new_a, b))
         
@@ -490,7 +766,7 @@ class Range(Set):
         else: 
             if stop + 1 in b:
                 drapeau = True
-                stop += 1                                   
+                stop += 1
 
         start = self.start
         left_open = self.left_open
@@ -501,7 +777,7 @@ class Range(Set):
         else: 
             if start - 1 in b:
                 drapeau = True
-                start -= 1                                    
+                start -= 1
 
         if drapeau:
             new_a = self.func(start + 1 if left_open else start, stop if right_open else stop + 1)
@@ -510,7 +786,8 @@ class Range(Set):
         if self.is_UniversalSet:
             return self
 
-    def __new__(cls, start=None, stop=None, step=None, **kwargs):
+    def __new__(cls, start=None, stop=None, step=1, **kwargs):
+        step = _sympify(step)
         if stop is None:
             if start is None:
                 if kwargs.get('positive'):
@@ -555,14 +832,13 @@ class Range(Set):
         else:
             # by default, stop points are open.
             right_open = True
-                
         
         if stop == start:
             if left_open or right_open:
                 return S.Zero.emptySet
             else:
                 if start.is_Infinity or start.is_NegativeInfinity:
-                    return start.emptySet                
+                    return start.emptySet
                 return FiniteSet(stop)
 
         if left_open:
@@ -574,21 +850,21 @@ class Range(Set):
                 left_open = False
         else:
             if start.is_finite and not start.is_integer: 
-                start = start.ceiling().simplify()                
+                start = start.ceiling().simplify()
             
-        if right_open: 
+        if right_open:
             if stop.is_finite and not stop.is_integer:
                 stop = stop.ceiling().simplify()
             
-            if start == stop - 1:
-                return FiniteSet(start)                
+            if start + step == stop:
+                return FiniteSet(start)
                 
         else:
             if stop.is_finite and not stop.is_integer:
                 stop = stop.floor().simplify()
 
             if left_open:
-                if start == stop - 1:
+                if start + step == stop:
                     return FiniteSet(stop)
             else:
                 if start == stop:
@@ -599,10 +875,11 @@ class Range(Set):
                 stop += 1
                 
         # evaluate if possible
-        if right_open and stop <= start or not right_open and stop < start:
+        if step > 0 and (right_open and stop <= start or not right_open and stop < start) or \
+        step < 0 and (right_open and stop >= start or not right_open and stop > start):
             return S.Zero.emptySet
             
-        if step is not None and step != 1:
+        if step != 1:
             args = start, stop, _sympify(step)
         else:
             args = start, stop
@@ -610,7 +887,7 @@ class Range(Set):
         self = Basic.__new__(cls, *args)
         self.left_open = bool(left_open)
         self.right_open = bool(right_open)
-        return self        
+        return self
 
     def element_symbol(self, excludes=set()):
         return self.generate_var(excludes, **self.etype.dict)
@@ -625,7 +902,20 @@ class Range(Set):
             stop = self.stop
         else:
             stop = self.stop + 1
-        return stop - start
+            
+        step = self.step
+        from sympy import Ceiling
+        return Ceiling((stop - start) / step)
+
+    @property
+    def physical_start(self):
+        step = self.step
+        if step > 0:
+            return self.start
+
+        if step < 0:
+            from sympy import Ceiling
+            return self.start + (Ceiling((self.stop - self.start) / step) - 1) * step
 
     @property
     def start(self):
@@ -662,6 +952,15 @@ class Range(Set):
         return cls(a, b, False, True)
 
     @property
+    def physical_stop(self):
+        step = self.step
+        if step > 0:
+            return self.stop
+
+        if step < 0:
+            return self.start - step
+
+    @property
     def stop(self):
         """
         The right end point of 'self'.
@@ -686,31 +985,188 @@ class Range(Set):
 
     _sup = right = stop
 
-#     trying to evaluate other \ self
-    def _complement(self, other):
-        if other == Reals:
+    def _offset_adjusted(self):
+        start, stop = self.start, self.stop
+        size = stop - start
+        if size.is_infinite:
+            return (-1) ** start
+        else:
+            return (-1) ** size
+
+#     trying to evaluate universe \ self
+    def _complement(self, universe):
+        if universe == Reals:
             return
         
-        from sympy.sets import Integers
-        if other == Integers and self.step.is_One:
-            start, stop = S.NegativeInfinity, self.start
-            if self.left_open:
-                stop += 1
-            a = Range(start, stop)
-            
-            start, stop = self.stop, S.Infinity
-            if not self.right_open:
-                start += 1    
-            b = Range(start, stop)
-            
-            return a | b
+        if universe.is_Range:
+            step = self.step
+            if step > 0:
+                if universe.step > 0:
+                    if universe.start >= self.stop:
+                        return universe
+        
+                    if universe.stop <= self.start:
+                        return universe
+                    
+                    if universe.start <= self.start:
+                        if universe.stop >= self.stop:
+                            if step.is_One:
+                                start, stop = universe.start, self.start
+                                if self.left_open:
+                                    stop += 1
+                                a = Range(start, stop, step)
+                                
+                                start, stop = self.stop, universe.stop
+                                if not self.right_open:
+                                    start += 1
+                                b = Range(start, stop, step)
+                                
+                                return a | b
 
-        if other.is_FiniteSet:
-            nums = [m for m in other.args if m.is_number]
+                            if step == 2:
+                                start, stop = self.start, self.stop
+                                offset = self._offset_adjusted()
+                                return Range(start + offset, stop + offset, step) & universe | (universe - Range(start, stop))
+                
+                        elif universe.stop <= self.stop:
+                            if step.is_One:
+                                start, stop = universe.start, self.start
+                                if self.left_open:
+                                    stop += 1
+                                return Range(start, stop, step)
+
+                            if step == 2:
+                                start, stop = self.start, self.stop
+                                offset = self._offset_adjusted()
+                                return Range(start + offset, stop + offset, step) & universe | (universe - Range(start, stop))
+                
+                    if universe.start >= self.start:
+                        if universe.stop >= self.stop:
+                            if step.is_One:
+                                start, stop = self.stop, universe.stop
+                                if not self.right_open:
+                                    start += 1
+
+                                return Range(start, stop, step)
+
+                            if step == 2:
+                                start, stop = self.start, self.stop
+                                offset = self._offset_adjusted()
+                                return Range(start + offset, stop + offset, step) & universe | (universe - Range(start, stop))
+                
+                        elif universe.stop <= self.stop:
+                            if step.is_One:
+                                start, stop = self.stop, universe.stop
+                                if not self.right_open:
+                                    start += 1
+                                return Range(start, stop, step)
+
+                            if step == 2:
+                                start, stop = self.start, self.stop
+                                offset = self._offset_adjusted()
+                                return Range(start + offset, stop + offset, step) & universe | (universe - Range(start, stop))
+                
+                elif universe.step < 0:
+                    return self.reversed._complement(universe)
+
+            elif step < 0:
+                if universe.step > 0:
+                    if step.is_NegativeOne:
+                        return universe - self.reversed
+
+                    if universe.start > self.start:
+                        return universe
+        
+                    if universe.stop <= self.stop:
+                        return universe
+
+                    if universe.start <= self.physical_start:
+                        if universe.stop >= self.physical_stop:
+                            if step == -2:
+                                start, stop = self.start, self.stop
+                                offset = self._offset_adjusted()
+                                return Range(start - offset, stop - offset, step) | (universe - Range(stop + 1, start + 1))
+        
+                        elif universe.stop <= self.physical_stop:
+                            if step == -2:
+                                start, stop = self.start, self.stop
+                                offset = self._offset_adjusted()
+                                return Range(start - offset, stop - offset, step) & universe | (universe - Range(stop + 1, start + 1))
+        
+                    if universe.start >= self.physical_start:
+                        if universe.stop >= self.physical_stop:
+                            if step == -2:
+                                start, stop = self.start, self.stop
+                                offset = self._offset_adjusted()
+                                return Range(start - offset, stop - offset, step) & universe | (universe - Range(stop + 1, start + 1))
+        
+                        elif universe.stop <= self.stop:
+                            if step == -2:
+                                start, stop = self.start, self.stop
+                                offset = self._offset_adjusted()
+                                return Range(start - offset, stop - offset, step) | (universe - Range(stop + 1, start + 1))
+
+                elif universe.step < 0:
+                    if universe.start <= self.stop:
+                        return universe
+        
+                    if universe.stop >= self.start:
+                        return universe
+                    
+                    if universe.start >= self.start:
+                        if universe.stop <= self.stop:
+                            if step.is_NegativeOne:
+                                start, stop = universe.start, self.start
+                                if self.left_open:
+                                    stop -= 1
+                                a = Range(start, stop, step)
+                                
+                                start, stop = self.stop, universe.stop
+                                if not self.right_open:
+                                    start += 1
+                                b = Range(start, stop, step)
+                                
+                                return a | b
+                            
+                            if step == -2:
+                                start, stop = self.start, self.stop
+                                offset = self._offset_adjusted()
+                                return Range(start - offset, stop - offset, step) & universe | (universe - Range(start, stop, -1))
+                
+                        elif universe.stop >= self.stop:
+                            if step.is_NegativeOne:
+                                start, stop = universe.start, self.start
+                                if self.left_open:
+                                    stop -= 1
+                                return Range(start, stop, step)
+                            
+                            if step == -2:
+                                start, stop = self.start, self.stop
+                                offset = self._offset_adjusted()
+                                return Range(start - offset, stop - offset, step) & universe | (universe - Range(start, stop, -1))
+                
+                    if universe.start <= self.start:
+                        if universe.stop <= self.stop:
+                            if step.is_NegativeOne:
+                                start, stop = self.stop, universe.stop
+                                if not self.right_open:
+                                    start += 1
+                                return Range(start, stop, step)
+                            
+                            if step == -2:
+                                start, stop = self.start, self.stop
+                                offset = self._offset_adjusted()
+                                return Range(start - offset, stop - offset, step) & universe | (universe - Range(start, stop, -1))
+                
+                        elif universe.stop >= self.stop:
+                            return universe
+
+        if universe.is_FiniteSet:
+            nums = [m for m in universe.args if m.is_number]
             if nums == []:
                 return
 
-        return Set._complement(self, other)
+        return Set._complement(self, universe)
 
     @property
     def _boundary(self):
@@ -718,40 +1174,76 @@ class Range(Set):
         return FiniteSet(*finite_points)
 
     def _contains(self, other):
-        if not isinstance(other, Expr) or (
-                other is S.Infinity or
-                other is S.NegativeInfinity or
-                other is S.NaN or
-                other is S.ComplexInfinity) or other.is_extended_real == False:
-            return S.false
-
-        if self.start is S.NegativeInfinity and self.stop is S.Infinity:
-            if not other.is_extended_real is None:
-                if other.is_integer:
-                    return S.true
-                return
-
-        if other.is_extended_real == False:
-            return S.false
-        
-        if other.is_extended_real is None:
-            return
-        
-        if self.left_open:
-            expr = other > self.start
-        else:
-            expr = other >= self.start
-
-        if self.right_open:
-            expr = And(expr, other < self.stop)
+        step = self.step
+        if step > 0:
+            if not isinstance(other, Expr) or (
+                    other is S.Infinity or other is S.NegativeInfinity or
+                    other is S.NaN or
+                    other is S.ComplexInfinity) or other.is_extended_real == False:
+                return S.false
+    
+            if self.start is S.NegativeInfinity and self.stop is S.Infinity:
+                if not other.is_extended_real is None:
+                    if other.is_integer:
+                        return S.true
+                    return
+    
+            if other.is_extended_real == False:
+                return S.false
             
-            if self.step != 1:
-                from sympy import Equal
-                expr &= Equal((other - self.start) % self.step, 0)
-        else:
-            expr = And(expr, other <= self.stop)
-
-        return _sympify(expr)
+            if other.is_extended_real is None:
+                return
+            
+            if self.left_open:
+                expr = other > self.start
+            else:
+                expr = other >= self.start
+    
+            if self.right_open:
+                expr = And(expr, other < self.stop)
+                
+                if not step.is_One:
+                    from sympy import Equal
+                    expr &= Equal((other - self.start) % step, 0)
+            else:
+                expr = And(expr, other <= self.stop)
+    
+            return _sympify(expr)
+        
+        elif step < 0:
+            if not isinstance(other, Expr) or (
+                    other is S.Infinity or other is S.NegativeInfinity or
+                    other is S.NaN or
+                    other is S.ComplexInfinity) or other.is_extended_real == False:
+                return S.false
+    
+            if self.start is S.Infinity and self.stop is S.NegativeInfinity:
+                if not other.is_extended_real is None:
+                    if other.is_integer:
+                        return S.true
+                    return
+    
+            if other.is_extended_real == False:
+                return S.false
+            
+            if other.is_extended_real is None:
+                return
+            
+            if self.left_open:
+                expr = other < self.start
+            else:
+                expr = other <= self.start
+    
+            if self.right_open:
+                expr = And(expr, other > self.stop)
+                
+                if not step.is_NegativeOne:
+                    from sympy import Equal
+                    expr &= Equal((other - self.start) % step, 0)
+            else:
+                expr = And(expr, other >= self.stop)
+    
+            return _sympify(expr)
 
     @property
     def _measure(self):
@@ -815,11 +1307,11 @@ class Range(Set):
             elif other.is_set:
                 return
             return S.false
-        from sympy import Equal 
+        from sympy import Equal
         return And(Equal(self.left, other.left), Equal(self.right, other.right))
 
-    @property
-    def free_symbols(self):
+    @cacheit
+    def _eval_free_symbols(self):
         return set().union(*[a.free_symbols for a in self.args[:2]])
 
     def max(self):
@@ -834,7 +1326,7 @@ class Range(Set):
 
     def __neg__(self):
         assert self.right_open
-        assert not self.left_open        
+        assert not self.left_open
         return self.func(-self.stop + 1, -self.start + 1)
     
     def _eval_right_open(self, other):
@@ -866,6 +1358,17 @@ class Range(Set):
         if other.is_Range:
             start = self.start
             stop = self.stop
+            step = self.step
+            if step != other.step:
+                if other.step == 1:
+                    return other + self
+                
+                if step == 1:
+                    if start == S.NegativeInfinity and stop == S.Infinity:
+                        return self
+                else:
+                    #possible error here!
+                    step = 1
             
             start += other.start
             stop += other.stop - 1
@@ -873,7 +1376,7 @@ class Range(Set):
             right_open = self._eval_right_open(other)               
             left_open = self._eval_left_open(other)
             
-            return self.func(start, stop, left_open=left_open, right_open=right_open)
+            return self.func(start, stop, step, left_open=left_open, right_open=right_open)
         
         if other.is_Interval:
             start = self.min()
@@ -881,7 +1384,7 @@ class Range(Set):
             
             start += other.start
             stop += other.stop
-            left_open, right_open = other.left_open, other.right_open                    
+            left_open, right_open = other.left_open, other.right_open
             return Interval(start, stop, left_open=left_open, right_open=right_open)
         
         if other.is_ComplexRegion:
@@ -902,12 +1405,7 @@ class Range(Set):
             return other.func(self + other.space, *other.space_shape)
         
         if not other.is_set:
-            start = self.start + other
-            stop = self.stop + other
-            if self.step.is_One:
-                return self.func(start, stop)
-            else:
-                return self.func(start, stop, step=self.step)
+            return self.func(self.start + other, self.stop + other, self.step)
 
         return Set.__add__(self, other)
 
@@ -953,8 +1451,7 @@ class Range(Set):
             if n == m:
                 return self.func(cos(self.stop), cos(start),
                                  left_open=self.right_open,
-                                 right_open=self.left_open,
-                                 integer=self.is_integer)
+                                 right_open=self.left_open)
         elif n.is_odd:
             if n == m:
                 return self.copy(start=cos(start), stop=cos(self.stop))
@@ -966,21 +1463,14 @@ class Range(Set):
 
         start, stop = self.args
 
-        return self.func(acos(stop), acos(start), left_open=self.right_open, right_open=self.left_open, integer=self.is_integer)
+        return self.func(acos(stop), acos(start), left_open=self.right_open, right_open=self.left_open)
 
     def __truediv__(self, other):
-        if self.is_integer:
-            if other.is_One:
-                return self
-            if other.is_NegativeOne: 
-                return self.func(self.stop / other, self.start / other,
-                                 left_open=self.right_open, right_open=self.left_open, integer=self.is_integer)
-        else:
-            if other.is_extended_positive: 
-                return self.copy(start=self.start / other, stop=self.stop / other)
-            if other.is_extended_negative: 
-                return self.func(self.stop / other, self.start / other,
-                                 left_open=self.right_open, right_open=self.left_open, integer=self.is_integer)
+        if other.is_extended_positive: 
+            return self.copy(start=self.start / other, stop=self.stop / other)
+        if other.is_extended_negative: 
+            return self.func(self.stop / other, self.start / other,
+                             left_open=self.right_open, right_open=self.left_open)
 
     @cacheit
     def _has(self, pattern):
@@ -1014,14 +1504,18 @@ class Range(Set):
         return self.func(start, stop)
 
     def retain_odd(self):
-        i = self.generate_var(integer=True)
-        from sympy import Cup
-        return Cup[i:self]((2 * i + 1).set)
-        
+        if self.step == 2:
+            return self
+        assert self.step == 1
+        start = self.start
+        return Range(start + 1 - start % 2, self.stop, 2)
+
     def retain_even(self):
-        i = self.generate_var(integer=True)        
-        from sympy import Cup
-        return Cup[i:self]((2 * i).set)
+        if self.step == 2:
+            return self
+        assert self.step == 1
+        start = self.start
+        return Range(start + start % 2, self.stop, 2)
         
     def _subs(self, old, new, **hints):
         assert old != new
@@ -1057,9 +1551,7 @@ class Range(Set):
 
     def _sympystr(self, _): 
         if self.step.is_One:
-            return '{left_open}{start}{sep} {stop}{right_open}'.format(**{'start': self.start, 'stop': self.stop, 'sep': ';',
-                             'left_open': '(' if self.left_open else '[',
-                             'right_open': ')' if self.right_open else ']'})
+            return 'Range(%s, %s)' % (self.start, self.stop)
         else:
             return 'Range(%s, %s, %s)' % (self.start, self.stop, self.step)
 
@@ -1078,8 +1570,8 @@ class Range(Set):
 
         return self._args + (self.left_open, self.right_open)
 
-    def _eval_is_finite(self):
-        return (self.start.is_finite or self.left_open) and (self.stop.is_finite or self.right_open)
+    def _eval_is_finiteset(self):
+        return self.start.is_finite and self.stop.is_finite
     
     def _eval_is_extended_integer(self):
         return True
@@ -1088,7 +1580,7 @@ class Range(Set):
         return True
     
     def _eval_is_extended_rational(self):
-        return True        
+        return True
 
     def _eval_is_hyper_rational(self):
         return True
@@ -1097,7 +1589,7 @@ class Range(Set):
         return True
     
     def _eval_is_extended_real(self):
-        return True        
+        return True
 
     def _eval_is_hyper_real(self):
         return True
@@ -1118,18 +1610,22 @@ class Range(Set):
             return True
 
     def _eval_is_extended_complex(self):
-        return True        
+        return True
 
     def _eval_is_hyper_complex(self):
         return True
 
     def _eval_is_algebraic(self):
-        return True        
+        return True
 
     def _eval_is_zero(self):
         if self.min().is_extended_positive:
             return False
         if self.max().is_extended_negative:
+            return False
+
+    def _eval_is_empty(self):
+        if self.start < self.stop:
             return False
 
     def inverse(self):
@@ -1166,20 +1662,19 @@ class Range(Set):
 
     @classmethod
     def simplify_Element(cls, self, e, s):
-        if s.is_integer and e.is_Add:
-            if not s.left_open or s.right_open:
-                if S.NegativeOne in e.args:
-                    s += S.One
-                    e += S.One
-                    return self.func(e, s, evaluate=False)
+        if s.is_Range and e.is_Add:
+            if S.NegativeOne in e.args:
+                s += S.One
+                e += S.One
+                return self.func(e, s, evaluate=False)
                     
-            if s.left_open or not s.right_open:
+            if s.left_open:
                 if S.One in e.args:
                     s -= S.One
                     e -= S.One
                     return self.func(e, s, evaluate=False)
                 
-        if e.is_integer == s.is_integer: 
+        if e.is_integer and s.is_Range or not e.is_integer and s.is_Interval: 
             if s.start is S.NegativeInfinity:
                 from sympy import Less, LessEqual
                 func = Less if s.right_open else LessEqual
@@ -1222,7 +1717,7 @@ class Range(Set):
                 if rhs.stop == self.stop:
                     if self.left_open == rhs.left_open:
                         if self.start >= rhs.start:
-                            return S.true               
+                            return S.true
 
         if rhs.is_Interval:
             if not rhs.left_open:
@@ -1242,7 +1737,7 @@ class Range(Set):
                             return S.true
                     else:
                         if self.start >= rhs.start:
-                            return S.true                
+                            return S.true
                                                
     @property
     def kwargs(self):
@@ -1253,24 +1748,89 @@ class Range(Set):
         if self.step == 1:
             return Piecewise((self.stop - self.start, self.stop >= self.start), (0, True))
         else:
-            from sympy import Ceiling
+            from sympy.functions.elementary.integers import Ceiling
             return Piecewise((Ceiling((self.stop - self.start) / self.step), self.stop >= self.start), (0, True))
 
-
-    def delete_from_domain(self, x):
+    def adjust_domain(self, x, *cond):
         if self.step._has(x):
             return self.etype.universalSet
         
         if self.start._has(x):
-            self = self.copy(start=S.NegativeInfinity)
+            hit = False
+            if not x.shape and cond:
+                from sympy import Tuple
+                x, domain = Tuple.to_coerce_setlimit((x, *cond))
+                if domain.is_Range:
+                    h, k = self.start.of_simple_poly(x)
+                    if k is None:
+                        ...
+                    elif k < 0:
+                        self = self.copy(start=domain.start * k + h)
+                        hit = True
+                    elif k > 0:
+                        ...
+                    else:
+                        ...
+                    
+            if not hit:
+                self = self.copy(start=S.NegativeInfinity)
                     
         if self.stop._has(x):
             self = self.copy(stop=S.Infinity)
             
         return self
+    
+    def conditionally_contains(self, ft):
+        a, b = self.args
+        if a <= ft < b:
+            return True
+
+        # given: a < b
+        # imply: a <= t < b
+        free_symbols = ft.free_symbols
+        if len(free_symbols) == 1:
+            t, = free_symbols
+            if t.is_integer:
+                cond = b - a > 0
+                if cond._has(t):
+                    _t = t.copy(domain=cond.domain_conditioned(t))
+                    if a._subs(t, _t) <= ft._subs(t, _t) < b._subs(t, _t):
+                        return True
+        
+        fa = (ft - a) / (b - a)
+        fa = fa.ratsimp()
+        if fa >= 0: 
+            fb = (ft - b) / (b - a)
+            fb = fb.ratsimp()
+            if fb < 0:
+                return True
+
+    @property
+    def reversed(self):
+        #http://localhost/axiom/?module=sets.range.reversed
+        step = self.step
+        start, stop = self.start, self.stop
+        if step > 0:
+            if step > 1:
+                stop -= 1
+                stop -= (stop - start) % step
+                return Range(stop, start - 1, -step)
+            return Range(stop - step, start - step, -step) 
+        
+        if step < 0:
+            if step < -1:
+                stop += 1
+                stop -= (stop - start) % step
+                return Range(stop, start + 1, -step)
+            return Range(stop - step, start - step, -step)
+
+    def toset(self):
+        start = self.start
+        step = self.step
+        return {start + i * step for i in range(self.size)}
+
 
 converter[range] = Range
-
 
 def normalize_theta_set(theta):
     """
@@ -1679,7 +2239,7 @@ class CartesianComplexRegion(ComplexRegion):
 
     def __new__(cls, sets):
 
-        if sets == S.Reals @ S.Reals:
+        if sets == Reals @ Reals:
             return S.Complexes
 
         if all(_a.is_FiniteSet for _a in sets.args) and (len(sets.args) == 2):
@@ -1702,6 +2262,21 @@ class CartesianComplexRegion(ComplexRegion):
     def expr(self):
         x, y = self.variables
         return x + S.ImaginaryUnit * y
+    
+    @property
+    def etype(self):
+        return dtype.complex
+
+    def __add__(self, other):
+        if not other.shape and other.is_complex:
+            return self
+        if other.is_set:
+            return self
+            
+        raise Exception("could not add %s, %s" % (self, other))
+
+    def __neg__(self):
+        return CartesianComplexRegion(-self.arg)
 
 
 class PolarComplexRegion(ComplexRegion):
@@ -1784,7 +2359,7 @@ class Complexes(CartesianComplexRegion, metaclass=Singleton):
     def __new__(cls):
         return Set.__new__(cls, ProductSet(Reals, Reals))
 
-    def __str__(self):
+    def _sympystr(self, p):
         return "S.Complexes"
 
     def _latex(self, p):
@@ -1792,14 +2367,6 @@ class Complexes(CartesianComplexRegion, metaclass=Singleton):
 
     def __repr__(self):
         return "S.Complexes"
-
-    def __add__(self, other):
-        if not other.shape and other.is_complex:
-            return self
-        if other.is_set:
-            return self
-            
-        raise Exception("could not add %s, %s" % (self, other))
 
     def __matmul__(self, other):
         if other.is_set:
@@ -1814,15 +2381,11 @@ class Complexes(CartesianComplexRegion, metaclass=Singleton):
             return S.Complexes
         raise Exception("could not multiply %s, %s" % (self, other))
 
-    @property
-    def etype(self):
-        return dtype.complex
-
     def _contains(self, other):
         if other.is_complex:
             return True
 
-        
+
 class ExtendedComplexes(CartesianComplexRegion, metaclass=Singleton):
     
     is_UniversalSet = True
@@ -1830,7 +2393,7 @@ class ExtendedComplexes(CartesianComplexRegion, metaclass=Singleton):
     def __new__(cls):
         return Set.__new__(cls, ProductSet(ExtendedReals, ExtendedReals))
     
-    def __str__(self):
+    def _sympystr(self, p):
         return "S.ExtendedComplexes"
 
     def _latex(self, p):
@@ -1860,3 +2423,23 @@ class ExtendedComplexes(CartesianComplexRegion, metaclass=Singleton):
     def _contains(self, other):
         if other.is_extended_complex:
             return True
+
+
+def arange(*args):
+    from sympy.concrete.expr_with_limits import Lamda
+    args = [*map(sympify, args)]
+    if len(args) == 1:
+        [size] = args
+        i = size.generate_var(integer=True, var='i')
+        return Lamda[i:size](i)
+    
+    if len(args) == 2:
+        start, stop = args
+        i = stop.generate_var(integer=True, var='i', excludes=start.free_symbols)
+        return Lamda[i:stop - start](i + start)
+    
+    if len(args) == 3:
+        start, stop, step = args
+        i = stop.generate_var(integer=True, var='i', excludes=start.free_symbols | step.free_symbols)
+        from sympy.functions.elementary.integers import Ceiling
+        return Lamda[i: Ceiling((stop - start) / step)](i * step + start)

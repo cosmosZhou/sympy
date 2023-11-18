@@ -109,7 +109,7 @@ def _monotonic_sign(self):
             from sympy.polys.polytools import real_roots
             from sympy.polys.polyroots import roots
             from sympy.polys.polyerrors import PolynomialError
-            x = free.pop()
+            x, = free
             x0 = _monotonic_sign(x)
             if x0 == _eps or x0 == -_eps:
                 x0 = S.Zero
@@ -1061,7 +1061,7 @@ def gcd_terms(terms, isprimitive=False, clear=True, fraction=True):
     if addlike:
         if isadd:  # i.e. an Add
             terms = list(terms.args)
-        else:
+        elif not isinstance(terms, list):
             terms = sympify(terms)
         terms, reps = mask(terms)
         cont, numer, denom = _gcd_terms(terms, isprimitive, fraction)
@@ -1145,7 +1145,7 @@ def _factor_sum_int(expr, **kwargs):
     f = factor_terms(result, **kwargs)
     i, d = f.as_independent(*wrt)
     if isinstance(f, Add):
-        return i * expr.func(1, *limits) + expr.func(d, *limits)
+        return i * expr.func(S.One, *limits) + expr.func(d, *limits)
     else:
         return i * expr.func(d, *limits)
 

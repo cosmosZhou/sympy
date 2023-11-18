@@ -2,7 +2,7 @@ from sympy.core import Function, S, Mul, Pow, Add
 from sympy.core.compatibility import ordered, default_sort_key
 from sympy.core.function import count_ops, expand_func
 from sympy.functions.combinatorial.factorials import binomial
-from sympy.functions import gamma, sqrt, sin
+from sympy.functions import Gamma, sqrt, sin
 from sympy.polys import factor, cancel
 
 from sympy.utilities.iterables import sift, uniq
@@ -10,27 +10,27 @@ from sympy.utilities.iterables import sift, uniq
 
 def gammasimp(expr):
     r"""
-    Simplify expressions with gamma functions.
+    Simplify expressions with Gamma functions.
 
-    This function takes as input an expression containing gamma
-    functions or functions that can be rewritten in terms of gamma
+    This function takes as input an expression containing Gamma
+    functions or functions that can be rewritten in terms of Gamma
     functions and tries to minimize the number of those functions and
     reduce the size of their arguments.
 
-    The algorithm works by rewriting all gamma functions as expressions
+    The algorithm works by rewriting all Gamma functions as expressions
     involving rising factorials (Pochhammer symbols) and applies
     recurrence relations and other transformations applicable to rising
     factorials, to reduce their arguments, possibly letting the resulting
     rising factorial to cancel. Rising factorials with the second argument
     being an integer are expanded into polynomial forms and finally all
-    other rising factorial are rewritten in terms of gamma functions.
+    other rising factorial are rewritten in terms of Gamma functions.
 
     Then the following two steps are performed.
 
     1. Reduce the number of gammas by applying the reflection theorem
-       gamma(x)*gamma(1-x) == pi/sin(pi*x).
+       Gamma(x)*Gamma(1-x) == pi/sin(pi*x).
     2. Reduce the number of gammas by applying the multiplication theorem
-       gamma(x)*gamma(x+1/n)*...*gamma(x+(n-1)/n) == C*gamma(n*x).
+       Gamma(x)*Gamma(x+1/n)*...*Gamma(x+(n-1)/n) == C*Gamma(n*x).
 
     It then reduces the number of prefactors by absorbing them into gammas
     where possible and expands gammas with rational argument.
@@ -44,18 +44,18 @@ def gammasimp(expr):
     ========
 
     >>> from sympy.simplify import gammasimp
-    >>> from sympy import gamma, factorial, Symbol
+    >>> from sympy import Gamma, factorial, Symbol
     >>> from sympy.abc import x
     >>> n = Symbol('n', integer = True)
 
-    >>> gammasimp(gamma(x)/gamma(x - 3))
+    >>> gammasimp(Gamma(x)/Gamma(x - 3))
     (x - 3)*(x - 2)*(x - 1)
-    >>> gammasimp(gamma(n + 3))
-    gamma(n + 3)
+    >>> gammasimp(Gamma(n + 3))
+    Gamma(n + 3)
 
     """
 
-    expr = expr.rewrite(gamma)
+    expr = expr.rewrite(Gamma)
     return _gammasimp(expr, as_comb = False)
 
 
@@ -63,21 +63,21 @@ def _gammasimp(expr, as_comb):
     """
     Helper function for gammasimp and combsimp.
 
-    Simplifies expressions written in terms of gamma function. If
+    Simplifies expressions written in terms of Gamma function. If
     as_comb is True, it tries to preserve integer arguments. See
     docstring of gammasimp for more information. This was part of
     combsimp() in combsimp.py.
     """
 
-    expr = expr.replace(gamma,
+    expr = expr.replace(Gamma,
         lambda n: _rf(1, (n - 1).expand()))
 
     if as_comb:
         expr = expr.replace(_rf,
-            lambda a, b: gamma(b + 1))
+            lambda a, b: Gamma(b + 1))
     else:
         expr = expr.replace(_rf,
-            lambda a, b: gamma(a + b)/gamma(a))
+            lambda a, b: Gamma(a + b)/Gamma(a))
 
     def rule(n, k):
         coeff, rewrite = S.One, False
@@ -109,23 +109,23 @@ def _gammasimp(expr, as_comb):
     expr = expr.replace(binomial, rule)
 
     def rule_gamma(expr, level=0):
-        """ Simplify products of gamma functions further. """
+        """ Simplify products of Gamma functions further. """
 
         if expr.is_Atom:
             return expr
 
         def gamma_rat(x):
             # helper to simplify ratios of gammas
-            was = x.count(gamma)
-            xx = x.replace(gamma, lambda n: _rf(1, (n - 1).expand()
-                ).replace(_rf, lambda a, b: gamma(a + b)/gamma(a)))
-            if xx.count(gamma) < was:
+            was = x.count(Gamma)
+            xx = x.replace(Gamma, lambda n: _rf(1, (n - 1).expand()
+                ).replace(_rf, lambda a, b: Gamma(a + b)/Gamma(a)))
+            if xx.count(Gamma) < was:
                 x = xx
             return x
 
         def gamma_factor(x):
-            # return True if there is a gamma factor in shallow args
-            if isinstance(x, gamma):
+            # return True if there is a Gamma factor in shallow args
+            if isinstance(x, Gamma):
                 return True
             if x.is_Add or x.is_Mul:
                 return any(gamma_factor(xi) for xi in x.args)
@@ -150,7 +150,7 @@ def _gammasimp(expr, as_comb):
                 return rule_gamma(Mul._from_args(args), level + 1)*Mul._from_args(nc)
             level += 1
 
-        # pure gamma handling, not factor absorption
+        # pure Gamma handling, not factor absorption
         if level == 2:
             T, F = sift(expr.args, gamma_factor, binary=True)
             gamma_ind = Mul(*F)
@@ -165,7 +165,7 @@ def _gammasimp(expr, as_comb):
                             rule_gamma(gamma_rat(a/dd), level + 1) for a in ni.args]
                             ).as_numer_denom()
                         args[i] = ni
-                        if not dd.has(gamma):
+                        if not dd.has(Gamma):
                             break
                 nd = Mul(*args)
                 if ipass ==  0 and not gamma_factor(nd):
@@ -193,7 +193,7 @@ def _gammasimp(expr, as_comb):
                 return None, []
             b, e = p.as_base_exp()
             if e.is_Integer:
-                if isinstance(b, gamma):
+                if isinstance(b, Gamma):
                     return True, [b.args[0]]*e
                 else:
                     return False, [b]*e
@@ -214,11 +214,11 @@ def _gammasimp(expr, as_comb):
             elif isg is False:
                 denom_others.extend(l)
 
-        # =========== level 2 work: pure gamma manipulation =========
+        # =========== level 2 work: pure Gamma manipulation =========
 
         if not as_comb:
-            # Try to reduce the number of gamma factors by applying the
-            # reflection formula gamma(x)*gamma(1-x) = pi/sin(pi*x)
+            # Try to reduce the number of Gamma factors by applying the
+            # reflection formula Gamma(x)*Gamma(1-x) = pi/sin(pi*x)
             for gammas, numer, denom in [(
                 numer_gammas, numer_others, denom_others),
                     (denom_gammas, denom_others, numer_others)]:
@@ -248,9 +248,9 @@ def _gammasimp(expr, as_comb):
                 gammas[:] = new
 
             # Try to reduce the number of gammas by using the duplication
-            # theorem to cancel an upper and lower: gamma(2*s)/gamma(s) =
-            # 2**(2*s + 1)/(4*sqrt(pi))*gamma(s + 1/2). Although this could
-            # be done with higher argument ratios like gamma(3*x)/gamma(x),
+            # theorem to cancel an upper and lower: Gamma(2*s)/Gamma(s) =
+            # 2**(2*s + 1)/(4*sqrt(pi))*Gamma(s + 1/2). Although this could
+            # be done with higher argument ratios like Gamma(3*x)/Gamma(x),
             # this would not reduce the number of gammas as in this case.
             for ng, dg, no, do in [(numer_gammas, denom_gammas, numer_others,
                                     denom_others),
@@ -280,21 +280,21 @@ def _gammasimp(expr, as_comb):
                     no.append(2**(2*y - 1))
                     do.append(sqrt(S.Pi))
 
-            # Try to reduce the number of gamma factors by applying the
+            # Try to reduce the number of Gamma factors by applying the
             # multiplication theorem (used when n gammas with args differing
             # by 1/n mod 1 are encountered).
             #
             # run of 2 with args differing by 1/2
             #
-            # >>> gammasimp(gamma(x)*gamma(x+S.Half))
-            # 2*sqrt(2)*2**(-2*x - 1/2)*sqrt(pi)*gamma(2*x)
+            # >>> gammasimp(Gamma(x)*Gamma(x+S.Half))
+            # 2*sqrt(2)*2**(-2*x - 1/2)*sqrt(pi)*Gamma(2*x)
             #
             # run of 3 args differing by 1/3 (mod 1)
             #
-            # >>> gammasimp(gamma(x)*gamma(x+S(1)/3)*gamma(x+S(2)/3))
-            # 6*3**(-3*x - 1/2)*pi*gamma(3*x)
-            # >>> gammasimp(gamma(x)*gamma(x+S(1)/3)*gamma(x+S(5)/3))
-            # 2*3**(-3*x - 1/2)*pi*(3*x + 2)*gamma(3*x)
+            # >>> gammasimp(Gamma(x)*Gamma(x+S(1)/3)*Gamma(x+S(2)/3))
+            # 6*3**(-3*x - 1/2)*pi*Gamma(3*x)
+            # >>> gammasimp(Gamma(x)*Gamma(x+S(1)/3)*Gamma(x+S(5)/3))
+            # 2*3**(-3*x - 1/2)*pi*(3*x + 2)*Gamma(3*x)
             #
             def _run(coeffs):
                 # find runs in coeffs such that the difference in terms (mod 1)
@@ -323,7 +323,7 @@ def _gammasimp(expr, as_comb):
                             return one.q, got[0], got[1:]
 
             def _mult_thm(gammas, numer, denom):
-                # pull off and analyze the leading coefficient from each gamma arg
+                # pull off and analyze the leading coefficient from each Gamma arg
                 # looking for runs in those Rationals
 
                 # expr -> coeff + resid -> rats[resid] = coeff
@@ -343,10 +343,10 @@ def _gammasimp(expr, as_comb):
                             break
 
                         # process the sequence that was found:
-                        # 1) convert all the gamma functions to have the right
+                        # 1) convert all the Gamma functions to have the right
                         #    argument (could be off by an integer)
                         # 2) append the factors corresponding to the theorem
-                        # 3) append the new gamma function
+                        # 3) append the new Gamma function
 
                         n, ui, other = run
 
@@ -367,7 +367,7 @@ def _gammasimp(expr, as_comb):
                     # restore resid to coeffs
                     rats[resid] = [resid + c for c in coeffs] + new
 
-                # rebuild the gamma arguments
+                # rebuild the Gamma arguments
                 g = []
                 for resid in keys:
                     g += rats[resid]
@@ -381,8 +381,8 @@ def _gammasimp(expr, as_comb):
         # =========== level >= 2 work: factor absorption =========
 
         if level >= 2:
-            # Try to absorb factors into the gammas: x*gamma(x) -> gamma(x + 1)
-            # and gamma(x)/(x - 1) -> gamma(x - 1)
+            # Try to absorb factors into the gammas: x*Gamma(x) -> Gamma(x + 1)
+            # and Gamma(x)/(x - 1) -> Gamma(x - 1)
             # This code (in particular repeated calls to find_fuzzy) can be very
             # slow.
             def find_fuzzy(l, x):
@@ -404,7 +404,7 @@ def _gammasimp(expr, as_comb):
                         return y
 
             # We thus try to avoid expensive calls by building the following
-            # "invariants": For every factor or gamma function argument
+            # "invariants": For every factor or Gamma function argument
             #   - the set of free symbols S
             #   - the set of functional components T
             # We will only try to absorb if T1==T2 and (S1 intersect S2 != emptyset
@@ -453,8 +453,8 @@ def _gammasimp(expr, as_comb):
 
         # =========== rebuild expr ==================================
 
-        return Mul(*[gamma(g) for g in numer_gammas]) \
-            / Mul(*[gamma(g) for g in denom_gammas]) \
+        return Mul(*[Gamma(g) for g in numer_gammas]) \
+            / Mul(*[Gamma(g) for g in denom_gammas]) \
             * Mul(*numer_others) / Mul(*denom_others)
 
     # (for some reason we cannot use Basic.replace in this case)
@@ -463,8 +463,8 @@ def _gammasimp(expr, as_comb):
     if expr != was:
         expr = factor(expr)
 
-    expr = expr.replace(gamma,
-        lambda n: expand_func(gamma(n)) if n.is_Rational else gamma(n))
+    expr = expr.replace(Gamma,
+        lambda n: expand_func(Gamma(n)) if n.is_Rational else Gamma(n))
 
     return expr
 
@@ -507,6 +507,5 @@ class _rf(Function):
                     elif c < 0:
                         return _rf(_a, b)*_rf(_a + c, -c)/_rf(_a + b + c, -c)
                     
-    @property
-    def shape(self):
+    def _eval_shape(self):
         return ()

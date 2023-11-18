@@ -4,8 +4,6 @@ from sympy import trigsimp
 from sympy.core.compatibility import unicode
 from sympy.utilities.misc import filldedent
 
-__all__ = ['Vector']
-
 
 class Vector(object):
     """The class used to define vectors.

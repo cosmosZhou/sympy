@@ -430,7 +430,7 @@ class MathMLContentPrinter(MathMLPrinterBase):
         x.appendChild(self.dom.createElement(diff_symbol))
         x_1 = self.dom.createElement('bvar')
 
-        for sym, times in reversed(e.variable_count):
+        for sym, times in reversed(e.limits):
             x_1.appendChild(self._print(sym))
             if times > 1:
                 degree = self.dom.createElement('degree')
@@ -974,7 +974,7 @@ class MathMLPresentationPrinter(MathMLPrinterBase):
         # Determine denominator
         m = self.dom.createElement('mrow')
         dim = 0  # Total diff dimension, for numerator
-        for sym, num in reversed(e.variable_count):
+        for sym, num in reversed(e.limits):
             dim += num
             if num >= 2:
                 x = self.dom.createElement('msup')
@@ -1334,7 +1334,7 @@ class MathMLPresentationPrinter(MathMLPrinterBase):
         args = sorted(expr.args, key=default_sort_key)
         mrow = self.dom.createElement('mrow')
         mo = self.dom.createElement('mo')
-        mo.appendChild(self.dom.createTextNode((str(expr.func)).lower()))
+        mo.appendChild(self.dom.createTextNode(expr.func.__name__.lower()))
         mrow.appendChild(mo)
         brac = self.dom.createElement('mfenced')
         for symbol in args:

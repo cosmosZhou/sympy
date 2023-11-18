@@ -157,7 +157,7 @@ def function_range(f, symbol, domain):
         is continuous are not finite or real,
         OR if the critical points of the function on the domain can't be found.
     """
-    from sympy.solvers.solveset import solveset    
+    from sympy.solvers.solveset import solveset
     if isinstance(domain, EmptySet):
         return EmptySet(etype=dtype.real)
 

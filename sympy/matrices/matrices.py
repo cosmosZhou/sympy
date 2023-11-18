@@ -15,7 +15,7 @@ from sympy.core.symbol import Dummy, Symbol, _uniquely_named_symbol, symbols
 from sympy.core.sympify import sympify
 from sympy.functions import exp, factorial
 from sympy.functions.elementary.miscellaneous import Max, Min
-from sympy.polys import PurePoly, cancel, roots
+from sympy.polys import PurePoly, cancel
 from sympy.printing import sstr
 from sympy.simplify import nsimplify
 from sympy.simplify import simplify as _simplify
@@ -193,7 +193,7 @@ class MatrixBase(MatrixCommon):
             if mat.rows == 0:
                 return mat.one
             elif mat.rows == 1:
-                return mat[0, 0]
+                return mat[0]
 
             # find a pivot and extract the remaining matrix
             # With the default iszerofunc, _find_reasonable_pivot slows down
@@ -221,7 +221,9 @@ class MatrixBase(MatrixCommon):
                     return cancel(ret)
                 return ret
 
-            return sign * bareiss(self._new(mat.rows - 1, mat.cols - 1, entry), pivot_val)
+            rows = mat.rows - 1
+            cols = mat.cols - 1            
+            return sign * bareiss(self._new(*(entry(i, j) for i in range(rows) for j in range(cols)), shape=(rows, cols)), pivot_val)
 
         return cancel(bareiss(self))
 
@@ -277,7 +279,7 @@ class MatrixBase(MatrixCommon):
         # return det(P)*det(U)
         return det
 
-    def _eval_determinant(self):
+    def _eval_determinant(self, **kwargs):
         """Assumed to exist by matrix expressions; If we subclass
         MatrixDeterminant, we can fully evaluate determinants."""
         return self.det()
@@ -785,7 +787,7 @@ class MatrixBase(MatrixCommon):
                 for p in range(piv_i * cols + piv_j + 1, (piv_i + 1) * cols):
                     mat[p] = mat[p] / pivot_val
 
-        return self._new(self.rows, self.cols, mat), tuple(pivot_cols), tuple(swaps)
+        return self._new(*mat, shape=(self.rows, self.cols)), tuple(pivot_cols), tuple(swaps)
 
     def echelon_form(self, iszerofunc=_iszero, simplify=False, with_pivots=False):
         """Returns a matrix row-equivalent to ``self`` that is
@@ -1198,9 +1200,25 @@ class MatrixBase(MatrixCommon):
         return sstr(self)
 
     def _sympystr(self, p):
-        if self.rows == 0 or self.cols == 0:
-            return '(%s, %s, [])' % (self.rows, self.cols)
-        return str(self.tolist())
+        rows = self.rows
+        cols = self.cols
+        args = self.args
+        if rows == 1:
+            return '[%s]' % ', '.join(p._print(a) for a in args)
+
+        arr = [[p._print(self[i, j]) for j in range(cols)] for i in range(rows)]
+
+        col_width = [max(len(arr[i][j]) for i in range(rows)) for j in range(cols)]
+        
+        for i in range(rows):
+            for j in range(cols):
+                diff = col_width[j] - len(arr[i][j])
+                if diff:
+                    arr[i][j] = ' ' * diff + arr[i][j]
+                
+        indent = p._context.get('indent', 0) + 1
+        newline = '\n' + '    ' * indent
+        return f'[{newline}%s]' % f',{newline}'.join(['[%s]' % ','.join(row) for row in arr])
 
     def _diagonalize_clear_subproducts(self):
         del self._is_symbolic
@@ -1442,60 +1460,22 @@ class MatrixBase(MatrixCommon):
                         flat_list.extend(flat)
                         rows += r
                     cols = ncol.pop() if ncol else 0
-                    flat_list = tuple(flat_list)
-        elif len(args) == 2:
-            shape = args[0]
-            if len(shape) == 1:
-                rows = 1
-                cols = shape[0]
-            else:
-                rows, cols = shape
+                    if isinstance(dat, tuple):
+                        flat_list = tuple(flat_list)
 
-            if rows < 0 or cols < 0:
-                raise ValueError("Cannot create a {} x {} matrix. "
-                                 "Both dimensions must be positive".format(rows, cols))
-
-            # Matrix(2, 2, [1, 2, 3, 4])
-            if is_sequence(args[1]):
-                flat_list = args[1]
-                if len(flat_list) != rows * cols:
-                    raise ValueError('List length should be equal to rows*columns')
-                flat_list = type(flat_list)(cls._sympify(i) for i in flat_list)
-        elif len(args) == 3:
-            rows = as_int(args[0])
-            cols = as_int(args[1])
-
-            if rows < 0 or cols < 0:
-                raise ValueError("Cannot create a {} x {} matrix. "
-                                 "Both dimensions must be positive".format(rows, cols))
-
-            # Matrix(2, 2, lambda i, j: i+j)
-            if len(args) == 3 and isinstance(args[2], Callable):
-                op = args[2]
-                flat_list = []
-                for i in range(rows):
-                    flat_list.extend([cls._sympify(op(cls._sympify(i), cls._sympify(j))) for j in range(cols)])
-
-            # Matrix(2, 2, [1, 2, 3, 4])
-            elif len(args) == 3 and is_sequence(args[2]):
-                flat_list = args[2]
-                if len(flat_list) != rows * cols:
-                    raise ValueError('List length should be equal to rows*columns')
-                flat_list = type(flat_list)(cls._sympify(i) for i in flat_list)
-
-        # Matrix()
-        elif len(args) == 0:
+        elif not args:
             # Empty Matrix
             rows = cols = 0
             flat_list = []
-        elif len(args) == 2:
+        else:
             rows = 1
             cols = len(args)
             flat_list = args
+            
         if flat_list is None:
-            raise TypeError(filldedent('''
-                Data type not understood; expecting list of lists
-                or lists of values.'''))
+            rows = 1
+            cols = len(args)
+            flat_list = args
 
         return sympify(rows), sympify(cols), flat_list
 
@@ -1712,7 +1692,8 @@ class MatrixBase(MatrixCommon):
         [3, 4]])
 
         """
-        return self._new(self.rows, self.cols, self.args)
+        args = [[self[i, j] for j in range(self.cols)] for i in range(self.rows)]
+        return self.func(args)
 
     def cross(self, b):
         r"""
@@ -2610,10 +2591,18 @@ class MatrixBase(MatrixCommon):
         def entry_U(i, j):
             return self.zero if i > j else combined[i, j]
 
-        L = self._new(combined.rows, combined.rows, entry_L)
-        U = self._new(combined.rows, combined.cols, entry_U)
+        L = self._new(entry_L, shape=(combined.rows, combined.rows))
+        U = self._new(entry_U, shape=(combined.rows, combined.cols))
 
-        return L, U, p
+        row, col = self.shape
+        permute = [[0] * int(col) for _ in range(row)]
+        for i in range(row):
+            permute[i][i] = 1
+            
+        for i, j in p:
+            permute[i], permute[j] = permute[j], permute[i]
+
+        return self.func(permute), L, U 
 
     def LUdecomposition_Simple(self,
                                iszerofunc=_iszero,
@@ -2768,8 +2757,9 @@ class MatrixBase(MatrixCommon):
                 row_swaps.append([pivot_row, candidate_pivot_row])
 
                 # Update L.
-                lu[pivot_row, 0:pivot_row], lu[candidate_pivot_row, 0:pivot_row] = \
-                    lu[candidate_pivot_row, 0:pivot_row], lu[pivot_row, 0:pivot_row]
+                if pivot_row:
+                    lu[pivot_row, :pivot_row], lu[candidate_pivot_row, :pivot_row] = \
+                        lu[candidate_pivot_row, :pivot_row], lu[pivot_row, :pivot_row]
 
                 # Swap pivot row of U with candidate pivot row.
                 lu[pivot_row, pivot_col:lu.cols], lu[candidate_pivot_row, pivot_col:lu.cols] = \
@@ -4006,8 +3996,7 @@ class MatrixBase(MatrixCommon):
             raise TypeError("X must be a row or a column matrix")
 
         # m is the number of functions and n is the number of variables
-        # computing the Jacobian is now easy:
-        return self._new(m, n, lambda j, i: self[j].diff(X[i]))
+        return self._new(*(self[i].diff(X[j]) for i in range(m) for j in range(n)), shape=(m, n))
 
     def limit(self, *args):
         """Calculate the limit of each element in the matrix.
@@ -4039,7 +4028,7 @@ class MatrixBase(MatrixCommon):
             deprecated_since_version="1.4",
             issue=15887
             ).warn()
-        return None
+        ...
 
     @property
     def _cache_eigenvects(self):
@@ -4048,7 +4037,7 @@ class MatrixBase(MatrixCommon):
             deprecated_since_version="1.4",
             issue=15887
             ).warn()
-        return None
+        ...
 
     def diagonalize(self, reals_only=False, sort=False, normalize=False):
         """
@@ -4212,6 +4201,7 @@ class MatrixBase(MatrixCommon):
                     eigs[diagonal_entry] += 1
         else:
             flags.pop('simplify', None)  # pop unsupported flag
+            from sympy.polys import roots
             if isinstance(simplify, FunctionType):
                 eigs = roots(mat.charpoly(x=Dummy('x'), simplify=simplify), **flags)
             else:

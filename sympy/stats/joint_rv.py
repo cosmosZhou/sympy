@@ -21,11 +21,10 @@ from sympy.matrices import ImmutableMatrix, matrix2numpy, list2numpy
 from sympy.stats.crv import SingleContinuousDistribution, SingleContinuousPSpace
 from sympy.stats.drv import SingleDiscreteDistribution, SingleDiscretePSpace
 from sympy.stats.rv import (ProductPSpace, NamedArgsMixin,
-                            ProductDomain, RandomSymbol, random_symbols, SingleDomain, _symbol_converter)
+                            ProductDomain, RandomSymbol, SingleDomain, _symbol_converter)
 from sympy.utilities.misc import filldedent
 from sympy.external import import_module
 
-# __all__ = ['marginal_distribution']
 
 class JointPSpace(ProductPSpace):
     """
@@ -72,7 +71,7 @@ class JointPSpace(ProductPSpace):
 
     @property
     def domain(self):
-        rvs = random_symbols(self.distribution)
+        rvs = self.distribution.random_symbols
         if not rvs:
             return SingleDomain(self.symbol, self.distribution.set)
         return ProductDomain(*[rv.pspace.domain for rv in rvs])
@@ -113,7 +112,7 @@ class JointPSpace(ProductPSpace):
                 expr = expr.xreplace({rv: Indexed(str(rv.base), rv.args[1])})
             elif isinstance(rv, RandomSymbol):
                 expr = expr.xreplace({rv: rv.symbol})
-        if self.value in random_symbols(expr):
+        if self.value in expr.random_symbols:
             raise NotImplementedError(filldedent('''
             Expectations of expression with unindexed joint random symbols
             cannot be calculated yet.'''))
@@ -323,7 +322,7 @@ class MarginalDistribution(Basic):
              intitialised only in terms of random variables or indexed random
              variables'''))
         rvs = Tuple.fromiter(rv for rv in rvs)
-        if not isinstance(dist, JointDistribution) and len(random_symbols(dist)) == 0:
+        if not isinstance(dist, JointDistribution) and len(dist.random_symbols) == 0:
             return dist
         return Basic.__new__(cls, dist, rvs)
 
@@ -342,7 +341,7 @@ class MarginalDistribution(Basic):
 
     def pdf(self, *x):
         expr, rvs = self.args[0], self.args[1]
-        marginalise_out = [i for i in random_symbols(expr) if i not in rvs]
+        marginalise_out = [i for i in expr.random_symbols if i not in rvs]
         if isinstance(expr, JointDistribution):
             count = len(expr.domain.args)
             x = Dummy('x', real=True, finite=True)

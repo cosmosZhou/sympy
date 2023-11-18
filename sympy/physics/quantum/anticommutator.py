@@ -6,10 +6,6 @@ from sympy.printing.pretty.stringpict import prettyForm
 from sympy.physics.quantum.operator import Operator
 from sympy.physics.quantum.dagger import Dagger
 
-__all__ = [
-    'AntiCommutator'
-]
-
 #-----------------------------------------------------------------------------
 # Anti-commutator
 #-----------------------------------------------------------------------------

@@ -55,16 +55,15 @@ def solve_lin_sys(eqs, ring, _raw=True):
     else:
         sols = {}
         g = ring.gens
-        _g = [[-i] for i in g]
+        _g = [-i for i in g]
         for i, p in enumerate(pivots):
-            vect = RawMatrix(_g[p + 1:] + [[ring.one]])
+            vect = RawMatrix(*_g[p + 1:] + [ring.one])
             
             v_echelon = echelon[i, p + 1:]
-            if isinstance(v_echelon, RawMatrix) and isinstance(vect, RawMatrix):
+            if isinstance(v_echelon, Matrix) and isinstance(vect, Matrix):
                 v = v_echelon @ vect
             else:
                 v = v_echelon * vect
-#             v = (echelon[i, p + 1:] @ vect)[0]
             if as_expr:
                 v = v.as_expr()
             sols[keys[p]] = v

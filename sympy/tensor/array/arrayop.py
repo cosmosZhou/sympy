@@ -5,6 +5,7 @@ from sympy import S, Tuple, diff
 from sympy.core.compatibility import Iterable
 from sympy.tensor.array import ImmutableDenseNDimArray
 from sympy.tensor.array.ndim_array import NDimArray
+from sympy.core.expr import Expr
 
 def _arrayfy(a):
     from sympy.matrices import MatrixBase
@@ -272,3 +273,53 @@ def permutedims(expr, perm):
     new_shape = perm(expr.shape)
 
     return type(expr)(new_array, new_shape)
+
+
+class TopKHeap(Expr):
+    
+    def __new__(cls, arg, k):
+        shape = arg.shape[:-1] + (k,)
+        assert k.is_integer
+        return Expr.__new__(cls, arg, shape=shape)
+    
+    @property
+    def dtype(self):
+        return self.arg.dtype
+    
+    @property
+    def k(self):
+        return self.shape[-1]
+
+    def __iter__(self):
+        raise
+        
+    def __getitem__(self, indices):
+        from sympy.tensor.indexed import Indexed
+        *batch_indices, i = indices
+        if batch_indices:
+            self = self.func(self.arg[tuple(batch_indices)], self.k)
+        return Indexed(self, i)
+    
+    @property
+    def kwargs(self):
+        return dict(k=self.k)
+    
+    def _eval_subs(self, old, new, **hints):
+        arg = self.arg
+        k = self.k
+        
+        hit = False
+        
+        arg = arg._subs(old, new, **hints)
+        if arg != self.arg:
+            hit = True
+
+        k = k._subs(old, new, **hints)
+        if k != self.k:
+            hit = True
+        
+        if hit:
+            return self.func(arg, k)
+        
+        return self
+        

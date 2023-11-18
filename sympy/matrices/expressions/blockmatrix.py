@@ -10,6 +10,8 @@ from sympy.matrices.expressions.transpose import Transpose, transpose
 
 from sympy.matrices.expressions.inverse import Inverse
 from sympy.matrices import Matrix, ShapeError
+from sympy.core.cache import cacheit
+from sympy.core.containers import Tuple
 
 
 class BlockMatrix(MatrixExpr): 
@@ -58,6 +60,9 @@ class BlockMatrix(MatrixExpr):
     _eval_is_extended_positive = lambda self: self._eval_template_is_attr('is_extended_positive')
     _eval_is_extended_negative = lambda self: self._eval_template_is_attr('is_extended_negative')
 
+    def _eval_is_random(self):
+        return any(arg.is_random for arg in self.args)
+
     @property
     def dtype(self):
         dtype = None
@@ -92,25 +97,45 @@ class BlockMatrix(MatrixExpr):
         else:
             axis = 0
         _args = []
-        
+        from sympy import sympify
         if len(args) == 1 and isinstance(args[0], (list, tuple)):
             args = args[0]
             if all(isinstance(arg, (list, tuple)) for arg in args):
-                args = [cls(*(x.T for x in arr)).T for arr in args]
+                args = [cls(*(Transpose(x) for x in arr)).T for arr in args]
                 
+            args = [*map(sympify, args)]
             if all(arg.is_DenseMatrix for arg in args):
-                return Matrix([arr.tolist() for arr in args])
-        
-        from sympy import sympify
-        args = [*map(sympify, args)]
+                if axis == 0:
+                    if len(args[0].shape) == 1:
+                        return Matrix(tuple(arr.totuple() for arr in args))
+                    
+                    if len(args[0].shape) == 2:
+                        ret = []
+                        for arr in args:
+                            arr = arr.totuple()
+                            ret.extend(arr)
+                        return Matrix(tuple(ret))
+
+                if axis == 1:
+                    rows = args[0].shape[0]
+                    ret = [() for i in range(rows)]
+                    for arr in args:
+                        arr = arr.totuple()
+                        for i in range(rows):
+                            ret[i] += arr[i]
+
+                    return Matrix(tuple(ret))
+        else:        
+            args = [*map(sympify, args)]
+
         length = max(len(arg.shape) for arg in args)
-        
+#         shape = kwargs.get('shape')
         if axis == 1:
             hit = False
             for i, arg in enumerate(args):
-                if isinstance(arg, BlockMatrix):
-                    if arg.axis == 0:
-                        if len(arg.shape) == length:
+                if len(arg.shape) == length:
+                    if isinstance(arg, BlockMatrix):
+                        if arg.axis == 0:
                             blocks = arg.blocks
                             if blocks is None:
                                 blocks = [(arg,) for arg in arg.args]
@@ -123,10 +148,6 @@ class BlockMatrix(MatrixExpr):
                                     break
                             else:
                                 hit = True
-                            break
-                    else:
-                        break                    
-                else:
                     break
                         
             if hit:
@@ -145,7 +166,7 @@ class BlockMatrix(MatrixExpr):
                         
                         arr = []
                         for b in args:
-                            if isinstance(b, tuple):
+                            if isinstance(b, (tuple, list)):
                                 arr.extend(b)
                             else:
                                 arr.append(b)
@@ -182,9 +203,13 @@ class BlockMatrix(MatrixExpr):
         # return hyper parameter of this object
         return {'axis': self.axis}
            
+    @cacheit
     def _eval_shape(self):
+        if 'shape' in self._assumptions:
+            return self._assumptions['shape']
+         
         if self.axis:
-            from util.std import argmax
+            from std import argmax
             shapes = [arg.shape for arg in self.args]
             len_shapes = [len(shape) for shape in shapes]
             max_length_index = argmax(len_shapes)
@@ -214,135 +239,184 @@ class BlockMatrix(MatrixExpr):
                     else:
                         cols += 1
                 return (cols,)
-            
-            from sympy.core.add import Add
-            Add.broadcast(shapes)
-            rows = sum(s[0] for s in shapes)
-            if len(shapes[0]) > 1:
-                return (rows, *shapes[0][1:])
             else:
-                return (rows,)
-        
-    @property
-    def shape(self):
-        if 'shape' in self._assumptions:
-            return self._assumptions['shape']
-        shape = self._eval_shape()
-        self._assumptions['shape'] = shape
-        return shape
-
-    def __getitem__(self, key):
-        from sympy.functions.elementary.piecewise import Piecewise
-        if isinstance(key, slice):
-            start, stop = key.start, key.stop
-            if start is None:
-                start = 0
-            if stop is None:
-                stop = self.shape[0]
-                
-            if start == 0 and stop == self.shape[0]:
-                return self
-            
-            rows = 0
-            args = []
-            
-            len_self_shape = len(self.shape)
-            for arg in self.args:
-                if start >= stop:
-                    break
-                index = rows
-                if len(arg.shape) < len_self_shape:
-                    rows += 1
+                from sympy.core.add import Add
+                Add.broadcast(shapes)
+                rows = sum(s[0] for s in shapes)
+                if len(shapes[0]) > 1:
+                    return (rows, *shapes[0][1:])
                 else:
-                    rows += arg.shape[0]
-
-                if start < rows:
-                    if len(arg.shape) < len_self_shape:
-                        args.append(arg)
-                        start += 1
-                    elif rows <= stop:
-                        if rows - start < arg.shape[0]:
-                            args.append(arg[start:])
-                        else:
-                            args.append(arg)
-                        start = rows
-                    else:
-                        args.append(arg[start - index: stop - index])
-                        start = stop
-            if len(args) == 1:
-                return args[0]
-            if len(args) == 0:
-                return ZeroMatrix(*self.shape)
-            return self.func(*args)
-        
-        if isinstance(key, tuple):
-            if len(key) == 1:
-                key = key[0]
-                j = None
+                    return (rows,)
                 
-            elif len(key) == 2:
-                i, j = key
-                if isinstance(i, slice):
-                    if isinstance(j, slice):
-                        raise Exception('unimplemented method')
+    def get_slice(self, indices):
+        axis = int(self.axis)
+        #indices is indexing at position axis
+        start, stop, step = indices.slice_args
+        if start == 0 and stop == self.shape[axis]:
+            return self
+        
+        from sympy import Piecewise
+        assert step == 1
+        
+        index_stop = 0
+        args = []
+        len_shape = len(self.shape)
+        index_start = [0] * len(self.args)
+        
+        for i, arg in enumerate(self.args):
+            if i:
+                index_start[i] = index_start[i - 1] + size
+                
+            if len(arg.shape) < len_shape:
+                size = 1
+            else:
+                size = arg.shape[axis]
+                
+            index_stop += size
+                
+            cond = stop <= index_stop
+            if cond == False:
+                continue
+            
+            args_inner = []
+            for j in range(i, -1, -1):
+                cond_inner = index_start[j] <= start
+                if cond_inner == False:
+                    continue
+                
+                blocks = []
+                for k in range(j, i + 1):
+                    arg = self.args[k]
+                    if len(arg.shape) < len_shape:
+                        blocks.append(arg)
                     else:
-                        assert i.step is None, 'unimplemented slice object %s' % i
-                        start, stop = i.start, i.stop                        
-                        if start is None:
-                            if stop is None:
-                                # v have the same columns
-                                args = []
-                                for v in self.args:
-                                    if len(v.shape) > 1:
-                                        indexed = v[:, j]
-                                    else:
-                                        indexed = v[j]
-                                    args.append(indexed)
-                                return self.func(*args)
+                        if k == j:
+                            if k == i:
+                                slices = [slice(None)] * axis + [slice(start - index_start[k], stop - index_start[k])]
+                                blocks.append(arg[slices])
+                            else:
+                                slices = [slice(None)] * axis + [slice(start - index_start[k], None)]
+                                blocks.append(arg[slices])
+                        else:
+                            if k == i:
+                                slices = [slice(None)] * axis + [slice(None, stop - index_start[k])]
+                                blocks.append(arg[slices])
+                            else:
+                                blocks.append(arg)
+                            
+                if len(blocks) == 1:
+                    blocks, = blocks
+                else:
+                    blocks = self.func(blocks, axis=axis)
 
-                        raise Exception('unimplemented slice object %s' % i)
-                elif isinstance(j, slice):
-                    raise Exception('unimplemented method') 
-                from sympy.core.sympify import _sympify
-                key, j = _sympify(i), _sympify(j) 
+                args_inner.append([blocks, cond_inner])
+                if cond_inner:
+                    break
+                
+            args_inner[-1][1] = True
+            args.append([Piecewise(*args_inner), cond])
+
+            if cond:
+                break
+
+        args[-1][1] = True
+        return Piecewise(*args)
+        
+    def get_piece(self, indices):
+        axis = int(self.axis)
+        #indices is indexing at position axis
+        from sympy import Piecewise 
+        rows = 0
+        args = []
+        len_shape = len(self.shape)
+        for arg in self.args:
+            index = rows
+            if len(arg.shape) < len_shape:
+                rows += 1
+            else:
+                rows += arg.shape[axis]
+                
+            cond = indices < rows
+            if cond == False:
+                continue
+            
+            if len(arg.shape) < len_shape:
+                args.append([arg, cond])
+            else:
+                args.append([arg[indices - index], cond])
+                
+            if cond:
+                break
+
+        args[-1][-1] = True
+        return Piecewise(*args)
+        
+    def __getitem__(self, indices):
+        if (indices := self.simplify_indices(indices)) is None:
+            return self
+
+        if isinstance(indices, Tuple):
+            axis = self.axis
+            if axis != 0:
+                args = [arg[indices] for arg in self.args]
+                return self.func(*args, axis=axis)
+            
+            return self.get_slice(indices)
+
+        if isinstance(indices, tuple):
+            if len(indices) >= 2:
+                if indices[self.axis] == Tuple(0, self.shape[self.axis]):
+                    indices = indices[:self.axis] + (slice(None),) + indices[self.axis + 1:]
+                    if self.axis == 0:
+                        args = []
+                        for v in self.args:
+                            if len(v.shape) < len(self.shape):
+                                indexed = v[indices[1:]]
+                            else:
+                                indexed = v[indices]
+                            args.append(indexed)
+                    else:
+                        args = [arg[indices] for arg in self.args]
+                    return self.func(*args, axis=self.axis)
+
+                indices, j = indices
+                if isinstance(j, Tuple):
+                    if isinstance(indices, Tuple):
+                        if indices != Tuple(0, self.shape[0]):
+                            return self[indices][:, j]
+                        
+                        assert self.axis == 1
+                        return self.get_slice(j)
+                    return self[indices][j]
         else:
             j = None
                   
-        assert isinstance(key, int) or key.is_Integer or key.is_Symbol or key.is_Expr
-        
-        if self.axis == 0: 
-            rows = 0
-            args = []
-            len_shape = len(self.shape)
-            for arg in self.args:
-                index = rows
-                if len(arg.shape) < len_shape:
-                    rows += 1
-                else:
-                    rows += arg.shape[0]
-                    
-                cond = key < rows
-                if cond.is_BooleanFalse:
-                    continue
-                
-                if len(arg.shape) < len_shape:
-                    args.append([arg, cond])
-                else:
-                    args.append([arg[key - index], cond])
-                    
-            if j is not None:
-                for arg in args:
-                    arg[0] = arg[0][j]
-                     
-            args[-1][-1] = True
-            return Piecewise(*args)
-        else:
-            self = self.func(*(a[key] for a in self.args), axis=self.axis - 1)
-            if j is not None:
-                self = self[j]
+        if self.axis == 0:
+            if isinstance(indices, Tuple):
+                self = self.get_slice(indices)
+                if j is not None:
+                    self = self[:, j]
+            else:
+                self = self.get_piece(indices)
+                if j is not None:
+                    self = self[j]
             return self
+        
+        if isinstance(indices, Tuple):
+            if indices == Tuple(0, self.shape[0]):
+                self = self.get_piece(j)
+            else:
+                self = self.func(*(a[indices] for a in self.args), axis=self.axis - 1)
+                if j is not None:
+                    self = self[j]
+            return self
+            
+        self = self.func(*(a[indices] for a in self.args), axis=self.axis - 1)
+        if j is not None:
+            self = self[j]
+        return self
 
-    def _eval_determinant(self):
+    def _eval_determinant(self, **kwargs):
         from sympy.concrete.products import Product
         if self.is_upper or self.is_lower:
             i = self.generate_var(integer=True)
@@ -350,108 +424,44 @@ class BlockMatrix(MatrixExpr):
 
     @property
     def is_lower(self):
-        """Check if matrix is a lower triangular matrix. True can be returned
-        even if the matrix is not square.
+        if blocks := self.blocks:
+            m = len(blocks)
+            n = len(blocks[0])
+            if m == n:
+                if all(blocks[i][j].is_zero for j in range(1, m) for i in range(j)):
+                    if all(blocks[i][i].is_lower for i in range(m)):
+                        return True
 
-        Examples
-        ========
-
-        >>> from sympy import Matrix
-        >>> m = Matrix(2, 2, [1, 0, 0, 1])
-        >>> m
-        Matrix([
-        [1, 0],
-        [0, 1]])
-        >>> m.is_lower
-        True
-
-        >>> m = Matrix(4, 3, [0, 0, 0, 2, 0, 0, 1, 4 , 0, 6, 6, 5])
-        >>> m
-        Matrix([
-        [0, 0, 0],
-        [2, 0, 0],
-        [1, 4, 0],
-        [6, 6, 5]])
-        >>> m.is_lower
-        True
-
-        >>> from sympy.abc import x, y
-        >>> m = Matrix(2, 2, [x**2 + y, y**2 + x, 0, x + y])
-        >>> m
-        Matrix([
-        [x**2 + y, x + y**2],
-        [       0,    x + y]])
-        >>> m.is_lower
-        False
-
-        See Also
-        ========
-
-        is_upper
-        is_diagonal
-        is_lower_hessenberg
-        """
         from sympy import Range, Min
-
         i = self.generate_var(domain=Range(Min(self.rows, self.cols - 1)))
         j = i.generate_var(free_symbols=self.free_symbols, domain=Range(i + 1, self.cols))
         assert i < j
-        return self[i, j] == 0
+        if self[i, j].is_zero:
+            return True
 
     @property
     def is_upper(self):
-        """Check if matrix is an upper triangular matrix. True can be returned
-        even if the matrix is not square.
+        if blocks := self.blocks:
+            m = len(blocks)
+            n = len(blocks[0])
+            if m == n:
+                if all(blocks[i][j].is_zero for i in range(1, m) for j in range(i)):
+                    if all(blocks[i][i].is_upper for i in range(m)):
+                        return True
 
-        Examples
-        ========
-
-        >>> from sympy import Matrix
-        >>> m = Matrix(2, 2, [1, 0, 0, 1])
-        >>> m
-        Matrix([
-        [1, 0],
-        [0, 1]])
-        >>> m.is_upper
-        True
-
-        >>> m = Matrix(4, 3, [5, 1, 9, 0, 4 , 6, 0, 0, 5, 0, 0, 0])
-        >>> m
-        Matrix([
-        [5, 1, 9],
-        [0, 4, 6],
-        [0, 0, 5],
-        [0, 0, 0]])
-        >>> m.is_upper
-        True
-
-        >>> m = Matrix(2, 3, [4, 2, 5, 6, 1, 1])
-        >>> m
-        Matrix([
-        [4, 2, 5],
-        [6, 1, 1]])
-        >>> m.is_upper
-        False
-
-        See Also
-        ========
-
-        is_lower
-        is_diagonal
-        is_upper_hessenberg
-        """
         from sympy import Range, Min
-
         j = self.generate_var(domain=Range(Min(self.cols, self.rows - 1)))
         i = j.generate_var(free_symbols=self.free_symbols, domain=Range(j + 1, self.rows))
         assert i > j
-        return self[i, j] == 0
+        if self[i, j].is_zero:
+            return True
 
     def __add__(self, other):
         if isinstance(other, BlockMatrix):
-            if len(self.args) == len(other.args):
-                if all(x.shape == y.shape for x, y in zip(self.args, other.args)):
-                    return self.func(*[x + y for x, y in zip(self.args, other.args)])
+            if self.axis == other.axis:
+                if len(self.args) == len(other.args):
+                    if all(x.shape == y.shape for x, y in zip(self.args, other.args)):
+                        return self.func(*[x + y for x, y in zip(self.args, other.args)], shape=self.shape)
         return MatrixExpr.__add__(self, other)
 
     def simplify(self, deep=False, **kwargs):
@@ -472,7 +482,7 @@ class BlockMatrix(MatrixExpr):
                     elif arg.is_DenseMatrix:
                         mat.append(arg)
                     else:
-                        return self 
+                        return self
                     
                 if start is not None:
                     return arg.base[start:len(self.args)]
@@ -483,49 +493,79 @@ class BlockMatrix(MatrixExpr):
                     return self
             
             b = None
-            
             from sympy import S
             start, stop = None, None
-            mat = []
+            rest = None
             for arg in self.args:
                 if arg.is_Sliced or arg.is_Indexed:
                     if b is None:
                         b = arg.base
+                    elif arg.base.is_Indexed and arg.base.base == b:
+                        ...
                     elif b != arg.base or len(arg.indices) > 1:
                         b = None
                         break
                                         
                     if start is None:
                         if arg.is_Sliced:
-                            start, stop = arg.index
+                            (start, stop), *_rest = arg.indices
                         else:
                             start = arg.index
                             stop = start + S.One
+                            _rest = []
                     else:
-                        if arg.is_Sliced: 
-                            _start, _stop = arg.index
+                        if arg.is_Sliced:
+                            if arg.base.is_Indexed and arg.base.base == b:
+                                _start = arg.base.index
+                                _stop = _start + S.One
+                                [*_rest] = arg.indices
+                            else:
+                                (_start, _stop), *_rest = arg.indices
                         else:
                             _start = arg.index
                             _stop = _start + S.One
+                            _rest = []
                             
-                        if _start != stop:
+                        if _start == stop:
+                            stop = _stop
+                        elif _stop == start:
+                            start = _start
+                        else:
                             b = None
                             break
-                        stop = _stop
-                elif arg.is_DenseMatrix:
+
+                    if rest is None:
+                        rest = _rest
+                    elif rest != _rest:
+                        b = None
+                        break
+                else:
+                    b = None
+                    break
+                    
+            if b is not None:
+                if rest:
+                    rest.insert(0, slice(start, stop))
+                    return b[tuple(rest)]
+                else:
+                    return b[start:stop]
+            
+            mat = []
+            for arg in self.args:
+                if arg.is_DenseMatrix:
                     if not mat or mat[0].is_DenseMatrix:
                         mat.append(arg)
                 elif arg.is_ZeroMatrix:
                     if not mat or mat[0].is_ZeroMatrix:
                         mat.append(arg)
-                    
-            if b is not None:
-                return b[start:stop]
-            elif len(mat) == len(self.args):
+
+            if len(mat) == len(self.args):
                 if mat[0].is_DenseMatrix:
                     return self.to_DenseMatrix()
-                elif mat[0].is_ZeroMatrix:
+                
+                if mat[0].is_ZeroMatrix:
                     return ZeroMatrix(*self.shape)
+
         elif self.axis == 1:
             if blocks := self.blocks:
                 return self.func(blocks)
@@ -622,7 +662,7 @@ class BlockMatrix(MatrixExpr):
         array = []
         for X in self.args: 
             if X.is_Transpose and X.arg.is_BlockMatrix: 
-                X = X.arg       
+                X = X.arg
                 latex = r"{\left(\begin{array}{%s}%s\end{array}\right)}" % ('c' * len(X.args), ' & '.join('{%s}' % p._print(arg.T) for arg in X.args))
             else:
                 latex = '{%s}' % p._print(X)   
@@ -642,21 +682,46 @@ class BlockMatrix(MatrixExpr):
 #         return r"\begin{equation}\left(\begin{array}{c}%s\end{array}\right)\end{equation}" % r'\\'.join('{%s}' % self._print(arg) for arg in expr.args)
 
     def _sympystr(self, p):
-        tex = r"[%s]" % ','.join(p._print(arg) for arg in self.args)
+        blocks = self.blocks
+        if blocks is not None:
+            blocks = [[p._print(cell) for cell in block] for block in blocks]
+            
+            rows = len(blocks)
+            cols = len(blocks[0])
+            col_width = [max(len(blocks[i][j]) for i in range(rows)) for j in range(cols)]
+            
+            for i in range(rows):
+                for j in range(cols):
+                    diff = col_width[j] - len(blocks[i][j])
+                    if diff:
+                        blocks[i][j] = ' ' * diff + blocks[i][j]
+
+            indent = p._context.get('indent', 0) + 1
+            newline = '\n' + '    ' * indent
+            return "[%s]" % (newline + f',{newline}'.join(['[%s]' % ', '.join(row) for row in blocks]))
+            
+        array = []
+        for X in self.args: 
+            array.append(p._print(X))
+
+        tex = ", ".join(array)
         if self.axis:
-            tex = '%s[%s]' % (tex, self.axis)
+            tex = "BlockMatrix[%s](%s)" % (p._print(self.axis), tex)
+        else:
+            tex = "[%s]" % tex
         return tex
 
     def _pretty(self, p): 
         return p._print_seq(self.args, '[', ']')
     
+    @cacheit
     def _eval_domain_defined(self, x, **_):
         if x.dtype.is_set:
             return x.universalSet
         
         domain = x.domain
         for arg in self.args:
-            domain &= arg.domain_defined(x)
+            domain &= arg.domain_defined(x, allow_empty=True)
         return domain
 
     def _eval_transpose(self, axis=-1):
@@ -683,7 +748,7 @@ class BlockMatrix(MatrixExpr):
 
     def _subs(self, old, new, **hints):
         if old.is_BlockMatrix and self.axis == old.axis:
-            from sympy.utilities.misc import sunday
+            from std.search import sunday
             i = sunday(self.args, old.args)
             if i >= 0:
                 args = self.args[:i]
@@ -700,7 +765,40 @@ class BlockMatrix(MatrixExpr):
                 args += rest
                 return self.func(*args, **self.kwargs).simplify()
                 
-        return MatrixExpr._subs(self, old, new, **hints)
+        if old == new:
+            return self
+
+        if old.is_Sliced:
+            this = self._subs_sliced(old, new, **hints)
+            if this != self:
+                return this
+
+        args = [*self.args]
+        indicesToDelete = []
+        for i, arg in enumerate(args):
+            try:
+                arg = arg._subs(old, new, **hints)
+                if arg != self.args[i]:
+                    if any(s.is_zero for s in arg.shape):
+                        raise Exception('empty slices')
+                    args[i] = arg
+
+            except Exception as e:
+                if str(e) == 'empty slices':
+                    if any(s._has(old) for s in args[i].shape):
+                        indicesToDelete.append(i)
+                        continue
+                
+                raise e
+        
+        if indicesToDelete:
+            for i in reversed(indicesToDelete):
+                del args[i]
+                
+            if not args:
+                raise Exception('empty slices')
+        
+        return self.func(*args, **self.kwargs)
 
 
     def of(self, cls):
@@ -731,7 +829,29 @@ class BlockMatrix(MatrixExpr):
                     return MatrixExpr.of(self, cls)
                 else:
                     return self.args
-        
+      
+    def _hashable_content(self):
+        return self._args + (self.axis,)
+    
+    @staticmethod
+    def simplify_Lamda(self, squeeze=False):
+        return self
+    
+    def doit(self, **hints):
+        if hints.get('deep', True):
+            return self.func([arg.doit(**hints) for arg in self.args], **self.kwargs)
+        return self
+
+    def _eval_conjugate(self):
+        return self.func(*(~arg for arg in self.args), **self.kwargs, evaluate=False)
+
+    def _eval_is_singular(self):
+        if len(self.shape) == 2:
+            det = self._eval_determinant()
+            if det is not None:
+                return det.is_zero
+
+
 class BlockDiagMatrix(MatrixExpr):
     """
     A BlockDiagMatrix is a BlockMatrix with matrices only along the diagonal
@@ -766,10 +886,9 @@ class BlockDiagMatrix(MatrixExpr):
                         for i in range(len(mats))]
         return ImmutableDenseMatrix(data)
 
-    @property
-    def shape(self):
-        return (sum(block.rows for block in self.args),
-                sum(block.cols for block in self.args))
+    @cacheit
+    def _eval_shape(self):
+        return (sum(block.rows for block in self.args), sum(block.cols for block in self.args))
 
     @property
     def blockshape(self):

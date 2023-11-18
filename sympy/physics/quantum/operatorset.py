@@ -21,11 +21,6 @@ from sympy.physics.quantum.state import StateBase, BraBase, Ket
 from sympy.physics.quantum.spin import (JxOp, JyOp, JzOp, J2Op, JxKet, JyKet,
                                         JzKet)
 
-__all__ = [
-    'operators_to_state',
-    'state_to_operators'
-]
-
 #state_mapping stores the mappings between states and their associated
 #operators or tuples of operators. This should be updated when new
 #classes are written! Entries are of the form PxKet : PxOp or

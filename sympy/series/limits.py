@@ -69,8 +69,8 @@ def limit(e, z, z0, direction=1):
     """
 
     if direction == 0:
-        llim = Limit[z:z0:-1](e).doit(deep=False)
-        rlim = Limit[z:z0:1](e).doit(deep=False)
+        llim = Limit[z:z0 - S.Infinitesimal](e).doit(deep=False)
+        rlim = Limit[z:z0 + S.Infinitesimal](e).doit(deep=False)
         if llim == rlim:
             return rlim
         else:
@@ -79,7 +79,7 @@ def limit(e, z, z0, direction=1):
                     "left hand limit = %s and right hand limit = %s"
                     % (llim, rlim))
     else:
-        return Limit[z:z0:direction](e).doit(deep=False)
+        return Limit[z:z0 + S.Infinitesimal * direction](e).doit(deep=False)
 
 
 def heuristics(e, z, z0, direction):
@@ -159,16 +159,13 @@ class Limit(Expr):
     Limit(1/x, x, 0, direction='-')
 
     """
+    is_Punctured = True
 
     def __new__(cls, e, *limits):
         assert len(limits) == 1
         
         limit = limits[0]
-        if len(limit) == 3: 
-            z, z0, direction = limit
-        else:
-            z, z0 = limit
-            direction = S.Zero
+        z, z0 = limit
             
         e = sympify(e)
         z = sympify(z)
@@ -177,25 +174,26 @@ class Limit(Expr):
         
         z0 = sympify(z0)
 
-        if z0 is S.Infinity:
-            direction = S.NegativeOne
-        elif z0 is S.NegativeInfinity:
-            direction = S.One
-        elif z.shape:
-            direction = S.Zero
-
-        assert direction in (1, 0, -1), "direction must be one of 1, 0, -1, not %s" % direction
-
         obj = Expr.__new__(cls)
         from sympy import Tuple
-        obj._args = (e, Tuple(z, z0, direction))
+        obj._args = (e, Tuple(z, z0))
         return obj
 
     @property
-    def free_symbols(self):
-        e, (z, z0, direction) = self.args
-        isyms = e.free_symbols
-        isyms.difference_update(z.free_symbols)
+    def direction(self):
+        e, (z, z0) = self.args
+        infinitesimality = z0.infinitesimality
+        if infinitesimality:
+            return 1
+
+        if infinitesimality == False:
+            return -1
+        return 0
+
+    @cacheit
+    def _eval_free_symbols(self):
+        e, (z, z0) = self.args
+        isyms = e.free_symbols - z.free_symbols
         isyms.update(z0.free_symbols)
         return isyms
 
@@ -215,11 +213,16 @@ class Limit(Expr):
         from sympy.series.limitseq import limit_seq
         from sympy.functions import RisingFactorial
 
-        e, (z, z0, direction) = self.args
+        e, (z, z0) = self.args
+        z0, direction = z0.clear_infinitesimal()
+
+        if direction > 0:
+            direction = 1
+        elif direction < 0:
+            direction = -1
 
         if z0 is S.ComplexInfinity:
-            raise NotImplementedError("Limits at complex "
-                                    "infinity are not implemented")
+            raise NotImplementedError("Limits at complex infinity are not implemented")
 
         if hints.get('deep', True):
             e = e.doit(**hints)
@@ -292,15 +295,15 @@ class Limit(Expr):
         
         from sympy import dtype
         if not expr.is_real:
-            return dtype.complex        
+            return dtype.complex
         return dtype.real
 
     @property
     def is_set(self):
         return self.expr.is_set
     
-    @property
-    def shape(self): 
+    @cacheit
+    def _eval_shape(self): 
         return self.args[0].shape
 
     @property
@@ -316,31 +319,21 @@ class Limit(Expr):
         return self.args[1][0]
 
     def _sympystr(self, p):
-        e, (z, z0, direction) = self.args
-        if direction == 1:
-            return "lim[%s>%s](%s)" % tuple(map(p._print, (z, z0, e)))
-        elif direction == -1:
-            return "lim[%s<%s](%s)" % tuple(map(p._print, (z, z0, e)))
-        else:
-            return "lim[%s:%s](%s)" % tuple(map(p._print, (z, z0, e)))
+        e, (z, z0) = self.args
+        return "Limit[%s:%s](%s)" % tuple(map(p._print, (z, z0, e)))
 
     def _latex(self, p):
-        e, (z, z0, dir) = self.args
+        e, (z, z0) = self.args
 
-        tex = r"\lim\limits_{%s \to " % p._print(z)
-        if dir == 0 or z0 in (S.Infinity, S.NegativeInfinity):
-            tex += r"%s}" % p._print(z0)
-        else:
-            tex += r"%s^%s}" % (p._print(z0), p._print('+' if dir > 0 else '-'))
-
-        if isinstance(e, Add):
-#         if isinstance(e, AssocOp):
+        tex = r"\lim\limits_{%s \to %s}" % (p._print(z), p._print(z0))
+        
+        if e.is_Add:
             return r"%s\left(%s\right)" % (tex, p._print(e))
         else:
             return r"%s %s" % (tex, p._print(e))
 
     def _pretty(self, p):
-        e, (z, z0, dir) = self.args
+        e, (z, z0) = self.args
         from sympy.printing.precedence import precedence, PRECEDENCE
         from sympy.printing.pretty.stringpict import prettyForm
 
@@ -370,13 +363,13 @@ class Limit(Expr):
         return Lim
 
     def simplify(self, **kwargs):
-        expr, (x, x0, dir) = self.args
+        expr, (x, x0) = self.args
         if not expr._has(x):
             return expr
         
         if expr.is_symbol:
             if expr == x:
-                return x0
+                return x0.clear_infinitesimal()[0]
             
         if expr.is_Add:
             const = []
@@ -390,9 +383,9 @@ class Limit(Expr):
                 expr = Add(*args)
                 const = Add(*const)
                 if expr == x:
-                    return x0 + const
+                    return x0.clear_infinitesimal()[0] + const
                 
-                return Limit[x:x0:dir](expr) + const
+                return Limit[x:x0](expr) + const
             
         return self
 
@@ -430,3 +423,128 @@ class Limit(Expr):
     
     def _eval_is_super_real(self):
         return self.expr.is_super_real
+    
+    def _eval_is_random(self):
+        if self.expr.is_random:
+            return True
+
+        for x, *ab in self.limits:
+            for v in ab:
+                if v.is_random:
+                    return True
+
+    def _eval_is_extended_negative(self):
+        is_extended_negative = self.expr.is_extended_negative
+        if is_extended_negative == False:
+            return False
+
+    def _eval_is_extended_positive(self):
+        is_extended_positive = self.expr.is_extended_positive
+        if is_extended_positive == False:
+            return False
+
+    def yield_random_symbols(self):
+        limits = self.limits
+        for v in self.expr.yield_random_symbols():
+            if v.is_Indexed:
+                x, *indices = v.args
+                slices = [*indices]
+                is_random = False
+                for i, index in enumerate(indices):
+                    if index.is_random:
+                        is_random = True
+                        break
+
+                    for v, *ab in limits:
+                        if index._has(v):
+                            if v.is_integer and ab and len(ab) == 2 and not isinstance(slices[i], slice):
+                                a, b = ab
+#                                 f(x) = k * x + h
+                                h, k = slices[i].of_simple_poly(v)
+                                if k:
+                                    if k > 0:
+                                        start = slices[i]._subs(v, a)
+                                        stop = slices[i]._subs(v, b)
+                                        slices[i] = slice(start, stop, k)
+                                    elif k < 0:
+                                        stop = slices[i]._subs(v, a - 1)
+                                        start = slices[i]._subs(v, b - 1)
+                                        slices[i] = slice(start, stop, -k)
+                                    else:
+                                        slices[i] = slice(None)
+                                else:
+                                    slices[i] = slice(None)
+                            else:
+                                slices[i] = slice(None)
+                                break
+                    
+                if is_random:
+                    yield v
+                else:
+                    yield x[tuple(slices)]
+
+            else:                    
+                yield v
+
+        for x, *ab in limits:
+            for v in ab:
+                yield from v.yield_random_symbols()
+
+    def yield_effective_variable(self, variable):
+        limits = self.limits
+        for v in self.expr.yield_effective_variable(variable):
+            if v.is_Indexed:
+                x, *indices = v.args
+                slices = [*indices]
+                is_random = False
+                for i, index in enumerate(indices):
+                    if index.is_random:
+                        is_random = True
+                        break
+
+                    for v, *ab in limits:
+                        if index._has(v):
+                            if v.is_integer and ab and len(ab) == 2 and not isinstance(slices[i], slice):
+                                a, b = ab
+#                                 f(x) = k * x + h
+                                h, k = slices[i].of_simple_poly(v)
+                                if k:
+                                    if k > 0:
+                                        start = slices[i]._subs(v, a)
+                                        stop = slices[i]._subs(v, b)
+                                        slices[i] = slice(start, stop, k)
+                                    elif k < 0:
+                                        stop = slices[i]._subs(v, a - 1)
+                                        start = slices[i]._subs(v, b - 1)
+                                        slices[i] = slice(start, stop, -k)
+                                    else:
+                                        slices[i] = slice(None)
+                                else:
+                                    slices[i] = slice(None)
+                            else:
+                                slices[i] = slice(None)
+                                break
+                    
+                if is_random:
+                    yield v
+                else:
+                    yield x[tuple(slices)]
+
+            else:                    
+                yield v
+
+        for x, *ab in limits:
+            for v in ab:
+                yield from v.yield_effective_variable(variable)
+
+    def limits_in_context(self, has_args=None, parent=None):
+        limits = []
+        from sympy import Range, Interval, oo
+        for z, z0 in reversed(self.limits):
+            if not z.shape and z0.is_infinite:
+                if z.is_integer:
+                    limits.append((z, Range(1, oo) if z0 > 0 else Range(-oo, 0)))
+                else:
+                    limits.append((z, Interval(1, oo) if z0 < 0 else Interval(-oo, -1)))
+
+        return limits

@@ -150,7 +150,7 @@ class lerchphi(Function):
                 mul = z**n
                 add = Add(*[z**(n - 1 - k)/(a - k - 1)**s for k in range(n)])
 
-            m, n = S([a.p, a.q])
+            m, n = a.p, a.q
             zet = exp_polar(2*pi*I/n)
             root = z**(1/n)
             return add + mul*n**(s - 1)*Add(
@@ -161,14 +161,14 @@ class lerchphi(Function):
         if isinstance(z, exp) and (z.args[0]/(pi*I)).is_Rational or z in [-1, I, -I]:
             # TODO reference?
             if z == -1:
-                p, q = S([1, 2])
+                p, q = 1, 2
             elif z == I:
-                p, q = S([1, 4])
+                p, q = 1, 4
             elif z == -I:
-                p, q = S([-1, 4])
+                p, q = -1, 4
             else:
                 arg = z.args[0]/(2*pi*I)
-                p, q = S([arg.p, arg.q])
+                p, q = arg.p, arg.q
             return Add(*[exp(2*pi*I*k*p/q)/q**s*zeta(s, (k + a)/q)
                          for k in range(q)])
 

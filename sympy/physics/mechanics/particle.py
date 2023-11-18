@@ -2,8 +2,6 @@ from sympy.core.backend import sympify
 
 from sympy.physics.vector import Point
 
-__all__ = ['Particle']
-
 
 class Particle(object):
     """A particle.

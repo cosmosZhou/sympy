@@ -1676,8 +1676,9 @@ class totient(Function):
         elif not isinstance(n, Expr) or (n.is_integer == False) or (n.is_positive == False):
             raise ValueError("n must be a positive integer")
 
-    def _eval_is_integer(self):
-        return fuzzy_and([self.args[0].is_integer, self.args[0].is_positive])
+    def _eval_is_extended_integer(self):
+        n = self.arg
+        return fuzzy_and((n.is_extended_integer, n.is_extended_positive))
 
 
 class reduced_totient(Function):
@@ -1725,8 +1726,9 @@ class reduced_totient(Function):
                     t = ilcm(t, (p - 1) * p**(k - 1))
             return t
 
-    def _eval_is_integer(self):
-        return fuzzy_and([self.args[0].is_integer, self.args[0].is_positive])
+    def _eval_is_extended_integer(self):
+        n = self.arg
+        return fuzzy_and((n.is_extended_integer, n.is_extended_positive))
 
 
 class divisor_sigma(Function):

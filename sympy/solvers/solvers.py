@@ -1809,7 +1809,7 @@ def _solve_system(exprs, symbols, **flags):
                         j = monom.index(1)
                         matrix[j] = coeff
                     except ValueError:
-                        matrix[m] = -coeff                
+                        matrix[m] = -coeff
             else:                
                 for i, poly in enumerate(polys):
                     for monom, coeff in poly.terms():
@@ -3016,7 +3016,7 @@ def nsolve(*args, **kwargs):
             f = f.lhs - f.rhs
         syms = f.free_symbols
         if fargs is None:
-            fargs = syms.copy().pop()
+            fargs = next(iter(syms))
         if not (len(syms) == 1 and (fargs in syms or fargs[0] in syms)):
             raise ValueError(filldedent('''
                 expected a one-dimensional and numerical function'''))
@@ -3339,7 +3339,8 @@ def unrad(eq, *syms, **flags):
         # make the sign canonical
         free = eq.free_symbols
         if len(free) == 1:
-            if eq.coeff(free.pop() ** degree(eq)).could_extract_minus_sign():
+            free, = free
+            if eq.coeff(free ** degree(eq)).could_extract_minus_sign():
                 eq = -eq
         elif eq.could_extract_minus_sign():
             eq = -eq

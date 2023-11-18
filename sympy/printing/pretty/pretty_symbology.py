@@ -29,16 +29,13 @@ except ImportError:
     U = lambda name: None
 
 from sympy.printing.conventions import split_super_sub
-from sympy.core.alphabets import greeks
+from std.unicode import greeks
 
 # prefix conventions when constructing tables
 # L   - LATIN     i
 # G   - GREEK     beta
 # D   - DIGIT     0
 # S   - SYMBOL    +
-
-__all__ = ['greek_unicode', 'sub', 'sup', 'xsym', 'vobj', 'hobj', 'pretty_symbol',
-           'annotated']
 
 _use_unicode = False
 

@@ -594,7 +594,7 @@ def roots_quintic(f):
     r1 = Res[1][0]
     r1_n = Res_n[1][0]
 
-    from sympy import Im 
+    from sympy import Im
     for i in range(5):
         if comp(Im(r1_n * Res_n[4][i]), 0, tol):
             r4 = Res[4][i]

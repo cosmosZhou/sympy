@@ -70,7 +70,7 @@ class Cup(Set, ExprWithLimits):
             match_index = self.match_index(unk)
             if match_index is not None:
                 if match_index in self.limits_dict[self.variable]:
-                    return unk            
+                    return unk
             
     def intersection_sets(self, b):
         if self.is_ConditionSet:
@@ -78,7 +78,7 @@ class Cup(Set, ExprWithLimits):
                 return conditionset(self.variable, self.condition & b.condition, self.base_set & b.base_set)
             base_set = self.variable.domain & self.base_set
             if base_set in b:
-                return self                
+                return self
             return conditionset(self.variable, self.condition, self.base_set & b)
     
     @property
@@ -106,27 +106,27 @@ class Cup(Set, ExprWithLimits):
             return self
         
         if limits:
-            function = self.func(self.expr, *limits)
+            expr = self.func(self.expr, *limits)
         else:
-            function = self.expr
+            expr = self.expr
         
-        return Union(*[function._subs(i, index + a) for index in range(dif)])
+        return Union(*[expr._subs(i, index + a) for index in range(dif)])
 
     def swap(self):
         if not self.expr.is_Cup:
             return self
         U = self.expr
 
-        return U.func(self.func(U.function, *self.limits).simplify(), *U.limits)
+        return U.func(self.func(U.expr, *self.limits).simplify(), *U.limits)
 
     # this will change the default new operator!
-    def __new__(cls, function, *symbols, **assumptions):
-        function = sympify(function)
-        if function.is_EmptySet or function.is_UniversalSet:
-            return function
-        return ExprWithLimits.__new__(cls, function, *symbols, **assumptions)
+    def __new__(cls, expr, *symbols, **assumptions):
+        expr = sympify(expr)
+        if expr.is_EmptySet or expr.is_UniversalSet:
+            return expr
+        return ExprWithLimits.__new__(cls, expr, *symbols, **assumptions)
 
-    def simplify(self, deep=False):
+    def simplify(self, deep=False, **kwargs):
         if deep:
             _self = ExprWithLimits.simplify(self, deep=True)
             if _self != self:
@@ -139,172 +139,170 @@ class Cup(Set, ExprWithLimits):
                     independent.add(arg)
             if independent:
                 dependent = self.expr._argset - independent
-                function = self.expr.func(*dependent)
+                expr = self.expr.func(*dependent)
                 independent = self.expr.func(*independent)
-                return self.func(function, *self.limits) & independent
+                return self.func(expr, *self.limits) & independent
 
-        if len(self.limits) != 1:
-            return self
-        
         if self.expr.is_EmptySet:
             return self.expr
         
-        limit = self.limits[0]
+        if len(self.limits) == 1:
+            limit, = self.limits
 
-        if len(limit) == 2:
-            from sympy.core.relational import Unequal
-            x, domain = limit
+            if len(limit) == 2:
+                from sympy.core.relational import Unequal
+                x, domain = limit
 
-            if not self.expr._has(x):
-                if domain.is_bool:
-                    domain = conditionset(x, domain).simplify()
-                return Piecewise((self.expr, Unequal(domain, x.emptySet).simplify()), (self.expr.etype.emptySet, True)).simplify()
-            
-            if domain.is_FiniteSet and len(domain) == 1:
-                return self.finite_aggregate(x, domain)
-
-            if domain.is_EmptySet:
-                return self.expr.etype.emptySet
-
-            if domain.is_Union:
-                args = []
-                success = False
-                for dom in domain.args:
-                    arg = self.func(self.expr, (x, dom)).simplify()
-                    args.append(arg)
-                    if not arg.is_Cup or arg.expr != self.expr:
-                        success = True
-                if success:
-                    return Union(*args)
-
-            if domain.is_Range:
-                return self.func(self.expr, (x, domain.min(), domain.max() + 1))
-
-            if self.expr.is_Complement:
-                A, B = self.expr.args
-                if not B.has(*self.variables):
-                    return self.func(A, *self.limits) // B
-
-            if domain.is_Piecewise:
-                tuples = []
-                for e, c in domain.args: 
-                    tuples.append((self.func(self.expr, (x, e)).simplify(), c))    
-                return domain.func(*tuples)
-            if domain.is_bool:
-                if domain.is_Equal:
-                    if domain.lhs == x:
-                        return self.expr._subs(x, domain.rhs)
-                    elif domain.rhs == x:
-                        return self.expr._subs(x, domain.lhs)
-                elif domain.is_Element:
-                    if domain.lhs == x:
-                        return self.func(self.expr, (x, domain.rhs))
-                
-            if domain.is_set:
-                if not domain.is_symbol:
-                    image_set = domain.image_set()
-                    if image_set:
-                        expr, sym, base_set = image_set
-                        function = self.expr._subs(x, expr)
-                        return self.func(function, (sym, base_set))
-                
-            if self.is_ConditionSet:
-#                 domain = self.limits[0][1]
-                if domain.is_set: 
-                    return domain
-                if domain.is_And:
-                    for i, eq in enumerate(domain.args):
-                        if eq.is_Element and eq.lhs == x:
-                            eqs = [*domain.args]
-                            del eqs[i]
-                            cond = And(*eqs)
-                            return self.func[x:cond:eq.rhs](self.expr)
-                            
-            return self
-
-        if len(limit) > 2: 
-            if limit[2].is_set:
-                x, condition, base_set = limit
-                # for condition set:
-                if self.expr == x.set:
-                    domain = x.domain_conditioned(condition)
-                    if not domain.is_ConditionSet:
-                        return domain & base_set
-                    
-                if base_set.is_ConditionSet and base_set.variable == x:
-                    return self.func[x:condition & base_set.condition:base_set.base_set](self.expr).simplify()
-                     
-                if condition.domain_defined(x) & self.expr.domain_defined(x) in base_set:
-                    return self.func(self.expr, (x, condition))
-            else:
-                x, a, b = limit
-                if a == b - 1:
-                    return self.expr._subs(x, a)
-                domain = Range(a, b)
-                if self.expr.is_Piecewise: 
-#                    arr = [arr[-1]] + arr[0:-1]
-                    return self.expr.as_multiple_terms(x, domain, self.func).simplify()
-                if self.expr.is_FiniteSet:
-                    s = self.expr
-                    if len(s) == 1 and x == s.arg:
-                        return domain
                 if not self.expr._has(x):
-                    return self.expr
+                    if domain.is_bool:
+                        domain = conditionset(x, domain).simplify()
+                    return Piecewise((self.expr, Unequal(domain, x.emptySet).simplify()), (self.expr.etype.emptySet, True)).simplify()
                 
-                if self.expr.domain_defined(x) in domain:
-                    return self.func(self.expr, (x,))
+                if domain.is_FiniteSet and len(domain) == 1:
+                    return self.finite_aggregate(x, domain)
 
-        if len(limit) == 1:
-            x = limit[0]
-            if self.expr.is_FiniteSet:
-                if len(self.expr) == 1:
-                    element, *_ = self.expr.args
-                    if element == x:
-                        return x.domain
+                if domain.is_EmptySet:
+                    return self.expr.etype.emptySet
 
-            if self.expr.is_Piecewise:
-                universe = x.universalSet
-                has_x = [c._has(x) for _, c in self.expr.args[:-1]]                                
-                if not any(has_x):
-                    return self.expr.func(*((self.func(e, (x, universe)).simplify(), c) for e, c in self.expr.args)).simplify()
-                
-                if all(has_x):
-                    return self.expr.as_multiple_terms(x, universe, self.func).simplify()
+                if domain.is_Union:
+                    args = []
+                    success = False
+                    for dom in domain.args:
+                        arg = self.func(self.expr, (x, dom)).simplify()
+                        args.append(arg)
+                        if not arg.is_Cup or arg.expr != self.expr:
+                            success = True
+                    if success:
+                        return Union(*args)
 
-                if has_x[0]:
-                    index = has_x.index(False)
-                    
-                    independent_of_x = []
-                    for arg in self.expr.args[index:]: 
-                        independent_of_x.append(arg)
-                    independent_of_x = self.expr.func(*independent_of_x)
-                    
-                    dependent_on_x = []
-                    for arg in self.expr.args[:index]: 
-                        dependent_on_x.append(arg)
-                                            
-                    dependent_on_x.append((independent_of_x, True))
-                    dependent_on_x = self.expr.func(*dependent_on_x)
-                    
-                    return self.func(dependent_on_x, *self.limits).simplify()                    
-                else: 
-                    index = has_x.index(True)
-                    dependent_on_x = []
-                    for arg in self.expr.args[index:]: 
-                        dependent_on_x.append(arg)
+                if domain.is_Range:
+                    return self.func(self.expr, (x, domain.min(), domain.max() + 1))
 
-                    dependent_on_x = self.expr.func(*dependent_on_x)                    
-                    independent_of_x = []
-                    for arg in self.expr.args[:index]: 
-                        independent_of_x.append(arg)                        
-                                            
-                    independent_of_x.append((dependent_on_x, True))
-                    independent_of_x = self.expr.func(*independent_of_x)
+                if self.expr.is_Complement:
+                    A, B = self.expr.args
+                    if not B.has(*self.variables):
+                        return self.func(A, *self.limits) // B
+
+                if domain.is_Piecewise:
+                    tuples = []
+                    for e, c in domain.args: 
+                        tuples.append((self.func(self.expr, (x, e)).simplify(), c))    
+                    return domain.func(*tuples)
+                if domain.is_bool:
+                    if domain.is_Equal:
+                        if domain.lhs == x:
+                            return self.expr._subs(x, domain.rhs)
+                        elif domain.rhs == x:
+                            return self.expr._subs(x, domain.lhs)
+                    elif domain.is_Element:
+                        if domain.lhs == x:
+                            return self.func(self.expr, (x, domain.rhs))
                     
-                    return self.func(independent_of_x, *self.limits).simplify()                    
+                if domain.is_set:
+                    if not domain.is_symbol:
+                        image_set = domain.image_set()
+                        if image_set:
+                            expr, sym, base_set = image_set
+                            expr = self.expr._subs(x, expr)
+                            return self.func(expr, (sym, base_set))
+                    
+                if self.is_ConditionSet:
+    #                 domain = self.limits[0][1]
+                    if domain.is_set: 
+                        return domain
+                    if domain.is_And:
+                        for i, eq in enumerate(domain.args):
+                            if eq.is_Element and eq.lhs == x:
+                                eqs = [*domain.args]
+                                del eqs[i]
+                                cond = And(*eqs)
+                                return self.func[x:cond:eq.rhs](self.expr)
+                                
                 return self
 
-        return self
+            if len(limit) > 2: 
+                if limit[2].is_set:
+                    x, condition, base_set = limit
+                    # for condition set:
+                    if self.expr == x.set:
+                        domain = x.domain_conditioned(condition)
+                        if not domain.is_ConditionSet:
+                            return domain & base_set
+                        
+                    if base_set.is_ConditionSet and base_set.variable == x:
+                        return self.func[x:condition & base_set.condition:base_set.base_set](self.expr).simplify()
+                         
+                    if condition.domain_defined(x) & self.expr.domain_defined(x) in base_set:
+                        return self.func(self.expr, (x, condition))
+                else:
+                    x, a, b = limit
+                    if a == b - 1:
+                        return self.expr._subs(x, a)
+                    domain = Range(a, b)
+                    if self.expr.is_Piecewise: 
+    #                    arr = [arr[-1]] + arr[0:-1]
+                        return self.expr.as_multiple_terms(x, domain, self.func).simplify()
+                    if self.expr.is_FiniteSet:
+                        s = self.expr
+                        if len(s) == 1 and x == s.arg:
+                            return domain
+                    if not self.expr._has(x):
+                        return self.expr
+                    
+                    if self.expr.domain_defined(x) in domain:
+                        return self.func(self.expr, (x,))
+
+            if len(limit) == 1:
+                x = limit[0]
+                if self.expr.is_FiniteSet:
+                    if len(self.expr) == 1:
+                        element, *_ = self.expr.args
+                        if element == x:
+                            return x.domain
+
+                if self.expr.is_Piecewise:
+                    universe = x.universalSet
+                    has_x = [c._has(x) for _, c in self.expr.args[:-1]]                                
+                    if not any(has_x):
+                        return self.expr.func(*((self.func(e, (x, universe)).simplify(), c) for e, c in self.expr.args)).simplify()
+                    
+                    if all(has_x):
+                        return self.expr.as_multiple_terms(x, universe, self.func).simplify()
+
+                    if has_x[0]:
+                        index = has_x.index(False)
+                        
+                        independent_of_x = []
+                        for arg in self.expr.args[index:]: 
+                            independent_of_x.append(arg)
+                        independent_of_x = self.expr.func(*independent_of_x)
+
+                        dependent_on_x = []
+                        for arg in self.expr.args[:index]: 
+                            dependent_on_x.append(arg)
+                                                
+                        dependent_on_x.append((independent_of_x, True))
+                        dependent_on_x = self.expr.func(*dependent_on_x)
+
+                        return self.func(dependent_on_x, *self.limits).simplify()                    
+                    else: 
+                        index = has_x.index(True)
+                        dependent_on_x = []
+                        for arg in self.expr.args[index:]: 
+                            dependent_on_x.append(arg)
+
+                        dependent_on_x = self.expr.func(*dependent_on_x)                    
+                        independent_of_x = []
+                        for arg in self.expr.args[:index]: 
+                            independent_of_x.append(arg)                        
+                                                
+                        independent_of_x.append((dependent_on_x, True))
+                        independent_of_x = self.expr.func(*independent_of_x)
+
+                        return self.func(independent_of_x, *self.limits).simplify()                    
+                    return self
+
+        return ExprWithLimits.simplify(self)
 
     def union_sets(self, expr):
         if expr.is_Complement:
@@ -381,12 +379,12 @@ class Cup(Set, ExprWithLimits):
 
     def _sympystr(self, p):
         if self.is_ConditionSet: 
-            return 'ConditionSet(%s)' % ', '.join(p.doprint(arg) for arg in self.limits[0])
+            return 'conditionset(%s)' % ', '.join(p._print(arg) for arg in self.limits[0])
         
         limits = ','.join([limit._format_ineq(p) for limit in self.limits])
         if limits:
-            return '∪[%s](%s)' % (limits, p.doprint(self.expr))
-        return '∪(%s)' % p.doprint(self.expr)
+            return 'Cup[%s](%s)' % (limits, p._print(self.expr))
+        return 'Cup(%s)' % p._print(self.expr)
 
     def int_limit(self):
         if len(self.limits) == 1:
@@ -403,32 +401,30 @@ class Cup(Set, ExprWithLimits):
                 x, a, b = limit
                 if a.is_bool:
                     return x, conditionset(x, a, b)
-                is_integer = limit[0].is_integer                 
-                return x, (Range if is_integer else Interval)(a, b) 
+                return x, x.range(a, b) 
             else:
-#                 assert len(limit) == 1
-                x = limit[0]
+                x, = limit
                 return x, x.universalSet
 
     def image_set(self):
-        function = self.expr
-        if isinstance(function, FiniteSet) and len(function) == 1:
+        expr = self.expr
+        if isinstance(expr, FiniteSet) and len(expr) == 1:
             condition_limit = self.condition_limit()
             if condition_limit is not None:
                 x, baseset = condition_limit
-                expr, *_ = function
+                expr, = expr
                 return x, expr, baseset
 
     def finite_set(self):
-        function = self.expr
+        expr = self.expr
         limit = self.int_limit()
         if limit is None:
             return
 
-        x, a, b = limit        
-        if isinstance(function, FiniteSet):
-            if len(function) == 1:
-                expr, *_ = function
+        x, a, b = limit
+        if isinstance(expr, FiniteSet):
+            if len(expr) == 1:
+                expr, = expr
                 if isinstance(expr, Indexed):
                     if len(expr.indices) == 1:
                         base = expr.base
@@ -471,7 +467,7 @@ class Cup(Set, ExprWithLimits):
             return r"\left\{ %s \left| %s \right. \right\}" % (p._print(lamda_expr), varsets)
 #             return r"\left\{\left. %s \right| %s \right\}" % (p._print(lamda_expr), varsets)
 
-        function = self.expr
+        expr = self.expr
         limits = self.limits
         tex = r"\bigcup"
         
@@ -501,10 +497,10 @@ class Cup(Set, ExprWithLimits):
             else:
                 tex += r"\limits_{\substack{%s}} " % str.join('\\\\', [l._format_ineq(p) for l in limits])
 
-        if function.is_Add:
-            tex += r"\left(%s\right)" % p._print(function)
+        if expr.is_Add:
+            tex += r"\left(%s\right)" % p._print(expr)
         else:
-            tex += p._print(function)
+            tex += p._print(expr)
 
         return tex
     
@@ -512,7 +508,7 @@ class Cup(Set, ExprWithLimits):
         # DeMorgan's Law
         if self.is_ConditionSet:
             if self.base_set == universe:
-                return ~self   
+                return ~self
             if universe.is_ConditionSet:
                 if self.variable == universe.variable and universe.base_set == self.base_set:
                     return conditionset(self.variable, universe.condition & self.condition.invert(), self.base_set)                    
@@ -608,7 +604,7 @@ class Cup(Set, ExprWithLimits):
     def as_relational(self, symbol):
         """Rewrite a Union in terms of equalities and logic operators. """
         if len(self.args) == 2:
-            a, b = self.args            
+            a, b = self.args
             if (a.sup == b.inf and a.inf is S.NegativeInfinity
                     and b.sup is S.Infinity):
                 from sympy.core.relational import Ne
@@ -665,7 +661,7 @@ class Cup(Set, ExprWithLimits):
         m_ = m.doit()
         if m_ is not m:
             m = m_
-        return m        
+        return m
 
     def max(self):
         m = Maxima(self.expr.min(), *self.limits)
@@ -675,68 +671,68 @@ class Cup(Set, ExprWithLimits):
         return m
 
     def _eval_is_extended_integer(self):
-        function = self.expr                
+        expr = self.expr
         for x, domain in self.limits_dict.items():
-            if not isinstance(domain, list):
+            if not isinstance(domain, list) and domain and domain.is_set:
                 _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_extended_integer
+                expr = expr._subs(x, _x)
+        return expr.is_extended_integer
     
     def _eval_is_super_integer(self):
         return self.expr_within_context.is_super_integer
     
     def _eval_is_extended_rational(self):
-        expr = self.expr                
+        expr = self.expr
         for x, domain in self.limits_dict.items():
-            if not isinstance(domain, list):
+            if not isinstance(domain, list) and domain and domain.is_set:
                 _x = x.copy(domain=domain)
                 expr = expr._subs(x, _x)
         return expr.is_extended_rational
     
     def _eval_is_hyper_rational(self):
-        expr = self.expr                
+        expr = self.expr
         for x, domain in self.limits_dict.items():
-            if not isinstance(domain, list):
+            if not isinstance(domain, list) and domain and domain.is_set:
                 _x = x.copy(domain=domain)
                 expr = expr._subs(x, _x)
         return expr.is_hyper_rational
     
     def _eval_is_super_rational(self):
-        expr = self.expr                
+        expr = self.expr
         for x, domain in self.limits_dict.items():
-            if not isinstance(domain, list):
+            if not isinstance(domain, list) and domain and domain.is_set:
                 _x = x.copy(domain=domain)
                 expr = expr._subs(x, _x)
         return expr.is_super_rational
     
     def _eval_is_extended_real(self):
-        expr = self.expr                
+        expr = self.expr
         for x, domain in self.limits_dict.items():
-            if not isinstance(domain, list):
+            if not isinstance(domain, list) and domain and domain.is_set:
                 _x = x.copy(domain=domain)
                 expr = expr._subs(x, _x)
         return expr.is_extended_real
     
     def _eval_is_hyper_real(self):
-        expr = self.expr                
+        expr = self.expr
         for x, domain in self.limits_dict.items():
-            if not isinstance(domain, list):
+            if not isinstance(domain, list) and domain and domain.is_set:
                 _x = x.copy(domain=domain)
                 expr = expr._subs(x, _x)
         return expr.is_hyper_real
     
     def _eval_is_super_real(self):
-        expr = self.expr                
+        expr = self.expr
         for x, domain in self.limits_dict.items():
-            if not isinstance(domain, list):
+            if not isinstance(domain, list) and domain and domain.is_set:
                 _x = x.copy(domain=domain)
                 expr = expr._subs(x, _x)
         return expr.is_super_real
     
     def _eval_is_extended_complex(self):
-        expr = self.expr                
+        expr = self.expr
         for x, domain in self.limits_dict.items():
-            if not isinstance(domain, list):
+            if not isinstance(domain, list) and domain and domain.is_set:
                 _x = x.copy(domain=domain)
                 expr = expr._subs(x, _x)
         return expr.is_extended_complex
@@ -744,23 +740,26 @@ class Cup(Set, ExprWithLimits):
     def _eval_is_hyper_complex(self):
         expr = self.expr
         for x, domain in self.limits_dict.items():
-            if not isinstance(domain, list):
+            if not isinstance(domain, list) and domain and domain.is_set:
                 _x = x.copy(domain=domain)
                 expr = expr._subs(x, _x)
         return expr.is_hyper_complex
     
-    
-    def _eval_is_finite(self):
-        if self.expr.is_finite is not None:
-            return self.expr.is_finite
+    def _eval_is_finiteset(self):
+        if self.expr.is_finiteset is None:
+            return
 
-        expr = self.expr                
+        expr = self.expr
         for x, domain in self.limits_dict.items():
             if not isinstance(domain, list):
-                _x = x.copy(domain=domain, **x.assumptions0)
-                assert _x.type == x.type
-                expr = expr._subs(x, _x)
-        return expr.is_finite
+                if domain.is_bool:
+                    return
+                if domain.is_set:
+                    if domain.is_infiniteset:
+                        return
+                    _x = x.copy(domain=domain, **x.assumptions0)
+                    expr = expr._subs(x, _x)
+        return expr.is_finiteset
 
     def __add__(self, other):
         if other.has(*self.variables) or other.is_set:
@@ -836,6 +835,10 @@ class Cup(Set, ExprWithLimits):
     def identity(cls, self, **_):
         return self.etype.emptySet
 
+    @classmethod
+    def is_identity(cls, self, **_):
+        return self.is_EmptySet
+
     @property
     def is_range_stepped(self):
         expr = self.expr
@@ -890,6 +893,11 @@ class Cup(Set, ExprWithLimits):
                     return
             return b
 
+    @classmethod
+    def class_key(cls):
+        """Nice order of classes. """
+        return 6, 2, cls.__name__
+
     
 class Cap(Set, ExprWithLimits):
     """
@@ -899,14 +907,14 @@ class Cap(Set, ExprWithLimits):
     operator = Intersection
 
     # this will change the default new operator!
-    def __new__(cls, function, *symbols, **assumptions):
-        function = sympify(function)
-        if function.is_EmptySet or function.is_UniversalSet:
-            return function
-        return ExprWithLimits.__new__(cls, function, *symbols, **assumptions)
+    def __new__(cls, expr, *symbols, **assumptions):
+        expr = sympify(expr)
+        if expr.is_EmptySet or expr.is_UniversalSet:
+            return expr
+        return ExprWithLimits.__new__(cls, expr, *symbols, **assumptions)
 
     def _latex(self, p):
-        function = self.expr
+        expr = self.expr
         limits = self.limits
 
         tex = r'\bigcap'
@@ -925,10 +933,10 @@ class Cap(Set, ExprWithLimits):
             else:
                 tex += r"\limits_{\substack{%s}} " % str.join('\\\\', [l._format_ineq(p) for l in limits])
 
-        if function.is_Add:
-            tex += r"\left(%s\right)" % p._print(function)
+        if expr.is_Add:
+            tex += r"\left(%s\right)" % p._print(expr)
         else:
-            tex += p._print(function)
+            tex += p._print(expr)
 
         return tex
 
@@ -1035,192 +1043,197 @@ class Cap(Set, ExprWithLimits):
         return Minima(self.expr.max(), *self.limits)
 
     # finiteness of intersection set is hard to evaluate
-    def _eval_is_finite(self):
-        function = self.expr                
+    def _eval_is_finiteset(self):
+        if self.expr.is_finiteset is None:
+            return
+        
+        if self.expr.is_finiteset == True:
+            return True
+
+        expr = self.expr
         for x, domain in self.limits_dict.items():
-            if not isinstance(domain, list):
+            if not isinstance(domain, list) and domain and domain.is_set:
                 _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_finite
+                expr = expr._subs(x, _x)
+        return expr.is_finiteset
 
     def _eval_is_extended_integer(self):
-        function = self.expr                
+        expr = self.expr
         for x, domain in self.limits_dict.items():
-            if not isinstance(domain, list):
+            if not isinstance(domain, list) and domain and domain.is_set:
                 _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_extended_integer
+                expr = expr._subs(x, _x)
+        return expr.is_extended_integer
     
     def _eval_is_super_integer(self):
-        function = self.expr                
+        expr = self.expr
         for x, domain in self.limits_dict.items():
-            if not isinstance(domain, list):
+            if not isinstance(domain, list) and domain and domain.is_set:
                 _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_super_integer
+                expr = expr._subs(x, _x)
+        return expr.is_super_integer
     
     def _eval_is_extended_rational(self):
-        function = self.expr                
+        expr = self.expr
         for x, domain in self.limits_dict.items():
-            if not isinstance(domain, list):
+            if not isinstance(domain, list) and domain and domain.is_set:
                 _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_extended_rational
+                expr = expr._subs(x, _x)
+        return expr.is_extended_rational
     
     def _eval_is_hyper_rational(self):
-        function = self.expr                
+        expr = self.expr
         for x, domain in self.limits_dict.items():
-            if not isinstance(domain, list):
+            if not isinstance(domain, list) and domain and domain.is_set:
                 _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_hyper_rational
+                expr = expr._subs(x, _x)
+        return expr.is_hyper_rational
     
     def _eval_is_super_rational(self):
-        function = self.expr                
+        expr = self.expr
         for x, domain in self.limits_dict.items():
-            if not isinstance(domain, list):
+            if not isinstance(domain, list) and domain and domain.is_set:
                 _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_super_rational
+                expr = expr._subs(x, _x)
+        return expr.is_super_rational
     
     def _eval_is_extended_real(self):
-        function = self.expr                
+        expr = self.expr
         for x, domain in self.limits_dict.items():
-            if not isinstance(domain, list):
+            if not isinstance(domain, list) and domain and domain.is_set:
                 _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_extended_real
+                expr = expr._subs(x, _x)
+        return expr.is_extended_real
     
     def _eval_is_hyper_real(self):
-        function = self.expr                
+        expr = self.expr
         for x, domain in self.limits_dict.items():
-            if not isinstance(domain, list):
+            if not isinstance(domain, list) and domain and domain.is_set:
                 _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_hyper_real
+                expr = expr._subs(x, _x)
+        return expr.is_hyper_real
     
     def _eval_is_super_real(self):
-        function = self.expr                
+        expr = self.expr
         for x, domain in self.limits_dict.items():
-            if not isinstance(domain, list):
+            if not isinstance(domain, list) and domain and domain.is_set:
                 _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_super_real
+                expr = expr._subs(x, _x)
+        return expr.is_super_real
     
     def _eval_is_extended_complex(self):
-        function = self.expr                
+        expr = self.expr
         for x, domain in self.limits_dict.items():
-            if not isinstance(domain, list):
+            if not isinstance(domain, list) and domain and domain.is_set:
                 _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_extended_complex
+                expr = expr._subs(x, _x)
+        return expr.is_extended_complex
     
     def _eval_is_hyper_complex(self):
-        function = self.expr
+        expr = self.expr
         for x, domain in self.limits_dict.items():
-            if not isinstance(domain, list):
+            if not isinstance(domain, list) and domain and domain.is_set:
                 _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_hyper_complex
+                expr = expr._subs(x, _x)
+        return expr.is_hyper_complex
     
-    def simplify(self, deep=False):
+    def simplify(self, deep=False, **kwargs):
         if deep:
             _self = ExprWithLimits.simplify(self, deep=True)
             if _self != self:
                 return _self
-        if len(self.limits) != 1:
-            return self
-        
-        limit = self.limits[0]
-        if len(limit) == 2: 
-            from sympy.core.relational import Unequal
-            x, domain = limit
 
-            if not self.expr._has(x): 
+        if len(self.limits) == 1:
+            limit, = self.limits
+            if len(limit) == 2: 
+                from sympy.core.relational import Unequal
+                x, domain = limit
+
+                if not self.expr._has(x):
+                    if domain.is_bool:
+                        from sympy import conditionset
+                        domain = conditionset(x, domain).simplify()
+                    return Piecewise((self.expr, Unequal(domain, x.emptySet).simplify()), (self.expr.etype.universalSet, True)).simplify()
+
+                if domain.is_FiniteSet and len(domain) == 1:
+                    return self.finite_aggregate(x, domain)
+
+                if domain.is_EmptySet:
+                    return self.expr.etype.universalSet
+
+                if domain.is_Intersection:
+                    args = []
+                    success = False
+                    for dom in domain.args:
+                        arg = self.func(self.expr, (x, dom)).simplify()
+                        args.append(arg)
+                        if not arg.is_Cap or arg.expr != self.expr:
+                            success = True
+                    if success:
+                        return Intersection(*args)
+
+                if domain.is_Range:
+                    return self.func(self.expr, (x, domain.min(), domain.max() + 1))
+
+                if self.expr.is_Complement:
+                    A, B = self.expr.args
+                    if not B.has(*self.variables):
+                        return self.func(A, *self.limits) // B
+
+                if domain.is_Piecewise:
+                    tuples = []
+                    for e, c in domain.args: 
+                        tuples.append((self.func(self.expr, (x, e)).simplify(), c))    
+                    return domain.func(*tuples)
                 if domain.is_bool:
-                    from sympy import conditionset
-                    domain = conditionset(x, domain).simplify()
-                return Piecewise((self.expr, Unequal(domain, x.emptySet).simplify()), (self.expr.etype.universalSet, True)).simplify()
+                    if domain.is_Equal:
+                        if domain.lhs == x:
+                            return self.expr._subs(x, domain.rhs)
+                        elif domain.rhs == x:
+                            return self.expr._subs(x, domain.lhs)
+                    elif domain.is_Element:
+                        if domain.lhs == x:
+                            return self.func(self.expr, (x, domain.rhs))
+
+                if domain.is_set:
+                    if not domain.is_symbol:
+                        image_set = domain.image_set()
+                        if image_set:
+                            expr, sym, base_set = image_set
+                            expr = self.expr._subs(x, expr)
+                            return self.func(expr, (sym, base_set))
+
+                if self.is_ConditionSet:
+    #                 domain = self.limits[0][1]
+                    if domain.is_set: 
+                        return domain
+                    if domain.is_And:
+                        for i, eq in enumerate(domain.args):
+                            if eq.is_Element and eq.lhs == x:
+                                eqs = [*domain.args]
+                                del eqs[i]                            
+                                cond = And(*eqs)
+                                return self.func[x:cond:eq.rhs](self.expr)
+
+                return self
             
-            if domain.is_FiniteSet and len(domain) == 1:
-                return self.finite_aggregate(x, domain)
-
-            if domain.is_EmptySet:
-                return self.expr.etype.universalSet
-
-            if domain.is_Intersection:
-                args = []
-                success = False
-                for dom in domain.args:
-                    arg = self.func(self.expr, (x, dom)).simplify()
-                    args.append(arg)
-                    if not arg.is_Cap or arg.expr != self.expr:
-                        success = True
-                if success:
-                    return Intersection(*args)
-
-            if domain.is_Range:
-                return self.func(self.expr, (x, domain.min(), domain.max() + 1))
-
-            if self.expr.is_Complement:
-                A, B = self.expr.args
-                if not B.has(*self.variables):
-                    return self.func(A, *self.limits) // B
-
-            if domain.is_Piecewise:
-                tuples = []
-                for e, c in domain.args: 
-                    tuples.append((self.func(self.expr, (x, e)).simplify(), c))    
-                return domain.func(*tuples)
-            if domain.is_bool:
-                if domain.is_Equal:
-                    if domain.lhs == x:
-                        return self.expr._subs(x, domain.rhs)
-                    elif domain.rhs == x:
-                        return self.expr._subs(x, domain.lhs)
-                elif domain.is_Element:
-                    if domain.lhs == x:
-                        return self.func(self.expr, (x, domain.rhs))
+            if len(limit) == 3:
+                x, a, b = limit
+                if a == b - 1:
+                    return self.expr._subs(x, a)
                 
-            if domain.is_set:
-                if not domain.is_symbol:
-                    image_set = domain.image_set()
-                    if image_set:
-                        expr, sym, base_set = image_set
-                        function = self.expr._subs(x, expr)
-                        return self.func(function, (sym, base_set))
+                domain = Range(a, b)
+                if self.expr.is_FiniteSet:
+                    s = self.expr
+                    if len(s) == 1 and x == s.arg:
+                        return domain
+                if not self.expr._has(x):
+                    return self.expr
                 
-            if self.is_ConditionSet:
-#                 domain = self.limits[0][1]
-                if domain.is_set: 
-                    return domain
-                if domain.is_And:
-                    for i, eq in enumerate(domain.args):
-                        if eq.is_Element and eq.lhs == x:
-                            eqs = [*domain.args]
-                            del eqs[i]                            
-                            cond = And(*eqs)
-                            return self.func[x:cond:eq.rhs](self.expr)
-                            
-            return self
-        
-        if len(limit) == 3:
-            x, a, b = limit
-            if a == b - 1:
-                return self.expr._subs(x, a)
-            
-            domain = Range(a, b)
-            if self.expr.is_FiniteSet:
-                s = self.expr
-                if len(s) == 1 and x == s.arg:
-                    return domain
-            if not self.expr._has(x):
-                return self.expr
-            
-            if self.expr.domain_defined(x) in domain:
-                return self.func(self.expr, (x,))
+                if self.expr.domain_defined(x) in domain:
+                    return self.func(self.expr, (x,))
 
-        return self
+        return ExprWithLimits.simplify(self)
 
     def intersection_sets(self, expr):
         
@@ -1251,8 +1264,8 @@ class Cap(Set, ExprWithLimits):
     def _sympystr(self, p):
         limits = ','.join([limit._format_ineq(p) for limit in self.limits])
         if limits:
-            return '∩[%s](%s)' % (limits, p.doprint(self.expr))
-        return '∩(%s)' % p.doprint(self.expr)
+            return 'Cap[%s](%s)' % (limits, p._print(self.expr))
+        return 'Cap(%s)' % p._print(self.expr)
 
     @property
     def etype(self):
@@ -1268,3 +1281,11 @@ class Cap(Set, ExprWithLimits):
     def identity(cls, self, **_):
         return self.etype.universalSet
 
+    @classmethod
+    def is_identity(cls, self, **_):
+        return self.is_UniversalSet
+
+    @classmethod
+    def class_key(cls):
+        """Nice order of classes. """
+        return 6, 1, cls.__name__

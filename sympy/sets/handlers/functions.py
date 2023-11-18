@@ -1,6 +1,6 @@
 from sympy import Set, symbols, exp, log, S, Wild
 from sympy.core import Expr, Add
-from sympy.core.function import Lambda, FunctionClass
+from sympy.core.function import Lambda
 from sympy.core.mod import Mod
 from sympy.logic.boolalg import true
 from sympy.multipledispatch import dispatch
@@ -9,12 +9,8 @@ from sympy.sets import (imageset, Interval, FiniteSet, Union, ImageSet,
 
 _x, _y = symbols("x y")
 
-FunctionUnion = (FunctionClass, Lambda)
+FunctionUnion = Lambda
 
-
-@dispatch(FunctionClass, Set)
-def _set_function(f, x):
-    return None
 
 @dispatch(FunctionUnion, FiniteSet)
 def _set_function(f, x):
@@ -104,14 +100,6 @@ def _set_function(f, x):
             Union(*[imageset(f, Interval(sing[i], sing[i + 1], left_open=True, right_open=True))
                     for i in range(0, len(sing) - 1)]) + \
             imageset(f, Interval(sing[-1], x.stop, left_open=True, right_open=x.right_open))
-
-@dispatch(FunctionClass, Interval)
-def _set_function(f, x):
-    if f == exp:
-        return Interval(exp(x.start), exp(x.stop), left_open=x.left_open, right_open=x.right_open)
-    elif f == log:
-        return Interval(log(x.start), log(x.stop), left_open=x.left_open, right_open=x.right_open)
-    return ImageSet(Lambda(_x, f(_x)), x)
 
 @dispatch(FunctionUnion, Union)
 def _set_function(f, x):

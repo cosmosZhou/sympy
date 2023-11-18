@@ -21,26 +21,15 @@ from sympy import (S, sympify, Rational, binomial, cacheit, Integer,
 from sympy import beta as beta_fn
 from sympy.stats.frv import (SingleFiniteDistribution,
                              SingleFinitePSpace)
-from sympy.stats.rv import _value_check, PDF, is_random
+from sympy.stats.rv import _value_check
 
-
-__all__ = ['FiniteRV',
-'DiscreteUniform',
-'Die',
-'Bernoulli',
-'Coin',
-'Binomial',
-'BetaBinomial',
-'Hypergeometric',
-'Rademacher'
-]
 
 def rv(name, cls, *args):
     args = list(map(sympify, args))
     dist = cls(*args)
     dist.check(*args)
     pspace = SingleFinitePSpace(name, dist)
-    if any(is_random(arg) for arg in args):
+    if any(arg.is_random for arg in args):
         from sympy.stats.compound_rv import CompoundPSpace, CompoundDistribution
         pspace = CompoundPSpace(name, CompoundDistribution(dist))
     return pspace.value
@@ -205,7 +194,7 @@ class DieDistribution(SingleFiniteDistribution):
 
     def pmf(self, x):
         x = sympify(x)
-        if not (x.is_number or x.is_Symbol or is_random(x)):
+        if not (x.is_number or x.is_Symbol or x.is_random):
             raise ValueError("'x' expected as an argument of type 'number' or 'Symbol' or , "
                         "'RandomSymbol' not %s" % (type(x)))
         cond = Ge(x, 1) & Le(x, self.sides) & Element(x, S.Integers)
@@ -391,7 +380,7 @@ class BinomialDistribution(SingleFiniteDistribution):
     def pmf(self, x):
         n, p = self.n, self.p
         x = sympify(x)
-        if not (x.is_number or x.is_Symbol or is_random(x)):
+        if not (x.is_number or x.is_Symbol or x.is_random):
             raise ValueError("'x' expected as an argument of type 'number' or 'Symbol' or , "
                         "'RandomSymbol' not %s" % (type(x)))
         cond = Ge(x, 0) & Le(x, n) & Element(x, S.Integers)

@@ -6,8 +6,6 @@ This module has all the classes and functions related to waves in optics.
 * TWave
 """
 
-__all__ = ['TWave']
-
 from sympy import (sympify, pi, sin, cos, sqrt, Symbol, S,
     symbols, Derivative, atan2)
 from sympy.core.expr import Expr

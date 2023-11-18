@@ -10,6 +10,7 @@ from sympy.logic.boolalg import (And, Boolean, distribute_and_over_or,
 from sympy.utilities.iterables import uniq, ordered, product, sift
 from sympy.utilities.misc import filldedent, func_name
 from sympy.sets.fancysets import Reals
+from sympy.core.cache import cacheit
 
 Undefined = S.NaN  # Piecewise()
 
@@ -66,11 +67,27 @@ class ExprCondPair(Basic):
     def __len__(self):
         return 2
     
+    @cacheit
     def _eval_domain_defined(self, x, **_):
         domain = Basic._eval_domain_defined(self, x)
         for arg in self.args:
             domain &= arg.domain_defined(x)
         return domain
+
+    def limits_in_context(self, has_args=None, parent=None):
+        cond = self.cond
+        for e, c in parent.args:
+            if e == self.expr:
+                break
+            cond &= c.invert()
+
+        if cond.is_And:
+            return [(eq.wrt, eq) for eq in cond.args]
+        else: 
+            return [(cond.wrt, cond)]
+
+    def _sympystr(self, p):
+        return '(%s, %s)' % (p._print(self.expr), p._print(self.cond))
 
 
 class Piecewise(Function):
@@ -143,8 +160,8 @@ class Piecewise(Function):
             if s is None:
                 s = free_symbols
             else:
-                s &= free_symbols
-        return s 
+                s = s & free_symbols
+        return s
         
     @property
     def set(self):
@@ -170,7 +187,7 @@ class Piecewise(Function):
             if cond.is_BooleanFalse:
                 continue
             newargs.append(pair)
-            if cond:
+            if cond == True:
                 break
             
         if options.pop('evaluate', True):
@@ -183,8 +200,8 @@ class Piecewise(Function):
         else:
             return r
 
-    @property
-    def shape(self):
+    @cacheit
+    def _eval_shape(self):
         for e, _ in self.args:
             return e.shape
 
@@ -223,7 +240,7 @@ class Piecewise(Function):
                         # we can treat function like a symbol
                         free = funcs
                     _c = c
-                    x = free.pop()
+                    x, = free
                     try:
                         c = c.as_set().as_relational(x)
                     except:
@@ -352,12 +369,13 @@ class Piecewise(Function):
         return self.func(*newargs)
 
     def __sub__(self, other):
-        if other.is_Piecewise: 
-            other = self.func(*((-e, c) for e, c in other.args))
-            return Function.__add__(self, other)
-        
-        if other.is_Function:
-            return Function.__sub__(self, other)
+        if isinstance(other, Basic):
+            if other.is_Piecewise: 
+                other = self.func(*((-e, c) for e, c in other.args))
+                return Function.__add__(self, other)
+            
+            if other.is_Function:
+                return Function.__sub__(self, other)
         
         newargs = []
         for e, c in self.args:
@@ -926,7 +944,7 @@ class Piecewise(Function):
         # somewhat more efficient by avoiding other substitutions
         # and avoiding invalid conditions that appear after a
         # True condition
-        args = []        
+        args = []
         hit = False
         from sympy.core.basic import _aresame
         
@@ -937,24 +955,24 @@ class Piecewise(Function):
                 hit = True
                 continue
             if not _aresame(_c, c):
-                hit = True  
-                c = _c    
+                hit = True
+                c = _c
                       
             _e = e._subs(old, new)
             if not _aresame(_e, e):
-                hit = True  
-                e = _e    
+                hit = True
+                e = _e
                      
             args.append((e, c))
             if c:
                 break
         if hit:
             return self.func(*args)
-        return self        
+        return self
 
     def _eval_transpose(self, axis=-1):
         if axis == self.default_axis:
-            return self.func(*[(e.transpose(), c) for e, c in self.args])
+            return self.func(*((e.T, c) for e, c in self.args))
 
     def _eval_template_is_attr(self, is_attr):
         b = None
@@ -967,12 +985,12 @@ class Piecewise(Function):
             elif b != a:
                 return
         return b
-    
+
     _eval_is_finite = lambda self: self._eval_template_is_attr('is_finite')
-    _eval_is_complex = lambda self: self._eval_template_is_attr('is_complex')
+    _eval_is_extended_complex = lambda self: self._eval_template_is_attr('is_extended_complex')
     _eval_is_even = lambda self: self._eval_template_is_attr('is_even')
     _eval_is_imaginary = lambda self: self._eval_template_is_attr('is_imaginary')
-    _eval_is_integer = lambda self: self._eval_template_is_attr('is_integer')
+    _eval_is_extended_integer = lambda self: self._eval_template_is_attr('is_extended_integer')
     _eval_is_irrational = lambda self: self._eval_template_is_attr('is_irrational')
     _eval_is_negative = lambda self: self._eval_template_is_attr('is_negative')
     _eval_is_polar = lambda self: self._eval_template_is_attr('is_polar')
@@ -980,7 +998,7 @@ class Piecewise(Function):
     _eval_is_extended_real = lambda self: self._eval_template_is_attr('is_extended_real')
     _eval_is_extended_positive = lambda self: self._eval_template_is_attr('is_extended_positive')
     _eval_is_extended_negative = lambda self: self._eval_template_is_attr('is_extended_negative')
-    _eval_is_real = lambda self: self._eval_template_is_attr('is_real')
+    _eval_is_extended_real = lambda self: self._eval_template_is_attr('is_extended_real')
     _eval_is_zero = lambda self: self._eval_template_is_attr('is_zero')
 
     @classmethod
@@ -1051,7 +1069,7 @@ class Piecewise(Function):
             # loop over independent conditions for this b
             for c in c.args if isinstance(c, Or) else [c]:
                 free = c.free_symbols
-                x = free.pop()
+                x = next(iter(free))
                 try:
                     byfree[x] = byfree.setdefault(x, x.emptySet).union(c.as_set())
                 except NotImplementedError:
@@ -1088,6 +1106,7 @@ class Piecewise(Function):
             domain.append(x.domain_conditioned(condition) & function.domain_nonzero(x))
         return Union(*domain)
 
+    @cacheit
     def _eval_domain_defined(self, x, **_):
         domain = x.emptySet
         for expr, cond in self.args:
@@ -1118,7 +1137,7 @@ class Piecewise(Function):
             elif e1 == rhs:
                 if Equal(e0, rhs) == False:
                     c1 = c0.invert()
-                    return c1                
+                    return c1
                 
         elif rhs.is_Add and lhs in rhs.args:
             cls = rhs.func
@@ -1150,10 +1169,16 @@ class Piecewise(Function):
     @staticmethod
     def simplify_Equality(e0, e1, lhs, rhs):
         from sympy.functions.special.tensor_functions import KroneckerDelta
+        hit = False
         if lhs.is_integer and rhs.is_integer:
             eq = KroneckerDelta(lhs, rhs)
-            e1 = e1._subs(eq, S.Zero)
-            e0 = e0._subs(eq, S.One)
+            _e1 = e1._subs(eq, S.Zero)
+            hit = _e1 != e1
+            e1 = _e1
+            
+            _e0 = e0._subs(eq, S.One)
+            hit |= _e0 != e0
+            e0 = _e0
 
         _e0 = e0._subs(lhs, rhs)
         __e0 = e0._subs(rhs, lhs)
@@ -1162,7 +1187,7 @@ class Piecewise(Function):
             return e1
         
         if not e0.is_set and lhs.is_integer and rhs.is_integer:
-            e_diff = e0 - e1                   
+            e_diff = e0 - e1
             if lhs.is_symbol: 
 #                 precautious usage of domain_defined
                 domain_defined = e_diff.domain_defined(lhs)
@@ -1174,11 +1199,17 @@ class Piecewise(Function):
             if not lhs.is_Number:
                 if e_diff.is_infinite:
                     return
-                
-                delta *= e_diff._subs(lhs, rhs)
-                
+                _e_diff = e_diff._subs(lhs, rhs)
+                hit |= _e_diff != e_diff
+                delta *= _e_diff
+
             delta += e1
-            return delta.simplify()
+            _delta = delta.simplify()
+            hit |= _delta != delta
+            if hit:
+                return _delta
+            return
+
         from sympy import Complement
         
         if e1.is_Complement:
@@ -1215,7 +1246,7 @@ class Piecewise(Function):
         if not i:
             return self
         ei, ci = self.args[i]
-        x, domain = ci.args        
+        x, domain = ci.args
         
         union = self.union_domain(i) 
 
@@ -1230,9 +1261,9 @@ class Piecewise(Function):
         
     def union_domain(self, i):
         _, ci = self.args[i]
-        x, _ = ci.args        
+        x, _ = ci.args
         
-        union = x.emptySet 
+        union = x.emptySet
         for j in range(i):
             _, condition = self.args[j]
             union |= x.domain_conditioned(condition)
@@ -1242,9 +1273,9 @@ class Piecewise(Function):
         if not i:
             return self
         ei, ci = self.args[i]
-        x, domain = ci.args        
+        x, domain = ci.args
         
-        universe = x.domain        
+        universe = x.domain
         union = self.union_domain(i)
         
         for j, s in enumerate(domain.args):
@@ -1331,7 +1362,7 @@ class Piecewise(Function):
                             _f = f._subs(wrt, _x).simplify(deep=deep)._subs(_x, wrt)
                                                         
                         if _f != f:
-                            hit = True 
+                            hit = True
                             f = _f
                     args.append((f, cond))
                             
@@ -1350,11 +1381,11 @@ class Piecewise(Function):
                 _e = e.simplify(deep=deep)
                 if _e != e:
                     e = _e
-                    hit = True                    
+                    hit = True
                 _c = c.simplify(deep=deep)
                 if _c != c:
                     c = _c
-                    hit = True                                    
+                    hit = True
                 args.append((e, c))
                 
             if hit:
@@ -1379,12 +1410,12 @@ class Piecewise(Function):
             if c0.is_Equal:
                 res = Piecewise.simplify_Equality(e0, e1, *c0.args)
                 if res is not None:
-                    return res                
+                    return res
                                          
             if c0.is_Unequal:
                 res = Piecewise.simplify_Equality(e1, e0, *c0.args)
                 if res is not None:
-                    return res     
+                    return res
                 
             from sympy.sets.contains import NotElement, Element
             if c0.is_Element:
@@ -1459,7 +1490,7 @@ class Piecewise(Function):
             if _c:
                 return e
             U &= c.invert()
-        return self 
+        return self
     
     def select_cond(self, expr):
         u = S.true
@@ -1498,15 +1529,6 @@ class Piecewise(Function):
             tuples.append((e & b, c))    
         return self.func(*tuples)
 
-    def _eval_is_integer(self): 
-        for e, _ in self.args:
-            if e.is_EmptySet:
-                continue
-            if e.is_integer:
-                continue            
-            return                
-        return True
-
     def _complement(self, universe):
         if universe.is_Piecewise: 
             return
@@ -1521,10 +1543,10 @@ class Piecewise(Function):
         u = S.true
         for e, c in self.args:
             args = []
-            _u = S.true            
-            c_ = c & u            
+            _u = S.true
+            c_ = c & u
             for _e, _c in other.args:
-                _c_ = _c & _u                
+                _c_ = _c & _u
                 _c_ = c_ & _c_
                 
                 if _c_.is_BooleanFalse:
@@ -1660,8 +1682,8 @@ class Piecewise(Function):
     def as_multiple_terms(self, x, domain, cls):
         universalSet = x.universalSet
         args = []
-        union = x.emptySet 
-        assert x in self.scope_variables            
+        union = x.emptySet
+        assert x in self.scope_variables
         for f, condition in self.args:
             _domain = (universalSet - union) & x.domain_conditioned(condition) & domain
             if not condition:
@@ -1716,7 +1738,77 @@ class Piecewise(Function):
                 if expr.is_Piecewise:
                     expr.check_sanctity()
          
+    def _eval_torch(self):
+        for expr, cond in self.args:
+            if cond.torch == True:
+                return expr.torch
     
+    @staticmethod
+    def simplify_Lamda(self, squeeze=False):
+        limits_dict = self.limits_dict
+        if len(limits_dict) > 1:
+            expr = self.func(self.expr, self.limits[0]).simplify(squeeze=squeeze)
+            if not expr.is_Lamda:
+                return self.func(expr, *self.limits[1:]).simplify(squeeze=squeeze)
+            if not expr.expr.is_Piecewise:
+                return self.func(expr.expr, *expr.limits, *self.limits[1:])
+                
+        else:
+            if len(self.expr.args) == 2:
+                e0, c0 = self.expr.args[0]
+                if c0.is_Element:
+                    e, s = c0.args
+                    if e in limits_dict.keys():
+                        if s.is_Complement:
+                            U, A = s.args
+                            domain, *_ = limits_dict.values()
+                            if domain in U:
+                                e1, _ = self.expr.args[1]
+                                from sympy.sets.contains import Element
+                                expr = self.expr.func((e1, Element(e, A)), (e0, True)).simplify()
+                                return self.func(expr, *self.limits).simplify(squeeze=squeeze)
+                        elif s.is_Range:
+                            if limits_dict[e] in s:
+                                return self.func(e0, *self.limits).simplify(squeeze=squeeze)
+            if self.expr.is_set:
+                return self
+            
+            args = []
+            for e, c in self.expr.args:
+                if not e._has(self.variable):
+                    return self
+                
+                if c._has(self.variable):
+                    return self
+                
+                this_old = self.func(e, *self.limits)
+                this = this_old.simplify()
+                if this == this_old:
+                    return self
+                
+                args.append((this, c))
+                
+            return self.expr.func(*args)
+        
+        return self
+                
+    @cacheit
+    def sort_key(self, order=None):
+        args = self.args
+        args = tuple(arg.sort_key(order=order) for arg in args)
+        args = len(args), tuple(arg.class_key() for arg in self.args), args
+        
+        return self.class_key(), args, S.One.sort_key(order=order), S.One
+
+    @classmethod
+    def class_key(cls):
+        return 5, 100, cls.__name__
+
+    @property
+    def T(self):
+        return self.func(*((e.T, c) for e, c in self.args))
+
+
 def piecewise_fold(expr):
     """
     Takes an expression containing a piecewise function and returns the

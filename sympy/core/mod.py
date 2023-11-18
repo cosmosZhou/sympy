@@ -1,6 +1,7 @@
 from sympy.core.numbers import nan
 from .function import Function
 from .kind import NumberKind
+from sympy.core.cache import cacheit
 
 
 class Mod(Function):
@@ -74,7 +75,7 @@ class Mod(Function):
                 return S.Zero
             try:
                 d = int(r)
-            except TypeError:
+            except (TypeError, AttributeError):
                 pass
             else:
                 if isinstance(d, int):
@@ -252,7 +253,7 @@ class Mod(Function):
                                  p._print(self.args[1]))
 
     def _sympystr(self, p):
-        n, d = self.args 
+        n, d = self.args
         if n.is_Add or n.is_Mul:
             n = '(%s)' % p._print(n)
         else:
@@ -281,6 +282,7 @@ class Mod(Function):
                 return self.func(self.args[0] + other.args[0], self.args[1])
         return Function.__add__(self, other)
 
+    @cacheit
     def _eval_domain_defined(self, x, **_):
         domain = Function._eval_domain_defined(self, x)
         n, d = self.args

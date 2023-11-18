@@ -21,8 +21,7 @@ class Cofactors(MatrixExpr):
     def arg(self):
         return self.args[0]
 
-    @property
-    def shape(self):
+    def _eval_shape(self):
         return self.arg.shape
     
     def doit(self, **hints):

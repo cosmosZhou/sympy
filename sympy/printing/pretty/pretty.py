@@ -339,7 +339,7 @@ class PrettyPrinter(Printer):
         x = None
         count_total_deriv = 0
 
-        for sym, num in reversed(deriv.variable_count):
+        for sym, num in reversed(deriv.limits):
             s = self._print(sym)
             ds = prettyForm(*s.left(deriv_symbol))
             count_total_deriv += num

@@ -7,7 +7,6 @@ from sympy.core.add import Add
 from sympy.core.mul import Mul
 from sympy.printing.repr import srepr
 
-__all__ = ['dotprint']
 
 default_styles = (
     (Basic, {'color': 'blue', 'shape': 'ellipse'}),

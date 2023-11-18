@@ -1,7 +1,5 @@
 """Options manager for :class:`Poly` and public API functions. """
 
-__all__ = ["Options"]
-
 from sympy.core import S, Basic, sympify
 from sympy.core.compatibility import with_metaclass
 from sympy.polys.polyerrors import GeneratorsError, OptionError, FlagError
@@ -280,10 +278,11 @@ class Gens(with_metaclass(OptionType, Option)):
 
     @classmethod
     def preprocess(cls, gens): 
-        from sympy import Symbol, Function, Pow, Sum, Sliced, Indexed
+        from sympy import Symbol, Function, Pow, Sliced, Indexed
+        from sympy.concrete.expr_with_limits import AddWithLimits
         if isinstance(gens, Basic):
             gens = (gens,)
-        elif len(gens) == 1 and hasattr(gens[0], '__iter__') and not isinstance(gens[0], (Sliced, Indexed, Symbol, Function, Pow, Sum)):
+        elif len(gens) == 1 and hasattr(gens[0], '__iter__') and not isinstance(gens[0], (Sliced, Indexed, Symbol, Function, Pow, AddWithLimits)):
             gens = gens[0]
 
         if gens == (None,):

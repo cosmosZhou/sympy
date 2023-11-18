@@ -6,8 +6,6 @@
 
 from sympy.physics.units import second, meter, kilogram, ampere
 
-__all__ = ['Medium']
-
 from sympy import Symbol, sympify, sqrt
 from sympy.physics.units import speed_of_light, u0, e0
 

@@ -77,7 +77,7 @@ class ExpBase(Function):
         return self.func(1), Mul(*self.args)
 
     def _eval_conjugate(self):
-        return self.func(self.args[0].conjugate())
+        return self.func(self.arg.conjugate())
 
     def _eval_is_finite(self):
         arg = self.args[0]
@@ -315,7 +315,7 @@ class Exp(ExpBase):
             re = re.expand(deep, **hints)
             im = im.expand(deep, **hints)
         cos, sin = sympy.cos(im), sympy.sin(im)
-        return (exp(re) * cos, exp(re) * sin)
+        return exp(re) * cos, exp(re) * sin
 
     def _eval_subs(self, old, new, **hints):
         # keep processing of power-like args centralized in Pow
@@ -451,7 +451,7 @@ class Exp(ExpBase):
         else:
             return Interval(-oo, oo)
 
-    def is_continuous(self, *args):
+    def is_continuous_at(self, *args):
         return True
     
     def monotonicity(self, x):
@@ -459,7 +459,38 @@ class Exp(ExpBase):
         if arg is None:
             return None, 0
         return self.func(arg, evaluate=False), monotonicity
+
+    def _eval_torch(self):
+        return self.arg.torch.exp()
     
+    @classmethod
+    def _eval_simplify_Lamda(cls, self, squeeze=False):
+        expr = self.expr
+        arg, *limits = expr.args
+        lamda = self.func(arg, *self.limits)
+        _lamda = lamda.simplify()
+        if lamda != _lamda:
+            return expr.func(_lamda, *limits, evaluate=False)
+             
+        return self
+           
+    @classmethod
+    def sub_class_key(cls):
+        return 10
+
+    def _eval_is_nonzero(self):
+        if self.shape:
+            zero = self.is_zero
+            if zero:
+                return False
+            if zero == False:
+                return self.is_complex
+            
+            return
+            
+        return ExpBase._eval_is_nonzero(self)
+
+
 exp = Exp
     
 def match_real_imag(expr):
@@ -912,10 +943,16 @@ class Log(Function):
             return r"\log \left(%s\right)" % arg
         return r"\log {%s}" % arg
 
-    def domain_definition(self):
+    def domain_definition(self, **_):
         from sympy import Unequal
-        return Unequal(self.arg, 0)
+        arg = self.arg
+        if arg.shape:
+            indices, limits = arg.variables_with_limits()
+            from sympy import ForAll
+            return ForAll(Unequal(arg[tuple(indices)], 0), *limits)
+        return Unequal(arg, 0)
     
+    @cacheit
     def _eval_domain_defined(self, x, **kwargs):
         real = kwargs.get('real')
         arg = self.arg
@@ -931,8 +968,12 @@ class Log(Function):
         else:
             return arg._eval_domain_defined(x, zero=False)
     
+    @classmethod
+    def sub_class_key(cls):
+        return 11
 
-log = Log    
+
+log = Log
 
 
 class LambertW(Function):

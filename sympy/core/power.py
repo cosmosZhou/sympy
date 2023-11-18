@@ -310,8 +310,8 @@ class Pow(Expr):
 
     __slots__ = ['is_commutative']
 
-    @property
-    def shape(self):
+    @cacheit
+    def _eval_shape(self):
         b, e = self.args
         if e.shape:
             if b.shape:
@@ -344,7 +344,7 @@ class Pow(Expr):
             if e is S.ComplexInfinity:
                 return S.NaN
             if e is S.Zero:
-                from sympy import OneMatrix                
+                from sympy import OneMatrix
                 return OneMatrix(*b.shape)
             elif e is S.One:
                 return b
@@ -380,7 +380,7 @@ class Pow(Expr):
                 try:
                     obj = b._eval_power(e)
                 except (AttributeError, TypeError):
-                    from sympy import sympify, Basic  
+                    from sympy import sympify, Basic
                     if isinstance(e, int):
                         e = sympify(e)
                     return Basic.__new__(Pow, b, e)
@@ -405,7 +405,7 @@ class Pow(Expr):
         if exp.shape:
             exp = exp[indices]                
             
-        return self.func(base, exp, evaluate=False)
+        return self.func(base, exp, evaluate=base.is_Number)
     
     @property
     def base(self):
@@ -436,6 +436,8 @@ class Pow(Expr):
 
         s = None
         if other.is_integer:
+            if b.is_NegativeOne and other.is_odd:
+                return self
             s = 1
         elif b.is_polar:  # e.g. exp_polar, besselj, var('p', polar=True)...
             s = 1
@@ -616,7 +618,7 @@ class Pow(Expr):
                     return self.exp.is_extended_positive
                 elif (1 - abs(self.base)).is_extended_negative:
                     return self.exp.is_extended_negative
-            if self.base.is_extended_positive or self.base.is_NegativeOne:
+            if self.base.is_extended_positive or self.base.is_NegativeOne or self.exp.is_integer:
                 return False
         else:
             if self.base.is_nonzero:
@@ -920,16 +922,16 @@ class Pow(Expr):
         return b, e
 
     def _eval_adjoint(self):
-        from sympy.functions.elementary.complexes import adjoint
+        from sympy import Adjoint
         i, p = self.exp.is_integer, self.base.is_positive
         if i:
-            return adjoint(self.base) ** self.exp
+            return Adjoint(self.base) ** self.exp
         if p:
-            return self.base ** adjoint(self.exp)
+            return self.base ** Adjoint(self.exp)
         if i is False and p is False:
             expanded = expand_complex(self)
             if expanded != self:
-                return adjoint(expanded)
+                return Adjoint(expanded)
 
     def _eval_conjugate(self):
         from sympy.functions.elementary.complexes import conjugate as c
@@ -947,16 +949,15 @@ class Pow(Expr):
 
     def _eval_transpose(self, axis=-1):
         if axis == self.default_axis:
-            from sympy.functions.elementary.complexes import transpose
             i, p = self.exp.is_integer, self.base.is_complex
             if p:
-                return self.base ** self.exp
+                return self.base.T ** self.exp
             if i:
-                return transpose(self.base) ** self.exp
+                return self.base.T ** self.exp
             if i is False and p is False:
                 expanded = expand_complex(self)
                 if expanded != self:
-                    return transpose(expanded)
+                    return expanded.T
 
     def _eval_expand_power_exp(self, **hints):
         """a**(n + m) -> a**n*a**m"""
@@ -1292,9 +1293,30 @@ class Pow(Expr):
 
     def _eval_derivative(self, s):
         from sympy import log
-        dbase = self.base.diff(s)
-        dexp = self.exp.diff(s)
-        return self * (dexp * log(self.base) + dbase * self.exp / self.base)
+        base, exp = self.args
+        if s.shape:
+            if exp.shape:
+                dbase = base.diff(s)
+                dexp = exp.diff(s)
+                return self * (dexp * log(base) + dbase * exp / base)
+            elif base.shape:
+                dbase = base.diff(s)
+                dexp = exp.diff(s)
+                if len(self.shape) < len(dbase.shape):
+                    from sympy import Transpose
+                    self = Transpose.expand_dims(self, dbase.shape, len(s.shape))
+                    base = Transpose.expand_dims(base, dbase.shape, len(s.shape))
+
+                return self * (dexp * log(base) + dbase * exp / base)
+            else:
+                dbase = base.diff(s)
+                dexp = exp.diff(s)
+                return self * (dexp * log(base) + dbase * exp / base)
+                
+        else:
+            dbase = base.diff(s)
+            dexp = exp.diff(s)
+            return self * (dexp * log(base) + dbase * exp / base)
 
     def _eval_evalf(self, prec):
         base, exp = self.as_base_exp()
@@ -1824,6 +1846,7 @@ class Pow(Expr):
             return domain & self.domain_defined(x)
         return self.domain_defined(x)
 
+    @cacheit
     def _eval_domain_defined(self, x, **kwargs):
         domain = self.base.domain_defined(x) & self.exp.domain_defined(x)
         if self.exp < 0:
@@ -1912,22 +1935,20 @@ class Pow(Expr):
         import re
         if self.exp is S.Half and not rational:
             arg = p._print(self.base)
-            if re.compile('\w+').fullmatch(arg):
-                return "\N{SQUARE ROOT}" + arg
-            return "\N{SQUARE ROOT}(%s)" % arg
+            # return "\N{SQUARE ROOT}(%s)" % arg
+            return "sqrt(%s)" % arg
 
 #         if self.is_commutative:
         if -self.exp is S.Half and not rational:
             # Note: Don't test "self.exp == -S.Half" here, because that will
             # match -0.5, which we don't want.
             arg = p._print(self.base)
-            if re.compile('\w+').fullmatch(arg):
-                return "1/\N{SQUARE ROOT}" + arg
-            return "1/\N{SQUARE ROOT}(%s)" % arg
+            # return "1/\N{SQUARE ROOT}(%s)" % arg
+            return "1 / sqrt(%s)" % arg
         
         if self.exp is -S.One:
             # Similarly to the S.Half case, don't test with "==" here.
-            return '%s/%s' % (p._print(S.One),
+            return '%s / %s' % (p._print(S.One),
                               p.parenthesize(self.base, PREC, strict=False))
 
         e = p.parenthesize(self.exp, PREC, strict=False)
@@ -1935,8 +1956,8 @@ class Pow(Expr):
             # the parenthesized exp should be '(Rational(a, b))' so strip parens,
             # but just check to be sure.
             if e.startswith('(Rational'):
-                return '%s**%s' % (p.parenthesize(self.base, PREC, strict=False), e[1:-1])
-        return '%s**%s' % (p.parenthesize(self.base, PREC, strict=False), e)
+                return '%s ** %s' % (p.parenthesize(self.base, PREC, strict=False), e[1:-1])
+        return '%s ** %s' % (p.parenthesize(self.base, PREC, strict=False), e)
     
     def _pretty(self, p):
         from sympy.simplify.simplify import fraction
@@ -1961,7 +1982,7 @@ class Pow(Expr):
             if arg.is_random:
                 return True
     
-    def domain_definition(self):
+    def domain_definition(self, **_):
         if self.exp.is_extended_negative:
             from sympy import Unequal
             shape = self.base.shape
@@ -2018,7 +2039,117 @@ class Pow(Expr):
             return Conjugate(b) ** e
         return Conjugate(self)
 
+    def _eval_torch(self):
+        b, e = self.args
+        return b.torch ** e.torch
     
+    @staticmethod
+    def simplify_Lamda(self, squeeze=False):
+        expr, *limits = self.args
+        b, e = expr.args
+        if e.shape:
+            if not b.shape:
+                if e.has(*self.variables):
+                    lamda = self.func(e, *self.limits)
+                    _lamda = lamda.simplify()
+                    if lamda != _lamda:
+                        return expr.func(b, _lamda, evaluate=False)
+                
+        else:
+            if b.has(*self.variables):
+                lamda = self.func(b, *self.limits)
+                _lamda = lamda.simplify()
+                if lamda != _lamda:
+                    return expr.func(_lamda, e, evaluate=False)
+
+        return self
+    
+    def monotonicity(self, x):
+        b, e = self.args
+        if e < 0:
+            if e._has(x):
+                ...
+            else:
+                if e.is_integer:
+                    if b > 0 or b < 0:
+                        expr, monotonicity = b.monotonicity(x)
+                        if not monotonicity:
+                            return None, 0
+                        
+                        return expr ** e, -monotonicity
+
+        elif e > 0:
+            if e._has(x):
+                if b > 0:
+                    if b._has(x):
+                        ...
+                    else:
+                        expr, monotonicity = e.monotonicity(x)
+                        if not monotonicity:
+                            return None, 0
+                        
+                        return b ** expr, monotonicity
+            else:
+                if b > 0:
+                    expr, monotonicity = b.monotonicity(x)
+                    if not monotonicity:
+                        return None, 0
+                    
+                    return expr ** e, monotonicity
+
+        return None, 0
+
+    @cacheit
+    def sort_key(self, order=None):
+        expr, exp = self.args
+
+        if expr.is_Dummy:
+            args = (expr.sort_key(),)
+        elif expr.is_Atom:
+            args = (str(expr),)
+        else:
+            if expr.is_Add:
+                args = expr.as_ordered_terms(order=order)
+            elif expr.is_Mul:
+                args = expr.as_ordered_factors(order=order)
+            else:
+                args = expr.args
+
+            args = tuple(arg.sort_key(order=order) for arg in args)
+
+        args = len(args), tuple(arg.class_key() for arg in self.args), args
+        exp = exp.sort_key(order=order)
+
+        return expr.class_key(), args, exp, S.One
+
+    def doit(self, **kwargs):
+        if kwargs.get('deep'):
+            b, e = self.args
+            b = b.doit(deep=True)
+            e = e.doit(deep=True)
+            if e.is_DenseMatrix:
+                if not b.shape:
+                    from sympy import Matrix
+                    return Matrix(tuple(b ** e for e in e._args), shape=e.shape)
+            return b ** e
+        return self
+
+    def is_continuous_at(self, *args):
+        x, *ab = args
+        b, e = self.args
+        if b._has(x):
+            if b >= 0 and e >= 0:
+                return True
+            return
+        
+        if e._has(x):
+            if b >= 0 and e >= 0:
+                return True
+            return
+        
+        return True
+
+
 from .add import Add
 from .numbers import Integer
 from .mul import Mul, _keep_coeff
@@ -2212,7 +2343,7 @@ def real_root(arg, n=None, evaluate=None):
     """
     from sympy.functions.elementary.complexes import Abs, Im, sign
     from sympy.functions.elementary.piecewise import Piecewise
-    from sympy import Or, Eq, And, Mod, sympify 
+    from sympy import Or, Eq, And, Mod, sympify
     from sympy.core.rules import Transform
     if n is not None:
         return Piecewise(

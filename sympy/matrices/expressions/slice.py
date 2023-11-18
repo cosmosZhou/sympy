@@ -1,6 +1,7 @@
-from sympy.matrices.expressions.matexpr  import MatrixExpr
+from sympy.matrices.expressions.matexpr import MatrixExpr
 from sympy import Tuple, Basic
 from sympy.functions.elementary.integers import floor
+from sympy.core.cache import cacheit
 
 def normalize(i, parentsize):
     if isinstance(i, slice):
@@ -66,8 +67,8 @@ class MatrixSlice(MatrixExpr):
             return mat_slice_of_slice(parent, rowslice, colslice)
         return Basic.__new__(cls, parent, Tuple(*rowslice), Tuple(*colslice))
 
-    @property
-    def shape(self):
+    @cacheit
+    def _eval_shape(self):
         rows = self.rowslice[1] - self.rowslice[0]
         rows = rows if self.rowslice[2] == 1 else floor(rows/self.rowslice[2])
         cols = self.colslice[1] - self.colslice[0]

@@ -8,9 +8,6 @@ from sympy.printing.pretty.pretty import PrettyPrinter
 from sympy.printing.pretty.pretty_symbology import center_accent
 from sympy.printing.str import StrPrinter
 
-__all__ = ['vprint', 'vsstrrepr', 'vsprint', 'vpprint', 'vlatex',
-           'init_vprinting']
-
 
 class VectorStrPrinter(StrPrinter):
     """String Printer for vector expressions. """
@@ -150,7 +147,7 @@ class VectorLatexPrinter(LatexPrinter):
             base = r"\ddddot{%s}" % base
         else: # Fallback to standard printing
             return LatexPrinter().doprint(der_expr)
-        if len(base_split) is not 1:
+        if len(base_split) != 1:
             base += '_' + base_split[1]
         return base
 

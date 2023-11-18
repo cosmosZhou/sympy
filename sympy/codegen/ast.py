@@ -132,6 +132,7 @@ from sympy.core.numbers import Float, Integer, oo
 from sympy.core.relational import Lt, Le, Ge, Gt
 from sympy.core.sympify import _sympify, sympify, SympifyError
 from sympy.utilities.iterables import iterable
+from sympy.core.cache import cacheit
 
 
 
@@ -636,8 +637,8 @@ class CodeBlock(Basic):
 
     _sympystr = _sympyrepr
 
-    @property
-    def free_symbols(self):
+    @cacheit
+    def _eval_free_symbols(self):
         return super(CodeBlock, self).free_symbols - set(self.left_hand_sides)
 
     @classmethod

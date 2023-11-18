@@ -189,5 +189,3 @@ def npartitions(n, verbose=False):
         # performance.
         p = bitcount(abs(to_int(d))) + 50
     return int(to_int(mpf_add(s, fhalf, prec)))
-
-__all__ = ['npartitions']

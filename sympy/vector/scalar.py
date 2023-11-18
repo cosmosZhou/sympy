@@ -45,8 +45,7 @@ class BaseScalar(AtomicExpr):
     is_commutative = True
     is_symbol = True
 
-    @property
-    def free_symbols(self):
+    def _eval_free_symbols(self):
         return {self}
 
     _diff_wrt = True

@@ -4,9 +4,7 @@ import sys
 from distutils.version import LooseVersion as V
 from io import BytesIO
 
-from sympy import latex as default_latex
-from sympy import preview
-
+from sympy.printing import latex as default_latex, preview
 from sympy.utilities.misc import debug
 
 

@@ -54,6 +54,7 @@ import sympy.polys
 
 import mpmath
 from mpmath.libmp.libhyper import NoConvergence
+from sympy.core.cache import cacheit
 
 
 
@@ -305,8 +306,8 @@ class Poly(Basic):
     def __hash__(self):
         return super().__hash__()
 
-    @property
-    def free_symbols(self):
+    @cacheit
+    def _eval_free_symbols(self):
         """
         Free symbols of a polynomial expression.
 
@@ -4202,8 +4203,8 @@ class PurePoly(Poly):
     def __hash__(self):
         return super().__hash__()
 
-    @property
-    def free_symbols(self):
+    @cacheit
+    def _eval_free_symbols(self):
         """
         Free symbols of a polynomial.
 
@@ -5346,7 +5347,7 @@ def lcm_list(seq, *gens, **args):
     x**5 - x**4 - 2*x**3 - x**2 + x + 2
 
     """
-    seq = sympify(seq)
+    #seq = sympify(seq)#possibly a list
 
     def try_non_polynomial_lcm(seq):
         if not gens and not args:

@@ -3,7 +3,7 @@ from sympy.concrete.expr_with_limits import ExprWithLimits
 from sympy.concrete.conditional_boolean import Quantifier
 from sympy.core.sympify import sympify
 from sympy.core.relational import Equal
-
+from sympy.core.singleton import S
 
 class ForAll(Quantifier):
     """
@@ -13,14 +13,15 @@ class ForAll(Quantifier):
     operator = And
 
     # this will change the default new operator!
-    def __new__(cls, function, *symbols, is_in_exists=False, **assumptions):
+    def __new__(cls, expr, *symbols, **assumptions):
+        evaluate = assumptions.pop('evaluate', True)
         if assumptions:
             from sympy.core.inference import Inference
-            return Inference(ForAll.__new__(cls, function, *symbols), **assumptions)
+            return Inference(ForAll.__new__(cls, expr, *symbols, evaluate=evaluate), **assumptions)
         
-        function = sympify(function)
-        if function.is_BooleanAtom or len(symbols) == 0:
-            if not function:
+        expr = sympify(expr)
+        if expr.is_BooleanAtom or len(symbols) == 0:
+            if not expr:
                 eqs = []
                 for _, *ab in symbols:
                     if len(ab) == 1:
@@ -30,9 +31,9 @@ class ForAll(Quantifier):
                         elif domain.is_bool:
                             eqs.append(domain.invert())
                 if eqs:
-                    return And(*eqs, **assumptions)
-            return function.copy(**assumptions)
-        return ExprWithLimits.__new__(cls, function, *symbols, **assumptions)
+                    return And(*eqs, evaluate=evaluate, **assumptions)
+            return expr.copy(**assumptions)
+        return ExprWithLimits.__new__(cls, expr, *symbols, evaluate=evaluate, **assumptions)
 
     def subs(self, *args, **kwargs):
         if all(isinstance(arg, Boolean) for arg in args):
@@ -50,9 +51,8 @@ class ForAll(Quantifier):
                 if b.is_set:
                     domain = b & old.domain_conditioned(a)
                 else:
-                    from sympy import Range
-                    domain = (Range if wrt.is_integer else Interval)(a, b)
-                            
+                    domain = wrt.range(a, b)
+
             eqs = []
             if not domain.is_set:
                 domain = old.domain_conditioned(domain)
@@ -79,11 +79,12 @@ class ForAll(Quantifier):
                 
         return Quantifier.subs(self, *args, **kwargs)
         
-    def simplify(self, local=None, **kwargs):
+    def simplify(self, **kwargs):
+        local = kwargs.get('local')
         deletes = []
         for i in range(len(self.limits) - 1, -1, -1):
             x, *ab = self.limits[i]
-            if not ab:
+            if not ab and not local:
                 deletes.append(x)
                 continue
             if len(ab) == 1:
@@ -92,20 +93,19 @@ class ForAll(Quantifier):
                 a, b = ab
                 if b.is_set:
                     continue
-                from sympy import Range
-                domain = (Range if x.is_integer else Interval)(a, b)
+                domain = x.range(a, b)
                 
             if self.expr._has(x) and domain.is_set:
                 _eval_domain_defined = self.expr.domain_defined(x)
-                if _eval_domain_defined in domain:
+                if _eval_domain_defined in domain and not local:
                     deletes.append(x)
                 domain &= _eval_domain_defined
                 if domain.is_FiniteSet:
                     if len(domain) == 1:
                         x0, *_ = domain
-                        function = self.expr._subs(x, x0)
-                        if function.is_BooleanAtom:
-                            return function
+                        expr = self.expr._subs(x, x0)
+                        if expr.is_BooleanAtom:
+                            return expr
                         
                         limits = [*self.limits]
                         del limits[i]
@@ -113,9 +113,9 @@ class ForAll(Quantifier):
                             limits[j] = limits[j]._subs(x, x0)
                              
                         if limits:
-                            return self.func(function, *limits)
+                            return self.func(expr, *limits)
                         else:
-                            return function.simplify()
+                            return expr.simplify()
 
         if deletes:
             limits = self.limits_delete(deletes)
@@ -133,7 +133,7 @@ class ForAll(Quantifier):
 
         return Quantifier.simplify(self, **kwargs)
         
-    def simplify_int_limits(self, function):
+    def simplify_int_limits(self, expr):
         for i, domain in self.limits_dict.items():
             if not i.is_integer or i.shape or isinstance(domain, Boolean):
                 continue
@@ -143,7 +143,7 @@ class ForAll(Quantifier):
             non_i_expr = set()
             from sympy import Wild
             _i = Wild('_i', **i.type.dict)
-            for eq in function.args:
+            for eq in expr.args:
                 if eq._has(i):
                     i_expr.append(eq)
                     patterns.append(eq._subs(i, _i))
@@ -178,8 +178,8 @@ class ForAll(Quantifier):
 
             limits = self.limits_update(i, domain | new_set)                
             
-            function = function.func(*eqs)
-            return function, limits
+            expr = expr.func(*eqs)
+            return expr, limits
     
     def union_sets(self, expr):
         if len(self.limits) == 1:
@@ -193,7 +193,8 @@ class ForAll(Quantifier):
 
     def _sympystr(self, p):
         limits = ','.join([limit._format_ineq(p) for limit in self.limits])        
-        return '\N{FOR ALL}[%s](%s)' % (limits, p.doprint(self.expr))
+#         return '\N{FOR ALL}[%s](%s)' % (limits, p.print(self.expr))
+        return 'All[%s](%s)' % (limits, p._print(self.expr))
 
     def _pretty(self, p):
         return Quantifier._pretty(self, p, '\N{FOR ALL}')    
@@ -265,6 +266,14 @@ class ForAll(Quantifier):
             return Equal(cond, x.emptySet)
         return self.func.invert_type[x](cond.invert())
     
+    @classmethod
+    def identity(cls, self, **kwargs):
+        return S.true.copy(**kwargs)
+
+    @classmethod
+    def is_identity(cls, self):        
+        return self.is_BooleanTrue
+
     latexname = 'forall'
 
 

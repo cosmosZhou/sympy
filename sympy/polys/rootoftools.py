@@ -25,10 +25,6 @@ from mpmath import mpf, mpc, findroot, workprec
 from mpmath.libmp.libmpf import dps_to_prec, prec_to_dps
 
 
-__all__ = ['CRootOf']
-
-
-
 class _pure_key_dict(object):
     """A minimal dictionary that makes sure that the key is a
     univariate PurePoly instance.
@@ -375,8 +371,7 @@ class ComplexRootOf(RootOf):
     def args(self):
         return (self.expr, Integer(self.index))
 
-    @property
-    def free_symbols(self):
+    def _eval_free_symbols(self):
         # CRootOf currently only works with univariate expressions
         # whose poly attribute should be a PurePoly with no free
         # symbols
@@ -1155,8 +1150,8 @@ class RootSum(Expr):
     def args(self):
         return (self.expr, self.fun, self.poly.gen)
 
-    @property
-    def free_symbols(self):
+    @cacheit
+    def _eval_free_symbols(self):
         return self.poly.free_symbols | self.fun.free_symbols
 
     @property

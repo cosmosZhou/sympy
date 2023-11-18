@@ -1,5 +1,5 @@
 from sympy.matrices.expressions import MatrixExpr
-from sympy import MatrixBase, Dummy, Lambda, Function, FunctionClass
+from sympy import MatrixBase, Dummy, Lambda, Function
 
 
 class ElementwiseApplyFunction(MatrixExpr):
@@ -45,7 +45,7 @@ class ElementwiseApplyFunction(MatrixExpr):
 
     def __new__(cls, function, expr):
         obj = MatrixExpr.__new__(cls, expr)
-        if not isinstance(function, FunctionClass):
+        if not function.is_FunctionClass:
             d = Dummy("d")
             function = Lambda(d, function(d))
         obj._function = function
@@ -63,8 +63,7 @@ class ElementwiseApplyFunction(MatrixExpr):
     def expr(self):
         return self._expr
 
-    @property
-    def shape(self):
+    def _eval_shape(self):
         return self.expr.shape
 
     @property

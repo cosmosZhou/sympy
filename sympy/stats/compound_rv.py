@@ -1,6 +1,5 @@
 from sympy import Basic, Sum, Dummy, Lambda, Integral
-from sympy.stats.rv import (NamedArgsMixin, random_symbols, _symbol_converter,
-                        PSpace, RandomSymbol, is_random)
+from sympy.stats.rv import NamedArgsMixin, _symbol_converter, PSpace, RandomSymbol
 from sympy.stats.crv import ContinuousDistribution, SingleContinuousPSpace
 from sympy.stats.drv import DiscreteDistribution, SingleDiscretePSpace
 from sympy.stats.frv import SingleFiniteDistribution, SingleFinitePSpace
@@ -179,7 +178,7 @@ class CompoundDistribution(Basic, NamedArgsMixin):
 
     def pdf(self, x, evaluate=False):
         dist = self.args[0]
-        randoms = [rv for rv in dist.args if is_random(rv)]
+        randoms = [rv for rv in dist.args if rv.is_random]
         if isinstance(dist, SingleFiniteDistribution):
             y = Dummy('y', integer=True, negative=False)
             expr = dist.pmf(y)
@@ -213,7 +212,7 @@ class CompoundDistribution(Basic, NamedArgsMixin):
         """
         randoms = []
         for arg in dist.args:
-            randoms.extend(random_symbols(arg))
+            randoms.extend(arg.random_symbols)
         if len(randoms) == 0:
             return False
         return True

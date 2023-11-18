@@ -2,12 +2,12 @@ import itertools
 
 from sympy import (MatrixExpr, Expr, ShapeError, ZeroMatrix,
                     Add, Mul, MatMul, S, expand as _expand)
-from sympy.stats.rv import RandomSymbol, is_random
+from sympy.stats.rv import RandomSymbol
 from sympy.core.sympify import _sympify
 from sympy.stats.symbolic_probability import Variance, Covariance, Expectation
 
 
-class ExpectationMatrix(Expectation, MatrixExpr):
+class ExpectationMatrix(MatrixExpr):
     """
     Expectation of a random matrix expression.
 
@@ -49,7 +49,7 @@ class ExpectationMatrix(Expectation, MatrixExpr):
     def __new__(cls, expr, condition=None):
         expr = _sympify(expr)
         if condition is None:
-            if not is_random(expr):
+            if not expr.is_random:
                 return expr
             obj = Expr.__new__(cls, expr)
         else:
@@ -60,14 +60,13 @@ class ExpectationMatrix(Expectation, MatrixExpr):
         obj._condition = condition
         return obj
 
-    @property
-    def shape(self):
+    def _eval_shape(self):
         return self._shape
 
     def expand(self, **hints):
         expr = self.args[0]
         condition = self._condition
-        if not is_random(expr):
+        if not expr.is_random:
             return expr
 
         if isinstance(expr, Add):
@@ -85,7 +84,7 @@ class ExpectationMatrix(Expectation, MatrixExpr):
             postnon = []
 
             for a in expr.args:
-                if is_random(a):
+                if a.is_random:
                     if rv:
                         rv.extend(postnon)
                     else:
@@ -106,7 +105,8 @@ class ExpectationMatrix(Expectation, MatrixExpr):
 
         return self
 
-class VarianceMatrix(Variance, MatrixExpr):
+
+class VarianceMatrix(MatrixExpr):
     """
     Variance of a random matrix probability expression. Also known as
     Covariance matrix, auto-covariance matrix, dispersion matrix,
@@ -150,15 +150,14 @@ class VarianceMatrix(Variance, MatrixExpr):
         obj._condition = condition
         return obj
 
-    @property
-    def shape(self):
+    def _eval_shape(self):
         return self._shape
 
     def expand(self, **hints):
         arg = self.args[0]
         condition = self._condition
 
-        if not is_random(arg):
+        if not arg.is_random:
             return ZeroMatrix(*self.shape)
 
         if isinstance(arg, RandomSymbol):
@@ -166,7 +165,7 @@ class VarianceMatrix(Variance, MatrixExpr):
         elif isinstance(arg, Add):
             rv = []
             for a in arg.args:
-                if is_random(a):
+                if a.is_random:
                     rv.append(a)
             variances = Add(*map(lambda xv: Variance(xv, condition).expand(), rv))
             map_to_covar = lambda x: 2*Covariance(*x, condition=condition).expand()
@@ -176,7 +175,7 @@ class VarianceMatrix(Variance, MatrixExpr):
             nonrv = []
             rv = []
             for a in arg.args:
-                if is_random(a):
+                if a.is_random:
                     rv.append(a)
                 else:
                     nonrv.append(a)
@@ -194,7 +193,8 @@ class VarianceMatrix(Variance, MatrixExpr):
         # this expression contains a RandomSymbol somehow:
         return self
 
-class CrossCovarianceMatrix(Covariance, MatrixExpr):
+
+class CrossCovarianceMatrix(MatrixExpr):
     """
     Covariance of a random matrix probability expression.
 
@@ -245,8 +245,7 @@ class CrossCovarianceMatrix(Covariance, MatrixExpr):
         obj._condition = condition
         return obj
 
-    @property
-    def shape(self):
+    def _eval_shape(self):
         return self._shape
 
     def expand(self, **hints):
@@ -257,7 +256,7 @@ class CrossCovarianceMatrix(Covariance, MatrixExpr):
         if arg1 == arg2:
             return VarianceMatrix(arg1, condition).expand()
 
-        if not is_random(arg1) or not is_random(arg2):
+        if not arg1.is_random or not arg2.is_random:
             return ZeroMatrix(*self.shape)
 
         if isinstance(arg1, RandomSymbol) and isinstance(arg2, RandomSymbol):
@@ -280,13 +279,13 @@ class CrossCovarianceMatrix(Covariance, MatrixExpr):
             for a in expr.args:
                 if isinstance(a, (Mul, MatMul)):
                     outval.append(cls._get_mul_nonrv_rv_tuple(a))
-                elif is_random(a):
+                elif a.is_random:
                     outval.append((S.One, a))
 
             return outval
         elif isinstance(expr, (Mul, MatMul)):
             return [cls._get_mul_nonrv_rv_tuple(expr)]
-        elif is_random(expr):
+        elif expr.is_random:
             return [(S.One, expr)]
 
     @classmethod
@@ -294,7 +293,7 @@ class CrossCovarianceMatrix(Covariance, MatrixExpr):
         rv = []
         nonrv = []
         for a in m.args:
-            if is_random(a):
+            if a.is_random:
                 rv.append(a)
             else:
                 nonrv.append(a)

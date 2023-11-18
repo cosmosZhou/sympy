@@ -1,5 +1,3 @@
-__all__ = ['Linearizer']
-
 from sympy.core.backend import Matrix, eye, zeros
 from sympy.core.compatibility import Iterable
 from sympy import Dummy

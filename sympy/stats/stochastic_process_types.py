@@ -7,7 +7,7 @@ from sympy import (Matrix, MatrixSymbol, S, Indexed, Basic, Tuple, Range,
                    Set, And, Eq, FiniteSet, ImmutableMatrix, Integer,
                    Lambda, Mul, Dummy, IndexedBase, Add, Interval, oo,
                    linsolve, eye, Or, Not, Intersection, factorial, Element,
-                   Union, Expr, Function, exp, cacheit, sqrt, pi, gamma,
+                   Union, Expr, Function, exp, cacheit, sqrt, pi, Gamma,
                    Ge, Piecewise, Symbol, NonSquareMatrixError, EmptySet,
                    ceiling, MatrixBase)
 from sympy.core.relational import Relational
@@ -15,9 +15,9 @@ from sympy.logic.boolalg import Boolean
 from sympy.utilities.exceptions import SymPyDeprecationWarning
 from sympy.stats.joint_rv import JointDistribution
 from sympy.stats.joint_rv_types import JointDistributionHandmade
-from sympy.stats.rv import (RandomIndexedSymbol, random_symbols, RandomSymbol,
+from sympy.stats.rv import (RandomIndexedSymbol, RandomSymbol,
                             _symbol_converter, _value_check, pspace, given,
-                           dependent, is_random, sample_iter)
+                           dependent, sample_iter)
 from sympy.stats.stochastic_process import StochasticPSpace
 from sympy.stats.symbolic_probability import Probability, Expectation
 from sympy.stats.frv_types import Bernoulli, BernoulliDistribution, FiniteRV
@@ -27,28 +27,6 @@ from sympy.core.sympify import _sympify, sympify
 from sympy.sets import NonnegativeIntegers
 from sympy.sets.fancysets import Reals
 
-__all__ = [
-    'StochasticProcess',
-    'DiscreteTimeStochasticProcess',
-    'DiscreteMarkovChain',
-    'TransitionMatrixOf',
-    'StochasticStateSpaceOf',
-    'GeneratorMatrixOf',
-    'ContinuousMarkovChain',
-    'BernoulliProcess',
-    'PoissonProcess',
-    'WienerProcess',
-    'GammaProcess'
-]
-
-
-@is_random.register(Indexed)
-def _(x):
-    return is_random(x.base)
-
-@is_random.register(RandomIndexedSymbol)  # type: ignore
-def _(x):
-    return True
 
 def _set_converter(itr):
     """
@@ -665,7 +643,7 @@ class MarkovProcess(StochasticProcess):
         if check:
             return Expectation(expr, condition)
 
-        rvs = random_symbols(expr)
+        rvs = expr.random_symbols
         if isinstance(expr, Expr) and isinstance(condition, Eq) \
             and len(rvs) == 1:
             # handle queries similar to E(f(X[i]), Eq(X[i-m], <some-state>))
@@ -1178,7 +1156,7 @@ class _SubstituteRV:
 
         """
 
-        rvs_expr = random_symbols(expr)
+        rvs_expr = expr.random_symbols
         if len(rvs_expr) != 0:
             swapdict_expr = {}
             for rv in rvs_expr:
@@ -1186,7 +1164,7 @@ class _SubstituteRV:
                     newrv = rv.pspace.process.simple_rv(rv) # substitute with equivalent simple rv
                     swapdict_expr[rv] = newrv
             expr = expr.subs(swapdict_expr)
-        rvs_cond = random_symbols(condition)
+        rvs_cond = condition.random_symbols
         if len(rvs_cond)!=0:
             swapdict_cond = {}
             for rv in rvs_cond:
@@ -1218,7 +1196,7 @@ class _SubstituteRV:
         """
         new_expr, new_condition = self._rvindexed_subs(expr, condition)
 
-        if not is_random(new_expr):
+        if not new_expr.is_random:
             return new_expr
         new_pspace = pspace(new_expr)
         if new_condition is not None:
@@ -1253,7 +1231,7 @@ class _SubstituteRV:
         new_condition, new_givencondition = self._rvindexed_subs(condition, given_condition)
 
         if isinstance(new_givencondition, RandomSymbol):
-            condrv = random_symbols(new_condition)
+            condrv = new_condition.random_symbols
             if len(condrv) == 1 and condrv[0] == new_givencondition:
                 return BernoulliDistribution(self._probability(new_condition), 0, 1)
 
@@ -1417,11 +1395,11 @@ class CountingProcess(ContinuousTimeStochasticProcess):
         args_list = sorted(args_list, key=lambda x: x.args[0].key)
         result = []
         cond_args = list(condition.args) if isinstance(condition, And) else [condition]
-        if args_list[0] in cond_args and not (is_random(args_list[0].args[0])
-                        and is_random(args_list[0].args[1])):
+        if args_list[0] in cond_args and not (args_list[0].args[0].is_random
+                        and args_list[0].args[1].is_random):
             result.append(_SubstituteRV._probability(args_list[0]))
 
-        if is_random(args_list[0].args[0]) and is_random(args_list[0].args[1]):
+        if args_list[0].args[0].is_random and args_list[0].args[1].is_random:
             arg = self._solve_argwith_tworvs(args_list[0])
             result.append(_SubstituteRV._probability(arg))
 
@@ -1691,7 +1669,7 @@ class WienerProcess(CountingProcess):
 
 class GammaProcess(CountingProcess):
     """
-    A Gamma process is a random process with independent gamma distributed
+    A Gamma process is a random process with independent Gamma distributed
     increments.  It is a pure-jump increasing Levy process.
 
     Parameters
@@ -1716,7 +1694,7 @@ class GammaProcess(CountingProcess):
     g*t/l**2
     >>> X = GammaProcess('X', 1, 2)
     >>> P(X(t) < 1).simplify()
-    lowergamma(2*t, 1)/gamma(2*t)
+    lowergamma(2*t, 1)/Gamma(2*t)
     >>> P(Not((X(t) < 5) & (X(d) > 3)), Element(t, Interval.Ropen(2, 4)) &
     ... Element(d, Interval.Lopen(7, 8))).simplify()
     -4*exp(-3) + 472*exp(-8)/3 + 1
@@ -1755,7 +1733,7 @@ class GammaProcess(CountingProcess):
     def density(self, x):
         k = self.gamma*x.key
         theta = 1/self.lamda
-        return x**(k - 1) * exp(-x/theta) / (gamma(k)*theta**k)
+        return x**(k - 1) * exp(-x/theta) / (Gamma(k)*theta**k)
 
     def simple_rv(self, rv):
         return Gamma(rv.name, self.gamma*rv.key, 1/self.lamda)

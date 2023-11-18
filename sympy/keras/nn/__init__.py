@@ -5,8 +5,9 @@
 # softmax = Function.softmax(eval=softmax, is_positive=True)
 from sympy.core.function import Function
 from sympy.functions.elementary.miscellaneous import Max
-from sympy.concrete.reduced import ReducedSum
 from sympy.functions.elementary.exponential import exp
+from sympy.concrete.reduced import ReducedSum
+from sympy.core.containers import Tuple
 
 
 class Softmax(Function):
@@ -22,7 +23,7 @@ class Softmax(Function):
         
     def _eval_is_zero(self):
         if self.arg.is_finite:
-            return False            
+            return False
     
     @classmethod
     def eval(cls, arg):
@@ -32,12 +33,23 @@ class Softmax(Function):
         return self
  
     def __getitem__(self, indices):
+        if (indices := self.simplify_indices(indices)) is None:
+            return self
+
         if len(self.shape) == 1:
             x = self.arg
             return exp(x[indices]) / ReducedSum(exp(x))
+
         if isinstance(indices, tuple):
-            i, *indices = indices
-            return self.func(self.arg[i])[indices]
+            i, *rest = indices
+            if isinstance(i, Tuple):
+                if len(self.shape) == 2:
+                    from sympy import Lamda, Basic
+                    j = self.generate_var(integer=True, excludes={j for j in indices if isinstance(j, Basic)})
+                    self = Lamda[j:self.shape[0]](self.func(self.arg[j]))
+                    return self[indices]
+            else:
+                return self.func(self.arg[i])[rest]
         else:
             return self.func(self.arg[indices])
  
@@ -47,11 +59,26 @@ class Softmax(Function):
     def _latex(self, p):
         return r"softmax\left(%s\right)" % p._print(self.arg)
  
-     
+    @property
+    def T(self):
+        from sympy import Transpose
+        return Transpose(self)
+
+
 softmax = Softmax
 
+def __iter__(self):
+    raise TypeError
 
 # https://tensorflow.google.cn/api_docs/python/tf/nn/relu?hl=en
+@Function(real=True,
+          extended_negative=False,
+          _eval_is_extended_integer=lambda self: self.arg.is_extended_integer,
+          _eval_is_extended_positive=lambda self: self.arg.is_extended_positive,
+          _eval_is_finite=lambda self: True if self.is_extended_negative else self.is_finite,
+          __iter__=__iter__,
+          __getitem__=lambda self, indices: self.func(self.arg[indices], evaluate=False),
+          dtype=property(lambda self: self.arg.dtype))
 def relu(x):
     '''
     >>> x = Symbol(real=True) 
@@ -59,36 +86,20 @@ def relu(x):
     '''
     return Max(x, 0)
 
-def _eval_is_finite(self):
-    if self.is_extended_negative:
-        return True
-    return self.is_finite
 
-relu = Function("relu", real=True,
-                     extended_negative=False,
-                     eval=relu,
-                     _eval_is_extended_integer=lambda self: self.arg.is_extended_integer,
-                     _eval_is_extended_positive=lambda self: self.arg.is_extended_positive,
-                     _eval_is_finite=_eval_is_finite,
-                     __doc__=relu.__doc__
-                     )
-
-
+@Function(extended_real=True,
+          extended_positive=True,
+          finite=True,
+          __iter__=__iter__,
+          __getitem__=lambda self, index: self.func(self.arg[index]))
 def sigmoid(x):
     return 1 / (1 + exp(-x))
 
-def __iter__(self):
-    raise TypeError
+sigmoid.name = 'sigmar'
 
-def __getitem__(self, index):
-    return self.func(self.arg[index])
-
-sigmoid = Function(
-    "σ", 
-    extended_real=True,
-#     extended_negative=False,
-    extended_positive=True,
-    finite=True,
-    eval=sigmoid,
-    __iter__=__iter__,
-    __getitem__=__getitem__)
+from .modules.module import Module
+from .modules.sparse import Embedding
+from .modules.container import ModuleList
+from .modules.rnn import CRF
+from .modules.conv import GLUCNN
+from .modules.classifier import SoftmaxClassifier

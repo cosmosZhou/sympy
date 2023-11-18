@@ -34,39 +34,6 @@ from sympy.matrices.matrices import MatrixBase
 
 from sympy.utilities import default_sort_key
 
-__all__ = [
-    'Gate',
-    'CGate',
-    'UGate',
-    'OneQubitGate',
-    'TwoQubitGate',
-    'IdentityGate',
-    'HadamardGate',
-    'XGate',
-    'YGate',
-    'ZGate',
-    'TGate',
-    'PhaseGate',
-    'SwapGate',
-    'CNotGate',
-    # Aliased gate names
-    'CNOT',
-    'SWAP',
-    'H',
-    'X',
-    'Y',
-    'Z',
-    'T',
-    'S',
-    'Phase',
-    'normalized',
-    'gate_sort',
-    'gate_simp',
-    'random_circuit',
-    'CPHASE',
-    'CGateS',
-]
-
 #-----------------------------------------------------------------------------
 # Gate Super-Classes
 #-----------------------------------------------------------------------------

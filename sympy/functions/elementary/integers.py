@@ -26,7 +26,7 @@ class RoundFunction(Function):
             return v
 
         if arg.is_extended_integer or arg.is_finite == False:
-            if arg.is_infinitesimal is None:
+            if arg.infinitesimality is None:
                 return arg
         if arg.is_imaginary or (S.ImaginaryUnit * arg).is_real:
             i = Im(arg)
@@ -147,7 +147,7 @@ class Floor(RoundFunction):
         if arg.is_NumberSymbol:
             return arg.approximation_interval(Integer)[0]
 
-        if arg.is_infinitesimal is not None:
+        if arg.infinitesimality is not None:
             *args, infinitesimal = arg.args
             arg = Add(*args)
             if arg.is_integer:
@@ -245,7 +245,8 @@ class Floor(RoundFunction):
         return Lt(self, other, evaluate=False)
 
     def _sympystr(self, p):
-        return '\N{left floor}%s\N{right floor}' % p._print(self.arg)        
+        #\N{left floor}%s\N{right floor}
+        return 'Floor(%s)' % p._print(self.arg)        
     
     def _latex(self, p, exp=None):
         tex = r"\left\lfloor{%s}\right\rfloor" % p._print(self.args[0])
@@ -409,7 +410,8 @@ class Ceiling(RoundFunction):
         return self
 
     def _sympystr(self, p):
-        return '\N{left ceiling}%s\N{right ceiling}' % p._print(self.arg)        
+        #\N{left ceiling}%s\N{right ceiling}
+        return 'Ceiling(%s)' % p._print(self.arg)        
 
     def _latex(self, p, exp=None):
         tex = r"\left\lceil{%s}\right\rceil" % p._print(self.args[0])
@@ -522,10 +524,10 @@ class FractionalPart(Function):
         return self.args[0].is_extended_real
     
     def _eval_is_imaginary(self):
-        return self.args[0].is_imaginary
+        return self.arg.is_imaginary
 
-    def _eval_is_integer(self):
-        return self.args[0].is_integer
+    def _eval_is_extended_integer(self):
+        return self.arg.is_extended_integer
 
     def _eval_is_zero(self):
         return fuzzy_or([self.args[0].is_zero, self.args[0].is_integer])

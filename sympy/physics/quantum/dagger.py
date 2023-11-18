@@ -3,10 +3,6 @@
 from sympy.core import Expr
 from sympy.functions.elementary.complexes import adjoint
 
-__all__ = [
-    'Dagger'
-]
-
 
 class Dagger(adjoint):
     """General Hermitian conjugate operation.

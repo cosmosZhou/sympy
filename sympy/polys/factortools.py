@@ -977,10 +977,8 @@ def dmp_zz_wang(f, u, K, mod=None, seed=None):
     .. [2] [Geddes92]_
 
     """
-    from sympy.testing.randtest import _randint
-
-    randint = _randint(seed)
-
+    from random import randint
+    assert seed is None
     ct, T = dmp_zz_factor(dmp_LC(f, K), u - 1, K)
 
     b = dmp_zz_mignotte_bound(f, u, K)

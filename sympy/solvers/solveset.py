@@ -666,7 +666,7 @@ def _solve_as_poly(f, symbol, domain=None):
         if poly is None:
             result = ConditionSet(symbol, Eq(f, 0), domain)
         gens = [g for g in poly.gens if g.has(symbol)]
-
+        from sympy.sets.sets import conditionset
         if len(gens) == 1:
             poly = Poly(poly, gens[0])
             gen = poly.gen
@@ -685,9 +685,9 @@ def _solve_as_poly(f, symbol, domain=None):
                 if lhs == symbol:
                     result = Union(*[rhs_s.subs(y, s) for s in poly_solns])
                 else:
-                    result = ConditionSet(symbol, Eq(f, 0), domain)
+                    result = conditionset(symbol, Eq(f, 0), domain)
         else:
-            result = ConditionSet(symbol, Eq(f, 0), domain)
+            result = conditionset(symbol, Eq(f, 0), domain)
 
     if result is not None:
         if isinstance(result, FiniteSet):
@@ -1696,7 +1696,7 @@ def solveset(f, symbol=None, domain=None):
 
     if symbol is None:
         if len(free_symbols) == 1:
-            symbol = free_symbols.pop()
+            symbol, = free_symbols
         elif free_symbols:
             raise ValueError(filldedent('''
                 The independent variable must be specified for a

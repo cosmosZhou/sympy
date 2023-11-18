@@ -37,14 +37,13 @@ class SeriesBase(Expr):
         """Returns a tuple of variables that are bounded"""
         return ()
 
-    @property
-    def free_symbols(self):
+    @cacheit
+    def _eval_free_symbols(self):
         """
         This method returns the symbols in the object, excluding those
         that take on a specific value (i.e. the dummy symbols).
         """
-        return (set(j for i in self.args for j in i.free_symbols)
-                .difference(self.variables))
+        return (set(j for i in self.args for j in i.free_symbols).difference(self.variables))
 
     @cacheit
     def term(self, pt):

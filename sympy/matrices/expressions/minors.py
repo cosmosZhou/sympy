@@ -1,6 +1,7 @@
 from sympy.core.sympify import _sympify
 from sympy.core import Basic
 from sympy.matrices.expressions.matexpr import MatrixExpr
+from sympy.core.cache import cacheit
 
 
 class Minors(MatrixExpr):
@@ -21,8 +22,7 @@ class Minors(MatrixExpr):
     def arg(self):
         return self.args[0]
 
-    @property
-    def shape(self):
+    def _eval_shape(self):
         return self.arg.shape
 
     def doit(self, **hints):

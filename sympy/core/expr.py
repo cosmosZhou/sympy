@@ -7,7 +7,6 @@ from .cache import cacheit
 from .compatibility import reduce, as_int, default_sort_key, Iterable
 from sympy.utilities.misc import func_name
 from mpmath.libmp import mpf_log, prec_to_dps
-
 from collections import defaultdict
 
 
@@ -29,9 +28,9 @@ class Expr(Basic, EvalfMixin):
     __slots__ = []
 
     is_scalar = True  # self derivative is 1
-    is_square = False
-    is_infinitesimal = None
+    is_square = False    
     is_Quantity = False
+    infinitesimality = None
     
     def _coeff_isneg(self):
         return False
@@ -123,10 +122,9 @@ class Expr(Basic, EvalfMixin):
             else:
                 args = expr.args
 
-            args = tuple(
-                [ default_sort_key(arg, order=order) for arg in args ])
+            args = tuple(default_sort_key(arg, order=order) for arg in args)
 
-        args = (len(args), tuple(args))
+        args = len(args), tuple(arg.class_key() for arg in self.args), args
         exp = exp.sort_key(order=order)
 
         return expr.class_key(), args, exp, coeff
@@ -409,7 +407,7 @@ class Expr(Basic, EvalfMixin):
                 return S.true
             bools = [b.invert() for b in bools]
             if any(bools):
-                return S.false            
+                return S.false
             
             return GreaterEqual(self, other, evaluate=False)
 
@@ -423,12 +421,12 @@ class Expr(Basic, EvalfMixin):
             if n2 is not None:
                 return _sympify(n2 >= 0)
             
-            dif = (self - other).simplify()
-            if dif.is_extended_nonnegative is not None:
-                return sympify(dif.is_extended_nonnegative)
-        elif self == other:
+            diff = (self - other).simplify()
+            if diff.is_extended_nonnegative is not None:
+                return sympify(diff.is_extended_nonnegative)
+        elif self == other or self.is_extended_real and other.is_NegativeInfinity:
             return S.true
-        
+
         return GreaterEqual(self, other, evaluate=False)
 
     def __le__(self, other):
@@ -456,7 +454,7 @@ class Expr(Basic, EvalfMixin):
                 return S.true
             bools = [b.invert() for b in bools]
             if any(bools):
-                return S.false            
+                return S.false
             return LessEqual(self, other, evaluate=False)
 
         try:
@@ -469,10 +467,10 @@ class Expr(Basic, EvalfMixin):
             if n2 is not None:
                 return _sympify(n2 <= 0)
             
-            dif = (self - other).simplify()
-            if dif.is_extended_nonpositive is not None:
-                return sympify(dif.is_extended_nonpositive)
-        elif self == other:
+            diff = (self - other).simplify()
+            if diff.is_extended_nonpositive is not None:
+                return sympify(diff.is_extended_nonpositive)
+        elif self == other or self.is_extended_real and other.is_Infinity:
             return S.true
         
         return LessEqual(self, other, evaluate=False)
@@ -501,7 +499,7 @@ class Expr(Basic, EvalfMixin):
                 return S.true
             bools = [b.invert() for b in bools]
             if any(bools):
-                return S.false            
+                return S.false
 
             return Greater(self, other, evaluate=False)
 
@@ -515,9 +513,9 @@ class Expr(Basic, EvalfMixin):
             if n2 is not None:
                 return _sympify(n2 > 0)
             
-            dif = (self - other).simplify()
-            if dif.is_extended_positive is not None:
-                return sympify(dif.is_extended_positive)
+            diff = (self - other).simplify()
+            if diff.is_extended_positive is not None:
+                return sympify(diff.is_extended_positive)
         elif self == other:
             return S.false
 
@@ -547,7 +545,7 @@ class Expr(Basic, EvalfMixin):
                 return S.true
             bools = [b.invert() for b in bools]
             if any(bools):
-                return S.false            
+                return S.false
             
 #             return Less(self, other, evaluate=False)
 
@@ -561,9 +559,9 @@ class Expr(Basic, EvalfMixin):
             if n2 is not None:
                 return _sympify(n2 < 0)
             
-            dif = (self - other).simplify()
-            if dif.is_extended_negative is not None:
-                return sympify(dif.is_extended_negative)
+            diff = (self - other).simplify()
+            if diff.is_extended_negative is not None:
+                return sympify(diff.is_extended_negative)
         elif self == other:
             return S.false
 
@@ -1027,14 +1025,14 @@ class Expr(Basic, EvalfMixin):
             return False
 
     def _eval_is_nonnegative(self):
-        negative = self.is_negative        
+        negative = self.is_negative
         if negative:
             return False
         if negative == False:
             return self.is_real
 
     def _eval_is_nonpositive(self):
-        positive = self.is_positive        
+        positive = self.is_positive
         if positive:
             return False
         if positive == False:
@@ -1202,46 +1200,56 @@ class Expr(Basic, EvalfMixin):
         return None
 
     def _eval_conjugate(self):
-        if self.is_extended_real:
+        if self.is_super_real:
             return self
         elif self.is_imaginary:
             return -self
 
     def conjugate(self):
-        from sympy.functions.elementary.complexes import conjugate as c
-        return c(self)
+        from sympy.functions.elementary.complexes import conjugate
+        return conjugate(self)
 
     def _eval_transpose(self, axis=-1):
         if axis == self.default_axis:
             from sympy.functions.elementary.complexes import conjugate
             if self.is_complex and not self.shape:
                 return self
+            elif len(self.shape) > 1:
+                return
             elif self.is_hermitian:
                 return conjugate(self)
             elif self.is_antihermitian:
                 return -conjugate(self)
+            elif len(self.shape) == 1:
+                return self
 
     @property
     def T(self):
-        from sympy.matrices.expressions.transpose import Transpose
+        from sympy import Transpose
         return Transpose(self)
 
     def _eval_adjoint(self):
-        from sympy.functions.elementary.complexes import conjugate, transpose
         if self.is_hermitian:
             return self
+        
         elif self.is_antihermitian:
             return -self
+        
         obj = self._eval_conjugate()
         if obj is not None:
-            return transpose(obj)
+            return obj.T
+        
         obj = self._eval_transpose()
         if obj is not None:
+            from sympy.functions.elementary.complexes import conjugate
             return conjugate(obj)
 
     def adjoint(self):
-        from sympy.functions.elementary.complexes import adjoint
-        return adjoint(self)
+        if ret := self._eval_adjoint():
+            return ret
+
+        from sympy import Adjoint
+        return Adjoint(self)
 
     @classmethod
     def _parse_order(cls, order):
@@ -1354,7 +1362,7 @@ class Expr(Basic, EvalfMixin):
 
             if _term is not S.One:
                 for factor in Mul.make_args(_term):
-                    if factor.is_number:
+                    if factor.is_number and factor.is_comparable:
                         try:
                             coeff *= complex(factor)
                         except (TypeError, ValueError):
@@ -2095,9 +2103,9 @@ class Expr(Basic, EvalfMixin):
         """        
         if hints.get('ignore') == self:
             return None
-        else:
-            from sympy import Im, Re
-            return (Re(self), Im(self))
+
+        from sympy import Im, Re
+        return Re(self), Im(self)
 
     def as_powers_dict(self):
         """Return self as a dictionary of factors with each factor being
@@ -2603,31 +2611,32 @@ class Expr(Basic, EvalfMixin):
         negative_self = -self
         if self == negative_self:
             return False  # e.g. zoo*x == -zoo*x
-        self_has_minus = (self.extract_multiplicatively(-1) is not None)
-        negative_self_has_minus = (
-            (negative_self).extract_multiplicatively(-1) is not None)
+        self_has_minus = self.extract_multiplicatively(-1) is not None
+        negative_self_has_minus = negative_self.extract_multiplicatively(-1) is not None
         if self_has_minus != negative_self_has_minus:
             return self_has_minus
-        else:
-            if self.is_Add:
-                # We choose the one with less arguments with minus signs
-                all_args = len(self.args)
-                negative_args = len([False for arg in self.args if arg.could_extract_minus_sign()])
-                positive_args = all_args - negative_args
-                if positive_args > negative_args:
-                    return False
-                elif positive_args < negative_args:
-                    return True
-            elif self.is_Mul:
-                # We choose the one with an odd number of minus signs
-                num, den = self.as_numer_denom()
-                args = Mul.make_args(num) + Mul.make_args(den)
-                arg_signs = [arg.could_extract_minus_sign() for arg in args]
-                negative_args = list(filter(None, arg_signs))
-                return len(negative_args) % 2 == 1
 
-            # As a last resort, we choose the one with greater value of .sort_key()
-            return bool(self.sort_key() < negative_self.sort_key())
+        if self.is_Add:
+            # We choose the one with less arguments with minus signs
+            all_args = len(self.args)
+            negative_args = len([False for arg in self.args if arg.could_extract_minus_sign()])
+            positive_args = all_args - negative_args
+            if positive_args > negative_args:
+                return False
+            elif positive_args < negative_args:
+                return True
+            return
+
+        elif self.is_Mul:
+            # We choose the one with an odd number of minus signs
+            num, den = self.as_numer_denom()
+            args = Mul.make_args(num) + Mul.make_args(den)
+            arg_signs = [arg.could_extract_minus_sign() for arg in args]
+            negative_args = list(filter(None, arg_signs))
+            return len(negative_args) % 2 == 1
+
+        # As a last resort, we choose the one with greater value of .sort_key()
+        return bool(self.sort_key() < negative_self.sort_key())
 
     def extract_branch_factor(self, allow_half=False):
         """
@@ -2956,7 +2965,7 @@ class Expr(Basic, EvalfMixin):
                 return self
             elif len(syms) > 1:
                 raise ValueError('x must be given for multivariate functions.')
-            x = syms.pop()
+            x, = syms
 
         if isinstance(x, Symbol):
             dep = x in self.free_symbols
@@ -3543,7 +3552,7 @@ class Expr(Basic, EvalfMixin):
         from sympy.polys import apart
         return apart(self, x, **args)
 
-    def ratsimp(self):
+    def ratsimp(self, **kwargs):
         """See the ratsimp function in sympy.simplify"""
         from sympy.simplify import ratsimp
         return ratsimp(self)
@@ -3788,12 +3797,15 @@ class Expr(Basic, EvalfMixin):
     
     @cacheit
     def aggregate(self, aggregate):
-        free_symbols = self.free_symbols
-        for symbol in {*free_symbols}:
+        if self.shape:
+            return self
+
+        free_symbols = {v for v in self.free_symbols if not v.shape}
+        for symbol in [*free_symbols]:
             free_symbols -= symbol.free_symbols
             free_symbols.add(symbol)
 
-        graph = {x: set() for x in free_symbols }
+        graph = {x: set() for x in free_symbols}
         for y in free_symbols:
             domain_assumed = y.domain_assumed
             if domain_assumed is None:
@@ -3805,7 +3817,7 @@ class Expr(Basic, EvalfMixin):
                     graph[y.base].add(y)
                 
                 for index in y.indices:
-#                 x[k] is always dependent on k                    
+#                 x[k] is always dependent on k
                     if index in graph:
                         graph[index].add(y)
                 
@@ -3882,11 +3894,12 @@ class Expr(Basic, EvalfMixin):
         return CartesianSpace(interval, *shape)
 
     def domain_nonzero(self, x):
-        from sympy import Interval, Range
-        from sympy.core.numbers import oo
         if self == x:
+            from sympy.core.numbers import oo            
             if x.is_integer:
+                from sympy import Range
                 return Range(-oo, 0) | Range(1, oo)
+            from sympy import Interval
             return Interval(-oo, 0, right_open=True) | Interval(0, oo, left_open=True)
         return self.domain_defined(x)
 
@@ -3938,38 +3951,42 @@ class Expr(Basic, EvalfMixin):
                 if domain.is_BinaryCondition:
                     free_symbols = domain.lhs.free_symbols
                     if len(free_symbols) == 1:
-                        free_symbol, *_ = free_symbols
+                        free_symbol, = free_symbols
                         if free_symbol == self:
-                            return domain.latex                
-                return r"%s \left| %s \right." % (self.latex, domain.latex)
+                            return domain.latex
+                return r"%s : %s" % (self.latex, domain.latex)
             else:
                 return r"%s \in %s \left| %s \right." % (self.latex, baseset.latex, domain.latex)
         else:
             return r"%s \in %s" % (self.latex, domain.latex)
 
-    def __or__(self, exp):
+    def __or__(self, expr):
         if self.is_set:
             from sympy.sets.sets import Union
-            return Union(self, exp)
-        if self.is_bool and exp.is_bool:
+            return Union(self, expr)
+        if self.is_bool and expr.is_bool:
             from sympy.logic import Or
-            return Or(self, exp)
+            return Or(self, expr)
         
-        assert self.is_random or exp.is_random
+        assert self.is_random or expr.is_random
             # overload given operator in probability theorems
-        from sympy.stats.rv import given
-        return given(self, exp)
+        if expr.is_Surrogate:
+            from sympy import Equal, Conditioned
+            return Conditioned(self, Equal(expr.arg, expr, evaluate=False))
+        else:
+            from sympy.stats.rv import given
+            return given(self, expr)
             
     def cup_finiteset(self, var=None):
         from sympy.concrete.sets import Cup
 
         i = self.generate_var(integer=True, var=var)
-#         assert self.shape[0] > 1         
+#         assert self.shape[0] > 1
         return Cup({self[i]}, (i, 0, self.shape[0]))
 
     @property
     def is_square(self):
-        shape = self.shape        
+        shape = self.shape
         return len(shape) >= 2 and shape[0] == shape[1]
     
     def _eval_is_odd(self):
@@ -4017,7 +4034,7 @@ class Expr(Basic, EvalfMixin):
                             (Piecewise((self[i + 1, j], j < J), (self[i + 1, j + 1], True)), True)))
         return ref.simplify()
 
-    def _eval_determinant(self):
+    def _eval_determinant(self, **kwargs):
         ...
 
     def generate_int_limit(self, index=-1, excludes=None, generator=None, var=None):
@@ -4033,6 +4050,8 @@ class Expr(Basic, EvalfMixin):
 
     def copy(self, **kwargs):
         if kwargs:
+            if 'evaluate' not in kwargs:
+                kwargs['evaluate'] = False
             return self.func(*self.args, **kwargs)
         return self
 
@@ -4046,7 +4065,11 @@ class Expr(Basic, EvalfMixin):
         return Pow(self, S.NegativeOne)
 
     def det(self): 
-        det = self._eval_determinant()
+        try:
+            det = self._eval_determinant()
+        except:
+            det = None
+
         if det is not None:
             return det
         from sympy import Determinant
@@ -4062,15 +4085,19 @@ class Expr(Basic, EvalfMixin):
             return self.domain
         return condition.domain_conditioned(self)
         
-    def is_continuous(self, *args):
-        ...
+    def is_continuous_at(self, *args):
+        x, *ab = args
+        if not self._has(x):
+            return True
 
     def of_simple_poly(self, x):
         '''
         extract the coefficients of a simple polynomial
         (a * x + b).of_simple_poly(x) = [b, a]
         '''
-        if self._has(x):            
+        if self._has(x):
+            if self == x:
+                return S.Zero, S.One
             return None, None
         
         return self, S.Zero
@@ -4082,7 +4109,55 @@ class Expr(Basic, EvalfMixin):
     def default_axis(self):
         return len(self.shape) - 1
         
+    def outer_product(self, other=None):
+        if other is None:
+            other = self
+            
+        if not self.shape or not other.shape:
+            return self * other
         
+        if len(self.shape) == 1:
+            if len(other.shape) == 1:
+                from sympy import OneMatrix
+                m, = self.shape
+                n, = other.shape
+                return (self * OneMatrix(n, m)).T * other
+            
+        return self @ other.T
+
+    def __invert__(self):
+        if ret := self._eval_conjugate():
+            return ret
+
+        from sympy import Conjugate
+        return Conjugate(self)
+    
+    def range(self, *ab):
+        from sympy import Range, Interval
+        return (Range if self.is_extended_integer else Interval.open)(*ab)
+
+    def _eval_ReducedArgMax(self):
+        if not self.shape:
+            return S.Zero
+
+    def _eval_ReducedArgMin(self):
+        if not self.shape:
+            return S.Zero
+
+    @property
+    def is_lower(self):
+        if not self.shape:
+            return True
+
+    @property
+    def is_upper(self):
+        if not self.shape:
+            return True
+
+    def clear_infinitesimal(self):
+        return self, S.Zero
+
+
 class AtomicExpr(Atom, Expr):
     """
     A parent class for object which are both atoms and Exprs.
@@ -4109,18 +4184,19 @@ class AtomicExpr(Atom, Expr):
                     prod = 1
                     for n in self.shape:
                         i = self.generate_var(excludes, integer=True)
+                        excludes.add(i)
                         j = self.generate_var(excludes, integer=True)
+                        excludes.add(j)
                         limits_f.append((i, 0, n))
                         limits_d.append((j, 0, n))
                         prod *= KroneckerDelta(i, j)
-                    return Lamda(prod, *limits_f, limits_d)
+                    return Lamda(prod, *limits_f, *limits_d)
                 
             return S.One
         return S.Zero
 
     def _eval_derivative_n_times(self, s, n):
-        from sympy import Piecewise, Eq
-        from sympy import Tuple, MatrixExpr
+        from sympy import Piecewise, Eq, Tuple, MatrixExpr
         from sympy.matrices.common import MatrixCommon
         if isinstance(s, (MatrixCommon, Tuple, Iterable, MatrixExpr)):
             return super(AtomicExpr, self)._eval_derivative_n_times(s, n)
@@ -4210,11 +4286,11 @@ def _n2(a, b):
     This should only be used when a and b are already sympified.
     """
     # /!\ it is very important (see issue 8245) not to
-    # use a re-evaluated number in the calculation of dif
+    # use a re-evaluated number in the calculation of diff
     if a.is_comparable and b.is_comparable:
-        dif = (a - b).evalf(2)
-        if dif.is_comparable:
-            return dif
+        diff = (a - b).evalf(2)
+        if diff.is_comparable:
+            return diff
 
 
 def unchanged(func, *args):

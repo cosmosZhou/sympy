@@ -911,7 +911,7 @@ def get_case(d, t):
     Returns one of {'exp', 'tan', 'base', 'primitive', 'other_linear',
     'other_nonlinear'}.
     """
-    if not d.has(t):
+    if not d.expr.has(t):
         if d.is_one:
             return 'base'
         return 'primitive'
@@ -1645,7 +1645,7 @@ class NonElementaryIntegral(AddWithLimits):
     as_sum = Integral.as_sum
     principal_value = Integral.principal_value
     _eval_is_finite = Integral._eval_is_finite
-    _eval_is_integer = Integral._eval_is_integer
+    _eval_is_extended_integer = Integral._eval_is_extended_integer
     _sympystr = Integral._sympystr
     _latex = Integral._latex
 

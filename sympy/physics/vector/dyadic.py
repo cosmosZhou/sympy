@@ -3,8 +3,6 @@ from sympy.core.compatibility import unicode
 from .printing import (VectorLatexPrinter, VectorPrettyPrinter,
                        VectorStrPrinter)
 
-__all__ = ['Dyadic']
-
 
 class Dyadic(object):
     """A Dyadic object.

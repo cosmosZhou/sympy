@@ -1,7 +1,5 @@
 """Ground types for various mathematical domains in SymPy. """
 
-__all__ = []
-
 from sympy.core.compatibility import builtins, HAS_GMPY
 
 PythonInteger = builtins.int

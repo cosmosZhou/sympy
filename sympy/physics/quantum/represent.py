@@ -19,15 +19,6 @@ from sympy.physics.quantum.operator import Operator, OuterProduct
 from sympy.physics.quantum.qapply import qapply
 from sympy.physics.quantum.operatorset import operators_to_state, state_to_operators
 
-__all__ = [
-    'represent',
-    'rep_innerproduct',
-    'rep_expectation',
-    'integrate_result',
-    'get_basis',
-    'enumerate_states'
-]
-
 #-----------------------------------------------------------------------------
 # Represent
 #-----------------------------------------------------------------------------

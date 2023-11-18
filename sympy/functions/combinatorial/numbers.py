@@ -1178,8 +1178,9 @@ class catalan(Function):
         k = Dummy('k', integer=True, positive=True)
         return Product((n + k) / k, (k, 2, n))
 
-    def _eval_is_integer(self):
-        if self.args[0].is_integer and self.args[0].is_extended_nonnegative:
+    def _eval_is_extended_integer(self):
+        n = self.arg
+        if n.is_extended_integer and n.is_extended_nonnegative:
             return True
 
     def _eval_is_extended_positive(self):
@@ -1253,8 +1254,9 @@ class genocchi(Function):
         if n.is_integer and n.is_nonnegative:
             return (1 - S(2) ** n) * bernoulli(n) * 2
 
-    def _eval_is_integer(self):
-        if self.args[0].is_integer and self.args[0].is_positive:
+    def _eval_is_extended_integer(self):
+        n = self.arg
+        if n.is_extended_integer and n.is_extended_positive:
             return True
 
     def _eval_is_extended_negative(self):
@@ -1369,8 +1371,8 @@ class partition(Function):
             if n.is_Integer:
                 return Integer(cls._partition(n))
 
-    def _eval_is_integer(self):
-        if self.args[0].is_integer:
+    def _eval_is_extended_integer(self):
+        if self.arg.is_extended_integer:
             return True
 
     def _eval_is_extended_negative(self):
@@ -2009,8 +2011,7 @@ class Stirling(Function):
     r"""Implementation of the stirling coefficient.     """
     is_extended_real = True
     
-    @property
-    def shape(self):
+    def _eval_shape(self):
         return ()
 
     @property
@@ -2066,6 +2067,9 @@ class Stirling(Function):
         from sympy.core.sympify import sympify
         n, k = map(sympify, (n, k))
         d = n - k
+        if d < 0:
+            return S.Zero
+        
         if k == 0:
             if n > 0:
                 return S.Zero
@@ -2093,9 +2097,6 @@ class Stirling(Function):
 
         if d == 3:
             return 15 * binomial(n, 6) + 10 * binomial(n, 5) + binomial(n, 4)
-
-        if d < 0:
-            return S.Zero
 
     def _eval_Mod(self, q):
         n, k = self.args
@@ -2218,11 +2219,11 @@ class Stirling(Function):
         if k.is_integer:
             return ff(n, k) / factorial(k)
 
-    def _eval_is_integer(self):
+    def _eval_is_extended_integer(self):
         n, k = self.args
-        if n.is_integer and k.is_integer:
+        if n.is_extended_integer and k.is_extended_integer:
             return True
-        elif k.is_integer == False:
+        elif k.is_extended_integer == False:
             return False
 
     def _eval_is_extended_negative(self):
@@ -2253,8 +2254,7 @@ class Stirling(Function):
 class Stirling1(Function):
     r"""Implementation of the stirling coefficient.     """
 
-    @property
-    def shape(self):
+    def _eval_shape(self):
         return ()
 
     @property
@@ -2466,11 +2466,11 @@ class Stirling1(Function):
         if k.is_integer:
             return ff(n, k) / factorial(k)
 
-    def _eval_is_integer(self):
+    def _eval_is_extended_integer(self):
         n, k = self.args
-        if n.is_integer and k.is_integer:
+        if n.is_extended_integer and k.is_extended_integer:
             return True
-        elif k.is_integer == False:
+        elif k.is_extended_integer == False:
             return False
 
     def _eval_is_extended_negative(self):
@@ -2482,8 +2482,7 @@ class Stirling1(Function):
                 return True
 
     def domain_nonzero(self, x):
-        from sympy.sets.sets import Interval
-        from sympy.core.numbers import oo
+        from sympy import Range, oo
         n, k = self.args
 
         p = k.as_poly(x)

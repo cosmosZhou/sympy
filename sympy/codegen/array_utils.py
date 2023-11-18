@@ -52,8 +52,7 @@ class _CodegenArrayAbstract(Basic):
         """
         return sum(self.subranks)
 
-    @property
-    def shape(self):
+    def _eval_shape(self):
         return self._shape
 
 

@@ -292,6 +292,7 @@ _assume_rules = FactRules([
     'invertible == !singular',
 # random domain:
     'random -> finite',
+    'probable -> random',
     
 # set domain:    
     'empty -> finiteset',
@@ -645,43 +646,34 @@ class ManagedProperties(BasicMeta):
                 setattr(base, pname, False)
             break
         
+    def process_limit(self, limit):
+        if isinstance(limit, slice): 
+            x, a, b = limit.start, limit.stop, limit.step
+            if b is not None:
+                return x, a, b
+            
+            if isinstance(a, set) or self.is_Punctured:
+                return x, a
+            
+            if isinstance(a, int) or a.type.is_DtypeInteger or a.is_Infinity:
+                return x, 0, a
+            
+            return x, a
+
+        return limit,
+        
     def __getitem__(self, limits):
-        if isinstance(limits, tuple):
-            limits = [*limits]
-            for i, limit in enumerate(limits):
-                if isinstance(limit, slice): 
-                    x, a, b = limit.start, limit.stop, limit.step
-                    if b is not None:
-                        limits[i] = (x, a, b)
-                    elif isinstance(a, set):
-                        limits[i] = (x, a)
-                    elif isinstance(a, int) or a.type.is_DtypeInteger:
-                        limits[i] = (x, 0, a)
-                    else:
-                        limits[i] = (x, a)
-                else:
-                    limits[i] = (limit,)
-        elif isinstance(limits, slice):
-            x, a, b = limits.start, limits.stop, limits.step
-            if limits.step is not None:
-                limits = [(x, a, b)]
-            elif isinstance(a, set):
-                limits = [(x, a)]
-            elif isinstance(a, int) or a.type.is_DtypeInteger or a.is_Infinity:
-                if self.is_Limit:
-                    limits = [(x, a)]
-                else:
-                    limits = [(x, 0, a)]
-            else:
-                limits = [(x, a)]
-        else:
-            limits = [(limits,)]
-                    
-        return IndexedOperator(self, limits)
+        return IndexedOperator(
+            self, 
+            [self.process_limit(limit) for limit in limits] if isinstance(limits, tuple) else [self.process_limit(limits)])
 
     def __iter__(self):
         raise TypeError
 
+    @property
+    def is_FunctionClass(self):
+        return self.is_Application
+    
 
 # in the form of : Lamda[Tuple[2]], BlockMatrix[1][Identity @ Expr]
 class IndexedOperator:
@@ -690,12 +682,15 @@ class IndexedOperator:
     is_Number = False
     is_Wanted = False
     
-    def __init__(self, cls, limits):
+    def __init__(self, cls, limits, supIndex=None):
         self.cls = cls
         self.limits = limits
         self._basic = None
-        
+        self.supIndex = supIndex
+
     def __call__(self, *args, **kwargs):
+        if (supIndex := self.supIndex) is not None:
+            kwargs['supIndex'] = supIndex
         return self.cls(*args, *self.limits, **kwargs)
         
     def has_int_index(self):
@@ -744,7 +739,7 @@ class IndexedOperator:
             else:
                 children = []                
                 for limit in limits: 
-                    assert len(limit) == 1  
+                    assert len(limit) == 1
                     child = limit[0]
                     if isinstance(child, IndexedOperator) and child.has_int_index():
                         child = child.basic
@@ -762,14 +757,6 @@ class IndexedOperator:
         from sympy.core.core import Wanted
         return Wanted(self.basic)
     
-#     @property
-#     def func(self):
-#         return self.basic.func
-
-#     @property
-#     def args(self):
-#         return self.basic.args
-
     def __repr__(self):
         return repr(self.basic)
     
@@ -778,15 +765,25 @@ class IndexedOperator:
     def __getattr__(self, attr):
         return getattr(self.basic, attr)
 
-    def __getitem__(self, args):
+    def __getitem__(self, indices):
         [[axis]] = self.limits
-        from sympy.core.of import Basic
-        if isinstance(args, tuple):
-            args = (self.func, *args)
+        if self.func.__name__ == 'Basic' and isinstance(axis, int) and axis > 1:
+            args = self.args
+            assert args[-1].is_Wanted
+            last = args[-1].func[indices]
+            if isinstance(indices, type) or not indices.is_wanted():
+                last = ~last 
+            return self.func[args[:-1] + (last,)]
         else:
-            args = (self.func, args)
-        obj = Basic.__new__(*args, axis=axis)
-        return obj
+            if isinstance(indices, tuple):
+                args = self.func, *indices
+            elif isinstance(indices, int) and indices > 1:
+                from sympy.core import Basic
+                return Basic[(self,) * (indices - 1) + (~self,)]
+            else:
+                args = self.func, indices
+            from sympy.core.of import Basic
+            return Basic.__new__(*args, axis=axis)
         
     def __pow__(self, other): 
         return BasicMeta.__pow__(self.basic, other)
@@ -834,29 +831,36 @@ class IndexedOperator:
         return BasicMeta.__and__(self.basic, other)
 
     def __rsub__(self, lhs):
-        from sympy import sympify 
+        from sympy import sympify
         lhs = sympify(lhs)
         return BasicMeta.__sub__(lhs, self.basic)
     
     def __radd__(self, lhs):
-        from sympy import sympify 
+        from sympy import sympify
         lhs = sympify(lhs)
         return BasicMeta.__add__(lhs, self.basic)
     
     def __rmul__(self, lhs):
-        from sympy import sympify 
+        from sympy import sympify
         lhs = sympify(lhs)
         return BasicMeta.__mul__(lhs, self.basic)
-    
+
     def __rtruediv__(self, lhs):
-        from sympy import sympify 
+        from sympy import sympify
         lhs = sympify(lhs)
         return BasicMeta.__truediv__(lhs, self.basic)
-    
+
     def __rfloordiv__(self, lhs):
-        from sympy import sympify 
+        from sympy import sympify
         lhs = sympify(lhs)
         return BasicMeta.__floordiv__(lhs, self.basic)
 
     def __rmatmul__(self, other): 
         return BasicMeta.__rmatmul__(self.basic, other)
+
+    def __xor__(self, other):
+        limits = self.limits
+        supIndex = len(limits)
+        limits = [*limits, (other,)]
+        return IndexedOperator(self.cls, limits, supIndex)
+

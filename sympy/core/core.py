@@ -114,7 +114,7 @@ class BasicMeta(type):
         else:
             from sympy import Union
             obj = Basic.__new__(Union, self, other)
-        return obj            
+        return obj
     
     def __and__(self, other):
         from sympy.core.of import Basic, sympify
@@ -132,8 +132,12 @@ class BasicMeta(type):
         from sympy import Add
         other = sympify(other)
         if other.is_Number:
-            self, other = other, self
-        return Basic.__new__(Add, self, other)
+            args = other, self
+        elif other.is_Add:
+            args = *other.args, self
+        else:
+            args = self, other
+        return Basic.__new__(Add, *args)
 
     def __radd__(self, lhs):
         from sympy.core.of import Basic, sympify
@@ -198,6 +202,8 @@ class BasicMeta(type):
                 other = Basic.__new__(Pow, b, -e)
             else:
                 other = Basic.__new__(Pow, other, S.NegativeOne)
+                if self.is_One:
+                    return other
         return Basic.__new__(Mul, self, other)
 
 #     lhs / self
@@ -208,7 +214,7 @@ class BasicMeta(type):
         
         pow = Basic.__new__(Pow, self, S.NegativeOne)
         if lhs == 1:
-            return pow                    
+            return pow
         return Basic.__new__(Mul, lhs, pow)
 
     def __mod__(self, other):
@@ -271,6 +277,10 @@ class BasicMeta(type):
     @property
     @cacheit
     def is_abstract(self):
+        if self.is_MutableDenseMatrix:
+            #todo:
+            #RawMatrix should be replaced by Matrix
+            return False
         return bool(self.__subclasses__())
 
 

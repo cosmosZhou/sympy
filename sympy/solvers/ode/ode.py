@@ -1120,7 +1120,7 @@ def classify_ode(eq, func=None, dict=False, ics=None, **kwargs):
                         # then exp(integral(f(x))*equation becomes exact
                         factor = simplify(numerator/r[e])
                         variables = factor.free_symbols
-                        if len(variables) == 1 and x == variables.pop():
+                        if len(variables) == 1 and x in variables:
                             factor = exp(Integral(factor).doit())
                             r[d] *= factor
                             r[e] *= factor
@@ -1131,7 +1131,7 @@ def classify_ode(eq, func=None, dict=False, ics=None, **kwargs):
                             # then exp(integral(f(y))*equation becomes exact
                             factor = simplify(-numerator/r[d])
                             variables = factor.free_symbols
-                            if len(variables) == 1 and y == variables.pop():
+                            if len(variables) == 1 and y in variables:
                                 factor = exp(Integral(factor).doit())
                                 r[d] *= factor
                                 r[e] *= factor
@@ -1282,7 +1282,7 @@ def classify_ode(eq, func=None, dict=False, ics=None, **kwargs):
                 dem = dem.subs(x**pows[0]*f(x), t)
                 test = num/dem
                 free = test.free_symbols
-                if len(free) == 1 and free.pop() == t:
+                if len(free) == 1 and t in free:
                     r2.update({'power' : pows[0], 'u' : test})
                     matching_hints['separable_reduced'] = r2
                     matching_hints["separable_reduced_Integral"] = r2
@@ -3758,8 +3758,8 @@ def _nth_order_reducible_match(eq, func):
     # ODE only handles functions of 1 variable so this affirms that state
     assert len(func.args) == 1
     x = func.args[0]
-    vc = [d.variable_count[0] for d in eq.atoms(Derivative)
-          if d.expr == func and len(d.variable_count) == 1]
+    vc = [d.limits[0] for d in eq.atoms(Derivative)
+          if d.expr == func and len(d.limits) == 1]
     ords = [c for v, c in vc if v == x]
     if len(ords) < 2:
         return

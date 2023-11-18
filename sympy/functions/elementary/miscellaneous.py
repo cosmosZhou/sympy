@@ -13,6 +13,7 @@ from sympy.core.compatibility import with_metaclass
 from sympy.core.logic import fuzzy_and, fuzzy_or, _torf
 from sympy.logic.boolalg import And
 from builtins import isinstance
+from sympy.core.cache import cacheit
 
 
 def _minmax_as_Piecewise(op, *args):
@@ -191,8 +192,9 @@ class MinMaxBase(Expr, LatticeOp):
                 return ai
             cond = a in ai.args
             if not cond:
-                return ai.func(*[do(i, a) for i in ai.args],
-                    evaluate=False)
+                args = [do(i, a) for i in ai.args]
+                return ai.func(*args, 
+                               evaluate=len(args) < len(ai.args) or ai._has(ai.negated_type) and not any(arg._has(ai.negated_type) for arg in args))
             if isinstance(ai, cls):
                 return ai.func(*[do(i, a) for i in ai.args if i != a],
                     evaluate=False)
@@ -314,10 +316,10 @@ class MinMaxBase(Expr, LatticeOp):
 #             return r
             # simplification can be expensive, so be conservative
             # in what is attempted
-#             from sympy.core.exprtools import factor_terms            
+#             from sympy.core.exprtools import factor_terms
 #             x = factor_terms(x - y)
 #             if i:
-#                 break 
+#                 break
 #             x = x - y
 #             y = S.Zero
 
@@ -353,7 +355,7 @@ class MinMaxBase(Expr, LatticeOp):
     _eval_is_algebraic = lambda s: _torf(i.is_algebraic for i in s.args)
     _eval_is_antihermitian = lambda s: _torf(i.is_antihermitian for i in s.args)
     _eval_is_commutative = lambda s: _torf(i.is_commutative for i in s.args)
-    _eval_is_complex = lambda s: _torf(i.is_complex for i in s.args)
+    _eval_is_extended_complex = lambda s: _torf(i.is_extended_complex for i in s.args)
     _eval_is_composite = lambda s: _torf(i.is_composite for i in s.args)
     _eval_is_even = lambda s: _torf(i.is_even for i in s.args)
     _eval_is_finite = lambda s: _torf(i.is_finite for i in s.args)
@@ -454,6 +456,14 @@ class MinMaxBase(Expr, LatticeOp):
             args[i] = fx
             
         return self.func(*args, evaluate=False)
+
+    def _latex(self, p, exp=None):
+        name = self.__class__.__name__.lower()
+        tex = '\\' + name + r"\left(%s\right)" % ", ".join(p._print(o) for o in self.args)
+        if exp:
+            tex = r'%s^{%s}' % (tex, p._print(exp))
+        return tex
+
 
 class Max(MinMaxBase, Application):
     """
@@ -646,7 +656,12 @@ class Max(MinMaxBase, Application):
 
         return MinMaxBase.__mul__(self, other)
 
-
+    def _eval_torch(self):
+        import torch
+        from functools import reduce
+        return reduce(lambda x, y: torch.maximum(x, y), (arg.torch for arg in self.args))
+    
+    
 class Min(MinMaxBase, Application):
     """
     Return, if possible, the minimum value of the list.
@@ -785,6 +800,11 @@ class Min(MinMaxBase, Application):
 
         return MinMaxBase.__mul__(self, other)
 
+    def _eval_torch(self):
+        import torch
+        from functools import reduce
+        return reduce(lambda x, y: torch.minimum(x, y), (arg.torch for arg in self.args))
+        
     
 Min.negated_type = Max
 Max.negated_type = Min

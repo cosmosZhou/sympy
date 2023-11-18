@@ -7,17 +7,34 @@ from sympy.matrices.expressions.matexpr import ZeroMatrix
 from sympy.concrete.expr_with_limits import Lamda
 from sympy.core.symbol import Symbol
 from sympy.core.function import Function
+from sympy.core.containers import Tuple
 
-def lstm_recursive(x, *limits):
-    (W,), (Wh,), (b,), (t,) = limits 
+@property
+def shape(self):
+    (Wh,) = self.limits[1]
+    d = Wh.shape[-1] / 4
+    if len(self.limits) > 3:
+        return (2 * d,)
+    
+    x = self.arg
+    x_shape = x.shape
+    shape = (x_shape[-2], d)
+    if len(x_shape) > 2:
+        shape = (x[0],) + shape
+    return shape
+
+
+@Function(real=True, integer=None, shape=shape)
+def lstm(x, *limits):
+    (W,), (Wh,), (b,), (t,) = limits
     hc = lstm[W, Wh, b, t - 1](x)
     
     xt = x[t]
     
     d = hc.shape[0] / 2
     
-    h = Sliced(hc, (0, d))
-    c = Sliced(hc, (d, 2 * d))    
+    h = Sliced(hc, Tuple(0, d))
+    c = Sliced(hc, Tuple(d, 2 * d))    
     d = h.shape[-1]
     
     Wi = W[:,:d]
@@ -42,43 +59,23 @@ def lstm_recursive(x, *limits):
      
     return Piecewise((BlockMatrix(o * tanh(c), c), t > 0), (ZeroMatrix(*hc.shape), True))
 
-
-def shape(self):
-    (Wh,) = self.limits[1]
-    d = Wh.shape[-1] / 4
-    if len(self.limits) > 3:
-        return (2 * d,)
     
-    x = self.arg
-    x_shape = x.shape
-    shape = (x_shape[-2], d)
-    if len(x_shape) > 2:
-        shape = (x[0],) + shape
-    return shape
-
-
-lstm = Function(real=True, integer=None, eval=lstm_recursive, shape=property(shape))
-
-    
+@Function(real=True, integer=None, shape=shape)    
 def LSTM(x, *weights):
     (W,), (Wh,), (b,) = weights
     n = x.shape[0]
     t = Symbol(integer=True)
     expr = lstm[W, Wh, b, t](x)
     d = expr.shape[0] / 2
-    return Lamda[t:n](Sliced(lstm[W, Wh, b, t](x), (0, d)))
+    return Lamda[t:n](Sliced(lstm[W, Wh, b, t](x), Tuple(0, d)))
 
 
+@Function(real=True, integer=None, shape=shape)
 def LSTMCell(x, *weights):
     (W,), (Wh,), (b,) = weights
     n = x.shape[0]
     t = Symbol(integer=True)
     expr = lstm[W, Wh, b, t](x)
     d = expr.shape[0] / 2
-    return Lamda[t:n](Sliced(expr, (d, d * 2)))
-
-
-LSTM = Function(real=True, integer=None, eval=LSTM, shape=property(shape))
-
-LSTMCell = Function(real=True, integer=None, eval=LSTMCell, shape=property(shape))
+    return Lamda[t:n](Sliced(expr, Tuple(d, d * 2)))
 

@@ -15,10 +15,6 @@ from sympy.physics.quantum.operator import OuterProduct, Operator
 from sympy.physics.quantum.state import State, KetBase, BraBase, Wavefunction
 from sympy.physics.quantum.tensorproduct import TensorProduct
 
-__all__ = [
-    'qapply'
-]
-
 
 #-----------------------------------------------------------------------------
 # Main code

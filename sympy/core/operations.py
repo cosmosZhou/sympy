@@ -1,5 +1,4 @@
-from operator import attrgetter
-from typing import Tuple, Type
+from operator import attrgetter 
 from collections import defaultdict
 
 from sympy.utilities.exceptions import SymPyDeprecationWarning
@@ -8,17 +7,17 @@ from sympy.core.sympify import _sympify as _sympify_, sympify
 from sympy.core.basic import Basic
 from sympy.core.cache import cacheit
 from sympy.core.compatibility import ordered, default_sort_key
-from sympy.core.logic import fuzzy_and, _fuzzy_group
+from sympy.core.logic import _fuzzy_group
 from sympy.core.parameters import global_parameters
 from sympy.utilities.iterables import sift
 from sympy.multipledispatch.dispatcher import (Dispatcher,
     ambiguity_register_error_ignore_dup,
     str_signature, RaiseNotImplementedError)
+from sympy.core.containers import Tuple
 
 
 class AssocOp(Basic):
-    """ Associative operations, can separate noncommutative and
-    commutative parts.
+    """ Associative operations, can separate noncommutative and commutative parts.
 
     (a op b) op c == a op (b op c) == a op b op c.
 
@@ -88,7 +87,7 @@ class AssocOp(Basic):
             if isinstance(other_symbols, tuple):
                 from sympy.series.order import Order
                 return Order(obj, *other_symbols)
-            assert other_symbols.is_infinitesimal is not None
+            assert other_symbols.infinitesimality is not None
             return obj + other_symbols
         return obj
 
@@ -444,13 +443,27 @@ class AssocOp(Basic):
 
     def doit(self, **hints):
         if hints.get('deep', True):
-            terms = [term.doit(**hints) for term in self.args]
+            args = [arg.doit(**hints) for arg in self.args]
+            hit = False
+            len_shape = len(self.shape)
+            for arg in args:
+                if arg.is_DenseMatrix:
+                    if len(arg.shape) == len_shape:
+                        hit = True
+            if hit:
+                from sympy import Matrix
+                if len_shape == 1:
+                    n, = self.shape
+                    return Matrix(tuple(self[i] for i in range(n)))
+                if len_shape == 2:
+                    m, n = self.shape
+                    return Matrix(tuple(tuple(self[i, j] for j in range(n)) for i in range(m)))
         else:
-            terms = self.args
-        return self.func(*terms, evaluate=True)
+            args = self.args
+        return self.func(*args, evaluate=True)
 
-    @property
-    def shape(self):
+    @cacheit
+    def _eval_shape(self):
         shape = ()
         for arg in self.args:
             _shape = arg.shape
@@ -467,14 +480,14 @@ class AssocOp(Basic):
     def as_expr(self):
         return self
 
+    @cacheit
     def _eval_domain_defined(self, x, **kwargs):
         if x.dtype.is_set:
             return x.universalSet
         domain = x.domain
         
-        real = kwargs.get('real')
         for arg in self.args:
-            domain &= arg.domain_defined(x, real=real)
+            domain &= arg.domain_defined(x, **kwargs)
         return domain
 
     def _eval_is_extended_real(self):
@@ -492,13 +505,16 @@ class AssocOp(Basic):
                 return True
 
     def getitem(self, indices, **_):
+        if (indices := self.simplify_indices(indices)) is None:
+            return self
+        
         args = []
         len_shape = self.max_len_shape()
         if isinstance(indices, tuple):
-            slice_length = sum(isinstance(i, slice) for i in indices)
+            slice_length = sum(isinstance(i, Tuple) for i in indices)
             len_subtracted = len(indices) - slice_length
             is_slice = slice_length > 0
-        elif isinstance(indices, slice):
+        elif isinstance(indices, Tuple):
             len_subtracted = 0
             is_slice = True
         else:
@@ -524,6 +540,108 @@ class AssocOp(Basic):
                 args.append(arg[indices])
 
         return self.func(*args)
+
+    @property
+    def variables(self):
+        s = set()
+        for a in self.args:
+            s |= {*a.variables}
+            
+        return s
+    
+    def yield_random_symbols(self):    
+        for arg in self.args:
+            yield from arg.yield_random_symbols()
+        
+    def yield_effective_variable(self, variable):
+        for arg in self.args:
+            yield from arg.yield_effective_variable(variable)
+
+    def domain_definition(self, **_):
+        from sympy import And
+        return And(*(arg.domain_definition() for arg in self.args))
+
+    def rotary_match(self, cls, indices):
+        indices[:] = [None] * len(indices)
+        if cls.of_LinearPattern():
+            if self._coeff_isneg():
+                return -self
+            return
+
+        from sympy.core.of import Basic
+        if len(cls.args) == 2:
+            from sympy.core.expr import Expr
+            a, b = cls.args
+            cls = Basic.__new__(self.func, b, a)
+            args = Expr.of(self, cls, indices=indices)
+            if args is not None:
+                indices.reverse()
+                if cls.of_LinearPattern():
+                    if isinstance(args, tuple):
+                        return self.func(*args)
+                    return args
+
+                if any(index is None for index in indices):
+                    return args
+
+                if isinstance(args, tuple):
+                    if len(args) > 2:
+                        if a is Expr:
+                            _b, *_a = args
+                            _a = self.func(*_a)
+                        else:
+                            *_b, _a = args
+                            _b = self.func(*_b)
+                    else:
+                        _b, _a = args
+                    return _a, _b
+            return args
+        
+        for i, Ty in enumerate(cls.args):
+            args = [*self.args]
+            Ty_indices = [t for t, arg in enumerate(args) if isinstance(Ty, type) and isinstance(arg, Ty) or isinstance(Ty.func, type) and isinstance(arg, Ty.func)]
+            if len(Ty_indices) == 1:
+                types = [*cls.args]
+                j, = Ty_indices
+                del types[i]
+                
+                Ty_value = args.pop(j)
+                Ty_value = Ty_value.of(Ty)
+                if Ty_value is None:
+                    break
+
+                indices_ = [None] * len(types)
+                args = self.func(*args).of(Basic.__new__(self.func, *types), indices=indices_)
+                if args:
+                    any_is_null = False
+                    for t, index in enumerate(indices_):
+                        if index is None:
+                            any_is_null = True
+                            continue
+
+                        if t >= i:
+                            index += 1
+                            t += 1
+
+                        indices[t] = index
+
+                    if isinstance(args, tuple) and len(args) == len(cls.args) - 1:
+                        if Ty_value:
+                            return args[:i] + (Ty_value,) + args[i:]
+                        return args
+                    
+                    if any_is_null:
+                        if Ty_value == ():
+                            if isinstance(Ty, type) and Ty.is_Symbol:
+                                if all(index is None for index in indices[:i]):
+                                    indices[i] = j
+                                    if sum(index is not None for index in indices_) == 1:
+                                        return self.args[j], args
+                                    else:
+                                        return self.args[j], *args
+                                else:
+                                    return
+                            return args
 
 
 class ShortCircuit(Exception):
@@ -660,10 +778,7 @@ class LatticeOp(AssocOp):
     @property  # type: ignore
     @cacheit
     def args(self):
-#         print('possible disorder!', __file__)
-#         print('possible bugs here!', __file__)
-#         return tuple(ordered(self._argset))
-        return tuple(sorted(self._argset, key=lambda x: str(x)))
+        return tuple(sorted(self._argset, key=lambda x: x.sort_key()))
 
     @staticmethod
     def _compare_pretty(a, b):
@@ -673,14 +788,22 @@ class LatticeOp(AssocOp):
         res = AssocOp.of(self, cls)
         if res is None:
             if cls.is_LatticeOp:
-                a, b = cls.args
                 from sympy.core.of import Basic
-                cls = Basic.__new__(cls.func, b, a)
-                res = AssocOp.of(self, cls)
-                if isinstance(res, tuple):
-                    b, a = res
-                    return (a, b)
-        return res 
+                if isinstance(cls, Basic) or cls.is_IndexedOperator:
+                    a, b = cls.args
+                    cls = Basic.__new__(cls.func, b, a)
+                    res = AssocOp.of(self, cls)
+                    if isinstance(res, tuple):
+                        b, a = res
+                        return a, b
+        return res
+
+    @cacheit
+    def sort_key(self, order=None):
+        args = self._sorted_args
+        args = len(args), tuple(arg.class_key() for arg in args), tuple(arg.sort_key(order=order) for arg in args)
+        from sympy import S
+        return self.class_key(), args, S.One.sort_key(), S.One
 
 
 class AssocOpDispatcher:

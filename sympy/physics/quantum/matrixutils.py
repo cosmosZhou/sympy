@@ -4,22 +4,6 @@ from sympy import MatrixBase, I, Expr, Integer
 from sympy.matrices import eye, zeros
 from sympy.external import import_module
 
-__all__ = [
-    'numpy_ndarray',
-    'scipy_sparse_matrix',
-    'sympy_to_numpy',
-    'sympy_to_scipy_sparse',
-    'numpy_to_sympy',
-    'scipy_sparse_to_sympy',
-    'flatten_scalar',
-    'matrix_dagger',
-    'to_sympy',
-    'to_numpy',
-    'to_scipy_sparse',
-    'matrix_tensor_product',
-    'matrix_zeros'
-]
-
 # Conditionally define the base classes for numpy and scipy.sparse arrays
 # for use in isinstance tests.
 

@@ -9,7 +9,7 @@ from sympy.core.function import expand_log, count_ops, _mexpand, nfloat
 from sympy.core.numbers import Float, I, pi, Rational, Integer
 from sympy.core.rules import Transform
 from sympy.core.sympify import _sympify
-from sympy.functions import gamma, exp, sqrt, log, exp_polar, piecewise_fold
+from sympy.functions import Gamma, exp, sqrt, log, exp_polar, piecewise_fold
 from sympy.functions.combinatorial.factorials import CombinatorialFunction
 from sympy.functions.elementary.complexes import unpolarify
 from sympy.functions.elementary.exponential import ExpBase
@@ -258,14 +258,14 @@ def hypersimp(f, k):
     """Given combinatorial term f(k) simplify its consecutive term ratio
        i.e. f(k+1)/f(k).  The input term can be composed of functions and
        integer sequences which have equivalent representation in terms
-       of gamma special function.
+       of Gamma special function.
 
        The algorithm performs three basic steps:
 
-       1. Rewrite all functions in terms of gamma, if possible.
+       1. Rewrite all functions in terms of Gamma, if possible.
 
-       2. Rewrite all occurrences of gamma in terms of products
-          of gamma and rising factorial with integer,  absolute
+       2. Rewrite all occurrences of Gamma in terms of products
+          of Gamma and rising factorial with integer,  absolute
           constant exponent.
 
        3. Perform simplification of nested fractions, powers
@@ -285,7 +285,7 @@ def hypersimp(f, k):
 
     g = f.subs(k, k + 1) / f
 
-    g = g.rewrite(gamma)
+    g = g.rewrite(Gamma)
     g = expand_func(g)
     g = powsimp(g, deep=True, combine='exp')
 
@@ -307,7 +307,7 @@ def hypersimilar(f, g, k):
     """
     f, g = list(map(sympify, (f, g)))
 
-    h = (f/g).rewrite(gamma)
+    h = (f/g).rewrite(Gamma)
     h = h.expand(func=True, basic=False)
 
     return h.is_rational_function(k)
@@ -583,8 +583,8 @@ def simplify(expr, ratio=1.7, measure=count_ops, rational=False, inverse=False):
     if expr.has(log):
         expr = shorter(expand_log(expr, deep=True), logcombine(expr))
 
-    if expr.has(CombinatorialFunction, gamma):
-        # expression with gamma functions or non-integer arguments is
+    if expr.has(CombinatorialFunction, Gamma):
+        # expression with Gamma functions or non-integer arguments is
         # automatically passed to gammasimp
         expr = combsimp(expr)
 

@@ -3,6 +3,7 @@ from sympy.core.sympify import _sympify
 from sympy.matrices.expressions import MatrixExpr
 from sympy.core import S, Eq, Ge
 from sympy.functions.special.tensor_functions import KroneckerDelta
+from sympy.core.cache import cacheit
 
 
 class DiagonalMatrix(MatrixExpr):
@@ -127,8 +128,9 @@ class DiagonalOf(MatrixExpr):
 
     """
     arg = property(lambda self: self.args[0])
-    @property
-    def shape(self):
+    
+    @cacheit
+    def _eval_shape(self):
         r, c = self.arg.shape
         if r.is_Integer and c.is_Integer:
             m = min(r, c)
@@ -170,8 +172,7 @@ class DiagonalizeVector(MatrixExpr):
         obj._vector = vector
         return obj
 
-    @property
-    def shape(self):
+    def _eval_shape(self):
         return self._shape
 
     def _entry(self, i, j, **kwargs):

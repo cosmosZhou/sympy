@@ -14,6 +14,7 @@ from sympy.core.symbol import _symbol
 from sympy.geometry.entity import GeometryEntity, GeometrySet
 from sympy.geometry.point import Point
 from sympy.integrals import integrate
+from sympy.core.cache import cacheit
 
 
 class Curve(GeometrySet):
@@ -141,8 +142,8 @@ class Curve(GeometrySet):
                 'and cannot be used as a parameter.' % tnew.name)
         return Point(*[w.subs(t, tnew) for w in self.functions])
 
-    @property
-    def free_symbols(self):
+    @cacheit
+    def _eval_free_symbols(self):
         """
         Return a set of symbols other than the bound symbols used to
         parametrically define the Curve.

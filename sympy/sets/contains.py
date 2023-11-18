@@ -18,7 +18,7 @@ class Element(BinaryCondition):
     True
     >>> Element(Integer(-2), S.Naturals)
     False
-    >>> i = Symbol('i', integer=True)
+    >>> i = Symbol(integer=True)
     >>> Element(i, S.Naturals)
     Element(i, Naturals)
 
@@ -29,10 +29,6 @@ class Element(BinaryCondition):
     """
 
     def __new__(cls, *args, **assumptions):
-        if len(args) == 1 and isinstance(args[0], frozenset):
-            _args = args[0]
-        else:
-            _args = args
         return BinaryCondition.eval(cls, *args, **assumptions)
 
     def subs(self, *args, **kwargs):
@@ -56,7 +52,8 @@ class Element(BinaryCondition):
         return r"%s \in %s" % tuple(p._print(a) for a in self.args)
 
     def _sympystr(self, p):
-        return "%s \N{ELEMENT OF} %s" % tuple(p._print(a) for a in self.args)
+#         return "%s \N{ELEMENT OF} %s" % tuple(p._print(a) for a in self.args)
+        return "Element(%s, %s)" % tuple(p._print(a) for a in self.args)
 
     def _pretty(self, p):
         from sympy.printing.pretty.stringpict import prettyForm, stringPict
@@ -127,7 +124,7 @@ class Element(BinaryCondition):
         from sympy import acos
         return self.func(acos(x), s.acos())
 
-    def simplify(self, *_, **__):
+    def simplify(self, *_, **kwargs):
         e, s = self.args
         this = s.func.simplify_Element(self, e, s)
         if this is not None:
@@ -139,10 +136,12 @@ class Element(BinaryCondition):
         if other.is_NotElement:
             if self.element == other.element:
                 return self.func(self.element, self.rhs - other.rhs).simplify()
+
         elif other.is_Element:
             if self.element == other.element:
                 s = self.rhs & other.rhs
                 return self.func(self.element, s)
+
         elif self.rhs.is_Range or self.rhs.is_Interval:
             if other.is_LessEqual: 
                 if self.lhs == other.lhs:
@@ -168,7 +167,7 @@ class Element(BinaryCondition):
                 if self.lhs == other.lhs:
                     if other.rhs >= self.rhs.stop:
                         return S.false
-            
+
         return BinaryCondition.__and__(self, other)
 
     def __or__(self, other):
@@ -210,7 +209,7 @@ class Element(BinaryCondition):
                     return domain & interval
                 elif c1 == -1:
                     interval = interval.func(c0 - interval.stop, c0 - interval.start, interval.step, left_open=interval.right_open, right_open=interval.left_open)
-                    return domain & interval                            
+                    return domain & interval
       
         elif interval.is_Interval: 
             poly = self.lhs.as_poly(x)
@@ -232,10 +231,14 @@ class Element(BinaryCondition):
         limits_dict = self.limits_dict
         if x in limits_dict:
             domain = limits_dict[x]
-            if not isinstance(domain, list):
-                if domain.is_set:
-                    if domain in function.rhs:
-                        return S.BooleanTrue
+            if not isinstance(domain, list) and domain and domain.is_set:
+                if domain in function.rhs:
+                    return S.BooleanTrue
+
+    @classmethod
+    def class_key(cls):
+        """Nice order of classes. """
+        return 5, 1, cls.__name__
 
 
 class NotElement(BinaryCondition):
@@ -290,7 +293,8 @@ class NotElement(BinaryCondition):
         return r"%s \not\in %s" % tuple(p._print(a) for a in self.args)
 
     def _sympystr(self, p):
-        return "%s \N{NOT AN ELEMENT OF} %s" % tuple(p._print(a) for a in self.args)
+#         return "%s \N{NOT AN ELEMENT OF} %s" % tuple(p._print(a) for a in self.args)
+        return "NotElement(%s, %s)" % tuple(p._print(a) for a in self.args)
 
     def _pretty(self, p):
         from sympy.printing.pretty.stringpict import prettyForm, stringPict
@@ -327,15 +331,15 @@ class NotElement(BinaryCondition):
     def element(self):
         return self.args[0]
 
-    def simplify(self, deep=False):
+    def simplify(self, deep=False, **kwargs):
         e, s = self.args
         this = s.func.simplify_NotElement(self, e, s)
         if this is not None:
             return this
             
-        domain = e.domain - s
-        if domain.is_FiniteSet:
-            return self.invert_type(e, domain).simplify()
+        finiteset = e.domain - s
+        if finiteset.is_FiniteSet:
+            return self.invert_type(e, finiteset).simplify()
         
         return self
 
@@ -385,7 +389,9 @@ class NotElement(BinaryCondition):
             y, Y = other.args
             if x == y: 
                 return self.func(x, X & Y, given=[self, other])
-            
+        elif other.is_Unequal:
+            return other.__or__(self)
+
         return BinaryCondition.__or__(self, other)
 
     @property
@@ -406,6 +412,11 @@ class NotElement(BinaryCondition):
         if element in forall:
             if forall[element] == container:
                 return S.BooleanFalse
+
+    @classmethod
+    def class_key(cls):
+        """Nice order of classes. """
+        return 5, 2, cls.__name__
 
 
 class Contains(BinaryCondition):
@@ -443,7 +454,8 @@ class Contains(BinaryCondition):
 
     def _sympystr(self, p):
         # unicodedata.lookup('CONTAINS AS MEMBER'), '\N{CONTAINS AS MEMBER}'
-        return "%s \N{CONTAINS AS MEMBER} %s" % tuple(p._print(a) for a in self.args)
+#         return "%s \N{CONTAINS AS MEMBER} %s" % tuple(p._print(a) for a in self.args)
+        return "Contains(%s, %s)" % tuple(p._print(a) for a in self.args)
 
     def _pretty(self, p):
         from sympy.printing.pretty.stringpict import prettyForm, stringPict
@@ -475,7 +487,7 @@ class Contains(BinaryCondition):
     def as_set(self):
         return self
 
-    def simplify(self, *_, **__):
+    def simplify(self, *_, **kwargs):
         return self
 
     def __and__(self, other):
@@ -536,7 +548,8 @@ class NotContains(BinaryCondition):
         return r"%s \not\ni %s" % tuple(p._print(a) for a in self.args)
 
     def _sympystr(self, p):
-        return "%s \N{DOES NOT CONTAIN AS MEMBER} %s" % tuple(p._print(a) for a in self.args)
+#         return "%s \N{DOES NOT CONTAIN AS MEMBER} %s" % tuple(p._print(a) for a in self.args)
+        return "NotContains(%s, %s)" % tuple(p._print(a) for a in self.args)
 
     def _pretty(self, p):
         from sympy.printing.pretty.stringpict import prettyForm, stringPict
@@ -565,7 +578,7 @@ class NotContains(BinaryCondition):
     def as_set(self):
         return self
 
-    def simplify(self, *_, **__):
+    def simplify(self, *_, **kwargs):
         return self
 
     def __and__(self, other):

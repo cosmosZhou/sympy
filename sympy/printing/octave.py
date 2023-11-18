@@ -579,11 +579,6 @@ def octave_code(expr, assign_to=None, **settings):
         expressions that generate multi-line statements.
     precision : integer, optional
         The precision for numbers such as pi  [default=16].
-    user_functions : dict, optional
-        A dictionary where keys are ``FunctionClass`` instances and values are
-        their string representations.  Alternatively, the dictionary value can
-        be a list of tuples i.e. [(argument_test, cfunction_string)].  See
-        below for examples.
     human : bool, optional
         If True, the result is a single string that may contain some constant
         declarations for the number symbols.  If False, the same information is

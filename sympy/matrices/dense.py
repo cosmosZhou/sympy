@@ -43,7 +43,7 @@ class DenseMatrix(MatrixBase):
     _op_priority = 10.01
     _class_priority = 4
 
-    def __getitem__(self, key):
+    def __getitem__(self, indices):
         """Return portion of self defined by key. If the key involves a slice
         then a list will be returned (if key is a single slice) or a matrix
         (if key was a tuple involving a slice).
@@ -79,14 +79,35 @@ class DenseMatrix(MatrixBase):
         >>> m[::2]
         [1, 3]
         """
-        if isinstance(key, tuple):
-            if len(key) == 1:
-                key = key[0]
+        if (indices := self.simplify_indices(indices)) is None:
+            return self
+        
+        from sympy import Tuple
+        if isinstance(indices, tuple):
+            if len(indices) == 1:
+                key, = indices
                 return self[key]
-            i, j = key
+            i, j = indices
+            cols = self.cols
+            if isinstance(i, Tuple):
+                start, stop, step = i.slice_args
+                rows = self.rows
+                assert start >= 0 and stop <= rows and step > 0
+                _args = self._args
+                return self.func(tuple((_args[i * cols + j] for i in range(start, stop, step))))
+            
+            if isinstance(j, Tuple):
+                start, stop, step = j.slice_args
+                assert start >= 0 and stop <= cols and step > 0
+                _args = self._args
+                offset = i * cols
+                start += offset
+                stop += offset
+                return self.func(*_args[start:stop:step])
+                
             try:
-                i, j = self.key2ij(key)
-                return self._args[i * self.cols + j]
+                i, j = self.key2ij(indices)
+                return self._args[i * cols + j]
             except (TypeError, IndexError):
                 if (isinstance(i, Expr) and not i.is_number) or (isinstance(j, Expr) and not j.is_number):
                     if ((j < 0) is True) or ((j >= self.shape[1]) is True) or\
@@ -110,26 +131,30 @@ class DenseMatrix(MatrixBase):
                 return self.extract(i, j)
         else:
             # row-wise decomposition of matrix
-            if isinstance(key, slice):
-                return self._new(self._args[key])
+            if isinstance(indices, Tuple):
+                return self._new(self._args[indices.slice])
             
             from sympy import Equal, Piecewise
             args = []
             if len(self.shape) == 1:
                 for i in range(len(self._args)):
-                    args.append([self._args[i], Equal(key, i)])
+                    args.append([self._args[i], Equal(indices, i)])
                 args[-1][1] = True
                 return Piecewise(*args).simplify()
             
             if len(self.shape) == 2:
-                col = self.shape[1]
-                for i in range(self.shape[0]):
-                    args.append([self.func(self._args[col * i: col * (i + 1)]), Equal(key, i)])
+                row, col = self.shape
+                if isinstance(indices, int) or indices.is_Integer:
+                    i = int(indices)
+                    return self.func(self._args[col * i: col * (i + 1)])
+
+                for i in range(row):
+                    args.append([self.func(self._args[col * i: col * (i + 1)]), Equal(indices, i)])
                     
                 args[-1][1] = True
                 return Piecewise(*args).simplify()
             
-            return self._args[a2idx(key)]
+            return self._args[a2idx(indices)]
 
     def __setitem__(self, key, value):
         raise NotImplementedError()
@@ -181,8 +206,7 @@ class DenseMatrix(MatrixBase):
         mat = self._args
         cols = self.cols
         indices = (i * cols + j for i in rowsList for j in colsList)
-        return self._new(len(rowsList), len(colsList),
-                         list(mat[i] for i in indices), copy=False)
+        return self._new(len(rowsList), len(colsList), type(mat)(mat[i] for i in indices), copy=False)
 
     def _eval_matrix_mul(self, other):
         from sympy import Add
@@ -193,12 +217,12 @@ class DenseMatrix(MatrixBase):
         new_mat_rows = self_rows
         if other.rows == 1:
             new_mat_cols = other.rows
-            other_rows, other_cols = other_cols, other_rows 
+            other_rows, other_cols = other_cols, other_rows
         else:
             new_mat_cols = other.cols
 
         # preallocate the array
-        new_mat = [self.zero] * new_mat_rows * new_mat_cols
+        new_mat = [self.zero] * int(new_mat_rows) * int(new_mat_cols)
 
         # if we multiply an n x 0 with a 0 x m, the
         # expected behavior is to produce an n x m matrix of zeros
@@ -210,17 +234,8 @@ class DenseMatrix(MatrixBase):
                 row, col = i // new_mat_cols, i % new_mat_cols
                 row_indices = range(self_cols * row, self_cols * (row + 1))
                 col_indices = range(col, other_len, other_cols)
-                vec = (mat[a] * other_mat[b] for a, b in zip(row_indices, col_indices))
-                try:
-                    new_mat[i] = Add(*vec)
-                except (TypeError, SympifyError):
-                    # Block matrices don't work with `sum` or `Add` (ISSUE #11599)
-                    # They don't work with `sum` because `sum` tries to add `0`
-                    # initially, and for a matrix, that is a mix of a scalar and
-                    # a matrix, which raises a TypeError. Fall back to a
-                    # block-matrix-safe way to multiply if the `sum` fails.
-                    vec = (mat[a] * other_mat[b] for a, b in zip(row_indices, col_indices))
-                    new_mat[i] = reduce(lambda a, b: a + b, vec)
+                vec = tuple(mat[a] * other_mat[b] for a, b in zip(row_indices, col_indices))
+                new_mat[i] = reduce(lambda a, b: a + b, vec)
 
         if new_mat_cols == 1:
             new_mat_cols, new_mat_rows = new_mat_rows, new_mat_cols
@@ -470,13 +485,15 @@ class DenseMatrix(MatrixBase):
         elif self.dtype.is_bool:
             from sympy import FiniteSet
             domain = FiniteSet(S.true, S.false)
+        elif self.dtype.is_set:            
+            domain = self.dtype.as_Set()
         else:
             domain = S.Complexes
         return CartesianSpace(domain, *shape)
     
-    _eval_is_complex = lambda self: _fuzzy_group((a.is_complex for a in self._args), quick_exit=True)
+    _eval_is_extended_complex = lambda self: _fuzzy_group((a.is_extended_complex for a in self._args), quick_exit=True)
     _eval_is_finite = lambda self: _fuzzy_group((a.is_finite for a in self._args), quick_exit=True)
-    _eval_is_integer = lambda self: _fuzzy_group((a.is_integer for a in self._args), quick_exit=True)
+    _eval_is_extended_integer = lambda self: _fuzzy_group((a.is_extended_integer for a in self._args), quick_exit=True)
     _eval_is_extended_real = lambda self: _fuzzy_group((a.is_extended_real for a in self._args), quick_exit=True)
     _eval_is_extended_positive = lambda self: _fuzzy_group((a.is_extended_positive for a in self._args), quick_exit=True)
     _eval_is_extended_negative = lambda self: _fuzzy_group((a.is_extended_negative for a in self._args), quick_exit=True)
@@ -511,6 +528,52 @@ class DenseMatrix(MatrixBase):
             out_str = r'\left' + left_delim + out_str + r'\right' + right_delim
         return out_str % r"\\".join(lines)
 
+    def _eval_ReducedArgMax(self):
+        shape = self.shape
+        args = self._args
+        if len(shape) == 1:
+            M = S.NegativeInfinity
+            index = None
+            for i, val in enumerate(args):
+                if val > M:
+                    M = val
+                    index = i
+                    continue
+
+                if val <= M:
+                    continue
+                
+                return
+            return S(index)
+        
+        if len(shape) == 2:
+            rows = self.rows
+            from sympy import ReducedArgMax
+            return self.func(*(ReducedArgMax(self[i]) for i in range(rows)))
+
+    def _eval_ReducedArgMin(self):
+        shape = self.shape
+        args = self._args
+        if len(shape) == 1:
+            M = S.Infinity
+            index = None
+            for i, val in enumerate(args):
+                if val < M:
+                    M = val
+                    index = i
+                    continue
+
+                if val >= M:
+                    continue
+                
+                return
+            return S(index)
+        
+        if len(shape) == 2:
+            rows = self.rows
+            from sympy import ReducedArgMin
+            return self.func(*(ReducedArgMin(self[i]) for i in range(rows)))
+        
         
 def _force_mutable(x):
     """Return a matrix as a Matrix, otherwise return x."""
@@ -534,7 +597,7 @@ class MutableDenseMatrix(DenseMatrix):
     """
     
     __slots__ = []
-    
+
     def __new__(cls, *args, **kwargs):
         return cls._new(*args, **kwargs)
 
@@ -551,9 +614,12 @@ class MutableDenseMatrix(DenseMatrix):
         else:
             if 'shape' in kwargs:
                 shape = kwargs['shape']
+                from types import FunctionType
+                if len(args) == 1 and isinstance(args[0], FunctionType):
+                    func, = args
+                    row, col = shape
+                    args = tuple(func(i, j) for i in range(row) for j in range(col))
                 flat_list = args
-                if not all(isinstance(arg, Basic) for arg in args):
-                    print(flat_list)
             elif isinstance(args[0], (tuple, Tuple)) and len(args) > 1:
                 shape = args[0]
                 flat_list = args[1:]
@@ -567,8 +633,7 @@ class MutableDenseMatrix(DenseMatrix):
             return self
         return flat_list[0]
 
-    @property
-    def shape(self): 
+    def _eval_shape(self):
         return self._assumptions['shape']
     
     @property
@@ -792,14 +857,17 @@ class MutableDenseMatrix(DenseMatrix):
         rlo, rhi, clo, chi = self.key2bounds(key)
         shape = value.shape
         dr, dc = rhi - rlo, chi - clo
-        if shape != (dr, dc):
-            raise ShapeError(filldedent("The Matrix `value` doesn't have the "
-                                        "same dimensions "
-                                        "as the in sub-Matrix given by `key`."))
-
-        for i in range(value.rows):
+        if dr == 1:
+            assert shape == (dc,)
             for j in range(value.cols):
-                self[i + rlo, j + clo] = value[i, j]
+                self[rlo, j + clo] = value[j]
+
+        else:
+            assert shape == (dr, dc)
+
+            for i in range(value.rows):
+                for j in range(value.cols):
+                    self[i + rlo, j + clo] = value[i, j]
 
     def fill(self, value):
         """Fill the matrix with the scalar value.
@@ -903,12 +971,9 @@ class MutableDenseMatrix(DenseMatrix):
 
         sympy.simplify.simplify.simplify
         """
-        return self
-        if isinstance(self._args, tuple):
-            return self.func(*(_simplify(self._args[i]) for i in range(len(self._args))), shape=self.shape)
-        for i in range(len(self._args)):
-            self._args[i] = _simplify(self._args[i], ratio=ratio, measure=measure, rational=rational, inverse=inverse)
-            
+        if all(arg.is_Zero for arg in self.args):
+            from sympy.matrices.expressions.matexpr import ZeroMatrix
+            return ZeroMatrix(*self.shape)
         return self
 
     def zip_row_op(self, i, k, f):
@@ -941,8 +1006,77 @@ class MutableDenseMatrix(DenseMatrix):
 
         self._args[i0: i0 + self.cols] = [f(x, y) for x, y in zip(ri, rk)]
     
-    # Utility functions
+    # NewMatrix:
+    def row_join(self, rhs):
+        # Allows you to build a matrix even if it is null matrix
+        if not self:
+            return type(self)(rhs)
 
+        if self.rows != rhs.rows:
+            raise ShapeError(
+                "`self` and `rhs` must have the same number of rows.")
+        newmat = Matrix.zeros(self.rows, self.cols + rhs.cols)
+        newmat[:, :self.cols] = self
+        newmat[:, self.cols:] = rhs
+        return type(self)(newmat)
+
+    def col_join(self, bott):
+        # Allows you to build a matrix even if it is null matrix
+        if not self:
+            return type(self)(bott)
+
+        if self.cols != bott.cols:
+            raise ShapeError(
+                "`self` and `bott` must have the same number of columns.")
+        newmat = Matrix.zeros(self.rows + bott.rows, self.cols)
+        newmat[:self.rows, :] = self
+        newmat[self.rows:, :] = bott
+        return type(self)(newmat)
+
+    def gauss_jordan_solve(self, b, freevar=False):
+        aug = self.hstack(self.copy(), b.copy())
+        row, col = aug[:, :-1].shape
+
+        # solve by reduced row echelon form
+        A, pivots = aug.rref()
+        A, v = A[:, :-1], A[:, -1]
+        pivots = list(filter(lambda p: p < col, pivots))
+        rank = len(pivots)
+
+        # Bring to block form
+        permutation = Matrix(range(col)).T
+        A = A.vstack(A, permutation)
+
+        for i, c in enumerate(pivots):
+            A.col_swap(i, c)
+
+        A, permutation = A[:-1, :], A[-1, :]
+
+        # check for existence of solutions
+        # rank of aug Matrix should be equal to rank of coefficient matrix
+        if not v[rank:, 0].is_zero:
+            raise ValueError("Linear system has no solution")
+
+        # Get index of free symbols (free parameters)
+        free_var_index = permutation[len(pivots):]  # non-pivots columns are free variables
+
+        # Free parameters
+        tau = Matrix([S(1) for k in range(col - rank)]).reshape(col - rank, 1)
+
+        # Full parametric solution
+        V = A[:rank, rank:]
+        vt = v[:rank, 0]
+        free_sol = tau.vstack(vt - V*tau, tau)
+
+        # Undo permutation
+        sol = Matrix.zeros(col, 1)
+        for k, v in enumerate(free_sol):
+            sol[permutation[k], 0] = v
+
+        if freevar:
+            return sol, tau, free_var_index
+        else:
+            return sol, tau
 
 MutableMatrix = Matrix = MutableDenseMatrix
 
@@ -1231,7 +1365,7 @@ def casoratian(seqs, n, zero=True):
 
     mat = Matrix(k, k, f)
     if not mat.shape:
-        return mat 
+        return mat
     return mat.det()
 
 

@@ -79,6 +79,8 @@ class Basic(Printable, metaclass=ManagedProperties):
     is_number = False
     is_symbol = False
    
+    is_Punctured = False
+    
     is_ConditionSet = False
     
     is_bool = False
@@ -87,6 +89,8 @@ class Basic(Printable, metaclass=ManagedProperties):
     
     is_set = False
     
+    is_infinitesimal = False
+
     is_Integral = False
     
     is_Inference = False
@@ -97,6 +101,12 @@ class Basic(Printable, metaclass=ManagedProperties):
     
     is_super_complex = True
     
+    is_FunctionClass = False
+    
+    is_elementwise = False
+    
+    is_distribution = False
+
     def definition_set(self, dependency):
         from sympy.core.symbol import Symbol
 
@@ -124,7 +134,10 @@ class Basic(Printable, metaclass=ManagedProperties):
         """Overloading for & operator"""
         if self.is_set:
             return self.intersect(other)
-        
+
+        if not other.is_bool and self.is_random and other.is_random:
+            return self & other.as_boolean()
+
         rhs = None
         if other.is_And:
             rhs = tuple(other._argset)
@@ -145,7 +158,7 @@ class Basic(Printable, metaclass=ManagedProperties):
 
     def __or__(self, other):
         if self.is_bool and other.is_bool: 
-            from sympy.logic.boolalg import Or        
+            from sympy.logic.boolalg import Or
             """Overloading for |"""
             return Or(self, other)
         from sympy.stats.rv import given
@@ -177,14 +190,6 @@ class Basic(Printable, metaclass=ManagedProperties):
                 if value is not None:
                     obj._assumptions[name] = value
                     
-        obj._domain_defined = {}
-        for arg in args:
-            try:
-                for sym in arg.free_symbols:
-                    obj._domain_defined[sym] = None
-            except:
-                ...
-        
         return obj
 
     def copy(self, **kwargs):
@@ -384,7 +389,7 @@ class Basic(Printable, metaclass=ManagedProperties):
                 return arg
 
         args = self._sorted_args
-        args = len(args), tuple([inner_key(arg) for arg in args])
+        args = len(args), tuple(arg.class_key() for arg in args), tuple(inner_key(arg) for arg in args)
         return self.class_key(), args, S.One.sort_key(), S.One
 
     def __eq__(self, other):
@@ -454,11 +459,24 @@ class Basic(Printable, metaclass=ManagedProperties):
 
 # precondition, self and other are structurally equal!
     def _dummy_eq(self, other):
-        assert len(self.args) == len(other.args) and self.func == other.func
+        if len(self.args) != len(other.args) or self.func != other.func:
+            return False
 
         for x, y in zip(self.args, other.args):
             if not x._dummy_eq(y):
                 return False
+            
+        kwargs = self.kwargs
+        _kwargs = other.kwargs
+        if len(kwargs) != len(_kwargs):
+            return False
+        
+        for key in kwargs:
+            value = kwargs[key]
+            _value = _kwargs.get(key)
+            if value != _value:
+                return False
+
         return True
 
     def dummy_eq(self, other, symbol=None):
@@ -484,7 +502,7 @@ class Basic(Printable, metaclass=ManagedProperties):
         False
 
         """
-        return self.structurally_equal(other) and self._dummy_eq(other)
+        return self == other or self.structurally_equal(other) and self._dummy_eq(other)
     
     # Note, we always use the default ordering (lex) in __str__ and __repr__,
     # regardless of the global setting.  See issue 5487.
@@ -602,6 +620,162 @@ class Basic(Printable, metaclass=ManagedProperties):
 
     @property
     def free_symbols(self):
+        return self._eval_free_symbols()
+
+    @property
+    def random_symbols(self):
+        return self._eval_random_symbols()
+
+    @staticmethod
+    def merge_symbols(v, s):
+        if s:
+            from sympy import Range
+            if v.is_Indexed:
+                if v.base in s:
+                    return
+                x, *indices = v.args
+                if len(indices) > 1:
+                    ...
+                else:
+                    i, = indices
+                    for t in s:
+                        if t.is_Sliced and t.base == x:
+                            indices = t.indices
+                            if len(indices) > 1:
+                                continue
+                            
+                            (a, b), = indices
+                            if i == a - 1:
+                                a = i
+                            elif i == b:
+                                b += 1
+                            else:
+                                if Range(a, b).conditionally_contains(i):
+                                    return
+                                continue
+    
+                            s.remove(t)
+                            s.add(x[a:b])
+                            return
+                        
+            elif v.is_Sliced:
+                if v.base in s:
+                    return
+                x, *indices = v.args
+                if len(indices) > 1:
+                    ...
+                else:
+                    start, stop, step = indices[0].slice_args
+                    if step == 1:
+                        for t in s:
+                            if t.is_Indexed:
+                                base, *indices = t.args
+                                if base == x:
+                                    ...
+                                elif x.is_Indexed and base == x.base:
+                                    if base[indices[0]] == x:
+                                        base = base[indices[0]]
+                                        indices = indices[1:]
+                                    else:
+                                        continue
+                                else:
+                                    continue
+
+                                if len(indices) > 1:
+                                    continue
+    
+                                i, = indices
+                                if i == start - 1:
+                                    start = i
+                                elif i == stop:
+                                    stop += 1
+                                else:
+                                    if Range(start, stop).conditionally_contains(i):
+                                        s.remove(t)
+                                    break
+        
+                                s.remove(t)
+                                s.add(x[start:stop])
+                                return
+                            
+                            if t.is_Sliced and t.base == x:
+                                t_indices = t.indices
+                                if len(t_indices) > 1:
+                                    continue
+                                
+                                t_start, t_stop, t_step = t.indices[0].slice_args
+                                if t_step != 1:
+                                    continue
+                                
+                                if start <= t_start and t_stop <= stop:
+                                    s.remove(t)
+                                    s.add(v)
+                                    return
+                                
+                                if t_start <= start and stop <= t_stop:
+                                    return
+                                
+        s.add(v)
+        
+    @cacheit
+    def _eval_random_symbols(self):
+        s = set()
+        for v in self.yield_random_symbols():
+            Basic.merge_symbols(v, s)
+        return s
+    
+    def effective_variable(self, variable):
+        s = set()
+        for v in self.yield_effective_variable(variable):
+            Basic.merge_symbols(v, s)
+        return s
+    
+    def yield_random_symbols(self):
+        if self.is_symbol:
+            if self.is_random:
+                yield self
+                
+        elif self.is_PDF:
+            ...
+        else:
+            if hasattr(self, '_argset'):
+                args = self._argset
+            else:
+                args = self.args
+
+            for arg in args:
+                yield from arg.yield_random_symbols()
+
+    def yield_effective_variable(self, variable):
+        if self.is_symbol:
+            if (definition := self.definition) is None:
+                if self.is_random:
+                    ...
+                elif self._has(variable):
+                    if variable.is_Symbol:
+                        if self.is_Indexed:
+                            if self.base == variable:
+                                yield self
+                            else:
+                                for arg in self.args:
+                                    yield from arg.yield_effective_variable(variable)
+
+                            return
+
+                    yield self
+            else:
+                yield from definition.yield_effective_variable(variable)
+        else:
+            if hasattr(self, '_argset'):
+                args = self._argset
+            else:
+                args = self.args
+
+            for arg in args:
+                yield from arg.yield_effective_variable(variable)
+
+    @cacheit
+    def _eval_free_symbols(self):
         """Return from the atoms of self those which are free symbols.
 
         For most expressions, all symbols are free symbols. For some classes
@@ -1211,7 +1385,7 @@ class Basic(Printable, metaclass=ManagedProperties):
         if old.is_Sliced:
             this = self._subs_sliced(old, new, **hints)
             if this != self:
-                return this             
+                return this
         
         def fallback(self, old, new):
             """
@@ -1262,7 +1436,7 @@ class Basic(Printable, metaclass=ManagedProperties):
 
         _subs
         """
-        return None
+        ...
 
     def xreplace(self, rule):
         """
@@ -1703,11 +1877,13 @@ class Basic(Printable, metaclass=ManagedProperties):
                 return self.kwargs == cls.kwargs
             
             return self.typeof(cls.func)
+        
+        if isinstance(cls, Printable):
+            return self == cls
         return self.typeof(cls.func)
         
-    
-    def of(self, cls):
-        return self._extract(cls)
+    def of(self, cls, **kwargs):
+        return self._extract(cls, **kwargs)
     
     def is_wanted(self):
         if self.is_Wanted:
@@ -1719,24 +1895,32 @@ class Basic(Printable, metaclass=ManagedProperties):
                 return True
         return
     
-    def find_path(self, cls, path):
+    def find_path(self, cls, path, **kwargs):
         for i, arg in enumerate(self.args):
             if arg.typeof(cls):
                 path.append(i)
                 yield path
                 path.pop()
-                    
+
         for i, arg in enumerate(self.args):
             path.append(i)
-            yield from arg.find_path(cls, path)
+            yield from arg.find_path(cls, path, **kwargs)
             path.pop()
 
-    def fetch_from_path(self, *path, struct=None):
+    def fetch_from_path(self, *path, **kwargs):
+        struct = kwargs.get('struct')
         if struct is None:
-            for index in path:
-                self = self.args[index]        
+            if kwargs.get('history'):
+                history = []
+                for index in path:
+                    self = self.args[index] if isinstance(index, int) else getattr(self, index)
+                    history.append(self)
+                return history
             
-            return self
+            else:
+                for index in path:
+                    self = self.args[index]
+                return self
             
         parent = []
         for index in path:
@@ -1779,22 +1963,26 @@ class Basic(Printable, metaclass=ManagedProperties):
             return False
         
         if t is None:
-            if len(self.args) != len(cls.args):
-                return False
-            
-            for arg, struct in zip(self.args, cls.args):
-                if isinstance(struct, type):
-                    if not isinstance(arg, struct):
-                        return False
-                    
-                elif struct.is_Number:
-                    if arg != struct:    
-                        return False
-                    
-                else:
-                    if not arg.isinstance(struct):
-                        return False
-                    
+            if cls.is_wanted():
+                if len(self.args) != len(cls.args):
+                    return False
+                
+                for arg, struct in zip(self.args, cls.args):
+                    if isinstance(struct, type):
+                        if not isinstance(arg, struct):
+                            return False
+                        
+                    elif struct.is_Number:
+                        if arg != struct:    
+                            return False
+                        
+                    else:
+                        if not arg.isinstance(struct):
+                            return False
+                        
+            else:
+                if not self.of(cls):
+                    return False
             return True
         
         for w, s in enumerate(cls.args):
@@ -1808,7 +1996,7 @@ class Basic(Printable, metaclass=ManagedProperties):
         
         j = t - 1
 #X[0], X[1], ..., X[t - 2], X[t - 1], X[t], X[t + 1], X[t + 2], ..., X[m - 1], m = len(X)
-#                               j<---------------- start scanning from here                                 
+#                               j<---------------- start scanning from here
 #C[0], C[1], ..., C[w - 2], C[w - 1], C[w], C[w + 1], C[w + 2], ..., C[n - 1], n = len(C)
 #                               i<---------------- start scanning from here
 #scan backward, starting from w - 1
@@ -1840,9 +2028,9 @@ class Basic(Printable, metaclass=ManagedProperties):
         else:
             j = t + 1
 #X[0], X[1], ..., X[t - 2], X[t - 1], X[t], X[t + 1], X[t + 2], ..., X[m - 1], m = len(X)
-#start scanning from here --------------------->j                                 
+#start scanning from here --------------------->j
 #C[0], C[1], ..., C[w - 2], C[w - 1], C[w], C[w + 1], C[w + 2], ..., C[n - 1], n = len(C)
-#start scanning from here --------------------->i            
+#start scanning from here --------------------->i
 #                 scan forward, starting from w + 1
             for i in range(w + 1, len(cls.args)):
                 if j >= len(self.args):
@@ -1902,7 +2090,7 @@ class Basic(Printable, metaclass=ManagedProperties):
             
         return True
     
-    def _extract(self, cls):
+    def _extract(self, cls, indices=None):
         if isinstance(cls, type):
             if isinstance(self, cls):
                 args = self.args
@@ -1924,21 +2112,27 @@ class Basic(Printable, metaclass=ManagedProperties):
             arg = this.of(struct)
             if arg is not None:
                 if arg == ():
-                    from sympy import Symbol
-                    if this.is_Symbol and (struct is Symbol or not struct.is_Symbol) or \
-                    this.is_Number and not struct.is_Number or \
-                    this.is_Pi and not struct.is_Pi:
+                    if not this.is_consistently_of(struct):
                         args.append(this)
+                        if indices:
+                            indices[i] = j
                 else:
                     is_abstract = struct.is_abstract if isinstance(struct, type) else False
                     args.append(this if is_abstract else arg)
+                    if indices:
+                        indices[i] = j
                     
                 i += 1
                 if i == len(cls._args):
-                    args.extend(self.args[j + 1:])
+                    if args_rest := self.args[j + 1:]:
+                        args.extend(args_rest)
+                        if indices:
+                            indices.append(slice(j + 1, None))
                     break
             else:
                 args.append(this)
+                if indices:
+                    indices[i] = j
                 
             j += 1
         else:
@@ -1962,12 +2156,17 @@ class Basic(Printable, metaclass=ManagedProperties):
     def make_query(*query):
         if len(query) > 1 or isinstance(query[0], type): 
             if isinstance(query[-1], type):
-                struct = None
+                struct = (None,) * len(query)
             else:
-                q, struct = Basic.make_query(query[-1])
-                query = [*query[:-1]] + q
+                q_list = []
+                struct = ()
+                for q in query:
+                    query, s = Basic.make_query(q)
+                    q_list += query
+                    struct += s 
+                query = q_list
         else:
-            struct = query[0]
+            struct, = query
             
             if not struct.is_Basic: 
                 struct = struct.basic
@@ -1998,8 +2197,9 @@ class Basic(Printable, metaclass=ManagedProperties):
                 else:
                     raise Exception('not wanted??')
                 s = s.args[i]
+            struct = (None,) * (len(query) - 1) + (struct,)
             
-        return query, struct                                   
+        return query, struct
         
     def find(self, *query): 
         query, struct = Basic.make_query(*query)
@@ -2011,95 +2211,70 @@ class Basic(Printable, metaclass=ManagedProperties):
                             output=[],
                             struct=struct)
                     
-    def findall(self, *query):
+    def finditer(self, *query, **kwargs):
         query, struct = Basic.make_query(*query)
         try:
-            yield from self.yield_all([(q, []) for q in query],
-                            foreach=Basic.find_path,
-                            func=Basic.fetch_from_path,
-                            fetch=self.fetch_from_path,
-                            output=[],
-                            struct=struct)
+            limits = [(q, []) for q in query]
+            func = Basic.fetch_from_path
+            output = []
+            if kwargs:
+                foreach = lambda self, *args: self.find_path(*args, **kwargs)
+                fetch = lambda *path, **__: path
+            else:
+                foreach = Basic.find_path
+                fetch = self.fetch_from_path
+                
+            yield from self.yield_all(limits, foreach, func, fetch, output, struct=struct)
         except GeneratorExit:
             ...
         
     def yield_one(self,
                 limits,
                 foreach=None,
-                                
                 func=None,
                 fetch=None,
                 output=None,
-                
-                **kwargs): 
+                struct=None): 
             
         limit, *limits = limits
+        struct, *structs = struct
         
         for _output in foreach(self, *limit):
             try: 
-                if not limits: 
-                    return fetch(*output, *_output, **kwargs)
-                
-                return func(self, *_output).yield_one(limits,
-                                                    foreach=foreach,
-                                                    func=func,
-                                                    fetch=fetch,
-                                                    output=output + _output,
-                                                    **kwargs)
-            except RuntimeError:
+                if limits:
+                    return func(self, *_output, struct=struct).yield_one(limits, foreach, func, fetch, output + _output, structs)
+                else:
+                    return fetch(*output, *_output, struct=struct)
+            except Exception:
                 continue
-            except Exception as e:
-                continue
-            
+           
+        if struct is not None and not limits:
+            return fetch(*output, struct=struct)
+             
         raise
                     
     def yield_all(self,
                 limits,
                 foreach=None,
-                                
                 func=None,
                 fetch=None,
                 output=None,
-                
-                **kwargs): 
+                struct=None): 
             
         limit, *limits = limits
+        struct, *structs = struct
         for _output in foreach(self, *limit):
             try: 
-                if not limits: 
-                    yield fetch(*output, *_output, **kwargs)
+                if limits:
+                    yield from func(self, *_output, struct=struct).yield_all(limits, foreach, func, fetch, output + _output, structs)
                 else:
-                    yield from func(self, *_output).yield_all(limits,
-                                                    foreach=foreach,
-                                                    func=func,
-                                                    fetch=fetch,
-                                                    output=output + _output,
-                                                    **kwargs)
+                    yield fetch(*output, *_output, struct=struct)
+                    
             except GeneratorExit as e:
-                raise e                        
+                raise e
             except: 
                 continue
-    
-#     def find(self, *query, group=False):
-#         """Find all subexpressions matching a query. """
-#             query = query[0]
-#             query = _make_find_query(query)
-
-#             results = list(filter(query, preorder_traversal(self)))
-#     
-#             if not group:
-#                 return set(results)
-#             else:
-#                 groups = {}
-#     
-#                 for result in results:
-#                     if result in groups:
-#                         groups[result] += 1
-#                     else:
-#                         groups[result] = 1
-#     
-#                 return groups
-
+            
     def count(self, query):
         """Count the number of matching subexpressions. """
         query = _make_find_query(query)
@@ -2218,9 +2393,8 @@ class Basic(Printable, metaclass=ManagedProperties):
 
         """
         if hints.get('deep', True):
-            terms = [term.doit(**hints) if isinstance(term, Basic) else term
-                                         for term in self.args]
-            return self.func(*terms)
+            args = [term.doit(**hints) if isinstance(term, Basic) else term for term in self.args]
+            return self.func(*args, **self.kwargs)
         else:
             return self
 
@@ -2400,24 +2574,53 @@ class Basic(Printable, metaclass=ManagedProperties):
         from sympy.printing.latex import latex
         return latex(self)
 
+    @property
+    def python(self):
+        random_symbols = set()
+        definition = self.python_definition(set(), random_symbols)
+        defun = [defun for var, defun in definition]
+        from sympy.printing.str import StrPrinter
+        p = StrPrinter(dict(order=None))
+        p._context['random_symbols'] = {v.var for v in random_symbols}
+        defun.append(p._print(self))
+        return '\n'.join(defun)
+    
+    def python_definition(self, free_symbols, random_symbols):
+        from sympy import Symbol
+        definition = []
+        for arg in self.args:
+            Symbol.definition_append(definition, arg.python_definition(free_symbols, random_symbols))
+        return definition
+     
     def _eval_domain_defined(self, x, **_):
         if x.dtype.is_set:
             return x.universalSet
-        return x.domain            
+        return x.domain
     
     @property
     def type(self):
-        return self.dtype * self.shape
+        return self.dtype[self.shape]
     
+    @staticmethod
+    def yield_vars(sym):
+        if isinstance(sym, set):
+            for sym in sym:
+                yield from Basic.yield_vars(sym)
+                
+        elif sym.is_Symbol:
+            yield sym.name
+            
+        else:
+            for sym in sym.free_symbols - {sym}:
+                yield from Basic.yield_vars(sym)
+                
     def generate_var(self, excludes=None, var=None, **kwargs):
         if excludes is None:
-            excludes = self.free_symbols
-        else:
-            if not isinstance(excludes, set):
-                excludes = {excludes}
-            excludes |= self.free_symbols
+            excludes = set()
+        elif not isinstance(excludes, set):
+            excludes = {excludes}
             
-        excludes = {symbol.name for symbol in excludes}
+        excludes = {*Basic.yield_vars(excludes | self.free_symbols)}
         
         from sympy import Symbol
         if var is not None:
@@ -2427,7 +2630,7 @@ class Basic(Printable, metaclass=ManagedProperties):
                         if v not in excludes:
                             return Symbol(v, **kwargs)
                     elif v.name not in excludes:
-                        return v 
+                        return v
                 
             else:
                 if isinstance(var, str):
@@ -2442,11 +2645,11 @@ class Basic(Printable, metaclass=ManagedProperties):
             definition = kwargs['definition']
             shape = definition.shape
             if shape:
-                kwargs['shape'] = definition.shape            
+                kwargs['shape'] = definition.shape
             elif definition.is_set:
                 kwargs['etype'] = definition.etype
-            else:
-                kwargs['integer'] = definition.is_integer
+            elif definition.is_integer:
+                kwargs['integer'] = True
             
         if 'shape' in kwargs: 
             if len(kwargs['shape']) > 1:
@@ -2553,7 +2756,7 @@ class Basic(Printable, metaclass=ManagedProperties):
         if a is None:
             evaluate = self._prop_handler.get(fact)
             if evaluate is not None:
-                a = evaluate(self)    
+                a = evaluate(self)
         assumptions[fact] = a
         return a
     
@@ -2603,6 +2806,10 @@ class Basic(Printable, metaclass=ManagedProperties):
         from sympy.core.logic import fuzzy_not
         return fuzzy_not(self.is_finite)
         
+    def _eval_is_infiniteset(self):
+        from sympy.core.logic import fuzzy_not
+        return fuzzy_not(self.is_finiteset)
+    
     def _eval_is_transcendental(self):
         algebraic = self.is_algebraic
         if algebraic:
@@ -2641,20 +2848,23 @@ class Basic(Printable, metaclass=ManagedProperties):
         if zero:
             return False
         if zero == False:
-            return self.is_complex        
+            return self.is_complex
 
-    @property
-    def shape(self):
+    def _eval_shape(self):
         if 'shape' in self._assumptions:
             return self._assumptions['shape']
         return ()
+    
+    @property
+    def shape(self):
+        return self._eval_shape()
     
     @property
     def this(self):
         from sympy.logic.invoker import Identity
         return Identity(self)
       
-    def domain_definition(self):
+    def domain_definition(self, **_):
         return S.true
       
     @classmethod
@@ -2682,14 +2892,14 @@ class Basic(Printable, metaclass=ManagedProperties):
         ...
         
     def domain_defined(self, x, **kwargs):
-        domain_defined = self._domain_defined
-        if x in domain_defined:
-            domain = domain_defined[x]
-            if domain is None:
-                domain = self._eval_domain_defined(x, **kwargs)
-                domain_defined[x] = domain
-            return domain
-        return self._eval_domain_defined(x, **kwargs)
+        if x in self.free_symbols:
+            return self._eval_domain_defined(x, **kwargs)
+
+        domain = Basic._eval_domain_defined(self, x)
+        for v in self.variables:
+            if v._has(x):
+                domain &= v._eval_domain_defined(x, **kwargs)
+        return domain
 
     def domain_defined_for_limits(self, limits):
         domain_defined = {}
@@ -2744,10 +2954,9 @@ class Basic(Printable, metaclass=ManagedProperties):
             for var, *ab in limits:
                 if i == var:
                     if len(ab) == 2:
-                        from sympy import Range, Interval
-                        domain &= (Range if i.is_extended_integer else Interval)(*ab)
+                        domain &= i.range(*ab)
                     elif len(ab) == 1:
-                        [s] = ab
+                        s, = ab
                         domain &= s
                     break
                 
@@ -2770,15 +2979,224 @@ class Basic(Printable, metaclass=ManagedProperties):
 
         return True
       
-    def delete_from_domain(self, x):
+    def adjust_domain(self, x, *cond):
         return self
       
     def max_len_shape(self):
         return max(len(arg.shape) for arg in self.args)    
-      
+
     is_given = True
-      
-      
+
+    @cacheit
+    def variables_with_limits(self, excludes=None):
+        indices = []
+        if excludes is None:
+            excludes = set()
+        for _ in self.shape:
+            i = self.generate_var(excludes=excludes, integer=True)
+            indices.append(i)
+            excludes.add(i)
+        
+        limits = []
+        for size, i in zip(self.shape, indices):
+            limits.append((i, 0, size))
+
+        limits.reverse()
+        return indices, limits
+    
+    @cacheit
+    def unsqueeze(self, axis, size):
+        indices, limits = self.variables_with_limits()
+        from sympy.core.symbol import Symbol
+        i = Symbol('', integer=True)
+        
+        if axis < 0:
+            axis += len(limits) + 1
+            
+        index = len(limits) - axis
+        from sympy.concrete.expr_with_limits import Lamda
+        tensor = Lamda(self[tuple(indices)], *limits[:index], (i, 0, size), *limits[index:]).simplify()
+        try:
+            S[self], S[axis], S[size] = tensor.of_unsqueeze()
+        except Exception as e:
+            print(e)
+            S[self], S[axis], S[size] = tensor.of_unsqueeze()
+        return tensor
+        
+    #precondition: self is a boolean matrix
+    def where(self, lhs, rhs):
+        limits = self._limits
+        indices = self._variables
+        
+        from sympy.concrete.expr_with_limits import Lamda
+        from sympy.functions.elementary.piecewise import Piecewise
+        
+        return Lamda(
+            Piecewise(
+                (lhs[indices], self[indices]),
+                (rhs[indices], True)), 
+            *limits)
+        
+    def gather(self, indices, axis=1):
+        #precondition: indices must be nonnegative in case of index error
+        args, limits = indices.variables_with_limits({*self.free_symbols})
+        args = tuple(args)
+        from sympy.concrete.expr_with_limits import Lamda
+        return Lamda(self[(*args[:axis], indices[args], *args[axis + 1:])], *limits)
+    
+    def is_default_slice(self, index, length=1):
+        if isinstance(index, slice):
+            if index.step is None or index.step == 1:
+                if index.start is None or index.start == 0:
+                    if index.stop is None or index.stop == self.shape[length - 1]:
+                        return True
+                    
+    def last_is_default_slice(self, indices):
+        return self.is_default_slice(indices[-1], len(indices))
+    
+    def simplify_indices(self, indices):
+        from sympy.core.containers import Tuple
+        shape = self.shape
+
+        if isinstance(indices, tuple):
+            while True:
+                if not indices:
+                    return
+                
+                if self.last_is_default_slice(indices):
+                    indices = indices[:-1]
+                else:
+                    break
+
+            
+            arr = {}
+            i = 0
+            for index in indices:
+                if isinstance(index, slice):
+                    arr[i] = Tuple.from_slice(index, size=shape[i])
+                elif index is ...:
+                    diff = len(shape) - len(indices) + 1
+                    if not diff:
+                        indices = indices[:i] + indices[i + 1:]
+                        continue
+
+                    index = Tuple.from_slice(slice(None), size=shape[i])
+                    if diff > 1:
+                        indices = indices[:i] + (index,) * diff + indices[i + 1:]
+                        i += diff
+                        continue
+                    
+                    arr[i] = index
+                i += 1
+
+            if arr:
+                indices = [*indices]
+                for k, v in arr.items():
+                    indices[k] = v
+                indices = tuple(indices)
+
+            if len(indices) == 1:
+                indices, = indices
+
+        elif isinstance(indices, slice):
+            if self.is_default_slice(indices):
+                return
+            
+            indices = Tuple.from_slice(indices, size=shape[0])
+        
+        elif isinstance(indices, list):
+            while True:
+                if not indices:
+                    return
+
+                if self.last_is_default_slice(indices):
+                    indices.pop()
+                else:
+                    break
+            
+            i = 0
+            while i < len(indices):
+                index = indices[i]
+                if isinstance(index, slice):
+                    indices[i] = Tuple.from_slice(index, size=shape[i])
+                elif index is ...:
+                    diff = len(shape) - len(indices) + 1
+                    if not diff:
+                        del indices[i]
+                        continue
+
+                    index = Tuple.from_slice(slice(None), size=shape[i])
+                    if diff > 1:
+                        indices[index: index + 1] = [index] * diff
+                        i += diff
+                        continue
+                    indices[i] = index
+                i += 1
+
+            if len(indices) == 1:
+                indices, = indices
+            else:
+                indices = tuple(indices)
+
+        return indices
+
+    def flip(self, axis=-1):
+        indices, limits = self.variables_with_limits()
+        size = self.shape[axis]
+        i = indices[axis]
+        i = size - 1 - i
+        indices[axis] = i
+        from sympy.concrete.expr_with_limits import Lamda
+        return Lamda(self[tuple(indices)], *limits)
+    
+    def enlarge_indices(self, limits, **kwargs):
+        return self
+    
+    @staticmethod
+    def simplify_Lamda(self, squeeze=False):
+        return self
+    
+    def precompile(self, *sym):
+        indices = []
+        vars = []  
+        for i, v in enumerate(sym):
+            if self._has(v):
+                indices.append(i)
+                vars.append(v)
+                
+        if vars:
+            return self.compile(*vars), indices
+        return self, None
+    
+    @cacheit
+    def compile(self, *syms):
+        assert all(self._has(v) for v in syms)
+        from sympy.keras.network import NetWorkMetaClass
+        return NetWorkMetaClass.mapping[self.func.__name__](*(arg.precompile(*syms) for arg in self.args))
+    
+    @property
+    def variables(self):
+        return []
+
+    def conditionally_contains(self, x):
+        return x in self
+
+    def limits_in_context(self, *args):
+        return []
+
+    def is_consistently_of(self, struct):
+        return True
+
+    def _sympystr(self, p):
+        return self.__class__.__name__ + "(%s)" % ", ".join(p._print(o) for o in self.args)
+
+    def _latex(self, p, exp=None):
+        tex = p._deal_with_super_sub(self.__class__.__name__) + r"\left(%s\right)" % ", ".join(p._print(o) for o in self.args)
+        if exp:
+            tex = r'%s^{%s}' % (tex, p._print(exp))
+        return tex
+
+
 class Atom(Basic):
     """
     A parent class for atomic things. An atom is an expression with no subexpressions.
@@ -2808,7 +3226,7 @@ class Atom(Basic):
 
     @cacheit
     def sort_key(self, order=None):
-        return self.class_key(), (1, (str(self),)), S.One.sort_key(), S.One
+        return self.class_key(), (0, (), (str(self),)), S.One.sort_key(), S.One
 
     def _eval_simplify(self, **kwargs):
         return self

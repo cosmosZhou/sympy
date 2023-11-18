@@ -17,7 +17,7 @@ from .mod import Mod
 from .relational import Rel, Eq, Ne, Lt, Le, Gt, Ge, Equal, GreaterEqual, LessEqual, Unequal, Greater, Less
 
 from .multidimensional import vectorize
-from .function import Lambda, WildFunction, Derivative, diff, FunctionClass, \
+from .function import Lambda, WildFunction, Derivative, diff, \
     Function, Subs, expand, PoleError, count_ops, \
     expand_mul, expand_log, expand_func, \
     expand_trig, expand_complex, expand_multinomial, nfloat, \

@@ -4,37 +4,6 @@ import mpmath.libmp as mlib
 
 from sympy.external import import_module
 
-__all__ = [
-    # GROUND_TYPES is either 'gmpy' or 'python' depending on which is used. If
-    # gmpy is installed then it will be used unless the environment variable
-    # SYMPY_GROUND_TYPES is set to something other than 'auto', 'gmpy', or
-    # 'gmpy2'.
-    'GROUND_TYPES',
-
-    # If HAS_GMPY is 0, no supported version of gmpy is available. Otherwise,
-    # HAS_GMPY will be 2 for gmpy2 if GROUND_TYPES is 'gmpy'. It used to be
-    # possible for HAS_GMPY to be 1 for gmpy but gmpy is no longer supported.
-    'HAS_GMPY',
-
-    # SYMPY_INTS is a tuple containing the base types for valid integer types.
-    # This is either (int,) or (int, type(mpz(0))) depending on GROUND_TYPES.
-    'SYMPY_INTS',
-
-    # MPQ is either gmpy.mpq or the Python equivalent from
-    # sympy.external.pythonmpq
-    'MPQ',
-
-    # MPZ is either gmpy.mpz or int.
-    'MPZ',
-
-    # Either the gmpy or the mpmath function
-    'factorial',
-
-    # isqrt from gmpy or mpmath
-    'sqrt',
-]
-
-
 #
 # SYMPY_GROUND_TYPES can be gmpy, gmpy2, python or auto
 #

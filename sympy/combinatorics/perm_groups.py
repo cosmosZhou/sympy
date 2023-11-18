@@ -1,7 +1,6 @@
 from random import randrange, choice
 from math import log
 from sympy.ntheory import primefactors
-from sympy import multiplicity
 
 from sympy.combinatorics import Permutation
 from sympy.combinatorics.permutations import (_af_commutes_with, _af_invert,
@@ -15,7 +14,7 @@ from sympy.core import Basic
 from sympy.functions.combinatorial.factorials import factorial
 from sympy.ntheory import sieve
 from sympy.utilities.iterables import has_variety, is_sequence, uniq
-from sympy.testing.randtest import _randrange
+#from sympy.testing.randtest import _randrange
 from itertools import islice
 
 rmul = Permutation.rmul_with_af
@@ -1763,7 +1762,8 @@ class PermutationGroup(Basic):
                 G = K
                 gns = pows
                 if r == 1:
-                    break;
+                    break
+                from sympy.ntheory.factor_ import multiplicity
                 ranks.append(multiplicity(p, r))
 
             if ranks:

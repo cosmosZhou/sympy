@@ -1,11 +1,13 @@
 from sympy.core.sympify import _sympify
 from sympy.core import S, Basic
 
-from sympy.matrices.expressions.matexpr import ShapeError
+from sympy.matrices.expressions.matexpr import MatrixExpr
+from ..common import ShapeError
 from sympy.matrices.expressions.matpow import MatPow
+from sympy.core.cache import cacheit
 
 
-class Inverse(MatPow):
+class Inverse(MatrixExpr):
     """
     The multiplicative inverse of a matrix expression
 
@@ -45,14 +47,13 @@ class Inverse(MatPow):
     def arg(self):
         return self.args[0]
 
-    @property
-    def shape(self):
+    def _eval_shape(self):
         return self.arg.shape
 
     def _eval_inverse(self):
         return self.arg
 
-    def _eval_determinant(self):
+    def _eval_determinant(self, **kwargs):
         from sympy.matrices.expressions.determinant import det
         return 1 / det(self.arg)
 

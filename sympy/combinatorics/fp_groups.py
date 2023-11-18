@@ -10,8 +10,6 @@ from sympy.combinatorics.coset_table import (CosetTable,
 from sympy.combinatorics import PermutationGroup
 from sympy.printing.defaults import DefaultPrinting
 from sympy.utilities import public
-
-
 from itertools import product
 
 
@@ -262,7 +260,8 @@ class FpGroup(DefaultPrinting):
             return True
         # Abelianisation test: check is the abelianisation is infinite
         abelian_rels = []
-        from sympy.polys.solvers import RawMatrix as Matrix
+         
+        from sympy.matrices.dense import Matrix
         from sympy.polys.domains import ZZ
         from sympy.matrices.normalforms import invariant_factors
         for rel in self.relators:

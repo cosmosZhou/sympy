@@ -1,9 +1,9 @@
 """Implementation of the Kronecker product"""
 
-from sympy.core import Add, Mul, Pow, prod, sympify
+from sympy.core import Mul, prod, sympify
 
-from sympy.functions import adjoint
-from sympy.matrices.expressions.matexpr import MatrixExpr, ShapeError, Identity
+from sympy.matrices.expressions.matexpr import MatrixExpr, Identity
+from ..common import ShapeError
 from sympy.matrices.expressions.transpose import transpose
 from sympy.matrices.matrices import MatrixBase
 from sympy.strategies import (
@@ -13,6 +13,7 @@ from sympy.utilities import sift
 
 from .matmul import MatMul
 from .matpow import MatPow
+from sympy.core.cache import cacheit
 
 
 def kronecker_product(*matrices):
@@ -114,8 +115,8 @@ class KroneckerProduct(MatrixExpr):
             validate(*args)
         return super(KroneckerProduct, cls).__new__(cls, *args)
 
-    @property
-    def shape(self):
+    @cacheit
+    def _eval_shape(self):
         rows, cols = self.args[0].shape
         for mat in self.args[1:]:
             rows *= mat.rows
@@ -131,7 +132,8 @@ class KroneckerProduct(MatrixExpr):
         return result
 
     def _eval_adjoint(self):
-        return KroneckerProduct(*list(map(adjoint, self.args))).doit()
+        from sympy import Adjoint
+        return KroneckerProduct(*list(map(Adjoint, self.args))).doit()
 
     def _eval_conjugate(self):
         return KroneckerProduct(*[a.conjugate() for a in self.args]).doit()
@@ -144,10 +146,10 @@ class KroneckerProduct(MatrixExpr):
         from .trace import trace
         return prod(trace(a) for a in self.args)
 
-    def _eval_determinant(self):
+    def _eval_determinant(self, **kwargs):
         from .determinant import det
         if not all(a.is_square for a in self.args):
-            return 
+            return
 
         m = self.rows
         return prod(det(a)**(m/a.rows) for a in self.args)

@@ -81,8 +81,7 @@ class BesselBase(Function):
         from sympy.simplify.simplify import besselsimp
         return besselsimp(self)
 
-    @property    
-    def shape(self):
+    def _eval_shape(self):
         return ()
 
 class besselj(BesselBase):
@@ -1166,7 +1165,7 @@ class airyai(AiryBase):
         symbs = arg.free_symbols
 
         if len(symbs) == 1:
-            z = symbs.pop()
+            z, = symbs
             c = Wild("c", exclude=[z])
             d = Wild("d", exclude=[z])
             m = Wild("m", exclude=[z])
@@ -1336,7 +1335,7 @@ class airybi(AiryBase):
         symbs = arg.free_symbols
 
         if len(symbs) == 1:
-            z = symbs.pop()
+            z, = symbs
             c = Wild("c", exclude=[z])
             d = Wild("d", exclude=[z])
             m = Wild("m", exclude=[z])
@@ -1486,7 +1485,7 @@ class airyaiprime(AiryBase):
         symbs = arg.free_symbols
 
         if len(symbs) == 1:
-            z = symbs.pop()
+            z, = symbs
             c = Wild("c", exclude=[z])
             d = Wild("d", exclude=[z])
             m = Wild("m", exclude=[z])
@@ -1642,7 +1641,7 @@ class airybiprime(AiryBase):
         symbs = arg.free_symbols
 
         if len(symbs) == 1:
-            z = symbs.pop()
+            z, = symbs
             c = Wild("c", exclude=[z])
             d = Wild("d", exclude=[z])
             m = Wild("m", exclude=[z])

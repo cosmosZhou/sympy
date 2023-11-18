@@ -4,6 +4,7 @@ from sympy.functions import KroneckerDelta
 
 from .matexpr import MatrixExpr
 from .special import ZeroMatrix, Identity, OneMatrix
+from sympy.core.cache import cacheit
 
 
 class PermutationMatrix(MatrixExpr):
@@ -66,8 +67,8 @@ class PermutationMatrix(MatrixExpr):
 
         return super().__new__(cls, perm)
 
-    @property
-    def shape(self):
+    @cacheit
+    def _eval_shape(self):
         size = self.args[0].size
         return (size, size)
 
@@ -92,7 +93,7 @@ class PermutationMatrix(MatrixExpr):
 
     _eval_transpose = _eval_adjoint = _eval_inverse
 
-    def _eval_determinant(self):
+    def _eval_determinant(self, **kwargs):
         sign = self.args[0].signature()
         if sign == 1:
             return S.One
@@ -275,8 +276,8 @@ class MatrixPermute(MatrixExpr):
 
         return self
 
-    @property
-    def shape(self):
+    @cacheit
+    def _eval_shape(self):
         return self.args[0].shape
 
     def _entry(self, i, j, **kwargs):

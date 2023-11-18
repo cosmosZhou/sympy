@@ -6,17 +6,17 @@ Special - gamma, zeta,spherical harmonics...
 """
 
 from sympy.functions.combinatorial.factorials import (factorial, factorial2,
-        rf, ff, binomial, RisingFactorial, FallingFactorial, subfactorial, Factorial)
+        rf, ff, binomial, RisingFactorial, FallingFactorial, subfactorial, Factorial, Factorial2)
 
-from sympy.functions.combinatorial.factorials import Binomial 
+from sympy.functions.combinatorial.factorials import Binomial, Multinomial
 
 from sympy.functions.combinatorial.numbers import (carmichael, fibonacci, lucas, tribonacci,
-        harmonic, bernoulli, bell, euler, catalan, genocchi, partition, Stirling)
+        harmonic, bernoulli, bell, euler, catalan, genocchi, partition, Stirling, Stirling1)
 from sympy.core.power import sqrt, cbrt, root, real_root
 from sympy.functions.elementary.miscellaneous import (Min, Max, Id)
-from sympy.functions.elementary.complexes import (Re, Im, sign, Abs, Norm,
+from sympy.functions.elementary.complexes import (Re, Im, sign, Sign, Abs, Norm,
         Conjugate, conjugate, Arg, arg, polar_lift, periodic_argument, unbranched_argument,
-        principal_branch, transpose, adjoint, polarify, unpolarify)
+        principal_branch, polarify, unpolarify)
 from sympy.functions.elementary.trigonometric import (sin, cos, tan, 
         sec, csc, cot, sinc, asin, acos, atan, asec, acsc, acot, atan2)
 
@@ -31,7 +31,7 @@ from sympy.functions.elementary.piecewise import Piecewise, piecewise_fold, Expr
 from sympy.functions.special.error_functions import (erf, erfc, erfi, erf2,
         erfinv, erfcinv, erf2inv, Ei, expint, E1, li, Li, Si, Ci, Shi, Chi,
         fresnels, fresnelc)
-from sympy.functions.special.gamma_functions import (gamma, lowergamma,
+from sympy.functions.special.gamma_functions import (Gamma, lowergamma,
         uppergamma, polygamma, loggamma, digamma, trigamma, multigamma)
 from sympy.functions.special.zeta_functions import (dirichlet_eta, zeta,
         lerchphi, polylog, stieltjes)

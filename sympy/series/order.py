@@ -287,15 +287,15 @@ class Order(Expr):
         else:
             return ()
 
-    @property
-    def free_symbols(self):
+    @cacheit
+    def _eval_free_symbols(self):
         return self.expr.free_symbols | set(self.variables)
 
-    def _eval_power(b, e):
+    def _eval_power(self, e):
         if e.is_Number and e.is_nonnegative:
-            return b.func(b.expr ** e, *b.args[1:])
+            return self.func(self.expr ** e, *self.args[1:])
         if e == O(1):
-            return b
+            return self
         return
 
     def as_expr_variables(self, order_symbols):
@@ -422,7 +422,7 @@ class Order(Expr):
                     if old in syms:
                         var = self.variables[i]
                     else:
-                        var = syms.pop()
+                        var, = syms
                     # First, try to substitute self.point in the "new"
                     # expr to see if this is a fixed point.
                     # E.g.  O(y).subs(y, sin(x))
@@ -466,8 +466,7 @@ class Order(Expr):
         #XXX: SAGE doesn't have Order yet. Let's return 0 instead.
         return Rational(0)._sage_()
 
-    @property
-    def shape(self):
+    def _eval_shape(self):
         return ()
     
 O = Order

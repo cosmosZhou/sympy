@@ -165,7 +165,7 @@ class Quantity(AtomicExpr):
             return Quantity.get_dimensional_expr(expr.args[0])
         elif isinstance(expr, Derivative):
             dim = Quantity.get_dimensional_expr(expr.expr)
-            for independent, count in expr.variable_count:
+            for independent, count in expr.limits:
                 dim /= Quantity.get_dimensional_expr(independent)**count
             return dim
         elif isinstance(expr, Function):
@@ -210,7 +210,7 @@ class Quantity(AtomicExpr):
             return factor, dim
         elif isinstance(expr, Derivative):
             factor, dim = Quantity._collect_factor_and_dimension(expr.args[0])
-            for independent, count in expr.variable_count:
+            for independent, count in expr.limits:
                 ifactor, idim = Quantity._collect_factor_and_dimension(independent)
                 factor /= ifactor**count
                 dim /= idim**count
@@ -252,7 +252,6 @@ class Quantity(AtomicExpr):
         from .util import convert_to
         return convert_to(self, other)
 
-    @property
-    def free_symbols(self):
+    def _eval_free_symbols(self):
         """Return free symbols from quantity."""
         return self.scale_factor.free_symbols

@@ -23,6 +23,7 @@ from sympy.simplify import simplify as _simplify
 from sympy.utilities.exceptions import SymPyDeprecationWarning
 from sympy.utilities.iterables import flatten
 from sympy.utilities.misc import filldedent
+from sympy.core.cache import cacheit
 
 
 class MatrixError(Exception):
@@ -44,7 +45,6 @@ class MatrixRequired(Expr):
     __slots__ = []
     rows = None
     cols = None
-    shape = None
     _simplify = None
 
     @classmethod
@@ -137,10 +137,10 @@ class MatrixShaping(MatrixRequired):
         return self._new(self.rows - 1, self.cols, entry)
 
     def _eval_row_insert(self, pos, other):
-        entries = list(self)
+        entries = [*self.args]
         insert_pos = pos * self.cols
-        entries[insert_pos:insert_pos] = list(other)
-        return self._new(self.rows + other.rows, self.cols, entries)
+        entries[insert_pos:insert_pos] = [*other.args]
+        return self._new(*entries, shape=(self.rows + other.rows, self.cols))
 
     def _eval_row_join(self, other):
         cols = self.cols
@@ -154,11 +154,16 @@ class MatrixShaping(MatrixRequired):
                                          lambda i, j: entry(i, j))
 
     def _eval_tolist(self):
-        array = [list(self[i,:]) for i in range(self.rows)]
+        array = [list(self[i, :]) for i in range(self.rows)]
         if self.rows == 1:
             return array[0] 
         return array
 
+    def _eval_totuple(self):
+        if self.rows == 1:
+            return self._args
+        return tuple(self[i, :].totuple() for i in range(self.rows))
+    
     def _eval_vec(self):
         rows = self.rows
 
@@ -557,24 +562,6 @@ class MatrixShaping(MatrixRequired):
         """
         return self[i, :]
 
-#     @property
-#     def shape(self):
-#         """The shape (dimensions) of the matrix as the 2-tuple (rows, cols).
-# 
-#         Examples
-#         ========
-# 
-#         >>> from sympy.matrices import zeros
-#         >>> M = zeros(2, 3)
-#         >>> M.shape
-#         (2, 3)
-#         >>> M.rows
-#         2
-#         >>> M.cols
-#         3
-#         """
-#         return (self.rows, self.cols)
-
     def tolist(self):
         """Return the Matrix as a nested Python list.
 
@@ -605,6 +592,15 @@ class MatrixShaping(MatrixRequired):
         if not self.cols:
             return [[] for i in range(self.rows)]
         return self._eval_tolist()
+
+    def totuple(self):
+        """Return the Matrix as a nested Python tuple.
+        """
+        if not self.rows:
+            return ()
+        if not self.cols:
+            return tuple(() for i in range(self.rows))
+        return self._eval_totuple()
 
     def vec(self):
         """Return the Matrix converted into a one column matrix by stacking columns
@@ -668,9 +664,10 @@ class MatrixSpecial(MatrixRequired):
 
     @classmethod
     def _eval_eye(cls, rows, cols):
-        def entry(i, j):
-            return cls.one if i == j else cls.zero
-        return cls._new(rows, cols, entry)
+        entry = [cls.zero] * (rows * cols)
+        for i in range(min(rows, cols)):
+            entry[i * cols + i] = cls.one
+        return cls._new(*entry, shape=(rows, cols))
 
     @classmethod
     def _eval_jordan_block(cls, rows, cols, eigenvalue, band='upper'):
@@ -698,9 +695,7 @@ class MatrixSpecial(MatrixRequired):
 
     @classmethod
     def _eval_zeros(cls, rows, cols):
-        def entry(i, j):
-            return cls.zero
-        return cls._new(rows, cols, entry)
+        return cls._new(*[cls.zero] * rows * cols, shape=(rows, cols))
 
     @classmethod
     def diag(kls, *args, **kwargs):
@@ -1077,9 +1072,6 @@ class MatrixProperties(MatrixRequired):
             result.update(i.atoms(*types))
         return result
 
-    def _eval_free_symbols(self):
-        return set().union(*(i.free_symbols for i in self._args))
-
     def _eval_has(self, *patterns):
         return any(a.has(*patterns) for a in self._args)
 
@@ -1108,8 +1100,7 @@ class MatrixProperties(MatrixRequired):
                 return 1
             return 0
 
-        return all(self[i, j] == dirac(i, j) for i in range(self.rows) for j in
-                   range(self.cols))
+        return all(self[i, j] == dirac(i, j) for i in range(self.rows) for j in range(self.cols))
 
     def _eval_is_lower_hessenberg(self):
         return all(self[i, j].is_zero
@@ -1162,8 +1153,8 @@ class MatrixProperties(MatrixRequired):
             types = (Atom,)
         return self._eval_atoms(*types)
 
-    @property
-    def free_symbols(self):
+    @cacheit
+    def _eval_free_symbols(self):
         """Returns the free symbols within the matrix.
 
         Examples
@@ -1174,7 +1165,7 @@ class MatrixProperties(MatrixRequired):
         >>> Matrix([[x], [1]]).free_symbols
         {x}
         """
-        return self._eval_free_symbols()
+        return set().union(*(i.free_symbols for i in self._args))
 
     def has(self, *patterns):
         """Test whether any subexpression matches any of the patterns.
@@ -1656,13 +1647,11 @@ class MatrixOperations(MatrixRequired):
         return self.transpose().conjugate()
 
     def _eval_applyfunc(self, f):
-        out = self._new(self.rows, self.cols, [f(x) for x in self._args])
-        return out
+        return self._new(*(f(x) for x in self._args), shape=(self.rows, self.cols))
 
     def _eval_as_real_imag(self):
-        from sympy.functions.elementary.complexes import re, im
-
-        return (self.applyfunc(re), self.applyfunc(im))
+        from sympy.functions.elementary.complexes import Re, Im
+        return (self.applyfunc(Re), self.applyfunc(Im))
 
     def _eval_conjugate(self):
         return self.applyfunc(lambda x: x.conjugate())
@@ -1689,12 +1678,11 @@ class MatrixOperations(MatrixRequired):
         return sum(self[i, i] for i in range(self.rows))
 
     def _eval_transpose(self, axis=-1):
-        if axis == self.default_axis:
-            return self._new(self.cols, self.rows, lambda i, j: self[j, i])
-
-    def adjoint(self):
-        """Conjugate transpose or Hermitian conjugation."""
-        return self._eval_adjoint()
+        if self.rows > 1:
+            if axis == -1 or axis == self.default_axis:
+                return self._new(*(self[j, i] for i in range(self.rows) for j in range(self.cols)), shape=(self.cols, self.rows))
+        else:
+            return self
 
     def applyfunc(self, f):
         """Apply a function to each element of the matrix.
@@ -1719,7 +1707,7 @@ class MatrixOperations(MatrixRequired):
 
         return self._eval_applyfunc(f)
 
-    def as_real_imag(self):
+    def as_real_imag(self, **_):
         """Returns a tuple containing the (real, imaginary) part of matrix."""
         return self._eval_as_real_imag()
 
@@ -2066,7 +2054,7 @@ class MatrixArithmetic(MatrixRequired):
     _op_priority = 10.01
 
     def _eval_Abs(self):
-        return self._new(self.rows, self.cols, lambda i, j: Abs(self[i, j]))
+        return self.func(*(Abs(arg) for arg in self._args), shape=self.shape)
 
     def _eval_add(self, other):
         return self._new(self.rows, self.cols,
@@ -2075,22 +2063,21 @@ class MatrixArithmetic(MatrixRequired):
     def _eval_matrix_mul(self, other):
         def entry(i, j):
             try:
-                return sum(self[i,k]*other[k,j] for k in range(self.cols))
+                return sum(self[i, k] * other[k, j] for k in range(self.cols))
             except TypeError:
                 # Block matrices don't work with `sum` or `Add` (ISSUE #11599)
                 # They don't work with `sum` because `sum` tries to add `0`
                 # initially, and for a matrix, that is a mix of a scalar and
                 # a matrix, which raises a TypeError. Fall back to a
                 # block-matrix-safe way to multiply if the `sum` fails.
-                ret = self[i, 0]*other[0, j]
+                ret = self[i, 0] * other[0, j]
                 for k in range(1, self.cols):
-                    ret += self[i, k]*other[k, j]
+                    ret += self[i, k] * other[k, j]
                 return ret
-
-        return self._new(self.rows, other.cols, entry)
+        return self._new(*(entry(i, j) for i in range(self.rows) for j in range(other.cols)), shape=(self.rows, other.cols))
 
     def _eval_matrix_mul_elementwise(self, other):
-        return self._new(self.rows, self.cols, lambda i, j: self[i,j]*other[i,j])
+        return self._new(self.rows, self.cols, lambda i, j: self[i, j] * other[i, j])
 
     def _eval_matrix_rmul(self, other):
         if other.is_Symbol:
@@ -2334,8 +2321,9 @@ class MatrixArithmetic(MatrixRequired):
                 return self._eval_scalar_rmul(other)
             except TypeError:
                 pass
-
-        return NotImplemented
+            
+        from sympy import Mul
+        return Mul(other, self)
 
     @call_highest_priority('__sub__')
     def __rsub__(self, a):
@@ -2482,8 +2470,8 @@ class _MinimalMatrix(object):
         return "_MinimalMatrix({}, {}, {})".format(self.rows, self.cols,
                                                    self.mat)
 
-    @property
-    def shape(self):
+    @cacheit
+    def _eval_shape(self):
         return (self.rows, self.cols)
 
 

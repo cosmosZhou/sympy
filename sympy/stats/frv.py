@@ -18,7 +18,7 @@ from sympy.core.relational import Relational
 from sympy.core.sympify import _sympify
 from sympy.sets.sets import FiniteSet
 from sympy.stats.rv import (RandomDomain, ProductDomain, ConditionalDomain,
-                            PSpace, IndependentProductPSpace, SinglePSpace, random_symbols,
+                            PSpace, IndependentProductPSpace, SinglePSpace,
                             sumsets, rv_subs, NamedArgsMixin)
 from sympy.external import import_module
 
@@ -182,6 +182,7 @@ class ConditionalFiniteDomain(ConditionalDomain, ProductFiniteDomain):
         return FiniteDomain.as_boolean(self)
 
 class SingleFiniteDistribution(Basic, NamedArgsMixin):
+
     def __new__(cls, *args):
         args = list(map(sympify, args))
         return Basic.__new__(cls, *args)
@@ -247,7 +248,7 @@ class FinitePSpace(PSpace):
         return density.get(tuple(elem)[0][1], S.Zero)
 
     def where(self, condition):
-        assert all(r.symbol in self.symbols for r in random_symbols(condition))
+        assert all(r.symbol in self.symbols for r in condition.random_symbols)
         return ConditionalFiniteDomain(self.domain, condition)
 
     def compute_density(self, expr):
@@ -317,7 +318,7 @@ class FinitePSpace(PSpace):
         return Lambda(p, Piecewise(*set))
 
     def probability(self, condition):
-        cond_symbols = frozenset(rs.symbol for rs in random_symbols(condition))
+        cond_symbols = frozenset(rs.symbol for rs in condition.random_symbols)
         cond = rv_subs(condition)
         if not cond_symbols.issubset(self.symbols):
             raise ValueError("Cannot compare foreign random symbols, %s"
@@ -504,7 +505,7 @@ class SingleFinitePSpace(SinglePSpace, FinitePSpace):
 
     def compute_density(self, expr):
         if self._is_symbolic:
-            rv = list(random_symbols(expr))[0]
+            rv = expr.random_symbols[0]
             k = Dummy('k', integer=True)
             cond = True if not isinstance(expr, (Relational, Logic)) \
                      else expr.subs(rv, k)
@@ -525,7 +526,7 @@ class SingleFinitePSpace(SinglePSpace, FinitePSpace):
 
     def compute_expectation(self, expr, rvs=None, **kwargs):
         if self._is_symbolic:
-            rv = random_symbols(expr)[0]
+            rv = expr.random_symbols[0]
             k = Dummy('k', integer=True)
             expr = expr.subs(rv, k)
             cond = True if not isinstance(expr, (Relational, Logic)) \

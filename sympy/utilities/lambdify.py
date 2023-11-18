@@ -1151,7 +1151,6 @@ def _imp_namespace(expr, namespace=None):
     ['f', 'g']
     """
     # Delayed import to avoid circular imports
-    from sympy.core.function import FunctionClass
     if namespace is None:
         namespace = {}
     # tuples, lists, dicts are valid expressions
@@ -1167,7 +1166,7 @@ def _imp_namespace(expr, namespace=None):
         return namespace
     # sympy expressions may be Functions themselves
     func = getattr(expr, 'func', None)
-    if isinstance(func, FunctionClass):
+    if func.is_FunctionClass:
         imp = getattr(func, '_imp_', None)
         if imp is not None:
             name = expr.func.__name__
@@ -1206,9 +1205,6 @@ def implemented_function(symfunc, implementation):
 
     Returns
     -------
-    afunc : sympy.FunctionClass instance
-       function with attached implementation
-
     Examples
     ========
 

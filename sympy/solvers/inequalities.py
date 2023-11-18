@@ -898,11 +898,11 @@ def _reduce_inequalities(inequalities, symbols):
         gens = expr.atoms(Symbol)
 
         if len(gens) == 1:
-            gen = gens.pop()
+            gen, = gens
         else:
             common = expr.free_symbols & symbols
             if len(common) == 1:
-                gen = common.pop()
+                gen, = common
                 other.append(_solve_inequality(Relational(expr, 0, rel), gen))
                 continue
             else:

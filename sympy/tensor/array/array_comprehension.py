@@ -1,12 +1,11 @@
-import functools
 from sympy.core.sympify import sympify
 from sympy.core.expr import Expr
 from sympy.core import Basic
 from sympy.core.compatibility import Iterable
 from sympy.tensor.array import MutableDenseNDimArray, ImmutableDenseNDimArray
 from sympy import Symbol
-from sympy.core.sympify import sympify
 from sympy.core.numbers import Integer
+from sympy.core.cache import cacheit
 
 
 class ArrayComprehension(Basic):
@@ -77,8 +76,8 @@ class ArrayComprehension(Basic):
         """
         return self._limits
 
-    @property
-    def free_symbols(self):
+    @cacheit
+    def _eval_free_symbols(self):
         """
         The set of the free_symbols in the array
         Variables appeared in the bounds are supposed to be excluded
@@ -97,11 +96,10 @@ class ArrayComprehension(Basic):
         >>> b.free_symbols
         {k}
         """
-        expr_free_sym = self.function.free_symbols
+        expr_free_sym = {*self.function.free_symbols}
         for var, inf, sup in self._limits:
             expr_free_sym.discard(var)
-            curr_free_syms = inf.free_symbols.union(sup.free_symbols)
-            expr_free_sym = expr_free_sym.union(curr_free_syms)
+            expr_free_sym = expr_free_sym.union(inf.free_symbols, sup.free_symbols)
         return expr_free_sym
 
     @property
@@ -132,8 +130,8 @@ class ArrayComprehension(Basic):
         """
         return [l[0] for l in self._limits if len(l) != 1]
 
-    @property
-    def shape(self):
+    @cacheit
+    def _eval_shape(self):
         """
         The shape of the expanded array, which may have symbols
 
@@ -272,3 +270,4 @@ class ArrayComprehension(Basic):
                 else:
                     list_gen.append(_array_subs(list_expr, var, val))
         return ImmutableDenseNDimArray(list_gen)
+

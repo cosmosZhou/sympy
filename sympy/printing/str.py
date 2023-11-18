@@ -1,9 +1,7 @@
 """
 A Printer for generating readable representation of most sympy classes.
 """
-from sympy.core import S, Rational, Pow, Basic, Mul
-from sympy.core.mul import _keep_coeff
-
+from sympy.core import S, Basic
 from .printer import Printer
 from sympy.printing.precedence import precedence, PRECEDENCE
 
@@ -17,7 +15,6 @@ class StrPrinter(Printer):
     _default_settings = {
         "order": None,
         "full_prec": "auto",
-        "sympy_integers": False,
         "abbrev": False,
     }
 
@@ -40,32 +37,11 @@ class StrPrinter(Printer):
         else:
             return str(expr)
 
-    def _print_BooleanTrue(self, expr):
-        return "True"
-
-    def _print_BooleanFalse(self, expr):
-        return "False"
-
-    def _print_Not(self, expr):
-        return '~%s' % (self.parenthesize(expr.args[0], PRECEDENCE["Not"]))
-
     def _print_AppliedPredicate(self, expr):
         return '%s(%s)' % (self._print(expr.func), self._print(expr.arg))
 
-    def _print_Basic(self, expr):
-        l = [self._print(o) for o in expr.args]
-        return expr.__class__.__name__ + "(%s)" % ", ".join(l)
-
-    def _print_BlockMatrix(self, B):
-        if B.blocks.shape == (1, 1):
-            self._print(B.blocks[0, 0])
-        return self._print(B.blocks)
-
     def _print_Catalan(self, expr):
         return 'Catalan'
-
-    def _print_ComplexInfinity(self, expr):
-        return 'zoo'
 
     def _print_ConditionSet(self, s):
         args = tuple([self._print(i) for i in (s.variable, s.condition)])
@@ -105,17 +81,6 @@ class StrPrinter(Printer):
     def _print_Exp1(self, expr):
         return 'E'
 
-    def _print_ExprCondPair(self, expr):
-        return '(%s, %s)' % (self._print(expr.expr), self._print(expr.cond))
-
-    def _print_FiniteSet(self, s):
-        s = sorted(s, key=default_sort_key)
-        if len(s) > 10:
-            printset = s[:3] + ['...'] + s[-3:]
-        else:
-            printset = s
-        return '{' + ', '.join(self._print(el) for el in printset) + '}'
-
     def _print_GeometryEntity(self, expr):
         # GeometryEntity is special -- it's base is tuple
         return str(expr)
@@ -125,15 +90,6 @@ class StrPrinter(Printer):
 
     def _print_TribonacciConstant(self, expr):
         return 'TribonacciConstant'
-
-    def _print_ImaginaryUnit(self, expr):
-        return 'I'
-
-    def _print_Infinity(self, expr):
-        return 'oo'
-
-    def _print_Infinitesimal(self, expr):
-        return "epsilon"
 
     def _print_AccumulationBounds(self, i):
         return "AccumBounds(%s, %s)" % (self._print(i.min),
@@ -204,15 +160,6 @@ class StrPrinter(Printer):
             self._print(expr.expr),
         )
 
-    def _print_NaN(self, expr):
-        return 'nan'
-
-    def _print_NegativeInfinity(self, expr):
-        return '-oo'
-
-    def _print_NegativeInfinitesimal(self, expr):
-        return "-epsilon"
-
     def _print_Order(self, expr):
         if not expr.variables or all(p is S.Zero for p in expr.point):
             if len(expr.variables) <= 1:
@@ -252,14 +199,6 @@ class StrPrinter(Printer):
             if len(trim) < len(full):
                 use = trim
             return 'Permutation(%s)' % use
-
-    def _print_Subs(self, obj):
-        expr, old, new = obj.args
-        if len(obj.point) == 1:
-            old = old[0]
-            new = new[0]
-        return "Subs(%s, %s, %s)" % (
-            self._print(expr), self._print(old), self._print(new))
 
     def _print_TensorIndex(self, expr):
         return expr._print()
@@ -374,12 +313,6 @@ class StrPrinter(Printer):
 
         return format % (' '.join(terms), ', '.join(gens))
 
-    def _print_ProductSet(self, p):
-        return ' x '.join(self._print(s) for s in p.sets)
-
-    def _print_UniversalSet(self, p):
-        return 'UniversalSet'
-
     def _print_AlgebraicNumber(self, expr):
         if expr.is_aliased:
             return self._print(expr.as_poly().as_expr())
@@ -394,11 +327,6 @@ class StrPrinter(Printer):
 
     def _print_ImmutableSparseNDimArray(self, expr):
         return str(expr)
-
-    def _print_Integer(self, expr):
-        if self._settings.get("sympy_integers", False):
-            return "S(%s)" % (expr)
-        return str(expr.p)
 
     def _print_Integers(self, expr):
         return 'Integers'
@@ -417,14 +345,6 @@ class StrPrinter(Printer):
 
     def _print_mpz(self, expr):
         return str(expr)
-
-    def _print_Rational(self, expr):
-        if expr.q == 1:
-            return str(expr.p)
-        else:
-            if self._settings.get("sympy_integers", False):
-                return "S(%s)/%s" % (expr.p, expr.q)
-            return "%s/%s" % (expr.p, expr.q)
 
     def _print_PythonRational(self, expr):
         if expr.q == 1:
@@ -509,9 +429,6 @@ class StrPrinter(Printer):
         from sympy.matrices import Matrix
         return self._print(Matrix(expr))
     
-    def _print_OneMatrix(self, expr):
-        return "1"
-
     def _print_Predicate(self, expr):
         return "Q.%s" % expr.name
 
@@ -524,14 +441,8 @@ class StrPrinter(Printer):
         else:
             return "(%s)" % self.stringify(expr, ", ")
 
-    def _print_Tuple(self, expr):
-        return self._print_tuple(expr)
-
     def _print_Uniform(self, expr):
         return "Uniform(%s, %s)" % (self._print(expr.a), self._print(expr.b))
-
-    def _print_Complement(self, expr):
-        return r' \ '.join(self._print(set_) for set_ in expr.args)
 
     def _print_Quantity(self, expr):
         if self._settings.get("abbrev", False):
@@ -551,11 +462,6 @@ class StrPrinter(Printer):
 
     def _print_WildFunction(self, expr):
         return expr.name + '_'
-
-    def _print_Zero(self, expr):
-        if self._settings.get("sympy_integers", False):
-            return "S(0)"
-        return "0"
 
     def _print_DMP(self, p):
         from sympy.core.sympify import SympifyError

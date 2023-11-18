@@ -128,11 +128,8 @@ class SingleODEProblem:
         Returns an iterator of constants that do not occur
         in eq already.
         """
-        atom_set = self.eq.free_symbols
         func_set = self.eq.atoms(Function)
-        if func_set:
-            atom_set |= {Symbol(str(f.func)) for f in func_set}
-        return numbered_symbols(start=start, prefix=prefix, exclude=atom_set)
+        return numbered_symbols(start=start, prefix=prefix, exclude=self.eq.free_symbols | {Symbol(str(f.func)) for f in func_set})
 
     # TODO: Add methods that can be used by many ODE solvers:
     # order

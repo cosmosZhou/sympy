@@ -9,6 +9,8 @@ def limits_dict(limits):
         x, *domain = Tuple.as_setlimit(limit)
         if len(domain) == 1:
             dic[x] = domain[0]
+        elif not domain:
+            dic[x] = None
         else:
             dic[x] = domain
     return dic
@@ -230,9 +232,9 @@ def limits_cond(limits):
     from sympy.sets.contains import Element
     limitsdict = limits_dict(limits)
     for x, cond in limitsdict.items():
+        if cond is None:
+            continue
         if isinstance(cond, list):
-            if not cond:
-                continue
             cond, baseset = cond
             cond &= Element(x, baseset)
         elif cond.is_set:
@@ -271,9 +273,9 @@ Any[p] f = p & f
 12:
 All[p] f = !q | f
 13:
-x & !x = false  
+x & !x = false
 14:
-true = !false 
+true = !false
 
 lemma:
 1:
@@ -304,7 +306,7 @@ Any[p] All[q] f => All[q] Any[p] f
 prove:
 Any[p] All[q] f = (!q | f) & p = = !q & p | f & p = (!q | f & p) & (p | f & p)
 All[q] Any[p] f = !q | (f & p)
-and 
+and
 (!q | f & p) & (p | f & p) => !q | (f & p)
 
 6:

@@ -1,6 +1,7 @@
 from .matexpr import MatrixExpr
 from sympy import Basic, sympify
 from sympy.matrices import Matrix
+from sympy.core.cache import cacheit
 
 class FunctionMatrix(MatrixExpr):
     """
@@ -29,8 +30,8 @@ class FunctionMatrix(MatrixExpr):
         rows, cols = sympify(rows), sympify(cols)
         return Basic.__new__(cls, rows, cols, lamda)
 
-    @property
-    def shape(self):
+    @cacheit
+    def _eval_shape(self):
         return self.args[0:2]
 
     @property
@@ -45,6 +46,6 @@ class FunctionMatrix(MatrixExpr):
         from sympy import Sum
         return Trace(self).rewrite(Sum).doit()
 
-    def as_real_imag(self):
+    def as_real_imag(self, **_):
         from sympy.functions.elementary.complexes import Re, Im
         return (Re(Matrix(self)), Im(Matrix(self)))

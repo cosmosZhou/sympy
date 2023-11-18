@@ -1,4 +1,5 @@
 from sympy import Basic, Expr, S, sympify
+from sympy.core.cache import cacheit
 
 
 class Determinant(Expr):
@@ -19,26 +20,24 @@ class Determinant(Expr):
     is_complex = True
 
     def __new__(cls, mat, evaluate=False):
-        from sympy.matrices.expressions.blockmatrix import BlockMatrix
-        if isinstance(mat, (list, tuple)):
-            mat = BlockMatrix(*mat)
-
         mat = sympify(mat)
+        if not mat.shape:
+            return mat
+        
         assert mat.is_square, "Det of a non-square matrix"
-
         return Basic.__new__(cls, mat)
 
     @property
     def arg(self):
         return self.args[0]
 
-    def doit(self, deep=False, **_):
-        if deep:
+    def doit(self, **kwargs):
+        if kwargs.get('deep'):
             arg = self.arg.doit(deep=True)
             if arg != self.arg:
                 return self.func(arg).doit()
             
-        det = self.arg._eval_determinant()
+        det = self.arg._eval_determinant(**kwargs)
         if det is not None:
             return det
         _, n = self.arg.shape
@@ -46,8 +45,7 @@ class Determinant(Expr):
             return self.arg[0, 0]
         return self
 
-    @property
-    def shape(self):
+    def _eval_shape(self):
         return ()
 
     @property
@@ -73,8 +71,9 @@ class Determinant(Expr):
         return r"\left|{%s}\right|" % p._print(self.arg)
 
     def _sympystr(self, p):
-        return "¦%s¦" % p._print(self.arg)
+        return "det(%s)" % p._print(self.arg)
 
+    @cacheit
     def _eval_domain_defined(self, x, **_):
         domain = Expr._eval_domain_defined(self, x)
         for arg in self.args:

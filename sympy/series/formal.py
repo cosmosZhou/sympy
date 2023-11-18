@@ -1255,7 +1255,7 @@ def fps(f, x=None, x0=0, dir=1, hyper=True, order=4, rational=True, full=False):
     if x is None:
         free = f.free_symbols
         if len(free) == 1:
-            x = free.pop()
+            x, = free
         elif not free:
             return f
         else:

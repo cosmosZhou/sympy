@@ -199,11 +199,11 @@ class TableForm(object):
         self._wipe_zeros = _wipe_zeros
 
     def __repr__(self):
-        from .str import sstr
+        from .string import sstr
         return sstr(self, order=None)
 
     def __str__(self):
-        from .str import sstr
+        from .string import sstr
         return sstr(self, order=None)
 
     def as_matrix(self):

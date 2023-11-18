@@ -520,12 +520,6 @@ def rust_code(expr, assign_to=None, **settings):
         line-wrapping, or for expressions that generate multi-line statements.
     precision : integer, optional
         The precision for numbers such as pi [default=15].
-    user_functions : dict, optional
-        A dictionary where the keys are string representations of either
-        ``FunctionClass`` or ``UndefinedFunction`` instances and the values
-        are their desired C string representations. Alternatively, the
-        dictionary value can be a list of tuples i.e. [(argument_test,
-        cfunction_string)].  See below for examples.
     dereference : iterable, optional
         An iterable of symbols that should be dereferenced in the printed code
         expression. These would be values passed by address to the function.

@@ -1,7 +1,8 @@
 from sympy.core import Basic
-from sympy.functions import adjoint, conjugate
+from sympy.functions import conjugate
 from sympy.matrices.expressions.transpose import transpose
 from sympy.matrices.expressions.matexpr import MatrixExpr
+from sympy.core.cache import cacheit
 
 
 class Adjoint(MatrixExpr):
@@ -28,25 +29,42 @@ class Adjoint(MatrixExpr):
     >>> adjoint(A*B) == Adjoint(A*B).doit()
     True
     """
-    is_Adjoint = True
+    def __new__(cls, arg, **kwargs):
+        if kwargs.get('evaluate', True):
+            if (ret := arg._eval_adjoint()) is not None:
+                return ret
 
+        return MatrixExpr.__new__(cls, arg)
+    
+    @property
+    def dtype(self):
+        return self.arg.dtype
+    
     def doit(self, **hints):
         arg = self.arg
         if hints.get('deep', True) and isinstance(arg, Basic):
-            return adjoint(arg.doit(**hints))
-        else:
-            return adjoint(self.arg)
+            arg = arg.doit(**hints)
+            if arg != self.arg:
+                return self.func(arg)
+        
+        return self
 
     @property
     def arg(self):
         return self.args[0]
 
-    @property
-    def shape(self):
-        return self.arg.shape[::-1]
+    @cacheit
+    def _eval_shape(self):
+        shape = self.arg.shape 
+        if len(shape) > 1:
+            [*shape] = shape
+            axis = -1
+            shape[-1], shape[-2] = shape[-2], shape[-1]
+            return tuple(shape)
+        return shape
 
     def _entry(self, i, j, **kwargs):
-        return conjugate(self.arg._entry(j, i, **kwargs))
+        return conjugate(self.arg[j, i])
 
     def _eval_adjoint(self):
         return self.arg
@@ -61,3 +79,10 @@ class Adjoint(MatrixExpr):
     def _eval_transpose(self, axis=-1):
         if axis == self.default_axis:
             return conjugate(self.arg)
+
+    def _latex(self, p, exp=None):
+        arg = p._print(self.arg)
+        tex = r'%s^{\color{magenta} {\dagger}}' % arg
+        if exp:
+            tex = r'\left(%s\right)^{%s}' % (tex, p._print(exp))
+        return tex

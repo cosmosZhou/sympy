@@ -16,20 +16,10 @@ from sympy import (Basic, factorial, exp, S, sympify, I, zeta, polylog, log, bet
                    hyper, binomial, Piecewise, floor, besseli, sqrt, Sum, Dummy,
                    Lambda)
 from sympy.stats.drv import SingleDiscreteDistribution, SingleDiscretePSpace
-from sympy.stats.rv import _value_check, is_random
+from sympy.stats.rv import _value_check
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.sets import PositiveIntegers, NonnegativeIntegers, Integers
-
-__all__ = ['Geometric',
-'Hermite',
-'Logarithmic',
-'NegativeBinomial',
-'Poisson',
-'Skellam',
-'YuleSimon',
-'Zeta'
-]
 
 
 def rv(symbol, cls, *args):
@@ -37,7 +27,7 @@ def rv(symbol, cls, *args):
     dist = cls(*args)
     dist.check(*args)
     pspace = SingleDiscretePSpace(symbol, dist)
-    if any(is_random(arg) for arg in args):
+    if any(arg.is_random for arg in args):
         from sympy.stats.compound_rv import CompoundPSpace, CompoundDistribution
         pspace = CompoundPSpace(symbol, CompoundDistribution(dist))
     return pspace.value
@@ -417,6 +407,7 @@ def NegativeBinomial(name, r, p):
 
 
 class PoissonDistribution(SingleDiscreteDistribution):
+
     _argnames = ('lamda',)
 
     domain = set = NonnegativeIntegers
@@ -433,6 +424,9 @@ class PoissonDistribution(SingleDiscreteDistribution):
 
     def _moment_generating_function(self, t):
         return exp(self.lamda * (exp(t) - 1))
+
+    is_negative = False
+    is_finite = True
 
 
 def Poisson(name, lamda):
@@ -497,7 +491,7 @@ class BinomialDistribution(SingleDiscreteDistribution):
 
     @property
     def domain(self):
-        from sympy import Range  
+        from sympy import Range
         return Range(self.n + 1) 
 
     set = domain
@@ -563,6 +557,8 @@ def Binomial(name, n, p):
 class DieDistribution(SingleDiscreteDistribution):    
     _argnames = ('sides',)
 
+    is_positive = True
+
     @staticmethod
     def check(sides):
         _value_check((sides.is_positive, sides.is_integer),
@@ -582,7 +578,7 @@ class DieDistribution(SingleDiscreteDistribution):
 
     @property
     def set(self):    
-        from sympy import Range    
+        from sympy import Range
         return Range(1, self.sides + 1)
 
     domain = set
@@ -831,18 +827,12 @@ def Zeta(name, s):
 # an AbstractDiscreteDistribution is a Discrete Distribution whose true probability density function is unevaluated!
 # we only know its expression composed of other known random variables;
 class AbstractDiscreteDistribution(SingleDiscreteDistribution):
-#     _argnames = ['expression', 'set']
-
-#     def __new__(cls, expr, domain=None):
-#         if domain is None:
-#             return SingleDiscreteDistribution.__new__(expr)
-#         return SingleDiscreteDistribution.__new__(cls, expr, domain)
 
     @property
     def expression(self):
         return self.args[0]
 
-    def pdf(self, x):
+    def __call__(self, x):
         from sympy.stats.rv import PDF
         if len(self.args) > 1:
             return self.expression(x)
@@ -870,3 +860,9 @@ class AbstractDiscreteDistribution(SingleDiscreteDistribution):
         except Exception as e:
 #             print(e)
             raise AttributeError("'%s' object has no attribute '%s'" % (type(self).__name__, attr))
+
+    def _eval_is_extended_negative(self):
+        return self.domain.is_extended_negative
+    
+    is_finite = True
+    

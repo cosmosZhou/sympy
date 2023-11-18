@@ -316,13 +316,6 @@ def rcode(expr, assign_to=None, **settings):
         line-wrapping, or for expressions that generate multi-line statements.
     precision : integer, optional
         The precision for numbers such as pi [default=15].
-    user_functions : dict, optional
-        A dictionary where the keys are string representations of either
-        ``FunctionClass`` or ``UndefinedFunction`` instances and the values
-        are their desired R string representations. Alternatively, the
-        dictionary value can be a list of tuples i.e. [(argument_test,
-        rfunction_string)] or [(argument_test, rfunction_formater)]. See below
-        for examples.
     human : bool, optional
         If True, the result is a single string that may contain some constant
         declarations for the number symbols. If False, the same information is

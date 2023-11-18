@@ -81,8 +81,8 @@ class SeqBase(Basic):
         """Returns a tuple of variables that are bounded"""
         return ()
 
-    @property
-    def free_symbols(self):
+    @cacheit
+    def _eval_free_symbols(self):
         """
         This method returns the symbols in the object, excluding those
         that take on a specific value (i.e. the dummy symbols).
@@ -95,8 +95,7 @@ class SeqBase(Basic):
         >>> SeqFormula(m*n**2, (n, 0, 5)).free_symbols
         {m}
         """
-        return (set(j for i in self.args for j in i.free_symbols
-                   .difference(self.variables)))
+        return (set(j for i in self.args for j in i.free_symbols.difference(self.variables)))
 
     @cacheit
     def coeff(self, pt):
@@ -510,7 +509,7 @@ class SeqPer(SeqExpr):
         def _find_x(periodical):
             free = periodical.free_symbols
             if len(periodical.free_symbols) == 1:
-                return free.pop()
+                return next(iter(free))
             else:
                 return Dummy('k')
 
@@ -646,7 +645,7 @@ class SeqFormula(SeqExpr):
         def _find_x(formula):
             free = formula.free_symbols
             if len(free) == 1:
-                return free.pop()
+                return next(iter(free))
             elif not free:
                 return Dummy('k')
             else:

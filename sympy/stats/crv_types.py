@@ -54,84 +54,24 @@ Weibull
 WignerSemicircle
 """
 
-
-
 from sympy import beta as beta_fn
 from sympy import cos, sin, tan, atan, exp, besseli, besselj, besselk
-from sympy import (log, sqrt, pi, S, Dummy, Interval, sympify, gamma, sign,
+from sympy import (log, sqrt, pi, S, Dummy, Interval, sympify, Gamma, sign,
                    Piecewise, And, Eq, binomial, factorial, Sum, floor, Abs,
                    Lambda, Basic, lowergamma, erf, erfc, erfi, erfinv, I, asin,
                    hyper, uppergamma, sinh, Ne, expint, Rational, integrate)
 from sympy.matrices import MatrixBase, MatrixExpr
 from sympy.stats.crv import SingleContinuousPSpace, SingleContinuousDistribution
-from sympy.stats.rv import _value_check, is_random
+from sympy.stats.rv import _value_check
 
 oo = S.Infinity
-
-__all__ = ['ContinuousRV',
-'Arcsin',
-'Benini',
-'Beta',
-'BetaNoncentral',
-'BetaPrime',
-'BoundedPareto',
-'Cauchy',
-'Chi',
-'ChiNoncentral',
-'ChiSquared',
-'Dagum',
-'Erlang',
-'ExGaussian',
-'Exponential',
-'ExponentialPower',
-'FDistribution',
-'FisherZ',
-'Frechet',
-'Gamma',
-'GammaInverse',
-'Gompertz',
-'Gumbel',
-'Kumaraswamy',
-'Laplace',
-'Levy',
-'Logistic',
-'LogLogistic',
-'LogNormal',
-'Lomax',
-'Maxwell',
-'Moyal',
-'Nakagami',
-'Normal',
-'GaussianInverse',
-'Pareto',
-'PowerFunction',
-'QuadraticU',
-'RaisedCosine',
-'Rayleigh',
-'Reciprocal',
-'StudentT',
-'ShiftedGompertz',
-'Trapezoidal',
-'Triangular',
-'Uniform',
-'UniformSum',
-'VonMises',
-'Wald',
-'Weibull',
-'WignerSemicircle',
-]
-
-
-@is_random.register(MatrixBase)
-def _(x):
-    return any([is_random(i) for i in x])
 
 def rv(symbol, cls, args):
     args = list(map(sympify, args))
     dist = cls(*args)
     dist.check(*args)
     pspace = SingleContinuousPSpace(symbol, dist)
-    if any(is_random(arg) for arg in args):
+    if any(arg.is_random for arg in args):
         from sympy.stats.compound_rv import CompoundPSpace, CompoundDistribution
         pspace = CompoundPSpace(symbol, CompoundDistribution(dist))
     return pspace.value
@@ -762,13 +702,13 @@ class ChiDistribution(SingleContinuousDistribution):
     set = Interval(0, oo)
 
     def pdf(self, x):
-        return 2**(1 - self.k/2)*x**(self.k - 1)*exp(-x**2/2)/gamma(self.k/2)
+        return 2**(1 - self.k/2)*x**(self.k - 1)*exp(-x**2/2)/Gamma(self.k/2)
 
     def _characteristic_function(self, t):
         k = self.k
 
         part_1 = hyper((k/2,), (S.Half,), -t**2/2)
-        part_2 = I*t*sqrt(2)*gamma((k+1)/2)/gamma(k/2)
+        part_2 = I*t*sqrt(2)*Gamma((k+1)/2)/Gamma(k/2)
         part_3 = hyper(((k+1)/2,), (Rational(3, 2),), -t**2/2)
         return part_1 + part_2*part_3
 
@@ -776,7 +716,7 @@ class ChiDistribution(SingleContinuousDistribution):
         k = self.k
 
         part_1 = hyper((k / 2,), (S.Half,), t ** 2 / 2)
-        part_2 = t * sqrt(2) * gamma((k + 1) / 2) / gamma(k / 2)
+        part_2 = t * sqrt(2) * Gamma((k + 1) / 2) / Gamma(k / 2)
         part_3 = hyper(((k + 1) / 2,), (S(3) / 2,), t ** 2 / 2)
         return part_1 + part_2 * part_3
 
@@ -813,10 +753,10 @@ def Chi(name, k):
     >>> X = Chi("x", k)
 
     >>> density(X)(z)
-    2**(1 - k/2)*z**(k - 1)*exp(-z**2/2)/gamma(k/2)
+    2**(1 - k/2)*z**(k - 1)*exp(-z**2/2)/Gamma(k/2)
 
     >>> simplify(E(X))
-    sqrt(2)*gamma(k/2 + 1/2)/gamma(k/2)
+    sqrt(2)*Gamma(k/2 + 1/2)/Gamma(k/2)
 
     References
     ==========
@@ -910,14 +850,14 @@ class ChiSquaredDistribution(SingleContinuousDistribution):
 
     domain = set = Interval(0, oo)
 
-    def pdf(self, x):
+    def __call__(self, x):
         k = self.k
-        return 1/(2**(k/2)*gamma(k/2))*x**(k/2 - 1)*exp(-x/2)
+        return 1/(2**(k/2)*Gamma(k/2))*x**(k/2 - 1)*exp(-x/2)
 
     def _cdf(self, x):
         k = self.k
         return Piecewise(
-                (S.One/gamma(k/2)*lowergamma(k/2, x/2), x >= 0),
+                (S.One/Gamma(k/2)*lowergamma(k/2, x/2), x >= 0),
                 (0, True)
         )
 
@@ -926,6 +866,9 @@ class ChiSquaredDistribution(SingleContinuousDistribution):
 
     def  _moment_generating_function(self, t):
         return (1 - 2*t)**(-self.k/2)
+
+    def _latex(self, p):
+        return r'\mathcal{X}^2%s' % p._print(self.args)
 
     
 def ChiSquared(name, k):
@@ -962,7 +905,7 @@ def ChiSquared(name, k):
     >>> X = ChiSquared("x", k)
 
     >>> density(X)(z)
-    2**(-k/2)*z**(k/2 - 1)*exp(-z/2)/gamma(k/2)
+    2**(-k/2)*z**(k/2 - 1)*exp(-z/2)/Gamma(k/2)
 
     >>> E(X)
     k
@@ -1365,13 +1308,13 @@ class ExponentialPowerDistribution(SingleContinuousDistribution):
     def pdf(self, x):
         mu, alpha, beta = self.mu, self.alpha, self.beta
         num = beta*exp(-(Abs(x - mu)/alpha)**beta)
-        den = 2*alpha*gamma(1/beta)
+        den = 2*alpha*Gamma(1/beta)
         return num/den
 
     def _cdf(self, x):
         mu, alpha, beta = self.mu, self.alpha, self.beta
         num = lowergamma(1/beta, (Abs(x - mu) / alpha)**beta)
-        den = 2*gamma(1/beta)
+        den = 2*Gamma(1/beta)
         return sign(x - mu)*num/den + S.Half
 
 
@@ -1422,7 +1365,7 @@ def ExponentialPower(name, mu, alpha, beta):
      2*alpha*Gamma|----|
                   \beta/
     >>> cdf(X)(z)
-    1/2 + lowergamma(1/beta, (Abs(mu - z)/alpha)**beta)*sign(-mu + z)/(2*gamma(1/beta))
+    1/2 + lowergamma(1/beta, (Abs(mu - z)/alpha)**beta)*sign(-mu + z)/(2*Gamma(1/beta))
 
     References
     ==========
@@ -1686,12 +1629,12 @@ class GammaDistribution(SingleContinuousDistribution):
 
     def pdf(self, x):
         k, theta = self.k, self.theta
-        return x**(k - 1) * exp(-x/theta) / (gamma(k)*theta**k)
+        return x**(k - 1) * exp(-x/theta) / (Gamma(k)*theta**k)
 
     def _cdf(self, x):
         k, theta = self.k, self.theta
         return Piecewise(
-                    (lowergamma(k, S(x)/theta)/gamma(k), x > 0),
+                    (lowergamma(k, S(x)/theta)/Gamma(k), x > 0),
                     (S.Zero, True))
 
     def _characteristic_function(self, t):
@@ -1700,7 +1643,7 @@ class GammaDistribution(SingleContinuousDistribution):
     def _moment_generating_function(self, t):
         return (1- self.theta*t)**(-self.k)
 
-def Gamma(name, k, theta):
+def gamma(name, k, theta):
     r"""
     Create a continuous random variable with a Gamma distribution.
 
@@ -1788,16 +1731,16 @@ class GammaInverseDistribution(SingleContinuousDistribution):
 
     def pdf(self, x):
         a, b = self.a, self.b
-        return b**a/gamma(a) * x**(-a-1) * exp(-b/x)
+        return b**a/Gamma(a) * x**(-a-1) * exp(-b/x)
 
     def _cdf(self, x):
         a, b = self.a, self.b
-        return Piecewise((uppergamma(a,b/x)/gamma(a), x > 0),
+        return Piecewise((uppergamma(a,b/x)/Gamma(a), x > 0),
                         (S.Zero, True))
 
     def _characteristic_function(self, t):
         a, b = self.a, self.b
-        return 2 * (-I*b*t)**(a/2) * besselk(a, sqrt(-4*I*b*t)) / gamma(a)
+        return 2 * (-I*b*t)**(a/2) * besselk(a, sqrt(-4*I*b*t)) / Gamma(a)
 
     def _moment_generating_function(self, t):
         raise NotImplementedError('The moment generating function for the '
@@ -1848,7 +1791,7 @@ def GammaInverse(name, a, b):
        Gamma(a)
 
     >>> cdf(X)(z)
-    Piecewise((uppergamma(a, b/z)/gamma(a), z > 0), (0, True))
+    Piecewise((uppergamma(a, b/z)/Gamma(a), z > 0), (0, True))
 
 
     References
@@ -1889,13 +1832,13 @@ class GumbelDistribution(SingleContinuousDistribution):
         return Piecewise((F_min, self.minimum), (F_max, not self.minimum))
 
     def _characteristic_function(self, t):
-        cf_max = gamma(1 - I*self.beta*t) * exp(I*self.mu*t)
-        cf_min = gamma(1 + I*self.beta*t) * exp(I*self.mu*t)
+        cf_max = Gamma(1 - I*self.beta*t) * exp(I*self.mu*t)
+        cf_min = Gamma(1 + I*self.beta*t) * exp(I*self.mu*t)
         return Piecewise((cf_min, self.minimum), (cf_max, not self.minimum))
 
     def _moment_generating_function(self, t):
-        mgf_max = gamma(1 - self.beta*t) * exp(self.mu*t)
-        mgf_min = gamma(1 + self.beta*t) * exp(self.mu*t)
+        mgf_max = Gamma(1 - self.beta*t) * exp(self.mu*t)
+        mgf_min = Gamma(1 + self.beta*t) * exp(self.mu*t)
         return Piecewise((mgf_min, self.minimum), (mgf_max, not self.minimum))
 
 def Gumbel(name, beta, mu, minimum=False):
@@ -2693,13 +2636,13 @@ class MoyalDistribution(SingleContinuousDistribution):
     def _characteristic_function(self, t):
         mu, sigma = self.mu, self.sigma
         term1 = exp(I*t*mu)
-        term2 = (2**(-I*sigma*t) * gamma(Rational(1, 2) - I*t*sigma))
+        term2 = (2**(-I*sigma*t) * Gamma(Rational(1, 2) - I*t*sigma))
         return (term1 * term2)/sqrt(pi)
 
     def _moment_generating_function(self, t):
         mu, sigma = self.mu, self.sigma
         term1 = exp(t*mu)
-        term2 = (2**(-1*sigma*t) * gamma(Rational(1, 2) - t*sigma))
+        term2 = (2**(-1*sigma*t) * Gamma(Rational(1, 2) - t*sigma))
         return (term1 * term2)/sqrt(pi)
 
 def Moyal(name, mu, sigma):
@@ -2765,12 +2708,12 @@ class NakagamiDistribution(SingleContinuousDistribution):
 
     def pdf(self, x):
         mu, omega = self.mu, self.omega
-        return 2*mu**mu/(gamma(mu)*omega**mu)*x**(2*mu - 1)*exp(-mu/omega*x**2)
+        return 2*mu**mu/(Gamma(mu)*omega**mu)*x**(2*mu - 1)*exp(-mu/omega*x**2)
 
     def _cdf(self, x):
         mu, omega = self.mu, self.omega
         return Piecewise(
-                    (lowergamma(mu, (mu/omega)*x**2)/gamma(mu), x > 0),
+                    (lowergamma(mu, (mu/omega)*x**2)/Gamma(mu), x > 0),
                     (S.Zero, True))
 
 def Nakagami(name, mu, omega):
@@ -2819,7 +2762,7 @@ def Nakagami(name, mu, omega):
                 Gamma(mu)
 
     >>> simplify(E(X))
-    sqrt(mu)*sqrt(omega)*gamma(mu + 1/2)/gamma(mu + 1)
+    sqrt(mu)*sqrt(omega)*Gamma(mu + 1/2)/Gamma(mu + 1)
 
     >>> V = simplify(variance(X))
     >>> pprint(V, use_unicode=False)
@@ -2829,7 +2772,7 @@ def Nakagami(name, mu, omega):
             Gamma(mu)*Gamma(mu + 1)
 
     >>> cdf(X)(z)
-    Piecewise((lowergamma(mu, mu*z**2/omega)/gamma(mu), z > 0),
+    Piecewise((lowergamma(mu, mu*z**2/omega)/Gamma(mu), z > 0),
             (0, True))
 
 
@@ -2847,32 +2790,42 @@ def Nakagami(name, mu, omega):
 
 
 class NormalDistribution(SingleContinuousDistribution):
-    _argnames = ('mean', 'std')
+    _argnames = ('mean', 'sigma')
     
     @staticmethod
-    def check(mean, std):
-        _value_check(std > 0, "Standard deviation must be positive")
+    def check(mean, sigma):
+        _value_check(sigma > 0, "Standard deviation must be positive")
 
-    def pdf(self, x):
-        return exp(-(x - self.mean)**2 / (2*self.std**2)) / (sqrt(2*pi)*self.std)
+    def __call__(self, x):
+        sigma = self.sigma
+        mean = self.mean
+        if sigma.shape:
+            D, = mean.shape
+            return exp(-((x - mean) @ (sigma ^ -1) @ (x - mean)) / 2) / (sqrt((2 * pi) ** D * sigma.det()))
+        else:
+            return exp(-(x - mean) ** 2 / (2 * sigma)) / (sqrt(2 * pi * sigma))
 
     def _cdf(self, x):
-        mean, std = self.mean, self.std
-        return erf(sqrt(2)*(-mean + x)/(2*std))/2 + S.Half
+        mean, sigma = self.mean, self.sigma
+        return erf(sqrt(2) * (-mean + x) / (2 * sqrt(sigma))) / 2 + S.Half
 
     def _characteristic_function(self, t):
-        mean, std = self.mean, self.std
-        return exp(I*mean*t - std**2*t**2/2)
+        mean, sigma = self.mean, self.sigma
+        return exp(I * mean * t - sigma * t ** 2 / 2)
 
     def _moment_generating_function(self, t):
-        mean, std = self.mean, self.std
-        return exp(mean*t + std**2*t**2/2)
+        mean, sigma = self.mean, self.sigma
+        return exp(mean * t + sigma * t ** 2 / 2)
 
     def _quantile(self, p):
-        mean, std = self.mean, self.std
-        return mean + std*sqrt(2)*erfinv(2*p - 1)
+        mean, sigma = self.mean, self.sigma
+        return mean + sqrt(2 * sigma) * erfinv(2 * p - 1)
 
-def Normal(name, mean, std):
+    def _latex(self, p):
+        return r'\mathcal{N}%s' % p._print(self.args)
+
+
+def Normal(name, mean, sigma):
     r"""
     Create a continuous random variable with a Normal distribution.
 
@@ -2956,10 +2909,10 @@ def Normal(name, mean, std):
     """
 
     if isinstance(mean, (list, MatrixBase, MatrixExpr)) and\
-        isinstance(std, (list, MatrixBase, MatrixExpr)):
+        isinstance(sigma, (list, MatrixBase, MatrixExpr)):
         from sympy.stats.joint_rv_types import MultivariateNormal
-        return MultivariateNormal(name, mean, std)
-    return rv(name, NormalDistribution, (mean, std))
+        return MultivariateNormal(name, mean, sigma)
+    return rv(name, NormalDistribution, (mean, sigma))
 
 
 #-------------------------------------------------------------------------------
@@ -3627,8 +3580,8 @@ class StudentTDistribution(SingleContinuousDistribution):
 
     def _cdf(self, x):
         nu = self.nu
-        return S.Half + x*gamma((nu+1)/2)*hyper((S.Half, (nu+1)/2),
-                                (Rational(3, 2),), -x**2/nu)/(sqrt(pi*nu)*gamma(nu/2))
+        return S.Half + x*Gamma((nu+1)/2)*hyper((S.Half, (nu+1)/2),
+                                (Rational(3, 2),), -x**2/nu)/(sqrt(pi*nu)*Gamma(nu/2))
 
     def _moment_generating_function(self, t):
         raise NotImplementedError('The moment generating function for the Student-T distribution is undefined.')
@@ -3680,8 +3633,8 @@ def StudentT(name, nu):
             \     2 /
 
     >>> cdf(X)(z)
-    1/2 + z*gamma(nu/2 + 1/2)*hyper((1/2, nu/2 + 1/2), (3/2,),
-                                -z**2/nu)/(sqrt(pi)*sqrt(nu)*gamma(nu/2))
+    1/2 + z*Gamma(nu/2 + 1/2)*hyper((1/2, nu/2 + 1/2), (3/2,),
+                                -z**2/nu)/(sqrt(pi)*sqrt(nu)*Gamma(nu/2))
 
 
     References
@@ -4228,10 +4181,10 @@ def Weibull(name, alpha, beta):
     k*(z/lambda)**(k - 1)*exp(-(z/lambda)**k)/lambda
 
     >>> simplify(E(X))
-    lambda*gamma(1 + 1/k)
+    lambda*Gamma(1 + 1/k)
 
     >>> simplify(variance(X))
-    lambda**2*(-gamma(1 + 1/k)**2 + gamma(1 + 2/k))
+    lambda**2*(-Gamma(1 + 1/k)**2 + Gamma(1 + 2/k))
 
     References
     ==========
@@ -4322,26 +4275,14 @@ def WignerSemicircle(name, R):
 # an AbstractContinuousDistribution is a Continuous Distribution whose true probability density function is unevaluated!
 # we only know its expression composed of other known random variables;
 class AbstractContinuousDistribution(SingleContinuousDistribution):
-#     _argnames = ['expression', 'set']
-
-#     def __new__(cls, expression):
-#         expression = sympify(expression)
-#         if expression >= 0:
-#             st = Interval(0, oo)
-#         else:
-#             st = Interval(-oo, oo)
-#
-#         args = [expression, st]
-#
-#         obj = Basic.__new__(cls, *args)
-#
-#         return obj
+    def __new__(cls, *args):
+        return Basic.__new__(cls, *args)
 
     @property
     def expression(self):
         return self.args[0]
 
-    def pdf(self, x):
+    def __cal__(self, x):
         from sympy.stats.rv import PDF
         return PDF(self.expression)(x)
 

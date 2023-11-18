@@ -187,7 +187,7 @@ class Quantifier(Boolean, ExprWithLimits):
     def __bool__(self):
         return False
 
-    def simplify(self, deep=False):
+    def simplify(self, deep=False, **kwargs):
         from sympy import S
         if self.expr.func == self.func:
             exists = self.expr
@@ -200,7 +200,7 @@ class Quantifier(Boolean, ExprWithLimits):
         function = self.expr
         if function.is_And or function.is_Or:
             for t in range(len(self.limits)):
-                x, *domain = self.limits[t]            
+                x, *domain = self.limits[t]
                 index = []
                 for i, eq in enumerate(function.args):
                     if eq._has(x):
@@ -264,15 +264,20 @@ class Quantifier(Boolean, ExprWithLimits):
 
         for i, (x, *domain) in enumerate(self.limits):
             if len(domain) == 1:
-                domain = domain[0]
+                domain, = domain
                 if domain.is_FiniteSet and len(domain) == 1:
-                    if len(self.limits) == 1: 
-                        return self.func(self.finite_aggregate(x, domain), *self.limits_delete(x)).simplify()
+                    new, = domain
+                    [*limits] = self.limits
+                    expr, limits = Quantifier.expr_subs(self.expr, limits, x, new, i)
+                    expr = self.finite_aggregate(x, domain)
+                    del limits[i]
+                    return self.func(expr, *limits).simplify()
                 if domain.is_Element:
                     if domain.lhs == x:
                         domain = domain.rhs
                         limits = self.limits_update({x:domain})
                         return self.func(self.expr, *limits).simplify()
+
                 elif domain.is_ConditionSet:
                     if x == domain.variable: 
                         condition = domain.condition
@@ -285,14 +290,15 @@ class Quantifier(Boolean, ExprWithLimits):
                     else:
                         limits[i] = (x, condition, domain.base_set)
                     return self.func(self.expr, *limits).simplify()
-                elif domain.is_UniversalSet:
+
+                elif domain.is_UniversalSet and x.dtype in domain.etype:
                     limits = [*self.limits]
                     limits[i] = (x,)
                     return self.func(self.expr, *limits).simplify()
 
         for i, limit in enumerate(self.limits):
             if len(limit) == 1:
-                continue            
+                continue
             if len(limit) == 3:
                 e, cond, baseset = limit
                 if baseset.is_set:
@@ -335,13 +341,17 @@ class Quantifier(Boolean, ExprWithLimits):
                         function = self.expr
                         if e != expr:
                             if sym.type == e.type:
-                                _expr = expr._subs(sym, e)                        
+                                _expr = expr._subs(sym, e)
                                 if _expr != e:
                                     _function = function._subs(e, expr)
                                     if _function == function:
                                         return self
                                     limits = self.limits_update({e: (sym, base_set)})
-                                    function = _function          
+                                    for j in range(i):
+                                        x, *ab = limits[j]
+                                        limits[j] = x, *(c._subs(e, expr) for c in ab)
+
+                                    function = _function
                                 else:
                                     base_set = base_set._subs(sym, e)
                                     limits = self.limits_update(e, base_set)
@@ -350,11 +360,11 @@ class Quantifier(Boolean, ExprWithLimits):
                                 if _function == function:
                                     return self
                                 limits = self.limits_update({e: (sym, base_set)})
-                                function = _function          
+                                function = _function
                         else:
                             limits = self.limits_update({e: (sym, base_set)})                            
-                        return self.func(function, *limits).simplify()
-                else:  # s.type.is_condition: 
+                        return self.func(function, *limits).simplify(**kwargs)
+                else:  # s.type.is_bool: 
                     if s.is_Equal:
                         if e == s.lhs:
                             y = s.rhs
@@ -365,7 +375,7 @@ class Quantifier(Boolean, ExprWithLimits):
                         if y is not None and not y.has(e):
                             function = function._subs(e, y)
                             if function.is_BooleanAtom:
-                                return function 
+                                return function
                             limits = self.limits_delete(e)
                             if limits:
                                 return self.func(function, *limits)
@@ -388,7 +398,7 @@ class Quantifier(Boolean, ExprWithLimits):
                     functions = []
                     for j in range(diff):
                         limits_before = [self.limits[t]._subs(x, a + j) for t in range(i)]                        
-                        limits = limits_before + limits_behind 
+                        limits = limits_before + limits_behind
                         
                         functions.append(self.func(function._subs(x, a + j), *limits).doit(**hints).simplify())
 
@@ -415,7 +425,7 @@ class Quantifier(Boolean, ExprWithLimits):
         return self.func(function, *limits[::-1])
 
     def _pretty(self, p, func):
-        from sympy.printing.pretty.stringpict import prettyForm, stringPict                    
+        from sympy.printing.pretty.stringpict import prettyForm, stringPict
         prettyFunc = p._print("%s[%s]" % (func,
                                           ','.join([limit._format_ineq(p) for limit in self.limits])))
         prettyArgs = prettyForm(*p._print_seq([self.expr], delimiter=', ').parens())
@@ -426,7 +436,7 @@ class Quantifier(Boolean, ExprWithLimits):
         pform.prettyFunc = prettyFunc
         pform.prettyArgs = prettyArgs
 
-        return pform                
+        return pform
 
     def existent_symbols(self):
         free_symbols = Boolean.existent_symbols(self)        
@@ -445,7 +455,7 @@ class Quantifier(Boolean, ExprWithLimits):
 
             free_symbols -= deletes
             
-        return free_symbols                    
+        return free_symbols
 
     def detect_previous_dependence(self, i, x):
         for j in range(i - 1, -1, -1):
@@ -496,31 +506,31 @@ class Quantifier(Boolean, ExprWithLimits):
         limits_dict = self.limits_dict
         function = self.expr
         for i, x in enumerate(self.variables):
-            if function._has(x):
+            if function._has(x) or any(limit._has(x) for limit in self.limits[:i]):
                 continue
             
             cond = limits_dict[x]
-            if isinstance(cond, list):
-                if cond:
-                    cond, baseset = cond
-                    if self.detect_previous_dependence(i, x):
-                        continue
+            if isinstance(cond, list) and cond:
+                cond, baseset = cond
+                if self.detect_previous_dependence(i, x):
+                    continue
+                
+                limits = [*self.limits]
+                del limits[i]
+                if cond.is_bool:
+                    # conditionset
+                    cond = self.reduced_cond(x, cond, baseset)
+                else:
+                    # imageset
+                    cond = self.reduced_cond(x, baseset)
                     
-                    limits = [*self.limits]
-                    del limits[i]
-                    if cond.is_bool:
-                        # conditionset
-                        cond = self.reduced_cond(x, cond, baseset)
-                    else:
-                        # imageset
-                        cond = self.reduced_cond(x, baseset)
-                        
-                    if limits:
-                        expr = self.func(self.expr, *limits).simplify()
-                    else:
-                        expr = self.expr
-                    return self.invert_type.operator(cond, expr)
+                if limits:
+                    expr = self.func(self.expr, *limits).simplify()
+                else:
+                    expr = self.expr
+                return self.invert_type.operator(cond, expr)
 
+            if cond is None:
                 if self.detect_previous_dependence(i, x):
                     continue
                 
@@ -536,7 +546,7 @@ class Quantifier(Boolean, ExprWithLimits):
                     y = cond.rhs if x == cond.lhs else cond.lhs
                     return self.subs_with_independent_variable(i, x, y)
                 if cond.is_Element and cond.lhs == x and cond.rhs.is_FiniteSet and len(cond.rhs) == 1:
-                    [y] = cond.rhs.args
+                    y, = cond.rhs.args
                     return self.subs_with_independent_variable(i, x, y)
                 
                 if self.detect_previous_dependence(i, x):
@@ -552,14 +562,14 @@ class Quantifier(Boolean, ExprWithLimits):
                 return self.invert_type.operator(cond, expr)
             
             if cond.is_FiniteSet and len(cond) == 1: 
-                [y] = cond.args
+                y, = cond.args
                 return self.subs_with_independent_variable(i, x, y)
             
             if self.detect_previous_dependence(i, x):
                 continue
             
             limits = [*self.limits]
-            del limits[i]                        
+            del limits[i]
             cond = self.reduced_cond(x, cond)
             if limits:
                 expr = self.func(self.expr, *limits).simplify()
@@ -587,8 +597,7 @@ class Quantifier(Boolean, ExprWithLimits):
                     if b.is_set:
                         limit = var.domain_latex(a, baseset=b)
                     else:
-                        from sympy import Range
-                        limit = var.domain_latex((Range if var.is_integer else Interval)(*args))
+                        limit = var.domain_latex(var.range(*args))
 
                 limits.append(limit)
 

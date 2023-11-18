@@ -22,16 +22,6 @@ from sympy.core.core import BasicMeta
 from sympy.core.assumptions import ManagedProperties
 
 
-__all__ = [
-    'CircuitPlot',
-    'circuit_plot',
-    'labeller',
-    'Mz',
-    'Mx',
-    'CreateOneQubitGate',
-    'CreateCGate',
-]
-
 np = import_module('numpy')
 matplotlib = import_module(
     'matplotlib', __import__kwargs={'fromlist': ['pyplot']},

@@ -330,7 +330,7 @@ class ExprWithIntLimits(ExprWithLimits):
                         
                     if x.is_integer:
                         if b.is_Add and b.args[0].is_One:
-                            b -= 1                            
+                            b -= 1
                             cmp = r"\leq"
                         else:
                             cmp = r"\lt"

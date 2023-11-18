@@ -9,11 +9,6 @@ from sympy.physics.quantum.matrixutils import (
     to_sympy, to_numpy, to_scipy_sparse
 )
 
-__all__ = [
-    'QuantumError',
-    'QExpr'
-]
-
 
 #-----------------------------------------------------------------------------
 # Error handling
@@ -94,8 +89,7 @@ class QExpr(Expr):
     # The separator used in printing the label.
     _label_separator = u''
 
-    @property
-    def free_symbols(self):
+    def _eval_free_symbols(self):
         return {self}
 
     def __new__(cls, *args, **kwargs):

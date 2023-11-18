@@ -38,24 +38,27 @@ class Basic:
     # To be overridden with True in the appropriate subclasses
     is_number = False
     is_symbol = False
-    is_Infinity = False
-    is_NegativeInfinity = False
-    
-    is_ConditionSet = False
-    
     is_bool = False
-    
-    is_Matrix = False
-    
     is_set = False
     
+    is_Basic = True
+    is_Number = False
+    is_Rational = False
+    is_Integer = False
+    is_EmptySet = False
+    is_UniversalSet = False
+    is_ImaginaryUnit = False
+    is_ConditionSet = False
+    is_Matrix = False
+    is_Infinity = False
+    is_NegativeInfinity = False
+    is_One = False
     is_Integral = False
-    
     is_Inference = False
+    
     # Wanted is used in expression: Product + {Sum[Sum]}
     is_Wanted = False
     is_IndexedOperator = False
-        
   
     def __new__(cls, *args, **kwargs):
         obj = object.__new__(Basic)
@@ -66,20 +69,6 @@ class Basic:
         obj.kwargs = kwargs
         return obj
 
-    is_Basic = True
-    
-    is_Number = False
-    
-    is_Rational = False
-    
-    is_Integer = False
-    
-    is_EmptySet = False
-    
-    is_UniversalSet = False
-    
-    is_ImaginaryUnit = False
-    
     @property
     def is_Add(self):
         return self.func.is_Add
@@ -437,7 +426,7 @@ class Basic:
             cls = cls.func
                 
         if not isinstance(self, cls.func):
-            return False        
+            return False
         j = 0
         i = 0
         while j < len(self.args):
@@ -463,7 +452,7 @@ class Basic:
                 return
         
         if not isinstance(self, cls.func):
-            return        
+            return
         j = 0
         i = 0
         
@@ -548,7 +537,7 @@ class Basic:
                     raise Exception('not wanted??')
                 s = s.args[i]
             
-        return query, struct                                   
+        return query, struct
         
     def find(self, *query): 
         query, struct = Basic.make_query(*query)
@@ -560,7 +549,7 @@ class Basic:
                             output=[],
                             struct=struct)
                     
-    def findall(self, *query):
+    def finditer(self, *query):
         query, struct = Basic.make_query(*query)
         try:
             yield from self.yield_all([(q, []) for q in query],
@@ -623,57 +612,75 @@ class Basic:
                                                     output=output + _output,
                                                     **kwargs)
             except GeneratorExit as e:
-                raise e                        
+                raise e
             except: 
                 continue
-
         
     def __add__(self, other):
         from sympy import Add
         other = sympify(other)
         if other.is_Integer: 
             if self.is_Add:
-                args = (other, *self.args)
+                args = other, *self.args
             else:
-                args = (other, self)
+                args = other, self
             
-            return Basic.__new__(Add, *args)
-            
-        if self.is_Add:
-            return Basic.__new__(Add, *self.args, other)
-        return Basic.__new__(Add, self, other)
+        elif self.is_Add:
+            if other.is_Add:
+                args = *other.args, *self.args
+            else:
+                args = *self.args, other
+        else:
+            args = self, other
+
+        return Basic.__new__(Add, *args)
 
     def __radd__(self, lhs):
         from sympy import Add
         lhs = sympify(lhs)
         return Basic.__new__(Add, lhs, self)
 
+    def __rsub__(self, lhs):
+        lhs = sympify(lhs)
+        self = -self
+        return Basic.__add__(lhs, self)
+    
     def __mul__(self, other):
         from sympy import Mul
         other = sympify(other)
         if other.is_Integer or other.is_Infinity or other.is_NegativeInfinity:
             if self.is_Mul:
-                args = (other,) + self.args
+                args = other, *self.args
             else:
-                args = (other, self)
+                args = other, self
         else:
             if self.is_Mul:
-                args = self.args + (other,)
+                if other.is_Mul:
+                    args = *self.args, *other.args
+                else:
+                    args = *self.args, other
+            elif other.is_Mul:
+                args = self, *other.args
             else:
-                args = (self, other) 
+                args = self, other 
         return Basic.__new__(Mul, *args)
 
     def __rmul__(self, lhs):
         from sympy import Mul
-        return Basic.__new__(Mul, sympify(lhs), self)
+        lhs = sympify(lhs)
+        if lhs.is_Mul:
+            args = *lhs.args, self
+        else:
+            args = lhs, self
+        return Basic.__new__(Mul, *args)
 
     def __matmul__(self, other):
         from sympy import MatMul
         other = sympify(other)
         if self.is_MatMul:
-            args = (*self.args, other) 
+            args = *self.args, other 
         else:
-            args = (self, other)            
+            args = self, other
         return Basic.__new__(MatMul, *args)
 
     def __sub__(self, other):
@@ -684,36 +691,36 @@ class Basic:
         if other.is_Integer: 
             if not self.is_Number:
                 if self.is_Add:
-                    args = (other, *self.args)
+                    args = other, *self.args
                 else:
-                    args = (other, self)
+                    args = other, self
                 
                 return Basic.__new__(Add, *args)
             
         if self.is_Add:
-            args = (*self.args, other)
+            args = *self.args, other
         else:
-            args = (self, other)
+            args = self, other
         return Basic.__new__(Add, *args)
 
     def __neg__(self):
         from sympy import Mul, S
         if self.is_Mul:
             if self.args[0].is_Number:
-                args = (-self.args[0], *self.args[1:])
+                args = -self.args[0], *self.args[1:]
             else:
-                args = (S.NegativeOne,) + self.args
+                args = S.NegativeOne, *self.args
         else:
             args = (S.NegativeOne, self)
             
         return Basic.__new__(Mul, *args)
     
     def __invert__(self):
-        from sympy.core.core import Wanted         
+        from sympy.core.core import Wanted
         return Wanted(self)
     
     def __floordiv__(self, other):
-        from sympy import Floor   
+        from sympy import Floor
         other = sympify(other)     
         return Basic.__new__(Floor, self / other)
     
@@ -723,15 +730,18 @@ class Basic:
         if other.is_Integer:
             other = 1 / other
             if self.is_Mul:
-                args = (other,) + self.args 
+                if self.args[0].is_Number:
+                    args = other * self.args[0], *self.args[1:]
+                else:
+                    args = other, *self.args
             else:
-                args = (other, self)
+                args = other, self
         else:
             other = Basic.__new__(Pow, other, S.NegativeOne)
             if self.is_Mul:
-                args = self.args + (other,)
+                args = *self.args, other
             else:
-                args = (self, other)
+                args = self, other
         return Basic.__new__(Mul, *args)
     
     def __rtruediv__(self, lhs):
@@ -740,11 +750,11 @@ class Basic:
         
         pow = Basic.__new__(Pow, self, S.NegativeOne)
         if lhs == 1:
-            return pow                    
+            return pow
         return Basic.__new__(Mul, lhs, pow)
 
     def __mod__(self, other):
-        from sympy import Mod        
+        from sympy import Mod
         other = sympify(other)
         return Basic.__new__(Mod, self, other)
     

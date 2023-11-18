@@ -1,6 +1,7 @@
 from sympy import Expr, S, Mul, sympify
 from sympy.core.compatibility import Iterable
 from sympy.core.parameters import global_parameters
+from sympy.core.cache import cacheit
 
 
 class TensorProduct(Expr):
@@ -49,8 +50,8 @@ class TensorProduct(Expr):
         from sympy import Array
         return [i.shape if hasattr(i, "shape") else Array(i).shape for i in self.args]
 
-    @property
-    def shape(self):
+    @cacheit
+    def _eval_shape(self):
         shape_list = self._get_args_shapes()
         return sum(shape_list, ())
 

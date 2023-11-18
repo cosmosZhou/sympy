@@ -107,8 +107,8 @@ class ImmutableDenseMatrix(DenseMatrix, MatrixExpr):
     def rows(self):
         return int(self.args[0])
 
-    @property
-    def shape(self):
+    @cacheit
+    def _eval_shape(self):
         return tuple(int(i) for i in self.args[:2])
 
     def is_diagonalizable(self, reals_only=False, **kwargs):

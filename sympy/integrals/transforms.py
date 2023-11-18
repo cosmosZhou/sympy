@@ -12,6 +12,7 @@ from sympy.logic.boolalg import to_cnf, conjuncts, disjuncts, Or, And
 from sympy.simplify import simplify
 from sympy.utilities import default_sort_key
 from sympy.matrices.matrices import MatrixBase
+from sympy.core.cache import cacheit
 
 ##########################################################################
 # Helpers / Utilities
@@ -67,14 +68,13 @@ class IntegralTransform(Function):
         """ The independent transform variable. """
         return self.args[2]
 
-    @property
-    def free_symbols(self):
+    @cacheit
+    def _eval_free_symbols(self):
         """
         This method returns the symbols that will exist when the transform
         is evaluated.
         """
-        return self.function.free_symbols.union({self.transform_variable}) \
-            -{self.function_variable}
+        return self.function.free_symbols.union({self.transform_variable}) - {self.function_variable}
 
     def _compute_transform(self, f, x, s, **hints):
         raise NotImplementedError
@@ -474,7 +474,7 @@ def _rewrite_gamma(f, s, a, b):
     # 4) Check that the resulting G function parameters are valid.
     # 5) Combine all the exponentials.
 
-    a_, b_ = S([a, b])
+    a_, b_ = a, b
 
     def left(c, is_numer):
         """

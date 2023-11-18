@@ -230,7 +230,7 @@ class ImplicitRegion(Basic):
                     syms_z = sol_z.free_symbols
 
                     if len(syms_z) == 1:
-                        p = next(iter(syms_z))
+                        p, = syms_z
                         p_values = Complement(S.Integers, solveset(Eq(sol_z, 0), p, S.Integers))
                         rep[p] = next(iter(p_values))
 
@@ -417,7 +417,7 @@ class ImplicitRegion(Basic):
                 rep = {s: 2 for s in syms}
 
                 if len(syms) != 0:
-                   spoint = tuple(s.subs(rep) for s in spoint)
+                    spoint = tuple(s.subs(rep) for s in spoint)
 
                 if self.multiplicity(spoint) == degree - 1:
                     point = spoint

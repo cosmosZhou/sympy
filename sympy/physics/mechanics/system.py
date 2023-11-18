@@ -2,8 +2,6 @@ from sympy.core.backend import eye, Matrix, zeros
 from sympy.physics.mechanics import dynamicsymbols
 from sympy.physics.mechanics.functions import find_dynamicsymbols
 
-__all__ = ['SymbolicSystem']
-
 
 class SymbolicSystem(object):
     """SymbolicSystem is a class that contains all the information about a

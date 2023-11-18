@@ -136,8 +136,7 @@ def monotonicity_helper(expression, predicate, interval=Reals, symbol=None):
                 'The function has not yet been implemented'
                 ' for all multivariate expressions.'
             )
-
-    variable = symbol or (free.pop() if free else Symbol('x'))
+    variable = symbol or (next(iter(free)) if free else Symbol('x'))
     derivative = expression.diff(variable)
     predicate_interval = solveset(predicate(derivative), variable, Reals)
     return interval.is_subset(predicate_interval)
@@ -368,6 +367,6 @@ def is_monotonic(expression, interval=Reals, symbol=None):
             ' for all multivariate expressions.'
         )
 
-    variable = symbol or (free.pop() if free else Symbol('x'))
+    variable = symbol or (next(iter(free)) if free else Symbol('x'))
     turning_points = solveset(expression.diff(variable), variable, interval)
     return interval.intersection(turning_points).is_EmptySet

@@ -39,7 +39,7 @@ def difference_delta(expr, n=None, step=1):
     if n is None:
         f = expr.free_symbols
         if len(f) == 1:
-            n = f.pop()
+            n, = f
         elif len(f) == 0:
             return S.Zero
         else:
@@ -199,7 +199,7 @@ def limit_seq(expr, n=None, trials=5):
     if n is None:
         free = expr.free_symbols
         if len(free) == 1:
-            n = free.pop()
+            n, = free
         elif not free:
             return expr
         else:

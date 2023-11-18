@@ -4,6 +4,7 @@ from sympy.tensor.array.mutable_ndim_array import MutableNDimArray
 from sympy.tensor.array.ndim_array import NDimArray, ImmutableNDimArray
 
 import functools
+from sympy.core.cache import cacheit
 
 class SparseNDimArray(NDimArray):
 
@@ -204,6 +205,6 @@ class MutableSparseNDimArray(MutableNDimArray, SparseNDimArray):
     def as_immutable(self):
         return ImmutableSparseNDimArray(self)
 
-    @property
-    def free_symbols(self):
+    @cacheit
+    def _eval_free_symbols(self):
         return {i for j in self._sparse_array.values() for i in j.free_symbols}

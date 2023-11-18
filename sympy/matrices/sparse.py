@@ -439,8 +439,10 @@ class SparseMatrix(MatrixBase):
 
     @classmethod
     def _eval_eye(cls, rows, cols):
-        entries = {(i,i): S.One for i in range(min(rows, cols))}
-        return cls._new(rows, cols, entries)
+        entries = [S.Zero] * (rows * cols)
+        for i in range(min(rows, cols)):
+            entries[i * cols + i] = S.One
+        return cls._new(*entries, shape=(rows, cols))
 
     def _eval_has(self, *patterns):
         # if the matrix has any zeros, see if S.Zero
@@ -533,7 +535,7 @@ class SparseMatrix(MatrixBase):
 
     @classmethod
     def _eval_zeros(cls, rows, cols):
-        return cls._new(rows, cols, {})
+        return cls._new(*[S.Zero] * (rows * cols), shape=(rows, cols))
 
     def _LDL_solve(self, rhs):
         # for speed reasons, this is not uncommented, but if you are

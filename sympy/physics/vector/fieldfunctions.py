@@ -4,11 +4,6 @@ from sympy.physics.vector.frame import _check_frame
 from sympy.physics.vector.vector import _check_vector
 
 
-__all__ = ['curl', 'divergence', 'gradient', 'is_conservative',
-           'is_solenoidal', 'scalar_potential',
-           'scalar_potential_difference']
-
-
 def curl(vect, frame):
     """
     Returns the curl of a vector field computed wrt the coordinate

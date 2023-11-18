@@ -12,14 +12,6 @@ from sympy.printing.pretty.stringpict import prettyForm, stringPict
 from sympy.functions.special.tensor_functions import KroneckerDelta
 from sympy.physics.wigner import clebsch_gordan, wigner_3j, wigner_6j, wigner_9j
 
-__all__ = [
-    'CG',
-    'Wigner3j',
-    'Wigner6j',
-    'Wigner9j',
-    'cg_simp'
-]
-
 #-----------------------------------------------------------------------------
 # CG Coefficients
 #-----------------------------------------------------------------------------

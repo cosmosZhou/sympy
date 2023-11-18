@@ -19,19 +19,20 @@ class Subset(BinaryCondition):
             _args = args
         return BinaryCondition.eval(cls, *args, **assumptions)
 
-    def simplify(self, deep=False):
+    def simplify(self, deep=False, **kwargs):
         if self.lhs.is_FiniteSet:
             eqs = []
             for e in self.lhs.args:
-                from sympy import Element                
+                from sympy import Element
                 eqs.append(Element(e, self.rhs))
             return And(*eqs)
 
         return self
 
     def _sympystr(self, p):
-#                 \N{SUBSET OF}
-        return '%s \N{SUBSET OF OR EQUAL TO} %s' % tuple(p._print(x) for x in self.args)
+# \N{SUBSET OF}
+# \N{SUBSET OF OR EQUAL TO}
+        return 'Subset(%s, %s)' % tuple(p._print(x) for x in self.args)
     
     def _latex(self, printer):
         return r'%s \subset %s' % tuple(printer._print(x) for x in self.args)
@@ -64,7 +65,7 @@ class Subset(BinaryCondition):
 
         ret = lhs._eval_Subset(rhs)
         if ret is not None:
-            return ret        
+            return ret
                 
     def as_set(self):
         return self
@@ -153,7 +154,7 @@ class Subset(BinaryCondition):
             function, S = function.lhs, function.rhs
             res = self.simplify_int_limits(function)
             if res:
-                function, limits = res            
+                function, limits = res
                 function = Subset(function, S).simplify()
                 return self.func(function, *limits).simplify()
 
@@ -172,7 +173,7 @@ class NotSubset(BinaryCondition):
             _args = args
         return BinaryCondition.eval(cls, *args, **assumptions)
 
-    def simplify(self, deep=False):
+    def simplify(self, deep=False, **kwargs):
         if self.lhs.is_Cup:
             from sympy import Any
             return Any(self.func(self.lhs.expr, self.rhs), *self.lhs.limits)
@@ -184,9 +185,10 @@ class NotSubset(BinaryCondition):
         return self
 
     def _sympystr(self, p):
-        #  NEITHER A SUBSET OF NOR EQUAL TO      
-#         \N{SUBSET OF WITH NOT EQUAL TO}
-        return '%s \N{NOT A SUBSET OF} %s' % tuple(p._print(x) for x in self.args)
+# NEITHER A SUBSET OF NOR EQUAL TO
+# \N{SUBSET OF WITH NOT EQUAL TO}
+# \N{NOT A SUBSET OF}
+        return 'NotSubset(%s, %s)' % tuple(p._print(x) for x in self.args)
 
     def _latex(self, printer):
         return r'%s \not\subset %s' % tuple(printer._print(x) for x in self.args)
@@ -308,18 +310,19 @@ class Supset(BinaryCondition):
             
         return BinaryCondition.__and__(self, other)
     
-    def simplify(self, deep=False):
+    def simplify(self, deep=False, **kwargs):
         if self.rhs.is_FiniteSet:
             eqs = []
             for e in self.rhs.args:
-                from sympy import Element                
+                from sympy import Element
                 eqs.append(Element(e, self.lhs))
             return And(*eqs)
         return self
 
     def _sympystr(self, p):
-#         \N{SUPERSET OF}
-        return '%s \N{SUPERSET OF OR EQUAL TO} %s' % tuple(p._print(x) for x in self.args)
+# \N{SUPERSET OF}
+# \N{SUPERSET OF OR EQUAL TO}
+        return 'Supset(%s, %s)' % tuple(p._print(x) for x in self.args)
 
     def _latex(self, printer):
         return r'%s\supset %s' % tuple(printer._print(x) for x in self.args)
@@ -405,16 +408,17 @@ class NotSupset(BinaryCondition):
                 return self.func(self.lhs._subs(*args, **kwargs), self.rhs._subs(*args, **kwargs))
         return self
 
-    def simplify(self, deep=False):
+    def simplify(self, deep=False, **kwargs):
         from sympy import Any
         if self.rhs.is_Cup:
             return Any(self.func(self.lhs, self.rhs.expr), *self.rhs.limits).simplify()
         return self
 
     def _sympystr(self, p):
-#  NEITHER A SUPERSET OF NOR EQUAL TO
-#         \N{SUPERSET OF WITH NOT EQUAL TO}
-        return '%s \N{NOT A SUPERSET OF} %s' % tuple(p._print(x) for x in self.args)
+# NEITHER A SUPERSET OF NOR EQUAL TO
+# \N{SUPERSET OF WITH NOT EQUAL TO}
+# \N{NOT A SUPERSET OF}
+        return 'NotSupset(%s, %s)' % tuple(p._print(x) for x in self.args)
 
     def _latex(self, printer):
         return r'%s\not\supset %s' % tuple(printer._print(x) for x in self.args)

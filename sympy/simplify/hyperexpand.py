@@ -36,7 +36,7 @@ It is described in great(er) detail in the Sphinx documentation.
 #   incremented if a_J != b_i for i = 1, ..., q.
 #
 # o Order reduction: if b_j - a_i is a non-negative integer, where
-#   j <= m and i > n, the corresponding quotient of gamma functions reduces
+#   j <= m and i > n, the corresponding quotient of Gamma functions reduces
 #   to a polynomial. Hence the G function can be expressed using a G-function
 #   of lower order.
 #   Similarly if j > m and i <= n.
@@ -65,7 +65,7 @@ from sympy.core import (S, Dummy, symbols, sympify, Tuple, expand, I, pi, Mul,
 from sympy.core.compatibility import default_sort_key
 from sympy.core.mod import Mod
 from sympy.functions import (exp, sqrt, root, log, lowergamma, cos,
-        besseli, gamma, uppergamma, expint, erf, sin, besselj, Ei, Ci, Si, Shi,
+        besseli, Gamma, uppergamma, expint, erf, sin, besselj, Ei, Ci, Si, Shi,
         sinh, cosh, Chi, fresnels, fresnelc, polar_lift, exp_polar, floor, ceiling,
         rf, factorial, lerchphi, Piecewise, elliptic_k, elliptic_e)
 from sympy.functions.elementary.complexes import polarify, unpolarify
@@ -183,9 +183,9 @@ def add_formulae(formulae):
          Matrix([[b - 1, 0]]), Matrix([[1 - b + z, 1], [0, 0]]))
     addb([a], [2*a],
          Matrix([z**(S.Half - a)*exp(z/2)*besseli(a - S.Half, z/2)
-                 * gamma(a + S.Half)/4**(S.Half - a),
+                 * Gamma(a + S.Half)/4**(S.Half - a),
                  z**(S.Half - a)*exp(z/2)*besseli(a + S.Half, z/2)
-                 * gamma(a + S.Half)/4**(S.Half - a)]),
+                 * Gamma(a + S.Half)/4**(S.Half - a)]),
          Matrix([[1, 0]]),
          Matrix([[z/2, z/2], [z/2, (z/2 - 2*a)]]))
     mz = polar_lift(-1)*z
@@ -237,8 +237,8 @@ def add_formulae(formulae):
     # 0F1
     add((), (S.Half, ), cosh(2*sqrt(z)))
     addb([], [b],
-         Matrix([gamma(b)*z**((1 - b)/2)*besseli(b - 1, 2*sqrt(z)),
-                 gamma(b)*z**(1 - b/2)*besseli(b, 2*sqrt(z))]),
+         Matrix([Gamma(b)*z**((1 - b)/2)*besseli(b - 1, 2*sqrt(z)),
+                 Gamma(b)*z**(1 - b/2)*besseli(b, 2*sqrt(z))]),
          Matrix([[1, 0]]), Matrix([[0, 1], [z, (1 - b)]]))
 
     # 0F3
@@ -252,9 +252,9 @@ def add_formulae(formulae):
 
     # TODO branching
     addb([], [S.Half, a, a + S.Half],
-         Matrix([fp(2*a - 1, z), fm(2*a, z)*z**(S(1)/4),
-                 fm(2*a - 1, z)*sqrt(z), fp(2*a, z)*z**(S(3)/4)])
-         * 2**(-2*a)*gamma(2*a)*z**((1 - 2*a)/4),
+         Matrix((fp(2*a - 1, z), fm(2*a, z)*z**(S(1)/4),
+                 fm(2*a - 1, z)*sqrt(z), fp(2*a, z)*z**(S(3)/4)))
+         * 2**(-2*a)*Gamma(2*a)*z**((1 - 2*a)/4),
          Matrix([[1, 0, 0, 0]]),
          Matrix([[0, 1, 0, 0],
                  [0, S(1)/2 - a, 1, 0],
@@ -262,13 +262,12 @@ def add_formulae(formulae):
                  [z, 0, 0, 1 - a]]))
     x = 2*(4*z)**(S(1)/4)*exp_polar(I*pi/4)
     addb([], [a, a + S.Half, 2*a],
-         (2*sqrt(polar_lift(-1)*z))**(1 - 2*a)*gamma(2*a)**2 *
-         Matrix([besselj(2*a - 1, x)*besseli(2*a - 1, x),
+         Matrix((besselj(2*a - 1, x)*besseli(2*a - 1, x),
                  x*(besseli(2*a, x)*besselj(2*a - 1, x)
                     - besseli(2*a - 1, x)*besselj(2*a, x)),
                  x**2*besseli(2*a, x)*besselj(2*a, x),
                  x**3*(besseli(2*a, x)*besselj(2*a - 1, x)
-                       + besseli(2*a - 1, x)*besselj(2*a, x))]),
+                       + besseli(2*a - 1, x)*besselj(2*a, x)))) * (2*sqrt(polar_lift(-1)*z))**(1 - 2*a)*Gamma(2*a)**2,
          Matrix([[1, 0, 0, 0]]),
          Matrix([[0, S(1)/4, 0, 0],
                  [0, (1 - 2*a)/2, -S(1)/2, 0],
@@ -281,16 +280,15 @@ def add_formulae(formulae):
                  z**(1 - a)*besseli(a - S.Half, sqrt(z))
                  *besseli(a - S(3)/2, sqrt(z)),
                  z**(S(3)/2 - a)*besseli(a - S(3)/2, sqrt(z))**2]),
-         Matrix([[-gamma(a + S.Half)**2/4**(S.Half - a),
-                 2*gamma(a - S.Half)*gamma(a + S.Half)/4**(1 - a),
+         Matrix([[-Gamma(a + S.Half)**2/4**(S.Half - a),
+                 2*Gamma(a - S.Half)*Gamma(a + S.Half)/4**(1 - a),
                  0]]),
          Matrix([[1 - 2*a, 1, 0], [z/2, S.Half - a, S.Half], [0, z, 0]]))
     addb([S.Half], [b, 2 - b],
-         pi*(1 - b)/sin(pi*b)*
-         Matrix([besseli(1 - b, sqrt(z))*besseli(b - 1, sqrt(z)),
+         Matrix((besseli(1 - b, sqrt(z))*besseli(b - 1, sqrt(z)),
                  sqrt(z)*(besseli(-b, sqrt(z))*besseli(b - 1, sqrt(z))
                           + besseli(1 - b, sqrt(z))*besseli(b, sqrt(z))),
-                 besseli(-b, sqrt(z))*besseli(b, sqrt(z))]),
+                 besseli(-b, sqrt(z))*besseli(b, sqrt(z)))) * pi*(1 - b)/sin(pi*b),
          Matrix([[1, 0, 0]]),
          Matrix([[b - 1, S(1)/2, 0],
                  [z, 0, z],
@@ -342,11 +340,10 @@ def add_formulae(formulae):
     #     Formula.find_instantiations (creates 2!*3!*3**(2+3) ~ 3000
     #     instantiations ... But it's not too bad.
     addb([a, a + S.Half], [2*a, b, 2*a - b + 1],
-         gamma(b)*gamma(2*a - b + 1) * (sqrt(z)/2)**(1 - 2*a) *
-         Matrix([besseli(b - 1, sqrt(z))*besseli(2*a - b, sqrt(z)),
+         Matrix((besseli(b - 1, sqrt(z))*besseli(2*a - b, sqrt(z)),
                  sqrt(z)*besseli(b, sqrt(z))*besseli(2*a - b, sqrt(z)),
                  sqrt(z)*besseli(b - 1, sqrt(z))*besseli(2*a - b + 1, sqrt(z)),
-                 besseli(b, sqrt(z))*besseli(2*a - b + 1, sqrt(z))]),
+                 besseli(b, sqrt(z))*besseli(2*a - b + 1, sqrt(z)))) * Gamma(b)*Gamma(2*a - b + 1) * (sqrt(z)/2)**(1 - 2*a),
          Matrix([[1, 0, 0, 0]]),
          Matrix([[0, S(1)/2, S(1)/2, 0],
                  [z/2, 1 - b, 0, z/2],
@@ -369,13 +366,13 @@ def add_formulae(formulae):
     # integrate(erf(a*z)/z**2, z) and same for erfc and erfi.
     # Basic rule
     # add([1, 1, a], [2, 2, a+1], (a/(z*(a-1)**2)) *
-    #     (1 - (-z)**(1-a) * (gamma(a) - uppergamma(a,-z))
+    #     (1 - (-z)**(1-a) * (Gamma(a) - uppergamma(a,-z))
     #      - (a-1) * (EulerGamma + uppergamma(0,-z) + log(-z))
     #      - exp(z)))
     # Manually tuned rule
     addb([1, 1, a], [2, 2, a+1],
-         Matrix([a*(log(-z) + expint(1, -z) + EulerGamma)/(z*(a**2 - 2*a + 1)),
-                 a*(-z)**(-a)*(gamma(a) - uppergamma(a, -z))/(a - 1)**2,
+         Matrix([a*(log(-z) + expint(1, -z) + S.EulerGamma)/(z*(a**2 - 2*a + 1)),
+                 a*(-z)**(-a)*(Gamma(a) - uppergamma(a, -z))/(a - 1)**2,
                  a*exp(z)/(a**2 - 2*a + 1),
                  a/(z*(a**2 - 2*a + 1))]),
          Matrix([[1-a, 1, -1/z, 1]]),
@@ -410,8 +407,8 @@ def add_meijerg_formulae(formulae):
         return {rho: y, a: x - y}, G_Function([x], [], l, [])
 
     add([a + rho], [], [rho, a + rho], [],
-        Matrix([gamma(1 - a)*z**rho*exp(z)*uppergamma(a, z),
-                gamma(1 - a)*z**(a + rho)]),
+        Matrix([Gamma(1 - a)*z**rho*exp(z)*uppergamma(a, z),
+                Gamma(1 - a)*z**(a + rho)]),
         Matrix([[1, 0]]),
         Matrix([[rho + z, -1], [0, a + rho]]),
         detect_uppergamma)
@@ -513,8 +510,8 @@ class Hyper_Function(Expr):
         Compute the invariant vector.
 
         The invariant vector is:
-            (gamma, ((s1, n1), ..., (sk, nk)), ((t1, m1), ..., (tr, mr)))
-        where gamma is the number of integer a < 0,
+            (Gamma, ((s1, n1), ..., (sk, nk)), ((t1, m1), ..., (tr, mr)))
+        where Gamma is the number of integer a < 0,
               s1 < ... < sk
               nl is the number of parameters a_i congruent to sl mod 1
               t1 < ... < tr
@@ -707,11 +704,19 @@ class Formula(object):
         self.B = Matrix(b)
         self.C = Matrix([[1] + [0]*n])
 
-        m = eye(n)
-        m = m.col_insert(0, zeros(n, 1))
-        l = poly.all_coeffs()[1:]
-        l.reverse()
-        self.M = m.row_insert(n, -Matrix([l])/poly.all_coeffs()[0])
+        if n:
+            m = eye(n)
+            if m.is_Matrix:
+                m = m.col_insert(0, zeros(n, 1))
+            else:
+                m = Matrix((zeros(n, 1), m))
+                
+            c0, *l = poly.all_coeffs()
+            self.M = m.row_insert(n, Matrix(*reversed(l)) / -c0)
+        else:
+            c0, l = poly.all_coeffs()
+            self.M = -l / c0
+            
 
     def __init__(self, func, z, res, symbols, B=None, C=None, M=None):
         z = sympify(z)
@@ -733,7 +738,10 @@ class Formula(object):
 
     @property
     def closed_form(self):
-        return (self.C*self.B)[0]
+        expr = self.C*self.B
+        if expr.shape:
+            return expr[0]
+        return expr
 
     def find_instantiations(self, func):
         """
@@ -1935,17 +1943,17 @@ def hyperexpand_special(ap, bq, z):
         a, b, c = ap + bq
         if z == 1:
             # Gauss
-            return gamma(c - a - b)*gamma(c)/gamma(c - a)/gamma(c - b)
+            return Gamma(c - a - b)*Gamma(c)/Gamma(c - a)/Gamma(c - b)
         if z == -1 and simplify(b - a + c) == 1:
             b, a = a, b
         if z == -1 and simplify(a - b + c) == 1:
             # Kummer
             if b.is_integer and b.is_negative:
-                return 2*cos(pi*b/2)*gamma(-b)*gamma(b - a + 1) \
-                    /gamma(-b/2)/gamma(b/2 - a + 1)
+                return 2*cos(pi*b/2)*Gamma(-b)*Gamma(b - a + 1) \
+                    /Gamma(-b/2)/Gamma(b/2 - a + 1)
             else:
-                return gamma(b/2 + 1)*gamma(b - a + 1) \
-                    /gamma(b + 1)/gamma(b/2 - a + 1)
+                return Gamma(b/2 + 1)*Gamma(b - a + 1) \
+                    /Gamma(b + 1)/Gamma(b/2 - a + 1)
     # TODO tons of more formulae
     #      investigate what algorithms exist
     return hyper(ap, bq, z_)
@@ -1975,13 +1983,18 @@ def _hyperexpand(func, z, ops0=[], z0=Dummy('z0'), premult=1, prem=0,
                             make_derivative_operator(f.M.subs(f.z, z0), z0))
         from sympy import eye
         C = apply_operators(C, ops0,
-                            make_derivative_operator(f.M.subs(f.z, z0)
-                                         + prem*eye(f.M.shape[0]), z0))
+                            make_derivative_operator(f.M.subs(f.z, z0) + prem * eye(f.M.shape[0] if f.M.shape else 1), z0))
 
         if premult == 1:
-            C = C.applyfunc(make_simp(z0))
-        r = C*f.B.subs(f.z, z0)*premult
-        res = r[0].subs(z0, z)
+            if C.shape:
+                C = C.applyfunc(make_simp(z0))
+            else:
+                C = make_simp(z0)(C)
+        r = C * f.B.subs(f.z, z0) * premult
+        if r.shape:
+            res = r[0].subs(z0, z)
+        else:
+            res = r.subs(z0, z)
         if rewrite:
             res = res.rewrite(rewrite)
         return res
@@ -2242,7 +2255,7 @@ def _meijergexpand(func, z0, allow_hyper=False, rewrite='default',
     # *) PFD Duplication
     #    (See Kelly Roach's paper for details on either.)
     #
-    # TODO Also, we tend to create combinations of gamma functions that can be
+    # TODO Also, we tend to create combinations of Gamma functions that can be
     #      simplified.
 
     def can_do(pbm, pap):
@@ -2278,13 +2291,13 @@ def _meijergexpand(func, z0, allow_hyper=False, rewrite='default',
                 bo = list(bm)
                 bo.remove(bh)
                 for bj in bo:
-                    fac *= gamma(bj - bh)
+                    fac *= Gamma(bj - bh)
                 for aj in an:
-                    fac *= gamma(1 + bh - aj)
+                    fac *= Gamma(1 + bh - aj)
                 for bj in bq:
-                    fac /= gamma(1 + bh - bj)
+                    fac /= Gamma(1 + bh - bj)
                 for aj in ap:
-                    fac /= gamma(aj - bh)
+                    fac /= Gamma(aj - bh)
                 nap = [1 + bh - a for a in list(an) + list(ap)]
                 nbq = [1 + bh - b for b in list(bo) + list(bq)]
 
@@ -2316,13 +2329,13 @@ def _meijergexpand(func, z0, allow_hyper=False, rewrite='default',
                 for b in bm:
                     if not Mod(b, 1) and b.is_Number:
                         b = int(round(b))
-                    integrand *= gamma(b - s)
+                    integrand *= Gamma(b - s)
                 for a in an:
-                    integrand *= gamma(1 - a + s)
+                    integrand *= Gamma(1 - a + s)
                 for b in bq:
-                    integrand /= gamma(1 - b + s)
+                    integrand /= Gamma(1 - b + s)
                 for a in ap:
-                    integrand /= gamma(a - s)
+                    integrand /= Gamma(a - s)
 
                 # Now sum the finitely many residues:
                 # XXX This speeds up some cases - is it a good idea?
@@ -2347,13 +2360,13 @@ def _meijergexpand(func, z0, allow_hyper=False, rewrite='default',
                 for i in range(u):
                     C *= S(-1)**di[i]/rf(lu - li[i] + 1, di[i])
                 for a in an:
-                    C *= gamma(1 - a + au)
+                    C *= Gamma(1 - a + au)
                 for b in bo:
-                    C *= gamma(b - au)
+                    C *= Gamma(b - au)
                 for a in ao:
-                    C /= gamma(a - au)
+                    C /= Gamma(a - au)
                 for b in bq:
-                    C /= gamma(1 - b + au)
+                    C /= Gamma(1 - b + au)
 
                 res += C*hyp
 

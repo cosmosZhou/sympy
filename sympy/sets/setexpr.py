@@ -135,10 +135,8 @@ class Card(Function):
     def eval(cls, arg):
         return arg._eval_Card()
         
-        
-    def _eval_is_integer(self):
-        if self.arg.is_finiteset:
-            return True
+    def _eval_is_extended_integer(self):
+        return True
 
     def _eval_is_zero(self):
         return self._args[0].is_zero
@@ -150,7 +148,7 @@ class Card(Function):
 
     def _eval_is_rational(self):
         if self.arg.is_set:
-            return True                
+            return True
         return self.args[0].is_rational
 
     def _eval_is_finite(self):
@@ -190,7 +188,7 @@ class Card(Function):
                     args.append(t)
                 else:
                     x = Mul(*args)
-                    return abs(x) ** exponent.p 
+                    return abs(x) ** exponent.p
         return
 
     def _eval_nseries(self, x, n, logx):
@@ -239,7 +237,7 @@ class Card(Function):
         return S.Zero
     
     def _sympystr(self, p):
-        return "|%s|" % p._print(self.arg)
+        return "Card(%s)" % p._print(self.arg)
     
     def _latex(self, p, exp=None):
         tex = r"\left|{%s}\right|" % p._print(self.args[0])
@@ -330,7 +328,7 @@ class Measure(Function):
 
     def _eval_is_rational(self):
         if self.arg.is_set:
-            return True                
+            return True
         return self.args[0].is_rational
 
     def _eval_is_finite(self):
@@ -370,7 +368,7 @@ class Measure(Function):
                     args.append(t)
                 else:
                     x = Mul(*args)
-                    return abs(x) ** exponent.p 
+                    return abs(x) ** exponent.p
         return
 
     def _eval_nseries(self, x, n, logx):
@@ -419,7 +417,8 @@ class Measure(Function):
         return S.Zero
     
     def _sympystr(self, p):
-        return "\N{GREEK SMALL LETTER MU}(%s)" % p._print(self.arg)
+        #"\N{GREEK SMALL LETTER MU}(%s)" % p._print(self.arg)
+        return 'Measure(%s)' % p._print(self.arg)
     
     def _latex(self, p, exp=None):
         # tex = r"\boldsymbol\mu\left({%s}\right)" % p._print(self.arg)

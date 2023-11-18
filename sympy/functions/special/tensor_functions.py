@@ -183,7 +183,7 @@ class KroneckerDelta(Function):
                 j_args = set(j.args)
                 intersect = i_args & j_args
                 if intersect:
-                    i_args -= intersect 
+                    i_args -= intersect
                     j_args -= intersect
                     i = i.func(*i_args)
                     j = j.func(*j_args)                        
@@ -479,8 +479,7 @@ class KroneckerDelta(Function):
             return x.domain
         return domain
 
-    @property
-    def shape(self):
+    def _eval_shape(self):
         return ()
 
     @property
@@ -489,7 +488,7 @@ class KroneckerDelta(Function):
         return dtype.integer
 
     def _sympystr(self, p):
-        return 'δ[%s]' % ', '.join(p._print(arg) for arg in self.args)
+        return 'KroneckerDelta(%s)' % ', '.join(p._print(arg) for arg in self.args)
         
     def _latex(self, p, exp=None):
         i = p._print(self.args[0])
@@ -532,7 +531,7 @@ class KroneckerDelta(Function):
 
 class Bool(Function):
     """IversonBracket function
-    https://en.wikipedia.org/wiki/Iverson_bracket     
+    https://en.wikipedia.org/wiki/Iverson_bracket
     """
 
     def __new__(cls, arg):
@@ -548,7 +547,7 @@ class Bool(Function):
         Evaluates IversonBracket function
         """
         if cond.dtype.is_bool:
-            if cond:
+            if cond == True:
                 return S.One
             if cond.is_BooleanFalse:
                 return S.Zero
@@ -571,6 +570,15 @@ class Bool(Function):
 
     def _eval_is_extended_integer(self):
         return self.arg.is_bool
+
+    def _eval_is_extended_rational(self):
+        return self.arg.is_bool
+    
+    def _eval_is_extended_real(self):
+        return self.arg.is_bool
+        
+    def _eval_is_extended_complex(self):
+        return self.arg.is_bool
         
     def _eval_is_super_complex(self):
         return self.arg.is_bool
@@ -584,14 +592,16 @@ class Bool(Function):
     def _eval_is_extended_nonnegative(self):
         return self.arg.is_bool
         
+    def _eval_is_extended_negative(self):
+        return not self.arg.is_bool
+    
     def domain_nonzero(self, x):
         domain = x.domain_conditioned(self.arg)
         if domain.is_ConditionSet:
             return x.domain
         return domain
 
-    @property
-    def shape(self):
+    def _eval_shape(self):
         return self.arg.shape
 
     @property
@@ -603,14 +613,14 @@ class Bool(Function):
             return dtype.bool
 
     def _sympystr(self, p):
-        return '|%s|' % p._print(self.arg)        
+        return 'Bool(%s)' % p._print(self.arg)
         
     def _latex(self, p, exp=None):
         cond = p._print(self.arg)
         cond = r'\left|%s\right|' % cond
         if exp is not None:
             cond = "{%s}^{%s}" % (cond, p._print(exp))
-        return cond        
+        return cond
         
     @property
     def domain(self):
@@ -628,4 +638,15 @@ class Bool(Function):
     def inference_status(self, child):
         raise Exception("boolean conditions within Bool are not applicable for inequivalent inference!")
     
+    def __iter__(self):
+        raise TypeError
         
+    def __getitem__(self, indices):
+        return self.func(self.arg[indices])
+        
+    @property
+    def domain_assumed(self):
+        return self.domain
+
+    def monotonicity(self, x):
+        return (S.Zero, S.One), 0

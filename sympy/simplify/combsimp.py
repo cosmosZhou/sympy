@@ -2,7 +2,7 @@ from sympy.core import Mul
 from sympy.core.basic import preorder_traversal
 from sympy.core.function import count_ops
 from sympy.functions.combinatorial.factorials import binomial, factorial
-from sympy.functions import gamma
+from sympy.functions import Gamma
 from sympy.simplify.gammasimp import gammasimp, _gammasimp
 
 from sympy.utilities.timeutils import timethis
@@ -19,7 +19,7 @@ def combsimp(expr):
     the size of their arguments.
 
     The algorithm works by rewriting all combinatorial functions as
-    gamma functions and applying gammasimp() except simplification
+    Gamma functions and applying gammasimp() except simplification
     steps that may make an integer argument non-integer. See docstring
     of gammasimp for more information.
 
@@ -27,7 +27,7 @@ def combsimp(expr):
     rewriting gammas as factorials and converting (a+b)!/a!b! into
     binomials.
 
-    If expression has gamma functions or combinatorial functions
+    If expression has Gamma functions or combinatorial functions
     with non-integer argument, it is automatically passed to gammasimp.
 
     Examples
@@ -44,8 +44,8 @@ def combsimp(expr):
 
     """
 
-    expr = expr.rewrite(gamma)
-    if any(isinstance(node, gamma) and not node.args[0].is_integer
+    expr = expr.rewrite(Gamma)
+    if any(isinstance(node, Gamma) and not node.args[0].is_integer
         for node in preorder_traversal(expr)):
         return gammasimp(expr);
 

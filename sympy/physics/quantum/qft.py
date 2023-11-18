@@ -24,13 +24,6 @@ from sympy.physics.quantum.gate import (
     Gate, HadamardGate, SwapGate, OneQubitGate, CGate, PhaseGate, TGate, ZGate
 )
 
-__all__ = [
-    'QFT',
-    'IQFT',
-    'RkGate',
-    'Rk'
-]
-
 #-----------------------------------------------------------------------------
 # Fourier stuff
 #-----------------------------------------------------------------------------

@@ -120,10 +120,12 @@ from .keras import *
 # This module is slow to import:
 #from physics import units
 from .plotting import plot, textplot, plot_backends, plot_implicit
-from .printing import *
+# from .printing import *
 from .interactive import init_session, init_printing
 
 evalf._create_evalf_table()
 
 # This is slow to import:
 # import abc
+del limits, mul, add, function, basic, indexed
+import std

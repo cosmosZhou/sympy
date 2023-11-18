@@ -276,7 +276,7 @@ class Extent(Basic):
         else:
             raise ValueError("Expected 0 or 2 args (or one argument == None or ':')")
 
-    def _sympystr(self, printer):
+    def _sympystr(self, p):
         if len(self.args) == 0:
             return ':'
         return '%d:%d' % self.args

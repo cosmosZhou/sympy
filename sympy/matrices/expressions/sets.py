@@ -2,6 +2,7 @@ from sympy.core.logic import fuzzy_and
 from sympy.core.sympify import _sympify
 from sympy.sets.sets import Set
 from .matexpr import MatrixExpr
+from sympy.core.cache import cacheit
 
 
 class MatrixSet(Set):
@@ -33,8 +34,8 @@ class MatrixSet(Set):
             raise TypeError("{} should be an instance of Set.".format(set))
         return Set.__new__(cls, n, m, set)
 
-    @property
-    def shape(self):
+    @cacheit
+    def _eval_shape(self):
         return self.args[:2]
 
     @property

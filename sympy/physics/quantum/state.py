@@ -6,20 +6,6 @@ from sympy import (cacheit, conjugate, Expr, Function, integrate, oo, sqrt,
 from sympy.printing.pretty.stringpict import stringPict
 from sympy.physics.quantum.qexpr import QExpr, dispatch_method
 
-__all__ = [
-    'KetBase',
-    'BraBase',
-    'StateBase',
-    'State',
-    'Ket',
-    'Bra',
-    'TimeDepState',
-    'TimeDepBra',
-    'TimeDepKet',
-    'Wavefunction'
-]
-
-
 #-----------------------------------------------------------------------------
 # States, bras and kets.
 #-----------------------------------------------------------------------------
@@ -763,8 +749,7 @@ class Wavefunction(Function):
         if axis == self.default_axis:
             return self
 
-    @property
-    def free_symbols(self):
+    def _eval_free_symbols(self):
         return self.expr.free_symbols
 
     @property

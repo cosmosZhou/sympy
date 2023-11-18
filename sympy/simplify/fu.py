@@ -632,7 +632,7 @@ def TR8(rv, first=True):
                     a.base.func in (cos, sin)):
                 # XXX this is ok but pathological expression could be handled
                 # more efficiently as in TRmorrie
-                args[a.base.func].extend([a.base.args[0]]*a.exp)
+                args[a.base.func].extend((a.base.args[0],) * a.exp)
             else:
                 args[None].append(a)
         c = args[cos]

@@ -370,8 +370,7 @@ class BaseVector(Vector, AtomicExpr):
     def __str__(self, printer=None):
         return self._name
 
-    @property
-    def free_symbols(self):
+    def _eval_free_symbols(self):
         return {self}
 
     __repr__ = __str__

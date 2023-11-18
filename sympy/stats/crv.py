@@ -19,9 +19,7 @@ from sympy.solvers.solveset import solveset
 from sympy.solvers.inequalities import reduce_rational_inequalities
 from sympy.core.sympify import _sympify
 from sympy.external import import_module
-from sympy.stats.rv import (RandomDomain, SingleDomain, ConditionalDomain, is_random,
-        ProductDomain, PSpace, SinglePSpace, random_symbols, NamedArgsMixin,
-    Distribution)
+from sympy.stats.rv import RandomDomain, SingleDomain, ConditionalDomain, ProductDomain, PSpace, SinglePSpace, NamedArgsMixin, Distribution
 
 
 class ContinuousDomain(RandomDomain):
@@ -382,7 +380,7 @@ class SingleContinuousDistribution(ContinuousDistribution, NamedArgsMixin):
                 t = Dummy('t', real=True)
                 mgf = self._moment_generating_function(t)
                 if mgf is None:
-                    return integrate(expr * self.pdf(var), (var, self.set), **kwargs)
+                    return integrate(expr * self(var), (var, self.set), **kwargs)
                 deg = p.degree()
                 taylor = poly(series(mgf, t, 0, deg + 1).removeO(), t)
                 result = 0
@@ -390,12 +388,12 @@ class SingleContinuousDistribution(ContinuousDistribution, NamedArgsMixin):
                     result += p.coeff_monomial(var ** k) * taylor.coeff_monomial(t ** k) * factorial(k)
                 return result
             except PolynomialError:
-                return integrate(expr * self.pdf(var), (var, self.set), **kwargs)
+                return integrate(expr * self(var), (var, self.set), **kwargs)
         else:
             if space is not None:
                 from sympy import Probability, Equal
                 return Integral(expr * Probability(Equal(space.value, var)), (var, self.set), **kwargs)            
-            return Integral(expr * self.pdf(var), (var, self.set), **kwargs)
+            return Integral(expr * self(var), (var, self.set), **kwargs)
 
     @cacheit
     def compute_quantile(self, **kwargs):
@@ -406,7 +404,7 @@ class SingleContinuousDistribution(ContinuousDistribution, NamedArgsMixin):
         x, p = symbols('x, p', real=True, cls=Dummy)
         left_bound = self.set.start
 
-        pdf = self.pdf(x)
+        pdf = self(x)
         cdf = integrate(pdf, (x, left_bound, x), **kwargs)
         quantile = solveset(cdf - p, x, self.set)
         return Lambda(p, Piecewise((quantile, (p >= 0) & (p <= 1)), (nan, True)))
@@ -547,7 +545,7 @@ class ContinuousPSpace(PSpace):
                     return S.One
                 if pdf: 
                     if len(s) == 1:
-                        [x] = s             
+                        x, = s
                         return pdf(x)
                     else:
                         assert condition.is_Equal
@@ -566,7 +564,7 @@ class ContinuousPSpace(PSpace):
         except NotImplementedError:
             from sympy.stats.rv import density
             expr = condition.lhs - condition.rhs
-            if not is_random(expr):
+            if not expr.is_random:
                 dens = self.density
                 comp = condition.rhs
             else:
@@ -581,7 +579,7 @@ class ContinuousPSpace(PSpace):
             return result if not cond_inv else S.One - result
 
     def where(self, condition):
-        rvs = frozenset(random_symbols(condition))
+        rvs = frozenset(condition.random_symbols)
         if not (len(rvs) == 1 and rvs.issubset(self.values)):
             raise NotImplementedError("Multiple continuous random variables not supported")
         rv = tuple(rvs)[0]
@@ -698,7 +696,7 @@ class SingleContinuousPSpace(ContinuousPSpace, SinglePSpace):
 def _reduce_inequalities(conditions, var, **kwargs):
     try:
         return reduce_rational_inequalities(conditions, var, **kwargs)
-    except PolynomialError:
+    except (PolynomialError, AssertionError):
         raise ValueError("Reduction of condition failed %s\n" % conditions[0])
 
 

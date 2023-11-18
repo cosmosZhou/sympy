@@ -16,7 +16,7 @@ from sympy.core.cache import cacheit
 PositiveIntegers = Range(1, S.Infinity)
 NonnegativeIntegers = Range(S.Infinity)
 
-Naturals = PositiveIntegers 
+Naturals = PositiveIntegers
 Naturals0 = NonnegativeIntegers
 
 Integers = Range(S.NegativeInfinity, S.Infinity)

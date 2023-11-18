@@ -279,7 +279,7 @@ class hyper(TupleParametersBase):
     @property
     def convergence_statement(self):
         """ Return a condition on z under which the series converges. """
-        from sympy import And, Or, re, Ne, oo
+        from sympy import And, Or, Re, Ne, oo
         R = self.radius_of_convergence
         if R == 0:
             return False
@@ -288,9 +288,9 @@ class hyper(TupleParametersBase):
         # The special functions and their approximations, page 44
         e = self.eta
         z = self.argument
-        c1 = And(re(e) < 0, abs(z) <= 1)
-        c2 = And(0 <= re(e), re(e) < 1, abs(z) <= 1, Ne(z, 1))
-        c3 = And(re(e) >= 1, abs(z) < 1)
+        c1 = And(Re(e) < 0, abs(z) <= 1)
+        c2 = And(0 <= Re(e), Re(e) < 1, abs(z) <= 1, Ne(z, 1))
+        c3 = And(Re(e) >= 1, abs(z) < 1)
         return Or(c1, c2, c3)
 
     def _eval_simplify(self, ratio, measure, rational, inverse):

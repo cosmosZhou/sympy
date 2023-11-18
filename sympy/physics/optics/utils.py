@@ -13,18 +13,6 @@
 * transverse_magnification
 """
 
-__all__ = ['refraction_angle',
-           'deviation',
-           'fresnel_coefficients',
-           'brewster_angle',
-           'critical_angle',
-           'lens_makers_formula',
-           'mirror_formula',
-           'lens_formula',
-           'hyperfocal_distance',
-           'transverse_magnification'
-           ]
-
 from sympy import Symbol, sympify, sqrt, Matrix, acos, oo, Limit, atan2, asin,\
 cos, sin, tan, I, cancel, pi, Float
 from sympy.core.compatibility import is_sequence

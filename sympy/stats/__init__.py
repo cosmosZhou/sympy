@@ -100,88 +100,34 @@ exp(-x)
 Lambda(x, Piecewise((1/3, Eq(x, 1)), (1/6, Eq(x, 2)), (1/4, Eq(x, 3) | Eq(x, 4)), (0, True)))
 """
 
-__all__ = [
-#     'P', 'E', 'H', 
-    'density', 'where', 'given', 'sample', 'cdf', 'median',
-    'characteristic_function', 'pspace', 'sample_iter', 'variance', 'std',
-    'skewness', 'kurtosis', 'covariance', 'dependent', 'entropy', 'independent',
-    'random_symbols', 'correlation', 'factorial_moment', 'moment', 'cmoment',
-    'sampling_density', 'moment_generating_function', 'smoment', 'quantile',
-    'coskewness', 'sample_stochastic_process',
-
-    'FiniteRV', 'DiscreteUniform', 'Die', 'Bernoulli', 'Coin',
-#     'Binomial',
-    'BetaBinomial', 'Hypergeometric', 'Rademacher',
-    'FiniteDistributionHandmade',
-
-    'ContinuousRV', 'Arcsin', 'Benini', 'Beta', 'BetaNoncentral', 'BetaPrime',
-    'BoundedPareto', 'Cauchy', 'Chi', 'ChiNoncentral', 'ChiSquared', 'Dagum', 'Erlang',
-    'ExGaussian', 'Exponential', 'ExponentialPower', 'FDistribution',
-    'FisherZ', 'Frechet', 'Gamma', 'GammaInverse', 'Gompertz', 'Gumbel',
-    'Kumaraswamy', 'Laplace', 'Levy', 'Logistic', 'LogLogistic', 'LogNormal', 'Lomax',
-    'Moyal', 'Maxwell', 'Nakagami', 'Normal', 'GaussianInverse', 'Pareto', 'PowerFunction',
-    'QuadraticU', 'RaisedCosine', 'Rayleigh', 'Reciprocal', 'StudentT', 'ShiftedGompertz',
-    'Trapezoidal', 'Triangular', 'Uniform', 'UniformSum', 'VonMises', 'Wald',
-    'Weibull', 'WignerSemicircle', 'ContinuousDistributionHandmade',
-
-    'Geometric', 'Hermite', 'Logarithmic', 'NegativeBinomial', 'Poisson', 'Skellam',
-    'YuleSimon', 'Zeta', 'DiscreteRV', 'DiscreteDistributionHandmade',
-
-    'JointRV', 'Dirichlet', 'GeneralizedMultivariateLogGamma',
-    'GeneralizedMultivariateLogGammaOmega', 'Multinomial', 'MultivariateBeta',
-    'MultivariateEwens', 'MultivariateT', 'NegativeMultinomial',
-    'NormalGamma', 'MultivariateNormal', 'MultivariateLaplace', 'marginal_distribution',
-
-    'StochasticProcess', 'DiscreteTimeStochasticProcess',
-    'DiscreteMarkovChain', 'TransitionMatrixOf', 'StochasticStateSpaceOf',
-    'GeneratorMatrixOf', 'ContinuousMarkovChain', 'BernoulliProcess',
-    'PoissonProcess', 'WienerProcess', 'GammaProcess',
-
-    'CircularEnsemble', 'CircularUnitaryEnsemble',
-    'CircularOrthogonalEnsemble', 'CircularSymplecticEnsemble',
-    'GaussianEnsemble', 'GaussianUnitaryEnsemble',
-    'GaussianOrthogonalEnsemble', 'GaussianSymplecticEnsemble',
-    'joint_eigen_distribution', 'JointEigenDistribution',
-    'level_spacing_distribution',
-
-    'MatrixGamma', 'Wishart', 'MatrixNormal',
-
-    'Probability', 'Expectation', 'Variance', 'Covariance', 'Moment',
-    'CentralMoment',
-
-    'ExpectationMatrix', 'VarianceMatrix', 'CrossCovarianceMatrix',
-    
-    'DieDistribution', 'NormalDistribution', 'ChiSquaredDistribution', 'PoissonDistribution', 'BinomialDistribution', 'Conditioned'
-
-]
-
 from .rv_interface import (density, where, given, sample, cdf, median,
-        characteristic_function, pspace, sample_iter, variance, std, skewness,
-        kurtosis, covariance, dependent, entropy, independent, random_symbols,
+        characteristic_function, pspace, sample_iter, variance, skewness,
+        kurtosis, covariance, dependent, entropy, independent, 
         correlation, factorial_moment, moment, cmoment, sampling_density,
         moment_generating_function, smoment, quantile, coskewness,
         sample_stochastic_process)
 
 from .frv_types import (FiniteRV, DiscreteUniform, Die, Bernoulli, Coin,
-#         Binomial, 
         BetaBinomial, Hypergeometric, Rademacher,
         FiniteDistributionHandmade)
 
 from .crv_types import (ContinuousRV, Arcsin, Benini, Beta, BetaNoncentral,
         BetaPrime, BoundedPareto, Cauchy, Chi, ChiNoncentral, ChiSquared, Dagum, Erlang,
         ExGaussian, Exponential, ExponentialPower, FDistribution, FisherZ,
-        Frechet, Gamma, GammaInverse, Gompertz, Gumbel, Kumaraswamy, Laplace,
+        Frechet, GammaInverse, Gompertz, Gumbel, Kumaraswamy, Laplace,
         Levy, Logistic, LogLogistic, LogNormal, Lomax, Maxwell, Moyal, Nakagami, Normal,
         GaussianInverse, Pareto, QuadraticU, RaisedCosine, Rayleigh, Reciprocal, StudentT,
         PowerFunction, ShiftedGompertz, Trapezoidal, Triangular, Uniform, UniformSum,
-        VonMises, Wald, Weibull, WignerSemicircle, ContinuousDistributionHandmade, NormalDistribution, ChiSquaredDistribution)
+        VonMises, Wald, Weibull, WignerSemicircle, ContinuousDistributionHandmade, NormalDistribution, ChiSquaredDistribution, AbstractContinuousDistribution)
+
+from sympy.stats.rv import Distribution
 
 from .drv_types import (Geometric, Hermite, Logarithmic, NegativeBinomial, Poisson,
-        Skellam, YuleSimon, Zeta, DiscreteRV, DiscreteDistributionHandmade, DieDistribution, PoissonDistribution, BinomialDistribution)
+        Skellam, YuleSimon, Zeta, DiscreteRV, DiscreteDistributionHandmade, DieDistribution, PoissonDistribution, BinomialDistribution, AbstractDiscreteDistribution)
 
 from .joint_rv_types import (JointRV, Dirichlet,
         GeneralizedMultivariateLogGamma, GeneralizedMultivariateLogGammaOmega,
-        Multinomial, MultivariateBeta, MultivariateEwens, MultivariateT,
+        multinomial, MultivariateBeta, MultivariateEwens, MultivariateT,
         NegativeMultinomial, NormalGamma, MultivariateNormal, MultivariateLaplace,
         marginal_distribution)
 
@@ -200,7 +146,7 @@ from .random_matrix_models import (CircularEnsemble, CircularUnitaryEnsemble,
 from .matrix_distributions import MatrixGamma, Wishart, MatrixNormal
 
 from .symbolic_probability import (Probability, Expectation, Variance,
-        Covariance, Moment, CentralMoment, Conditioned)
+        Covariance, Moment, CentralMoment, Conditioned, Surrogate, KL, Distributed)
 
 from .symbolic_multivariate_probability import (ExpectationMatrix, VarianceMatrix,
         CrossCovarianceMatrix)

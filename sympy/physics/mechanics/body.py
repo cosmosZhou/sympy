@@ -3,8 +3,6 @@ from sympy.physics.mechanics import (RigidBody, Particle, ReferenceFrame,
                                      inertia)
 from sympy.physics.vector import Point, Vector
 
-__all__ = ['Body']
-
 
 class Body(RigidBody, Particle):
     """

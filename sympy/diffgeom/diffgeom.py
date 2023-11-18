@@ -397,8 +397,7 @@ class Point(Basic):
         else:
             return self._coords
 
-    @property
-    def free_symbols(self):
+    def _eval_free_symbols(self):
         raise NotImplementedError
         return self._coords.free_symbols
 

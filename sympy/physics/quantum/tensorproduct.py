@@ -17,11 +17,6 @@ from sympy.physics.quantum.matrixutils import (
 )
 
 
-__all__ = [
-    'TensorProduct',
-    'tensor_product_simp'
-]
-
 #-----------------------------------------------------------------------------
 # Tensor product
 #-----------------------------------------------------------------------------

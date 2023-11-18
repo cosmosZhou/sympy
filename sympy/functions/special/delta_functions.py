@@ -247,7 +247,7 @@ class DiracDelta(Function):
         if wrt is None:
             free = self.free_symbols
             if len(free) == 1:
-                wrt = free.pop()
+                wrt, = free
             else:
                 raise TypeError(filldedent('''
             When there is more than 1 free symbol or variable in the expression,
@@ -352,7 +352,7 @@ class DiracDelta(Function):
             return SingularityFunction(0, 0, -2)
         free = self.free_symbols
         if len(free) == 1:
-            x = (free.pop())
+            x, = free
             if len(args) == 1:
                 return SingularityFunction(x, solve(args[0], x)[0], -1)
             return SingularityFunction(x, solve(args[0], x)[0], -args[1] - 1)
@@ -601,7 +601,7 @@ class Heaviside(Function):
             return SingularityFunction(0, 0, 0)
         free = self.free_symbols
         if len(free) == 1:
-            x = (free.pop())
+            x, = free
             return SingularityFunction(x, solve(args, x)[0], 0)
             # TODO
             # ((x - 5)**3*Heaviside(x - 5)).rewrite(SingularityFunction) should output

@@ -1,8 +1,6 @@
 from .vector import Vector, _check_vector
 from .frame import _check_frame
 
-__all__ = ['Point']
-
 
 class Point(object):
     """This object represents a point in a dynamic system.

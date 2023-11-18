@@ -14,16 +14,16 @@ class Inference:
     
     def __init__(self, cond, **_assumptions):
         self.cond = cond.cond if cond.is_Inference else cond
-        self._assumptions = _assumptions                        
+        self._assumptions = _assumptions
 
     def __getattr__(self, attr):
-        return getattr(self.cond, attr) 
+        return getattr(self.cond, attr)
 
-    @property    
+    @property
     def T(self):
-        return Inference(self.cond.T, equivalent=self)        
+        return Inference(self.cond.T, equivalent=self)
 
-    @property    
+    @property
     def equivalent(self):
         return self._assumptions.get('equivalent')
     
@@ -32,7 +32,7 @@ class Inference:
         if eq is not None:
             assert 'equivalent' not in self._assumptions
             assert not self.is_BooleanFalse and not self
-            assert self is not eq 
+            assert self is not eq
             self._assumptions['equivalent'] = eq
             if 'plausible' in self._assumptions:
                 del self._assumptions['plausible']
@@ -41,7 +41,7 @@ class Inference:
         if 'equivalent' in self._assumptions:
             del self._assumptions['equivalent']
     
-    @property    
+    @property
     def given(self):
         return self._assumptions.get('given')
     
@@ -58,7 +58,7 @@ class Inference:
         if 'given' in self._assumptions:
             del self._assumptions['given']
     
-    @property    
+    @property
     def imply(self):
         return self._assumptions.get('imply')
     
@@ -72,8 +72,8 @@ class Inference:
         if 'imply' in self._assumptions:
             del self._assumptions['imply']
 
-# here we define negation = counterproposition    
-    @property    
+# here we define negation = counterproposition
+    @property
     def negation(self):
         return self._assumptions.get('negation')
     
@@ -91,7 +91,7 @@ class Inference:
         find_plausibles = self.find_plausibles(clue=clue)        
         result = [*zip(*find_plausibles)]
         if result:
-            plausibles_set, is_equivalent = result       
+            plausibles_set, is_equivalent = result
             return {*plausibles_set}, all(is_equivalent)
         return set(), False
 
@@ -137,11 +137,11 @@ class Inference:
                         _plausibles_set, is_equivalent = other.plausibles_set()
                         plausibles_set |= _plausibles_set
                         if not is_equivalent:
-                            return 
+                            return
                 else:
                     plausibles_set, is_equivalent = other.plausibles_set()
                     if not is_equivalent:
-                        return 
+                        return
                 
                 assert eq not in plausibles_set, 'cyclic proof detected'
                     
@@ -153,13 +153,13 @@ class Inference:
                 
                 del eq._assumptions['plausible']
                 eq.given = equivalent
-                return True                
+                return True
         
     def find_plausibles(self, is_equivalent=True, clue='given'):
         if self._assumptions.get('plausible'): 
             yield self, is_equivalent
         else:
-            equivalent = self.equivalent        
+            equivalent = self.equivalent
             if equivalent is None:
                 given = getattr(self, clue)
                 is_equivalent = False
@@ -284,7 +284,7 @@ class Inference:
             return self._assumptions['plausible']
 
         if self:
-            return 
+            return
         if self.is_BooleanFalse:
             return False
 
@@ -310,17 +310,15 @@ class Inference:
             if given.plausible is not None:
 #             if self is given by a False / plausible proposition, then self is plausible
                 return True
-            return 
+            return
         
         imply = self.imply
         if imply is not None:
 #             if self implies a False proposition, then self must be False
-            plausible = imply._assumptions.get('plausible')
-            if plausible is False:
+            if (plausible := imply._assumptions.get('plausible')) is False:
                 return False
             
-            negation = imply.negation
-            if negation is not None:
+            if (negation := imply.negation) is not None:
 #             if imply.negation implies a True proposition, then self must be False
                 if negation.plausible is None:
                     return False
@@ -350,7 +348,7 @@ class Inference:
         if equivalent is not None:
             self.equivalent = None
             process_equivalent(equivalent, value)
-            return            
+            return
 
         imply = self.imply
         if imply is not None:
@@ -361,7 +359,7 @@ class Inference:
         negation = self.negation
         if negation is not None:
             self.negation = None
-            process_negation(negation, value)            
+            process_negation(negation, value)
             return
         
         given = self.given
@@ -395,8 +393,8 @@ class Inference:
         
         return Inference(invert, negation=self)
 
-    def simplify(self, emplace=False):
-        cond = self.cond.simplify()
+    def simplify(self, emplace=False, **kwargs):
+        cond = self.cond.simplify(**kwargs)
         if cond != self.cond:
             if emplace:
                 return Inference(cond, **self._assumptions)
@@ -413,7 +411,7 @@ class Inference:
         if 'simplify' not in kwargs:
             kwargs['simplify'] = True
 
-        if all(eq.is_Equal for eq in args):
+        if all(eq.is_Equal or eq.is_Equivalent for eq in args):
             for eq in args:
                 old, new = eq.args
                  
@@ -447,17 +445,17 @@ class Inference:
                     else:
                         self = Inference(cond, plausible=None)
                     
-            return self 
+            return self
             
         old, new = args
         if not old.is_symbol:
             return self
         
-        new = sympify(new)        
+        new = sympify(new)
         
         if self.plausible and new._has(old) and old.is_given is False: 
             # used in mathematical induction
-            cond = self._subs(old, new, **kwargs)      
+            cond = self._subs(old, new, **kwargs)
             return Inference(cond, plausible=True)
         
         if new in old.domain:
@@ -481,7 +479,7 @@ class Inference:
         domain = old.domain_bounded
         if domain is not None and new not in domain:
             from sympy import NotElement
-            if self.is_ForAll:                
+            if self.is_ForAll:
                 assert old not in self.variables, 'not supported in built-in axioms, please employ proved theorems: algebra.all.imply.ou.subs'
                 if self.expr._has(old):
                     function = self.expr._subs(old, new) | NotElement(new, domain)
@@ -495,13 +493,15 @@ class Inference:
                     
                     cond = self.func(self.expr, *limits) | NotElement(new, domain)
             else:
-                _old = old.unbounded                
+                _old = old.unbounded
                 cond = self._subs(old, _old) | NotElement(_old, old.domain)
                 if _old != new:
                     cond = cond._subs(_old, new, **kwargs)
         else:
             cond = self._subs(old, new, **kwargs)
             
+        if self.plausible:
+            return Inference(cond, given=self)
         return Inference(cond, plausible=None)
     
     def set_clause(self, clue, eqs, force=False):
@@ -550,7 +550,7 @@ class Inference:
     def __rsub__(self, other):
         other = sympify(other)
         if self.is_Equal:
-            assert not other.is_Relational 
+            assert not other.is_Relational
             return self.func(other - self.lhs, other - self.rhs, equivalent=self).simplify()
     
     def __sub__(self, other):
@@ -613,6 +613,12 @@ class Inference:
                 if other < 0:
                     return Inference(self.func.reversed_type(self.lhs * other, self.rhs * other), equivalent=self)
                 
+                if self.is_GreaterEqual or self.is_LessEqual:
+                    if other >= 0:
+                        return Inference(self.func(self.lhs * other, self.rhs * other), given=self)
+                    if other <= 0:
+                        return Inference(self.func.reversed_type(self.lhs * other, self.rhs * other), given=self)
+                
         if self.is_Greater:
             if other.is_Greater:
                 if self.rhs.is_extended_nonnegative: 
@@ -670,8 +676,8 @@ class Inference:
 
                 if other.is_nonzero:
                     return self.func(lhs, rhs, equivalent=self)
-                from sympy import Or
-                return Or(self.func(other, 0), self.func(lhs, rhs), equivalent=self)
+                from sympy import Or, ZeroMatrix
+                return Or(self.func(other, ZeroMatrix(*other.shape)), self.func(lhs, rhs), equivalent=self)
                             
             if other.is_positive:
                 return Inference(self.func(self.lhs / other, self.rhs / other), equivalent=self)
@@ -688,8 +694,8 @@ class Inference:
 
             if other.is_nonzero:
                 return self.func(lhs, rhs, equivalent=self)
-            from sympy import Or
-            return Or(self.func(other, 0), self.func(lhs, rhs), equivalent=self)
+            from sympy import Or, ZeroMatrix
+            return Or(self.func(other, ZeroMatrix(*other.shape)), self.func(lhs, rhs), equivalent=self)
         
     def __iter__(self):
         raise TypeError
@@ -736,17 +742,26 @@ class Inference:
                     if g is not given:
                         continue
                     if all(g.plausible is None for j, g in enumerate(equivalent.given) if j != i):
-                        return True                    
+                        return True
             elif equivalent.given is given:
                 return True
             
             self = equivalent
             
     def given_by(self, given):
-        if given.imply is self or \
-        self.given is given or \
-        given.equivalent is self or \
-        self.equivalent is given:
+        if given.imply is self:
+            if isinstance(self.given, tuple):
+                for g in self.given:
+                    if g.plausible is None:
+                        continue
+                    
+                    if g == given.cond or g == given or g.given_by(given):
+                        continue
+                    
+                    return
+            return True
+
+        if self.given is given or given.equivalent is self or self.equivalent is given:
             return True
         
         while True:
@@ -756,15 +771,18 @@ class Inference:
             [equivalent] = equivalent
             
             if isinstance(equivalent.given, (list, tuple)):
-                for i, g in enumerate(equivalent.given):
-                    if g is not given:
-                        continue
-                    if all(g.plausible is None for j, g in enumerate(equivalent.given) if j != i):
-                        return True
-                if isinstance(given.equivalent, (list, tuple)):                
+                for g in equivalent.given:
+                    if g.plausible is None or g == given or g.given_by(given):
+                        ...
+                    else:
+                        break
+                else:
+                    return True
+                    
+                if isinstance(given.equivalent, (list, tuple)):
                     if {*equivalent.given} == {*given.equivalent}:
                         return True
-                                          
+
             elif equivalent.given is not None:
                 if equivalent.given is given:
                     return True
@@ -772,8 +790,33 @@ class Inference:
                     return True
             
             if equivalent is self:
+                if self == given:
+                    return True
+                
+                if given.imply is not None:
+                    if isinstance(equivalent := given.imply.equivalent, tuple):
+                        try:
+                            index = equivalent.index(given.cond)
+                            equivalent = [*equivalent]
+                            del equivalent[index]
+                            equivalent, = equivalent
+                            return self.given_by(equivalent)
+                        except:
+                            ...
+
+                    return self.given_by(given.imply)
+
+                given = equivalent_ancestor(given)
+                if len(given) != 1:
+                    return False
+                given, = given
+
+                if self == given:
+                    return True
+                
                 if given.imply is not None:
                     return self.given_by(given.imply)
+
                 return False
             self = equivalent
             
@@ -797,7 +840,7 @@ def equivalent_ancestor(a):
             
 from sympy.core.sympify import converter, sympify
 
-converter[Inference] = lambda infer: infer.cond 
+converter[Inference] = lambda infer: infer.cond
 
 from sympy.core.assumptions import IndexedOperator
 converter[IndexedOperator] = lambda op: op.basic
@@ -827,7 +870,7 @@ def process_equivalent(equivalent, value):
             plausibility_array = plausibles(equivalent)
             if len(plausibility_array) == 1:
                 plausibility_array[0].plausible = True
-                return                 
+                return
 
             for eq in plausibility_array:
                 eq.plausible = True
@@ -835,7 +878,7 @@ def process_equivalent(equivalent, value):
             return
 
         equivalent.plausible = True
-        return 
+        return
     else:
         if isinstance(equivalent, (list, tuple)):
             plausibility_array = plausibles(equivalent)
@@ -856,25 +899,47 @@ def process_equivalent(equivalent, value):
 
 def process_imply(imply, value):
     if value:
-        if type(imply) == list:
-            array = plausibles(imply)
-            for eq in array:
-                eq.plausible = True
-            return
+        if isinstance(imply, tuple):
+            for imply in imply:
+                imply.plausible = True
 
-        if isinstance(imply.given, tuple):
+        elif isinstance(imply.given, tuple):
 #                 imply will be true unless all of imply.given is proven true!
             if all(g.plausible is None for g in imply.given):
                 imply.plausible = True
             else:
-                plausibles = [g for g in imply.given if g.plausible]
-                if len(plausibles) == 1:
+                given = [g for g in imply.given if g.plausible]
+                if len(given) == 1:
 #                  imply will be dependent only on the single plausible theorem, so removing given links!
-                    [given] = plausibles                
+                    given, = given
                     imply.given = None
                     if not imply._assumptions:
                         imply._assumptions['plausible'] = True
+
                     assert given.imply is imply
+                    if given.given is not None and isinstance(equivalent := imply.equivalent, tuple) and len(equivalent) == 2:
+                        if given is equivalent[0]:
+                            equivalent = equivalent[1]
+                        elif given is equivalent[1]:
+                            equivalent = equivalent[0]
+                        else:
+                            return
+
+                        imply.equivalent = None
+                        given.imply = None
+                        while True:
+                            given = equivalent_ancestor(given)
+                            if len(given) == 1:
+                                given, = given
+                                if given.given is not None:
+                                    given = given.given
+                                else:
+                                    break
+                            else:
+                                return
+
+                        given.imply = equivalent
+
         else:
             imply.plausible = True
 
@@ -896,21 +961,23 @@ def process_negation(negation, value):
 def process_given(given, value):
     if value:
         if isinstance(given, (list, tuple)):
-            plausibility_array = plausibles(given)
-            if len(plausibility_array) == 1:
-                return
-
-            if len(plausibility_array) == 2:
-                set_equivalence_relationship(*plausibility_array)
-                return
-
-            return
+            given = plausibles(given)
+            if len(given) == 2:
+                set_equivalence_relationship(*given)
 
     else:
         if isinstance(given, (list, tuple, set)):
-            plausibility_array = plausibles(given)
-            if len(plausibility_array) == 1:
-                plausibility_array[0].plausible = False
+            given = plausibles(given)
+            match len(given):
+                case 1:
+                    given[0].plausible = False
+                case 2:
+                    from sympy import Infer
+                    if Infer(given[0], given[1], plausible=True).plausible is None:
+                        given[1].plausible = False
+                    
+                    if Infer(given[1], given[0], plausible=True).plausible is None:
+                        given[0].plausible = False
         else:
             given.plausible = False
 
@@ -919,7 +986,7 @@ def process_options(value=True, **kwargs):
     equivalent = kwargs.get('equivalent')
     if equivalent is not None:
         process_equivalent(equivalent, value)
-        return        
+        return
 
     given = kwargs.get('given')
     if given is not None:

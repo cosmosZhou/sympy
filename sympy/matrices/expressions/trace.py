@@ -1,6 +1,6 @@
 from sympy import Basic, Expr, sympify, S
 from sympy.matrices.matrices import MatrixBase
-from .matexpr import ShapeError
+from ..common import ShapeError
 
 
 class Trace(Expr):

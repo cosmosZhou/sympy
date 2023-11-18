@@ -7,10 +7,6 @@ from sympy.physics.quantum.dagger import Dagger
 from sympy.physics.quantum.operator import Operator
 
 
-__all__ = [
-    'Commutator'
-]
-
 #-----------------------------------------------------------------------------
 # Commutator
 #-----------------------------------------------------------------------------

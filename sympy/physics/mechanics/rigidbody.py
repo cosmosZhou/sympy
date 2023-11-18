@@ -3,8 +3,6 @@ from sympy.core.backend import sympify
 
 from sympy.physics.vector import Point, ReferenceFrame, Dyadic
 
-__all__ = ['RigidBody']
-
 
 class RigidBody(object):
     """An idealized rigid body.

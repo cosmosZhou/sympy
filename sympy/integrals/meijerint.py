@@ -94,21 +94,21 @@ def _create_lookup_table(table):
                 return arg <= 0
 
     # Section 8.4.2
-    from sympy import (gamma, Re, sinc, sqrt, sinh, cosh,
+    from sympy import (Gamma, Re, sinc, sqrt, sinh, cosh,
                        factorial, log, erf, erfc, erfi, polar_lift)
     # TODO this needs more polar_lift (c/f entry for exp)
     add(Heaviside(t - b)*(t - b)**(a - 1), [a], [], [], [0], t/b,
-        gamma(a)*b**(a - 1), And(b > 0))
+        Gamma(a)*b**(a - 1), And(b > 0))
     add(Heaviside(b - t)*(b - t)**(a - 1), [], [a], [0], [], t/b,
-        gamma(a)*b**(a - 1), And(b > 0))
+        Gamma(a)*b**(a - 1), And(b > 0))
     add(Heaviside(z - (b/p)**(1/q))*(t - b)**(a - 1), [a], [], [], [0], t/b,
-        gamma(a)*b**(a - 1), And(b > 0))
+        Gamma(a)*b**(a - 1), And(b > 0))
     add(Heaviside((b/p)**(1/q) - z)*(b - t)**(a - 1), [], [a], [0], [], t/b,
-        gamma(a)*b**(a - 1), And(b > 0))
-    add((b + t)**(-a), [1 - a], [], [0], [], t/b, b**(-a)/gamma(a),
+        Gamma(a)*b**(a - 1), And(b > 0))
+    add((b + t)**(-a), [1 - a], [], [0], [], t/b, b**(-a)/Gamma(a),
         hint=Not(IsNonPositiveInteger(a)))
     add(abs(b - t)**(-a), [1 - a], [(1 - a)/2], [0], [(1 - a)/2], t/b,
-        2*sin(pi*a/2)*gamma(1 - a)*abs(b)**(-a), Re(a) < 1)
+        2*sin(pi*a/2)*Gamma(1 - a)*abs(b)**(-a), Re(a) < 1)
     add((t**a - b**a)/(t - b), [0, a], [], [0, a], [], t/b,
         b**(a - 1)*sin(a*pi)/pi)
 
@@ -324,7 +324,7 @@ def _get_coeff_exp(expr, x):
     (c, m) = expand_power_base(powsimp(expr)).as_coeff_mul(x)
     if not m:
         return c, S(0)
-    [m] = m
+    m, = m
     if m.is_Pow:
         if m.base != x:
             raise _CoeffExpValueError('expr not of form a*x**b')
@@ -458,7 +458,7 @@ def _mul_args(f):
             if n < 0:
                 n = -n
                 base = 1/base
-            gs += [base]*n
+            gs += [base] * int(n)
         else:
             gs.append(g)
     return gs
@@ -737,7 +737,7 @@ def _check_antecedents_1(g, x, helper=False):
     from sympy import Eq, Not, ceiling, Ne, Re, unbranched_argument as arg
     delta = g.delta
     eta, _ = _get_coeff_exp(g.argument, x)
-    m, n, p, q = S([len(g.bm), len(g.an), len(g.ap), len(g.bq)])
+    m, n, p, q = len(g.bm), len(g.an), len(g.ap), len(g.bq)
     xi = m + n - p
 
     if p > q:
@@ -848,21 +848,21 @@ def _int0oo_1(g, x):
     >>> from sympy import meijerg
     >>> from sympy.integrals.meijerint import _int0oo_1
     >>> _int0oo_1(meijerg([a], [b], [c], [d], x*y), x)
-    gamma(-a)*gamma(c + 1)/(y*gamma(-d)*gamma(b + 1))
+    Gamma(-a)*Gamma(c + 1)/(y*Gamma(-d)*Gamma(b + 1))
     """
     # See [L, section 5.6.1]. Note that s=1.
-    from sympy import gamma, gammasimp, unpolarify
+    from sympy import Gamma, gammasimp, unpolarify
     eta, _ = _get_coeff_exp(g.argument, x)
     res = 1/eta
     # XXX TODO we should reduce order first
     for b in g.bm:
-        res *= gamma(b + 1)
+        res *= Gamma(b + 1)
     for a in g.an:
-        res *= gamma(1 - a - 1)
+        res *= Gamma(1 - a - 1)
     for b in g.bother:
-        res /= gamma(1 - b - 1)
+        res /= Gamma(1 - b - 1)
     for a in g.aother:
-        res /= gamma(a + 1)
+        res /= Gamma(a + 1)
     return gammasimp(unpolarify(res))
 
 
@@ -950,12 +950,12 @@ def _check_antecedents(g1, g2, x):
     # Note: k=l=r=alpha=1
     sigma, _ = _get_coeff_exp(g1.argument, x)
     omega, _ = _get_coeff_exp(g2.argument, x)
-    s, t, u, v = S([len(g1.bm), len(g1.an), len(g1.ap), len(g1.bq)])
-    m, n, p, q = S([len(g2.bm), len(g2.an), len(g2.ap), len(g2.bq)])
-    bstar = s + t - (u + v)/2
-    cstar = m + n - (p + q)/2
-    rho = g1.nu + (u - v)/2 + 1
-    mu = g2.nu + (p - q)/2 + 1
+    s, t, u, v = len(g1.bm), len(g1.an), len(g1.ap), len(g1.bq)
+    m, n, p, q = len(g2.bm), len(g2.an), len(g2.ap), len(g2.bq)
+    bstar = s + t - S(u + v)/2
+    cstar = m + n - S(p + q)/2
+    rho = g1.nu + S(u - v)/2 + 1
+    mu = g2.nu + S(p - q)/2 + 1
     phi = q - p - (v - u)
     eta = 1 - (v - u) - mu - rho
     psi = (pi*(q - m - n) + abs(arg(omega)))/(q - p)
@@ -1049,15 +1049,15 @@ def _check_antecedents(g1, g2, x):
     should be made: XXX how should conditions leading to c15=NaN be handled?
     '''
     try:
-        lambda_c = (q - p)*abs(omega)**(1/(q - p))*cos(psi) \
-            + (v - u)*abs(sigma)**(1/(v - u))*cos(theta)
+        lambda_c = (q - p)*abs(omega)**(S(1)/(q - p))*cos(psi) \
+            + (v - u)*abs(sigma)**(S(1)/(v - u))*cos(theta)
         # the TypeError might be raised here, e.g. if lambda_c is NaN
         if _eval_cond(lambda_c > 0) != False:
             c15 = (lambda_c > 0)
         else:
             def lambda_s0(c1, c2):
-                return c1*(q - p)*abs(omega)**(1/(q - p))*sin(psi) \
-                    + c2*(v - u)*abs(sigma)**(1/(v - u))*sin(theta)
+                return c1*(q - p)*abs(omega)**(S(1)/(q - p))*sin(psi) \
+                    + c2*(v - u)*abs(sigma)**(S(1)/(v - u))*sin(theta)
             lambda_s = Piecewise(
                 ((lambda_s0(+1, +1)*lambda_s0(-1, -1)),
                  And(Eq(arg(sigma), 0), Eq(arg(omega), 0))),
@@ -1099,16 +1099,16 @@ def _check_antecedents(g1, g2, x):
                   sigma.is_positive == True, omega.is_positive == True, Re(mu + rho) < 1,
                   Ne(omega, sigma), c1, c2, c3)]  # 5
     pr(5)
-    conds += [And(p > q, s.is_positive == True, bstar.is_positive == True, cstar >= 0,
+    conds += [And(p > q, s > 0, bstar.is_positive == True, cstar >= 0,
                   c1, c2, c3, c5, c10, c13)]  # 6
     pr(6)
-    conds += [And(p < q, t.is_positive == True, bstar.is_positive == True, cstar >= 0,
+    conds += [And(p < q, t > 0, bstar.is_positive == True, cstar >= 0,
                   c1, c2, c3, c4, c10, c13)]  # 7
     pr(7)
-    conds += [And(u > v, m.is_positive == True, cstar.is_positive == True, bstar >= 0,
+    conds += [And(u > v, m > 0, cstar.is_positive == True, bstar >= 0,
                   c1, c2, c3, c7, c11, c12)]  # 8
     pr(8)
-    conds += [And(u < v, n.is_positive == True, cstar.is_positive == True, bstar >= 0,
+    conds += [And(u < v, n > 0, cstar.is_positive == True, bstar >= 0,
                   c1, c2, c3, c6, c11, c12)]  # 9
     pr(9)
     conds += [And(p > q, Eq(u, v), Eq(bstar, 0), cstar >= 0, sigma.is_positive == True,
@@ -1135,13 +1135,13 @@ def _check_antecedents(g1, g2, x):
     conds += [And(p < q, u < v, bstar >= 0, cstar >= 0,
                   c1, c2, c3, c4, c6, c9, c11, c13, c14)]  # 17
     pr(17)
-    conds += [And(Eq(t, 0), s.is_positive == True, bstar.is_positive == True, phi.is_positive == True, c1, c2, c10)]  # 18
+    conds += [And(Eq(t, 0), s > 0, bstar.is_positive == True, phi > 0, c1, c2, c10)]  # 18
     pr(18)
-    conds += [And(Eq(s, 0), t.is_positive == True, bstar.is_positive == True, phi.is_negative == True, c1, c3, c10)]  # 19
+    conds += [And(Eq(s, 0), t > 0, bstar.is_positive == True, phi < 0, c1, c3, c10)]  # 19
     pr(19)
-    conds += [And(Eq(n, 0), m.is_positive == True, cstar.is_positive == True, phi.is_negative == True, c1, c2, c12)]  # 20
+    conds += [And(Eq(n, 0), m > 0, cstar.is_positive == True, phi < 0, c1, c2, c12)]  # 20
     pr(20)
-    conds += [And(Eq(m, 0), n.is_positive == True, cstar.is_positive == True, phi.is_positive == True, c1, c3, c12)]  # 21
+    conds += [And(Eq(m, 0), n > 0, cstar.is_positive == True, phi > 0, c1, c3, c12)]  # 21
     pr(21)
     conds += [And(Eq(s*t, 0), bstar.is_positive == True, cstar.is_positive == True,
                   c1, c2, c3, c10, c12)]  # 22
@@ -1310,7 +1310,7 @@ def _check_antecedents_inversion(g, x):
                    statement_half(a, b, c, z, False))
 
     # Notations from [L], section 5.7-10
-    m, n, p, q = S([len(g.bm), len(g.an), len(g.ap), len(g.bq)])
+    m, n, p, q = len(g.bm), len(g.an), len(g.ap), len(g.bq)
     tau = m + n - p
     nu = q - m - n
     rho = (tau - nu)/2

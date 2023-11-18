@@ -179,8 +179,7 @@ class NDimArray(object):
         """
         return self._loop_size
 
-    @property
-    def shape(self):
+    def _eval_shape(self):
         """
         Returns array shape (dimension).
 

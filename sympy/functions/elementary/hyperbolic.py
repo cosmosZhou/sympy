@@ -68,7 +68,7 @@ def _peeloff_ipi(arg):
     return arg - m2, m2
 
 
-class sinh(HyperbolicFunction):
+class Sinh(HyperbolicFunction):
     r"""
     The hyperbolic sine function, `\frac{e^x - e^{-x}}{2}`.
 
@@ -245,8 +245,13 @@ class sinh(HyperbolicFunction):
         if arg.is_imaginary:
             return True
 
+    @classmethod
+    def sub_class_key(cls):
+        return 30
 
-class cosh(HyperbolicFunction):
+sinh = Sinh
+
+class Cosh(HyperbolicFunction):
     r"""
     The hyperbolic cosine function, `\frac{e^x + e^{-x}}{2}`.
 
@@ -398,8 +403,13 @@ class cosh(HyperbolicFunction):
         if arg.is_imaginary:
             return True
 
+    @classmethod
+    def sub_class_key(cls):
+        return 31
 
-class tanh(HyperbolicFunction):
+cosh = Cosh
+
+class Tanh(HyperbolicFunction):
     r"""
     The hyperbolic tangent function, `\frac{\sinh(x)}{\cosh(x)}`.
 
@@ -553,8 +563,13 @@ class tanh(HyperbolicFunction):
         if arg.is_extended_real:
             return True
 
+    @classmethod
+    def sub_class_key(cls):
+        return 32
 
-class coth(HyperbolicFunction):
+tanh = Tanh
+
+class Coth(HyperbolicFunction):
     r"""
     The hyperbolic cotangent function, `\frac{\cosh(x)}{\sinh(x)}`.
 
@@ -694,6 +709,11 @@ class coth(HyperbolicFunction):
         else:
             return self.func(arg)
 
+    @classmethod
+    def sub_class_key(cls):
+        return 33
+
+coth = Coth
 
 class ReciprocalHyperbolicFunction(HyperbolicFunction):
     """Base class for reciprocal functions of hyperbolic functions. """
@@ -746,7 +766,7 @@ class ReciprocalHyperbolicFunction(HyperbolicFunction):
     def _eval_rewrite_as_coth(self, arg, **kwargs):
         return self._rewrite_reciprocal("_eval_rewrite_as_coth", arg)
 
-    def as_real_imag(self, deep = True, **hints):
+    def as_real_imag(self, deep=True, **hints):
         return (1 / self._reciprocal_of(self.args[0])).as_real_imag(deep, **hints)
 
     def _eval_conjugate(self):
@@ -766,7 +786,7 @@ class ReciprocalHyperbolicFunction(HyperbolicFunction):
         return (1/self._reciprocal_of(self.args[0])).is_finite
 
 
-class csch(ReciprocalHyperbolicFunction):
+class Csch(ReciprocalHyperbolicFunction):
     r"""
     The hyperbolic cosecant function, `\frac{2}{e^x - e^{-x}}`
 
@@ -824,8 +844,9 @@ class csch(ReciprocalHyperbolicFunction):
         import sage.all as sage
         return sage.csch(self.args[0]._sage_())
 
+csch = Csch
 
-class sech(ReciprocalHyperbolicFunction):
+class Sech(ReciprocalHyperbolicFunction):
     r"""
     The hyperbolic secant function, `\frac{2}{e^x + e^{-x}}`
 
@@ -868,7 +889,7 @@ class sech(ReciprocalHyperbolicFunction):
         return sage.sech(self.args[0]._sage_())
 
 
-
+sech = Sech
 ###############################################################################
 ############################# HYPERBOLIC INVERSES #############################
 ###############################################################################
@@ -879,7 +900,7 @@ class InverseHyperbolicFunction(Function):
     pass
 
 
-class asinh(InverseHyperbolicFunction):
+class Asinh(InverseHyperbolicFunction):
     """
     The inverse hyperbolic sine function.
 
@@ -963,8 +984,9 @@ class asinh(InverseHyperbolicFunction):
         """
         return sinh
 
+asinh = Asinh
 
-class acosh(InverseHyperbolicFunction):
+class Acosh(InverseHyperbolicFunction):
     """
     The inverse hyperbolic cosine function.
 
@@ -1072,8 +1094,9 @@ class acosh(InverseHyperbolicFunction):
         """
         return cosh
 
+acosh = Acosh
 
-class atanh(InverseHyperbolicFunction):
+class Atanh(InverseHyperbolicFunction):
     """
     The inverse hyperbolic tangent function.
 
@@ -1151,8 +1174,9 @@ class atanh(InverseHyperbolicFunction):
         """
         return tanh
 
+atanh = Atanh
 
-class acoth(InverseHyperbolicFunction):
+class Acoth(InverseHyperbolicFunction):
     """
     The inverse hyperbolic cotangent function.
 
@@ -1226,8 +1250,9 @@ class acoth(InverseHyperbolicFunction):
         """
         return coth
 
+acoth = Acoth
 
-class asech(InverseHyperbolicFunction):
+class Asech(InverseHyperbolicFunction):
     """
     The inverse hyperbolic secant function.
 
@@ -1354,8 +1379,9 @@ class asech(InverseHyperbolicFunction):
     def _eval_rewrite_as_log(self, arg, **kwargs):
         return log(1/arg + sqrt(1/arg - 1) * sqrt(1/arg + 1))
 
+asech = Asech
 
-class acsch(InverseHyperbolicFunction):
+class Acsch(InverseHyperbolicFunction):
     """
     The inverse hyperbolic cosecant function.
 
@@ -1447,3 +1473,5 @@ class acsch(InverseHyperbolicFunction):
 
     def _eval_rewrite_as_log(self, arg, **kwargs):
         return log(1/arg + sqrt(1/arg**2 + 1))
+
+acsch = Acsch

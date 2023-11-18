@@ -7,21 +7,6 @@ from sympy import Mul, Basic, Number, Pow, Integer
 from sympy.physics.quantum.represent import represent
 from sympy.physics.quantum.dagger import Dagger
 
-__all__ = [
-    # Public interfaces
-    'generate_gate_rules',
-    'generate_equivalent_ids',
-    'GateIdentity',
-    'bfs_identity_search',
-    'random_identity_search',
-
-    # "Private" functions
-    'is_scalar_sparse_matrix',
-    'is_scalar_nonsparse_matrix',
-    'is_degenerate',
-    'is_reducible',
-]
-
 np = import_module('numpy')
 scipy = import_module('scipy', __import__kwargs={'fromlist': ['sparse']})
 

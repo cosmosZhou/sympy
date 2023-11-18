@@ -5,11 +5,6 @@ from sympy.printing.pretty.stringpict import prettyForm
 from sympy.physics.quantum.dagger import Dagger
 from sympy.physics.quantum.state import KetBase, BraBase
 
-__all__ = [
-    'InnerProduct'
-]
-
-
 # InnerProduct is not an QExpr because it is really just a regular commutative
 # number. We have gone back and forth about this, but we gain a lot by having
 # it subclass Expr. The main challenges were getting Dagger to work

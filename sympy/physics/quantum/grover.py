@@ -18,15 +18,6 @@ from sympy.physics.quantum.operator import UnitaryOperator
 from sympy.physics.quantum.gate import Gate
 from sympy.physics.quantum.qubit import IntQubit
 
-__all__ = [
-    'OracleGate',
-    'WGate',
-    'superposition_basis',
-    'grover_iteration',
-    'apply_grover'
-]
-
-
 def superposition_basis(nqubits):
     """Creates an equal superposition of the computational basis.
 

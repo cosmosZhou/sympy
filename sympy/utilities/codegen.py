@@ -96,18 +96,6 @@ from sympy.matrices import (MatrixSymbol, ImmutableMatrix, MatrixBase,
                             MatrixExpr, MatrixSlice)
 
 
-__all__ = [
-    # description of routines
-    "Routine", "DataType", "default_datatypes", "get_default_datatype",
-    "Argument", "InputArgument", "OutputArgument", "Result",
-    # routines -> code
-    "CodeGen", "CCodeGen", "FCodeGen", "JuliaCodeGen", "OctaveCodeGen",
-    "RustCodeGen",
-    # friendly functions
-    "codegen", "make_routine",
-]
-
-
 #
 # Description of routines
 #
@@ -272,9 +260,9 @@ def get_default_datatype(expr, complex_allowed=None):
         #check all entries
         dt = "int"
         for element in expr:
-            if dt is "int" and not element.is_integer:
+            if dt == "int" and not element.is_integer:
                 dt = "float"
-            if dt is "float" and not element.is_real:
+            if dt == "float" and not element.is_real:
                 return default_datatypes[final_dtype]
         return default_datatypes[dt]
     else:

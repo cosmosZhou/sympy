@@ -18,6 +18,7 @@ def shape(self):
     return x.shape[:-1] + w.shape[-1:]
 
 
+@Function(real=True, shape=property(shape))
 def conv1d(x, w, *limits):
     """
     >>> m = Symbol(integer=True, positive=True)
@@ -58,9 +59,7 @@ def conv1d(x, w, *limits):
         return conv1d(x, w)    
 
 
-conv1d = Function.conv1d(real=True, eval=conv1d, shape=property(shape), __doc__=conv1d.__doc__)
-
-
+@Function(real=True, shape=property(shape))
 def conv2d(x, w, *limits):
     if limits:
         (r,), *_ = limits
@@ -70,7 +69,7 @@ def conv2d(x, w, *limits):
     l0, l1, in_channels, out_channels = w.shape
     * batch_size, n0, n1, _in_channels = x.shape
     
-    assert in_channels == _in_channels        
+    assert in_channels == _in_channels
     
     def conv2d(x, w):
         i = Symbol(integer=True)
@@ -95,9 +94,7 @@ def conv2d(x, w, *limits):
         return conv2d(x, w)    
 
 
-conv2d = Function.conv2d(real=True, nargs=(2,), eval=conv2d, shape=property(shape))
-
-
+@Function(real=True, shape=property(shape))
 def conv3d(x, w, *limits):
     if limits:
         (r,), *_ = limits
@@ -107,7 +104,7 @@ def conv3d(x, w, *limits):
     l0, l1, l2, in_channels, out_channels = w.shape
     * batch_size, n0, n1, n2, _in_channels = x.shape
     
-    assert in_channels == _in_channels        
+    assert in_channels == _in_channels
     
     def conv3d(x, w):
         i = Symbol(integer=True)
@@ -135,7 +132,3 @@ def conv3d(x, w, *limits):
         return Lamda[k:batch_size](conv3d(x[k], w))
     else:
         return conv3d(x, w)    
-
-
-conv3d = Function.conv3d(real=True, nargs=(2,), eval=conv3d, shape=property(shape))
-

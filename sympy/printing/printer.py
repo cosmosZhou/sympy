@@ -58,8 +58,6 @@ While looking for the method, it follows these steps:
         |-- p._print_Number(expr)
         |
         |-- p._print_Atom(expr)
-        |
-        `-- p._print_Basic(expr)
 
     if ``._print_Rational`` method exists in the printer, then it is called,
     and the result is returned back. Otherwise, the printer tries to call

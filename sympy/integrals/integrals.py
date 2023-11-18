@@ -34,6 +34,12 @@ class Integral(AddWithLimits):
     """Represents unevaluated integral."""    
     __slots__ = ('is_commutative',)
 
+    operator = Add
+
+    @property
+    def is_comparable(self):
+        return False
+
     def __new__(cls, function, *symbols, **assumptions):
         """Create an unevaluated integral.
 
@@ -89,31 +95,6 @@ class Integral(AddWithLimits):
     def __getnewargs__(self):
         return (self.expr,) + tuple([tuple(xab) for xab in self.limits])
 
-    @property
-    def free_symbols(self):
-        """
-        This method returns the symbols that will exist when the
-        integral is evaluated. This is useful if one is trying to
-        determine whether an integral depends on a certain
-        symbol or not.
-
-        Examples
-        ========
-
-        >>> from sympy import Integral
-        >>> from sympy.abc import x, y
-        >>> Integral(x, (x, y, 1)).free_symbols
-        {y}
-
-        See Also
-        ========
-
-        sympy.concrete.expr_with_limits.ExprWithLimits.function
-        sympy.concrete.expr_with_limits.ExprWithLimits.limits
-        sympy.concrete.expr_with_limits.ExprWithLimits.variables
-        """
-        return AddWithLimits.free_symbols.fget(self)
-
     def _eval_is_zero(self):
         # This is a very naive and quick test, not intended to do the integral to
         # answer whether it is zero or not, e.g. Integral(sin(x), (x, 0, 2*pi))
@@ -130,7 +111,7 @@ class Integral(AddWithLimits):
                     return True
                 elif z is None:
                     got_none = True
-        free = self.expr.free_symbols
+        free = self.expr.free_symbols.copy()
         for xab in self.limits:
             if len(xab) == 1:
                 free.add(xab[0])
@@ -274,7 +255,7 @@ class Integral(AddWithLimits):
                 raise ValueError(filldedent('''
                 When f(u) has more than one free symbol, the one replacing x
                 must be identified: pass f(u) as (f(u), u)'''))
-            uvar = ufree.pop()
+            uvar, = ufree
         else:
             u, uvar = u
             if uvar not in u.free_symbols:
@@ -389,7 +370,6 @@ class Integral(AddWithLimits):
         sympy.integrals.rationaltools.ratint
         as_sum : Approximate the integral using a sum
         """
-        from sympy.concrete.summations import Sum
         if not hints.get('integrals', True):
             return self
 
@@ -399,7 +379,6 @@ class Integral(AddWithLimits):
         risch = hints.get('risch', None)
         heurisch = hints.get('heurisch', None)
         manual = hints.get('manual', None)
-        
         if len(list(filter(None, (manual, meijerg, risch, heurisch)))) > 1:
             raise ValueError("At most one of manual, meijerg, risch, heurisch can be True")
         elif manual:
@@ -552,15 +531,17 @@ class Integral(AddWithLimits):
                 if meijerg1 is False and meijerg is True:
                     antideriv = None
                 else:
-                    antideriv = self._eval_integral(
-                        function, xab[0], **eval_kwargs)
+                    antideriv = self._eval_integral(function, xab[0], **eval_kwargs)
                     if antideriv is None and meijerg is True:
                         ret = try_meijerg(function, xab)
                         if ret is not None:
                             function = ret
                             continue
 
-            if not isinstance(antideriv, Integral) and antideriv is not None:
+            final = hints.get('final', True)
+            # dotit may be iterated but floor terms making atan and acot
+            # continuous should only be added in the final round
+            if final and not isinstance(antideriv, Integral) and antideriv is not None:
                 for atan_term in antideriv.atoms(atan):
                     atan_arg = atan_term.args[0]
                     # Checking `atan_arg` to be linear combination of `tan` or `cot`
@@ -856,9 +837,7 @@ class Integral(AddWithLimits):
             except (ValueError, PolynomialError):
                 pass
 
-        eval_kwargs = dict(meijerg=meijerg, risch=risch, manual=manual,
-            heurisch=heurisch, conds=conds)
-
+        eval_kwargs = dict(meijerg=meijerg, risch=risch, manual=manual, heurisch=heurisch, conds=conds)
         # if it is a poly(x) then let the polynomial integrate itself (fast)
         #
         # It is important to make this check first, otherwise the other code
@@ -889,8 +868,7 @@ class Integral(AddWithLimits):
 
         if risch is not False:
             try:
-                result, i = risch_integrate(f, x, separate_integral=True,
-                    conds=conds)
+                result, i = risch_integrate(f, x, separate_integral=True, conds=conds)
             except NotImplementedError:
                 pass
             else:
@@ -997,11 +975,13 @@ class Integral(AddWithLimits):
                     parts.append(coeff * h)
                     continue
 
+                if g.is_Probability:
+                    return
+
                 # Try risch again.
                 if risch is not False:
                     try:
-                        h, i = risch_integrate(g, x,
-                            separate_integral=True, conds=conds)
+                        h, i = risch_integrate(g, x, separate_integral=True, conds=conds)
                     except NotImplementedError:
                         h = None
                     else:
@@ -1018,7 +998,7 @@ class Integral(AddWithLimits):
                             h = heurisch_wrapper(g, x, hints=[])
                         else:
                             h = heurisch_(g, x, hints=[])
-                    except PolynomialError:
+                    except (PolynomialError, AttributeError):
                         # XXX: this exception means there is a bug in the
                         # implementation of heuristic Risch integration
                         # algorithm.
@@ -1135,22 +1115,34 @@ class Integral(AddWithLimits):
         if len(limit) == 3:
             x, a, b = limit
             domain = self.expr.domain_nonzero(x)
-            from sympy.sets.sets import Interval
-            domain &= Interval(a, b)
+            
+            if a <= b:
+                from sympy.sets.sets import Interval
+                domain &= Interval(a, b, right_open=True)
+    
+                if self.expr.is_Piecewise:
+                    sgm = []
+                    for f, condition in self.expr.args:
+                        _domain = x.domain_conditioned(condition)
+                        _domain &= domain
+                        if f:
+                            if _domain.is_Interval:
+                                a, b = _domain.args
+                                if a <= b:
+                                    sgm.append(self.func(f, (x, a, b)).simplify())
+                                else:
+                                    sgm.append(self.func(f, (x, _domain)).simplify())
+                            else:
+                                sgm.append(self.func(f, (x, _domain)))
 
-            if isinstance(self.expr, Piecewise):
-                sgm = []
-                for f, condition in self.expr.args:
-                    if f == 0:
-                        continue
-                    _domain = x.domain_conditioned(condition) & domain
-                    sgm.append(self.func(f, (x, domain.start, domain.stop)).simplify())
-
-                return Add(*sgm)
-            try:
-                limit = x, domain.start, domain.stop
-            except AttributeError:
-                return self
+                        domain -= _domain
+    
+                    return Add(*sgm)
+                try:
+                    limit = x, domain.start, domain.stop
+                except AttributeError:
+                    return self
+                
         var = limit[0]
 
         function = self.expr
@@ -1162,141 +1154,66 @@ class Integral(AddWithLimits):
 
         if dependent == S.One:
             if len(limit) > 1:
-                x, a, b = limit
-                return self.expr * (b - a)
+                if len(limit) == 3:
+                    x, a, b = limit
+                    return self.expr * (b - a)
+                else:
+                    return self
             else:
                 return self.expr * var.dimension
+            
         return self.func(dependent, limit) * independent
 
     def _subs(self, old, new, **hints):
-        if self == old:
-            return new
+        this = self._subs_utility(old, new, **hints)
+        if this is not None:
+            return this
 
-        if len(self.limits) == 1:
+        if old in self.variables_set:
+            limits = []
+            for x, *ab in self.limits:
+                ab = [t._subs(old, new) for t in ab]
+                limits.append((x, *ab))
 
-            limit = self.limits[0]
-            if len(limit) == 1:
-                # deal with indefinite integrals
-                x = limit[0]
+            return self.func(self.expr, *limits)
 
-                function = self.expr.subs(old, new)
-                return self.func(function, (x,))
-
-            if old in self.variables_set:
-                limits = []
-                for x, *ab in self.limits:
-                    ab = [t._subs(old, new) for t in ab]
-                    limits.append((x, *ab))
-                
-                return self.func(self.expr, *limits)
-            function = self.expr._subs(old, new)
-
-            if len(limit) == 3:
-                x, a, b = limit
-                return self.func(function, (x, a.subs(old, new), b.subs(old, new))).simplify()
-            elif len(limit) == 2:
-                x, cond = limit
-                return self.func(function, (x, cond._subs(old, new))).simplify()
-            else:
-                x = limit[0]
-                return self.func(function, (x.subs(old, new)))
-        elif len(self.limits) == 0:
-            function = self.expr.subs(old, new)
-
-            return self.func(function, *self.limits)
-
-        return self
+        return AddWithLimits._subs(self, old, new, **hints)        
 
     def limits_subs(self, old, new, simplify=True):
-        from sympy.solvers.solvers import solve
-
         if len(self.limits) == 1:
             limit = self.limits[0]
-            from sympy import sin, cos
-            function = self.expr._subs(old, new)
-
-            if isinstance(new, (Mul, Add)):
-                function = function.expand()
-            if new.has(sin, cos):
-                function = function.trigsimp()
+            expr = self.expr._subs(old, new)
 
             if len(limit) == 3:
                 x, a, b = limit
                 if not old.has(x):
-                    self = self.func(function, (x, a.subs(old, new), b.subs(old, new)))
+                    self = self.func(expr, (x, a.subs(old, new), b.subs(old, new)))
                     return self.simplify() if simplify else self
 
-                if old != x:
-
-                    g = Dummy('g')
-                    try:
-                        res = solve(old - g, x)
-                    except:
-                        res = []
-
-                    if not res:
-                        self = self.func(function, *self.limits)
-                        return self.simplify() if simplify else self
-                    if len(res) != 1:
-                        assert new.is_symbol
-                        
-                        d_old = diff(old, x)
-                        function /= d_old
-                        if not function._has(x):
-                            return self.func(function, (new, new.domain)).simplify()
-                        return self
-
-                    new = res[0].subs(g, new)
-
-                dg = diff(new, x)
-                if dg == 0:
+                if not new._has(x):
                     _x = new.free_symbols - self.free_symbols
                     if len(_x) != 1:
                         return self
-                    _x, *_ = _x
+                    _x, = _x
 
-                    if new != _x:
-                        x_domain = _x.domain
-                        a = solve(new - a, _x)
-                        b = solve(new - b, _x)
+                    assert new == _x
+                    if 'domain' in _x._assumptions:
+                        domain = _x.domain
+                        if domain.is_Interval and domain.is_open:
+                            _a, _b = domain.args
+                            if a == _a and b == _b:
+                                return self.func(expr, (_x,))
+                        __x = _x.func(_x.name, real=_x.is_real)
+                        expr = expr.subs(_x, __x)
+                        _x = __x
 
-                        a = [e for e in a if e in x_domain]
-                        b = [e for e in b if e in x_domain]
-                        if len(a) != 1 or len(b) != 1:
-                            return self
-                        a, b = a[0], b[0]
-
-                        if 'domain' in _x._assumptions:
-                            __x = _x.func(_x.name, real=_x.is_real)
-                            function = function.subs(_x, __x)
-                            new = new.subs(_x, __x)
-                            _x = __x
-
-                        function *= diff(new, _x)
-                    else:
-                        if 'domain' in _x._assumptions:
-                            domain = _x.domain
-                            if domain.is_Interval:
-                                _a, _b = domain.min(), domain.max()
-                                if a == _a and b == _b:
-                                    return self.func(function, (_x,))
-                            __x = _x.func(_x.name, real=_x.is_real)
-                            function = function.subs(_x, __x)
-                            _x = __x
-
-                    self = self.func(function, (_x, a, b))
+                    self = self.func(expr, (_x, a, b))
                     return self.simplify() if simplify else self
-
-                self = self.func(dg * function, (x, new.subs(x, a).simplify(), new.subs(x, b).simplify()))
-                return self.simplify() if simplify else self
-
+                
+                return self
             else:
                 x = limit[0]
-                return self.func(function, (x.subs(old, new)))
-        elif len(self.limits) == 0:
-            function = self.expr.subs(old, new)
-
-            return self.func(function, *self.limits)
+                return self.func(expr, (x.subs(old, new)))
 
         return self
 
@@ -1515,14 +1432,78 @@ class Integral(AddWithLimits):
         return I
 
     def _eval_is_finite(self):
-        ...
+        expr, *limits = self.args
+        if expr.is_Probability:
+            cond = expr.arg
+            if cond.is_Conditioned:
+                cond, given = cond.args
 
-    def _eval_is_integer(self):
-        ...
+            vars = set()
+            if cond.is_Equal:
+                x, x_var = cond.args
+                vars.add(x_var)
+            elif cond.is_And:
+                for cond in cond.args:
+                    if cond.is_Equal:
+                        x, x_var = cond.args
+                        vars.add(x_var)
+                    else:
+                        return
+            else:
+                return
+            
+            if len(vars) < len(limits):
+                return
+
+            for x, *cond in limits:
+                if x not in vars:
+                    return
+
+            return True
+
+    def _eval_is_extended_complex(self):
+        function = self.expr
+        for x, domain in self.limits_dict.items():
+            if not isinstance(domain, list) and domain and domain.is_set and not x.shape:
+                _x = x.copy(domain=domain)
+                if _x != x:
+                    function = function._subs(x, _x)
+                
+        return function.is_extended_complex
+        
+    def _eval_is_extended_real(self):
+        function = self.expr
+        for x, domain in self.limits_dict.items():
+            if not isinstance(domain, list) and domain and domain.is_set and not x.shape:
+                _x = x.copy(domain=domain)
+                if _x != x:
+                    function = function._subs(x, _x)
+                
+        return function.is_extended_real
+    
+    def _eval_is_extended_positive(self):
+        function = self.expr
+        for x, domain in self.limits_dict.items():
+            if not isinstance(domain, list) and domain and domain.is_set and not x.shape:
+                _x = x.copy(domain=domain)
+                if _x != x:
+                    function = function._subs(x, _x)
+        return function.is_extended_positive
+
+    def _eval_is_extended_negative(self):
+        function = self.expr
+        for x, domain in self.limits_dict.items():
+            if not isinstance(domain, list) and domain and domain.is_set and not x.shape:
+                _x = x.copy(domain=domain)
+                if _x != x:
+                    function = function._subs(x, _x)
+                    
+        return function.is_extended_negative
 
     def _sympystr(self, p):
         limits = ','.join([':'.join([p._print(arg) for arg in limit]) for limit in self.limits])
-        return '\N{INTEGRAL}[%s](%s)' % (limits, p._print(self.expr))
+        # return '\N{INTEGRAL}[%s](%s)' % (limits, p._print(self.expr))
+        return 'Integral[%s](%s)' % (limits, p._print(self.expr))
 
     def _latex(self, p):
         tex, symbols = "", []
@@ -1553,7 +1534,23 @@ class Integral(AddWithLimits):
                 symbols.insert(0, r"\, d%s" % p._print(symbol))
 
         from sympy.printing.precedence import PRECEDENCE
-        return r"%s %s%s" % (tex, p.parenthesize(self.expr, PRECEDENCE["Mul"], strict=True), "".join(symbols))
+        expr = p.parenthesize(self.expr, PRECEDENCE["Mul"], strict=True)
+        symbols = "".join(symbols)
+        if self.expr.is_Integral:
+            return r"%s %s%s" % (tex, symbols, expr)
+        else:
+            return r"%s %s%s" % (tex, expr, symbols)
+
+    @classmethod
+    def identity(cls, self, **assumptions):
+        from sympy import ZeroMatrix
+        return ZeroMatrix(*self.shape)
+
+    @classmethod
+    def is_identity(cls, self, **_):
+        if self.shape:
+            return self.is_ZeroMatrix
+        return self.is_Zero
 
 
 def integrate(*args, meijerg=None, conds='piecewise', risch=None, heurisch=None, manual=None, **kwargs):

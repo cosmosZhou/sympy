@@ -67,7 +67,7 @@ class TrigonometricFunction(Function):
     def _period(self, general_period, symbol=None):
         f = self.args[0]
         if symbol is None:
-            symbol = tuple(f.free_symbols)[0]
+            symbol = next(iter(f.free_symbols))
 
         if not f.has(symbol):
             return S.Zero
@@ -104,7 +104,7 @@ class TrigonometricFunction(Function):
             exp = '^{%s}' % exp
         else:
             exp = ' '
-        if self.arg.is_symbol:
+        if self.arg.is_symbol or self.arg.is_BlockMatrix:
             latex = r"\%s%s%s"
         else:
             latex = r"\%s%s\left(%s\right)"
@@ -120,6 +120,41 @@ class TrigonometricFunction(Function):
         x = self.arg
         if x.is_Piecewise:
             return Piecewise(*((self.func(e), c) for e, c in x.args))
+        return self
+
+    def doit(self, **hints):
+        arg = self.arg
+        if hints.get('deep'):
+            arg = arg.doit(**hints)
+            if arg.is_BlockMatrix:
+                from sympy import BlockMatrix
+                # axis = arg.axis
+                # shape = arg.shape
+                # args = [*arg.args]
+                # for i, arg in enumerate(args):
+                #     args[i] = self.func(arg).doit(**hints)
+                #
+                # mat = BlockMatrix(tuple(args), axis=axis, shape=shape)
+                # assert mat.shape == self.shape
+                # return mat
+
+                return BlockMatrix(tuple(self.func(arg).doit(**hints) for arg in arg.args), axis=arg.axis, shape=arg.shape)
+
+            if arg.is_DenseMatrix:
+                from sympy import Matrix
+                return Matrix(*(self.func(arg) for arg in arg._args), shape=arg.shape)
+
+        return self.func(arg, evaluate=True)
+
+    @classmethod
+    def _eval_simplify_Lamda(cls, self, squeeze=False):
+        expr = self.expr
+        arg, *limits = expr.args
+        lamda = self.func(arg, *self.limits)
+        _lamda = lamda.simplify()
+        if lamda != _lamda and not _lamda._has(self.func):
+            return expr.func(_lamda, *limits, evaluate=False)
+             
         return self
 
 
@@ -244,21 +279,13 @@ class Sin(TrigonometricFunction):
     Examples
     ========
 
-    >>> from sympy import sin, pi
-    >>> from sympy.abc import x
-    >>> sin(x**2).diff(x)
-    2*x*cos(x**2)
-    >>> sin(1).diff(x)
-    0
-    >>> sin(pi)
-    0
-    >>> sin(pi/2)
-    1
-    >>> sin(pi/6)
-    1/2
-    >>> sin(pi/12)
-    -sqrt(2)/4 + sqrt(6)/4
-
+    >>> n, d = 10, 14
+    >>> b = Symbol(real=True)
+    >>> k, i = Symbol(integer=True)
+    >>> theta = k / b ** (Lamda[i:d // 2](i) / (d // 2))
+    >>> R_k = Symbol(BlockMatrix([[Identity(d // 2) * cos(theta), -Identity(d // 2) * sin(theta)], [Identity(d // 2) * sin(theta), Identity(d // 2) * cos(theta)]]))
+    >>> R_k.this.definition
+    >>> Eq[-1].rhs.doit(deep=True)
 
     See Also
     ========
@@ -520,7 +547,7 @@ class Sin(TrigonometricFunction):
             b += diff
             a += diff
 
-            return 
+            return
         if b <= 1 and a >= 0:
             return self
         if b <= 2 and a >= 1:
@@ -553,9 +580,12 @@ class Sin(TrigonometricFunction):
         if b < 2 and a > 1:
             return True
 
+    @classmethod
+    def sub_class_key(cls):
+        return 20
+
 
 sin = Sin
-
         
 class Cos(TrigonometricFunction):
     """
@@ -571,21 +601,12 @@ class Cos(TrigonometricFunction):
     Examples
     ========
 
-    >>> from sympy import cos, pi
-    >>> from sympy.abc import x
-    >>> cos(x**2).diff(x)
-    -2*x*sin(x**2)
-    >>> cos(1).diff(x)
-    0
-    >>> cos(pi)
-    -1
-    >>> cos(pi/2)
-    0
-    >>> cos(2*pi/3)
-    -1/2
-    >>> cos(pi/12)
-    sqrt(2)/4 + sqrt(6)/4
-
+    >>> n, d = 10, 14
+    >>> b = Symbol(real=True)
+    >>> i, j, k = Symbol(integer=True)
+    >>> R = Symbol(Lamda[k:d, j:d, i:n](Piecewise((Piecewise((cos(i / b ** (j / d)), Equal(j, k)), (-sin(i / b ** (j / d)), Equal(j, k - 1)), (0, True)), Equal(j % 2, 0)), (Piecewise((cos(i / b ** ((j - 1) / d)), Equal(j, k)), (sin(i / b ** ((j - 1) / d)), Equal(j, k + 1)), (0, True)), True))))
+    >>> R.this.definition
+    >>> Eq[-1].rhs[i].doit()
     See Also
     ========
 
@@ -1043,6 +1064,9 @@ class Cos(TrigonometricFunction):
         if b < 3 and a > 1:
             return True
 
+    @classmethod
+    def sub_class_key(cls):
+        return 21
 
 cos = Cos
 
@@ -1346,6 +1370,9 @@ class Tan(TrigonometricFunction):
             return True
         return fuzzy_not((arg / pi - S.Half).is_integer)
 
+    @classmethod
+    def sub_class_key(cls):
+        return 22
 
 tan = Tan
 
@@ -1640,6 +1667,10 @@ class Cot(TrigonometricFunction):
         if arg != argnew and (argnew / S.Pi).is_integer:
             return S.ComplexInfinity
         return cot(argnew)
+
+    @classmethod
+    def sub_class_key(cls):
+        return 23
 
 cot = Cot
 
@@ -3126,6 +3157,5 @@ class atan2(InverseTrigonometricFunction):
         if x.is_extended_real and y.is_extended_real:
             super(atan2, self)._eval_evalf(prec)
 
-    @property
-    def shape(self):
+    def _eval_shape(self):
         return ()

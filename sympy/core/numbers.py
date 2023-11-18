@@ -734,7 +734,7 @@ class Number(AtomicExpr):
 
     @cacheit
     def sort_key(self, order=None):
-        return self.class_key(), (0, ()), (), self
+        return self.class_key(), (0, (), ()), (1 if self < 0 else -1,), self
 
     @_sympifyit('other', NotImplemented)
     def __add__(self, other):
@@ -884,8 +884,7 @@ class Number(AtomicExpr):
         from sympy.polys import cofactors
         return cofactors(self, other)
 
-    @property
-    def shape(self):
+    def _eval_shape(self):
         return ()
 
     def _eval_transpose(self, axis=-1):
@@ -912,8 +911,42 @@ class Number(AtomicExpr):
         
         return self == cls
     
-    def is_continuous(self, *args):
+    def is_continuous_at(self, *args):
         return True
+
+    def _eval_torch(self):
+        import torch
+        data = torch.from_numpy(self.numpy)
+        if torch.cuda.is_available():
+            data = data.cuda()
+        return data
+
+    def _eval_keras(self):
+        import keras
+        data = keras.from_numpy(self.numpy)
+        return data
+    
+    @staticmethod
+    def simplify_Lamda(self, squeeze=False):
+        if squeeze:
+            return self
+        
+        shape = []
+        for v, *ab in self.limits:
+            if len(ab) == 2:
+                a, b = ab
+                size = b - a
+            elif not ab:
+                from sympy.sets.fancysets import Range
+                a, b = v.domain.of(Range)
+                size = b - a
+            shape.append(size)
+        shape.reverse()
+        from sympy.matrices.expressions.matexpr import OneMatrix
+        return self.expr * OneMatrix(*shape)
+    
+    def is_consistently_of(self, struct):
+        return struct.is_Number
 
     
 class Float(Number):
@@ -1309,7 +1342,7 @@ class Float(Number):
             return False
         return True
 
-    def _eval_is_integer(self):
+    def _eval_is_extended_integer(self):
         return self._mpf_ == fzero
 
     def _eval_is_extended_negative(self):
@@ -1746,7 +1779,7 @@ class Rational(Number):
         return self.p == 0
 
     def _eval_is_extended_negative(self):
-        return self.p < 0 
+        return self.p < 0
 
     def __neg__(self):
         return Rational(-self.p, self.q)
@@ -2124,7 +2157,7 @@ class Rational(Number):
             b, e = cls.args
             if e == -1:
                 if b is Expr or b is Basic:
-                    p, q = self.p, self.q                
+                    p, q = self.p, self.q
                     if p == 1:
                         return sympify(q)
             elif e == 2:
@@ -2165,8 +2198,29 @@ class Rational(Number):
         if self == cls:
             return ()        
 
-    def __invert__(self):
-        return self
+    @property
+    def numpy(self):
+        import numpy as np
+        return np.array(self.p / self.q, dtype=np.float32)
+
+    def _latex(self, printer):
+        if self.q != 1:
+            sign = ""
+            p = self.p
+            if self.p < 0:
+                sign = "- "
+                p = -p
+            if printer._settings['fold_short_frac']:
+                return r"%s%d / %d" % (sign, p, self.q)
+            return r"%s\frac{%d}{%d}" % (sign, p, self.q)
+        else:
+            return printer._print(self.p)
+
+    def _sympystr(self, p):
+        if self.q == 1:
+            return str(self.p)
+        else:
+            return "S(%s)/%s" % (self.p, self.q)
 
 
 class Integer(Rational):
@@ -2555,10 +2609,20 @@ class Integer(Rational):
     def __floordiv__(self, other):
         if isinstance(other, Integer):
             return Integer(self.p // other)
-        return Integer(divmod(self, other)[0])
+
+        from sympy import Floor
+        return Floor(self / other)
 
     def __rfloordiv__(self, other):
         return Integer(Integer(other).p // self.p)
+
+    @property
+    def numpy(self):
+        import numpy as np
+        return np.array(self.p, dtype=np.int64)
+
+    def _sympystr(self, p):
+        return str(self.p)
 
 
 # Add sympify converters
@@ -2842,9 +2906,30 @@ class Zero(with_metaclass(Singleton, IntegerConstant)):
             return self.func(-rhs, lhs)
         return self.func(rhs, lhs)
         
-#     def __add__(self, other):
-#         return other
+    @property
+    def numpy(self):
+        import numpy as np
+        return np.zeros((), dtype=np.int64)
 
+    @staticmethod
+    def simplify_Lamda(self, squeeze=False):
+        if squeeze:
+            return self
+        
+        shape = []
+        for v, *ab in self.limits:
+            if len(ab) == 2:
+                a, b = ab
+                size = b - a
+            elif not ab:
+                from sympy.sets.fancysets import Range
+                a, b = v.domain.of(Range)
+                size = b - a
+            shape.append(size)
+        shape.reverse()
+        from sympy.matrices.expressions.matexpr import ZeroMatrix
+        return ZeroMatrix(*shape)
+        
         
 class One(with_metaclass(Singleton, IntegerConstant)):
     """The number one.
@@ -2901,7 +2986,31 @@ class One(with_metaclass(Singleton, IntegerConstant)):
         if q.is_negative:
             return self + q
 
-                
+    @property
+    def numpy(self):
+        import numpy as np
+        return np.ones((), dtype=np.int64)
+
+    @staticmethod
+    def simplify_Lamda(self, squeeze=False):
+        if squeeze:
+            return self
+        
+        shape = []
+        for v, *ab in self.limits:
+            if len(ab) == 2:
+                a, b = ab
+                size = b - a
+            elif not ab:
+                from sympy.sets.fancysets import Range
+                a, b = v.domain.of(Range)
+                size = b - a
+            shape.append(size)
+        shape.reverse()
+        from sympy.matrices.expressions.matexpr import OneMatrix
+        return OneMatrix(*shape)
+
+
 class NegativeOne(with_metaclass(Singleton, IntegerConstant)):
     """The number negative one.
 
@@ -3004,6 +3113,11 @@ class NegativeOne(with_metaclass(Singleton, IntegerConstant)):
         if q.is_negative:
             return self
 
+    @property
+    def numpy(self):
+        import numpy as np
+        return np.array(-1, dtype=np.int64)
+    
 
 class Half(with_metaclass(Singleton, RationalConstant)):
     """The rational number 1/2.
@@ -3033,6 +3147,11 @@ class Half(with_metaclass(Singleton, RationalConstant)):
     def __abs__():
         return S.Half
 
+    @property
+    def numpy(self):
+        import numpy as np
+        return np.array(0.5, dtype=np.float32)
+    
 
 class Infinity(with_metaclass(Singleton, Number)):
     r"""Positive infinite quantity.
@@ -3090,7 +3209,8 @@ class Infinity(with_metaclass(Singleton, Number)):
         return r"\infty"
 
     def _sympystr(self, p):
-        return '\N{INFINITY}'
+        return 'oo'
+        #return '\N{INFINITY}'
     
     def _eval_subs(self, old, new, **hints):
         if self == old:
@@ -3273,6 +3393,11 @@ class Infinity(with_metaclass(Singleton, Number)):
         from sympy import ExtendedReals
         return ExtendedReals
 
+    @property
+    def numpy(self):
+        import numpy as np
+        return np.array(float('inf'), dtype=np.float32)
+    
 
 oo = S.Infinity
 
@@ -3307,7 +3432,8 @@ class NegativeInfinity(with_metaclass(Singleton, Number)):
         return r"-\infty"
 
     def _sympystr(self, p):
-        return '-\N{INFINITY}'
+#         return '-\N{INFINITY}'
+        return '-oo'
 
     def _eval_subs(self, old, new, **hints):
         if self == old:
@@ -3490,6 +3616,11 @@ class NegativeInfinity(with_metaclass(Singleton, Number)):
         from sympy import ExtendedReals
         return ExtendedReals
 
+    @property
+    def numpy(self):
+        import numpy as np
+        return np.array(-float('inf'), dtype=np.float32)
+    
 
 class Aleph(Number):
     r"""Aleph numbers are infinite numbers, while oo is the largest infinity. with the following holds:
@@ -3520,7 +3651,7 @@ class Aleph(Number):
         return r"\N{HEBREW LETTER ALEF}" + p._print(self.arg)
 
     def _sympystr(self, p):
-        return r"\N{HEBREW LETTER ALEF}" + p._print(self.arg)
+        return "Aleph(%s)" % p._print(self.arg)
     
     def _eval_subs(self, old, new, **hints):
         if self == old:
@@ -3749,7 +3880,10 @@ class NaN(with_metaclass(Singleton, Number)):
     def __new__(cls):
         return AtomicExpr.__new__(cls)
 
-    def _latex(self, printer):
+    def _sympystr(self, p):
+        return "S.NaN"
+    
+    def _latex(self, p):
         return r"\text{NaN}"
 
     @_sympifyit('other', NotImplemented)
@@ -3847,6 +3981,9 @@ class ComplexInfinity(with_metaclass(Singleton, AtomicExpr)):
     def __new__(cls):
         return AtomicExpr.__new__(cls)
 
+    def _sympystr(self, p):
+        return 'zoo'
+
     def _latex(self, printer):
         return r"\tilde{\infty}"
 
@@ -3911,8 +4048,7 @@ class NumberSymbol(AtomicExpr):
         from sympy.core.symbol import dtype
         return dtype.real
 
-    @property
-    def shape(self):
+    def _eval_shape(self):
         return ()
 
     def __new__(cls):
@@ -4109,7 +4245,11 @@ class Pi(with_metaclass(Singleton, NumberSymbol)):
         return 1, self
 
     def _sympystr(self, _):
-        return '\N{GREEK SMALL LETTER PI}'
+        #'\N{GREEK SMALL LETTER PI}'
+        return 'S.Pi'
+
+    def is_consistently_of(self, struct):
+        return struct.is_Pi
 
 
 pi = S.Pi
@@ -4395,6 +4535,9 @@ class ImaginaryUnit(with_metaclass(Singleton, AtomicExpr)):
 #         return printer._settings['imaginary_unit_latex']
         return r"{\color{blue} i}"
 
+    def _sympystr(self, p):
+        return 'sqrt(-1)'
+
     @staticmethod
     def __abs__():
         return S.One
@@ -4444,8 +4587,7 @@ class ImaginaryUnit(with_metaclass(Singleton, AtomicExpr)):
     def _mpc_(self):
         return (Float(0)._mpf_, Float(1)._mpf_)
 
-    @property
-    def shape(self):
+    def _eval_shape(self):
         return ()
 
     @property
@@ -4532,12 +4674,14 @@ class Infinitesimal(with_metaclass(Singleton, Number)):
     is_positive = True
     is_prime = False
 
-    __slots__ = []
     is_infinitesimal = True
+
+    __slots__ = []
+    infinitesimality = True
 
     @classmethod
     def class_key(cls):
-        # this value should be big enough, bigger than ExprWithLimits, so that Infinitesimal will be put at the rear of the _argset        
+        # this value should be big enough, bigger than ExprWithLimits, so that Infinitesimal will be put at the rear of the _argset
         return 6, 1, 'Number'
 
     def clear_infinitesimal(self):
@@ -4546,7 +4690,10 @@ class Infinitesimal(with_metaclass(Singleton, Number)):
     def __new__(cls):
         return AtomicExpr.__new__(cls)
 
-    def _latex(self, printer):
+    def _sympystr(self, p):
+        return "S.Infinitesimal"
+    
+    def _latex(self, p):
         return r"0^{+}"
 
     def _eval_subs(self, old, new, **hints):
@@ -4639,7 +4786,6 @@ class Infinitesimal(with_metaclass(Singleton, Number)):
         NegativeInfinity
 
         """
-        from sympy.functions import re
 
         if expt.is_extended_positive:
             return self
@@ -4650,7 +4796,8 @@ class Infinitesimal(with_metaclass(Singleton, Number)):
         if expt is S.ComplexInfinity:
             return S.NaN
         if expt.is_extended_real == False and expt.is_number:
-            expt_real = re(expt)
+            from sympy.functions import Re
+            expt_real = Re(expt)
             if expt_real.is_positive:
                 return S.ComplexInfinity
             if expt_real.is_negative:
@@ -4737,6 +4884,9 @@ class Infinitesimal(with_metaclass(Singleton, Number)):
     def __neg__(self):
         return S.NegativeInfinitesimal
 
+    def _eval_exp(self):
+        return S.One + self
+
 
 epsilon = S.Infinitesimal
 
@@ -4752,9 +4902,10 @@ class NegativeInfinitesimal(with_metaclass(Singleton, Number)):
     is_real = True
     is_negative = True
     is_prime = False
+    is_infinitesimal = True
 
     __slots__ = []
-    is_infinitesimal = False
+    infinitesimality = False
 
     @classmethod
     def class_key(cls):
@@ -4767,7 +4918,10 @@ class NegativeInfinitesimal(with_metaclass(Singleton, Number)):
     def __new__(cls):
         return AtomicExpr.__new__(cls)
 
-    def _latex(self, printer):
+    def _sympystr(self, p):
+        return "-S.Infinitesimal"
+    
+    def _latex(self, p):
         return r"0^{-}"
 
     def _eval_subs(self, old, new, **hints):
@@ -4959,6 +5113,9 @@ class NegativeInfinitesimal(with_metaclass(Singleton, Number)):
 
     def __neg__(self):
         return S.Infinitesimal
+
+    def _eval_exp(self):
+        return S.One + self
 
 
 _register_classes()

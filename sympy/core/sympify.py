@@ -1,9 +1,5 @@
 """sympify -- convert objects SymPy internal format"""
 
-import typing
-if typing.TYPE_CHECKING:
-    from typing import Any, Callable, Dict, Type
-
 from inspect import getmro
 
 from .core import all_classes as sympy_classes
@@ -417,6 +413,25 @@ def sympify(a, locals=None, convert_xor=True, strict=False, rational=False,
             except SympifyError:
                 continue
 
+    if isinstance(a, list):
+        def flatten(a):
+            if isinstance(a, list):
+                for e in a:
+                    yield from flatten(e)
+            else:
+                yield a
+                
+        for e in flatten(a):
+            if isinstance(e, Basic) and e.shape:
+                break
+        else:
+            from sympy import Matrix
+            import std
+            return Matrix(std.list_to_tuple(a))
+
+        from sympy import BlockMatrix
+        return BlockMatrix(a)
+
     if strict:
         raise SympifyError(a)
 
@@ -433,15 +448,6 @@ def sympify(a, locals=None, convert_xor=True, strict=False, rational=False,
             a = str(a)
         except Exception as exc:
             raise SympifyError(a, exc)
-        # from sympy.utilities.exceptions import SymPyDeprecationWarning
-        # SymPyDeprecationWarning(
-        #     feature="String fallback in sympify",
-        #     useinstead= \
-        #         'sympify(str(obj)) or ' + \
-        #         'sympy.core.sympify.converter or obj._sympy_',
-        #     issue=18066,
-        #     deprecated_since_version='1.6'
-        # ).warn()
 
     from sympy.parsing.sympy_parser import (parse_expr, TokenError,
                                             standard_transformations)

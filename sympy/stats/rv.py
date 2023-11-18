@@ -14,7 +14,6 @@ sympy.stats.rv_interface
 """
 
 from functools import singledispatch
-from typing import Tuple as tTuple
 from sympy import (Basic, S, Expr, Symbol, Tuple, And, Add, Eq, lambdify, Or,
                    Lambda, sympify, Dummy, Ne, KroneckerDelta,
                    DiracDelta, Mul, Indexed, MatrixSymbol, Function)
@@ -25,18 +24,7 @@ from sympy.utilities.misc import filldedent
 import warnings
 from sympy.core.symbol import dtype
 from sympy.matrices.expressions.blockmatrix import BlockMatrix
-# x = Symbol('x')
-
-
-@singledispatch
-def is_random(x):
-    return False
-
-
-@is_random.register(Basic)
-def _(x):
-    atoms = x.free_symbols
-    return any([is_random(i) for i in atoms])
+from sympy.core.cache import cacheit
 
 
 class RandomDomain(Basic):
@@ -135,8 +123,6 @@ class ConditionalDomain(RandomDomain):
     """
 
     def __new__(cls, fulldomain, condition):
-#         condition = condition.xreplace({rs: rs.symbol
-#             for rs in random_symbols(condition)})
         return Basic.__new__(cls, fulldomain, condition)
 
     @property
@@ -227,7 +213,12 @@ class SinglePSpace(PSpace):
             if value.shape:
                 symbol = value.copy(domain=value.domain_assumed, random=None)
             else:
-                symbol = value.copy(nonnegative=value.is_nonnegative, domain=value.domain, random=None)
+                symbol = value.copy(domain=value.domain, random=None)
+                #if symbol.is_nonnegative != value.is_nonnegative:
+                #    print(symbol.is_nonnegative)
+                #    print(value.is_nonnegative)
+                assert symbol.is_nonnegative == value.is_nonnegative
+                
             distribution = value.distribution
         else:
             if isinstance(symbol, str):
@@ -268,6 +259,18 @@ class SinglePSpace(PSpace):
     def pdf(self):
         return self.distribution.pdf(self.symbol)
 
+    @cacheit
+    def sort_key(self, order=None):
+        def inner_key(arg):
+            if isinstance(arg, Basic):
+                return arg.sort_key(order)
+            else:
+                return arg
+
+        args = self._sorted_args
+        args = len(args), tuple(arg if arg is None else arg.class_key() for arg in args), tuple(inner_key(arg) for arg in args)
+        return self.class_key(), args, S.One.sort_key(), S.One
+
 
 class RandomSymbol(Expr):
     """
@@ -299,8 +302,8 @@ class RandomSymbol(Expr):
     def dtype(self):
         return self.symbol.dtype
 
-    @property
-    def shape(self):
+    @cacheit
+    def _eval_shape(self):
         return self.symbol.shape
 
     def __new__(cls, symbol, pspace=None):
@@ -328,8 +331,8 @@ class RandomSymbol(Expr):
     def _eval_is_extended_positive(self):
         return self.symbol.is_extended_positive
 
-    def _eval_is_integer(self):
-        return self.symbol.is_integer
+    def _eval_is_extended_integer(self):
+        return self.symbol.is_extended_integer
 
     def _eval_is_extended_real(self):
         return self.symbol.is_extended_real or self.pspace.is_extended_real
@@ -338,8 +341,8 @@ class RandomSymbol(Expr):
     def is_commutative(self):
         return self.symbol.is_commutative
 
-    @property
-    def free_symbols(self):
+    @cacheit
+    def _eval_free_symbols(self):
         s = {self}
         if self.symbol.is_Indexed:
             for index in self.symbol.indices:
@@ -350,8 +353,8 @@ class RandomSymbol(Expr):
     def domain(self):
         return self.symbol.domain
 
-    def _sympystr(self, _): 
-        return Symbol.sympystr(self.name)
+    def _sympystr(self, p):
+        return Symbol.subs_specials(self.name)
 
     def _latex(self, p, style='plain'):
         return r'{\color{red} {\mathbf{%s}}}' % p._print(self.symbol.copy())
@@ -377,8 +380,8 @@ class RandomIndexedSymbol(RandomSymbol):
         elif isinstance(self.symbol, Function):
             return self.symbol.args[0]
 
-    @property
-    def free_symbols(self):
+    @cacheit
+    def _eval_free_symbols(self):
         if self.key.free_symbols:
             free_syms = self.key.free_symbols
             free_syms.add(self)
@@ -431,20 +434,11 @@ class IndependentProductPSpace(ProductPSpace):
         symbols = set().union(*[sp.symbols for sp in spaces])
 
         # Overlapping symbols
-        from sympy.stats.joint_rv import MarginalDistribution
-        from sympy.stats.compound_rv import CompoundDistribution
-        if len(symbols) < sum(len(space.symbols) for space in spaces if not
-         isinstance(space.distribution, (
-            CompoundDistribution, MarginalDistribution))):
-            raise ValueError("Overlapping Random Variables")
-
         if all(space.is_Finite for space in spaces):
             from sympy.stats.frv import ProductFinitePSpace
             cls = ProductFinitePSpace
 
-        obj = Basic.__new__(cls, *FiniteSet(*spaces))
-
-        return obj
+        return Basic.__new__(cls, *FiniteSet(*spaces))
 
     @property
     def pdf(self):
@@ -505,7 +499,7 @@ class IndependentProductPSpace(ProductPSpace):
         elif isinstance(condition, Or):  # they are independent
             return Add(*[self.probability(arg) for arg in condition.args])
         expr = condition.lhs - condition.rhs
-        rvs = random_symbols(expr)
+        rvs = expr.random_symbols
         dens = self.compute_density(expr)
         if any([pspace(rv).is_Continuous for rv in rvs]):
             from sympy.stats.crv import SingleContinuousPSpace
@@ -530,13 +524,13 @@ class IndependentProductPSpace(ProductPSpace):
         return result if not cond_inv else S.One - result
 
     def compute_density(self, expr, **kwargs):
-        rvs = random_symbols(expr)
+        rvs = expr.random_symbols
         
         reps = self.values2symbols()
         for var in rvs: 
             expr = expr._subs(var, reps[var])
 
-        assert not random_symbols(expr)
+        assert not expr.random_symbols
 
         if any(pspace(rv).is_Continuous for rv in rvs):
             z = Dummy('z', real=True)
@@ -550,7 +544,7 @@ class IndependentProductPSpace(ProductPSpace):
         raise ValueError("CDF not well defined on multivariate expressions")
 
     def conditional_space(self, condition, normalize=True, **kwargs):
-        rvs = random_symbols(condition)
+        rvs = condition.random_symbols
         condition = condition.xreplace({rv: rv.symbol for rv in self.values})
         if any([pspace(rv).is_Continuous for rv in rvs]):
             from sympy.stats.crv import (ConditionalContinuousDomain,
@@ -648,30 +642,6 @@ class ProductDomain(RandomDomain):
         return And(*[domain.as_boolean() for domain in self.domains])
 
 
-def random_symbols(expr):
-    
-    """
-    Returns all RandomSymbols within a SymPy Expression.
-    """
-
-    def preorder_traversal(self):
-        if isinstance(self, Basic): 
-            if self.is_symbol:
-                if self.is_random:
-                    yield self
-            elif self.is_PDF:
-                ...
-            else:
-                if hasattr(self, '_argset'):
-                    args = self._argset
-                else:
-                    args = self.args
-    
-                for arg in args:
-                    yield from preorder_traversal(arg)
-                       
-    return [*preorder_traversal(expr)]
-
 
 def contain_random_symbols(expr):
     """
@@ -715,7 +685,7 @@ def pspace(expr):
             from sympy.stats.crv import SingleContinuousPSpace
             return SingleContinuousPSpace(expr)
 
-    rvs = random_symbols(expr)
+    rvs = expr.random_symbols
     if not rvs:
         raise ValueError("Expression containing Random Variable expected, not %s" % (expr))
     # If only one space present
@@ -803,36 +773,8 @@ def given(expr, condition, **kwargs):
     if not condition.is_random or pspace_independent(expr, condition):
         return expr
 
-#     if isinstance(condition, RandomSymbol):
     if condition.is_symbol:
-        condition = Eq(condition, pspace(condition).symbol)
-
-#     condsymbols = random_symbols(condition)
-#     if condition.is_Equal and len(condsymbols) == 1 and not isinstance(pspace(expr).domain, ConditionalDomain):
-#         rv = tuple(condsymbols)[0]
-# 
-#         results = solveset(condition, rv)
-#         if isinstance(results, Intersection) and Reals in results.args:
-#             results = list(results.args[1])
-# 
-#         sums = 0
-#         for res in results:
-#             temp = expr.subs(rv, res)
-#             if temp == True:
-#                 return True
-#             if temp != False:
-#                 # XXX: This seems nonsensical but preserves existing behaviour
-#                 # after the change that Relational is no longer a subclass of
-#                 # Expr. Here expr is sometimes Relational and sometimes Expr
-#                 # but we are trying to add them with +=. This needs to be
-#                 # fixed somehow.
-#                 if sums == 0 and isinstance(expr, Relational):
-#                     sums = expr.subs(rv, res)
-#                 else:
-#                     sums += expr.subs(rv, res)
-#         if sums == 0:
-#             return False
-#         return sums
+        condition = Eq(condition, condition.var)
 
     # Get full probability space of both the expression and the condition
     fullspace = pspace(Tuple(expr, condition))
@@ -962,7 +904,7 @@ class PDF(Basic):
         if condition is not None:
             # Recompute on new conditional expr
             expr = given(expr, condition, **kwargs)
-        if not random_symbols(expr):
+        if not expr.random_symbols:
             x = Symbol('x', real=True)
             return Lambda(x, DiracDelta(x - expr))
         ps = pspace(expr)
@@ -1573,11 +1515,11 @@ def pspace_independent(a, b):
     pspace_a = pspace(a)
     pspace_b = pspace(b)
     if pspace_a.distribution is None or pspace_b.distribution is None:
-        return 
+        return
     a_symbols = set(pspace_a.symbols)
     b_symbols = set(pspace_b.symbols)
 
-    if len(set(random_symbols(a)).intersection(random_symbols(b))) != 0:
+    if len(set(a.random_symbols).intersection(b.random_symbols)) != 0:
         return False
 
     if len(a_symbols.intersection(b_symbols)) == 0:
@@ -1591,7 +1533,7 @@ def rv_subs(expr, symbols=None):
     If symbols keyword is given restrict the swap to only the symbols listed.
     """
     if symbols is None:
-        symbols = random_symbols(expr)
+        symbols = expr.random_symbols
     if not symbols:
         return expr
     swapdict = {rv: rv.symbol for rv in symbols}
@@ -1761,8 +1703,10 @@ class Distribution(Basic):
     
     @property
     def type(self):
-        return dtype.distribution   
+        return dtype.distribution
 
     def _latex(self, p):
         name = self.func.__name__[:-len('Distribution')]
         return name + p._print(self.args)
+    
+    is_distribution = True

@@ -3,6 +3,7 @@ from sympy.core.sympify import _sympify
 from sympy.polys.polytools import Poly
 
 from .matexpr import MatrixExpr
+from sympy.core.cache import cacheit
 
 
 class CompanionMatrix(MatrixExpr):
@@ -35,13 +36,11 @@ class CompanionMatrix(MatrixExpr):
 
         return super().__new__(cls, poly)
 
-
-    @property
-    def shape(self):
+    @cacheit
+    def _eval_shape(self):
         poly = self.args[0]
         size = poly.degree()
         return size, size
-
 
     def _entry(self, i, j):
         if j == self.cols - 1:

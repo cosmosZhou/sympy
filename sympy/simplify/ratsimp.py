@@ -25,7 +25,7 @@ def ratsimp(expr):
         Q, r = reduced(f, [g], field=True, expand=False)
     except ComputationFailed:
         return f/g
-    except PolynomialError:
+    except (PolynomialError, TypeError):
         return expr
 
     return Add(*Q) + cancel(r/g)

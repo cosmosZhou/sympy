@@ -91,7 +91,7 @@ class Mul(Expr, AssocOp):
 
     __slots__ = ()
 
-    is_commutative = True    
+    is_commutative = True
 
     def __neg__(self):
         c, args = self.as_coeff_mul()
@@ -218,12 +218,13 @@ class Mul(Expr, AssocOp):
 
         from sympy.calculus.util import AccumBounds
         from sympy.matrices.expressions import MatrixExpr
+        from sympy.matrices.expressions.matexpr import ZeroMatrix
         rv = None
         
-        infinitesimals = [x for x in seq if x.is_infinitesimal is not None]
+        infinitesimals = [x for x in seq if x.infinitesimality is not None]
         infinitesimal = None
         if infinitesimals:
-            noninfinitesimals = [x for x in seq if x.is_infinitesimal is None]
+            noninfinitesimals = [x for x in seq if x.infinitesimality is None]
             if len(infinitesimals) == 1:
                 infinitesimal, *_ = infinitesimals
                 noninfinitesimal, infinitesimal = infinitesimal.clear_infinitesimal()
@@ -275,11 +276,9 @@ class Mul(Expr, AssocOp):
         c_part = []  # out: commutative factors
         nc_part = []  # out: non-commutative factors
 
-        
-
         coeff = S.One  # standalone term
                             # e.g. 3 * ...
-
+                            
         c_powers = []  # (base,exp)      n
                             # e.g. (x,n) for x
 
@@ -309,23 +308,8 @@ class Mul(Expr, AssocOp):
             if o.is_Order:
                 o, order_symbols = o.as_expr_variables(order_symbols)
 
-            # Mul([...])
             if o.is_Mul:
-#                 if o.is_commutative:
                 seq.extend(o.args)  # XXX zerocopy?
-
-#                 else:
-#                     # NCMul can have commutative parts as well
-#                     for q in o.args:
-#                         if q.is_commutative:
-#                             seq.append(q)
-#                         else:
-#                             nc_seq.append(q)
-# 
-#                     # append non-commutative marker, so we don't forget to
-#                     # process scheduled non-commutative objects
-#                     seq.append(NC_Marker)
-
                 continue
 
             # 3
@@ -340,6 +324,8 @@ class Mul(Expr, AssocOp):
                         return [S.NaN], [], None
                 elif o.is_infinite:
                     c_powers.append((o, S.One))
+                elif o.is_NegativeOne:
+                    coeff = -coeff
                 continue
 
             elif isinstance(o, AccumBounds):
@@ -375,6 +361,9 @@ class Mul(Expr, AssocOp):
                             indices_to_be_deleted.reverse()
                             for index in indices_to_be_deleted:
                                 del c_powers[index]
+                    elif coeff.is_Zero or coeff.is_ZeroMatrix:
+                        coeff = ZeroMatrix(*o.shape)
+                        o = coeff
                                      
                     coeff = Mul(coeff, o, evaluate=False)
                 continue
@@ -386,7 +375,7 @@ class Mul(Expr, AssocOp):
                         continue
                     elif o.is_negative:
                         coeff = -coeff
-                        continue     
+                        continue
                         
                 b, e = o.as_base_exp()
 
@@ -417,43 +406,6 @@ class Mul(Expr, AssocOp):
 
                 c_powers.append((b, e))
 
-            # NON-COMMUTATIVE
-            # TODO: Make non-commutative exponents not combine automatically
-#             else:
-#                 if o is not NC_Marker:
-#                     nc_seq.append(o)
-# 
-#                 # process nc_seq (if any)
-#                 while nc_seq:
-#                     o = nc_seq.pop(0)
-#                     if not nc_part:
-#                         nc_part.append(o)
-#                         continue
-# 
-#                     #                             b    c       b+c
-#                     # try to combine last terms: a  * a   ->  a
-#                     o1 = nc_part.pop()
-#                     b1, e1 = o1.as_base_exp()
-#                     b2, e2 = o.as_base_exp()
-#                     new_exp = e1 + e2
-#                     # Only allow powers to combine if the new exponent is
-#                     # not an Add. This allow things like a**2*b**3 == a**5
-#                     # if a.is_commutative == False, but prohibits
-#                     # a**x*a**y and x**a*x**b from combining (x,y commute).
-#                     if b1 == b2 and (not new_exp.is_Add):
-#                         o12 = b1 ** new_exp
-# 
-#                         # now o12 could be a commutative object
-#                         if o12.is_commutative:
-#                             seq.append(o12)
-#                             continue
-#                         else:
-#                             nc_seq.insert(0, o12)
-# 
-#                     else:
-#                         nc_part.append(o1)
-#                         nc_part.append(o)
-
         # We do want a combined exponent if it would not be an Add, such as
         #  y    2y     3y
         # x  * x   -> x
@@ -470,9 +422,8 @@ class Mul(Expr, AssocOp):
         def _gather(c_powers):
             common_b = {}  # b:e
             for b, e in c_powers:
-                co = e.as_coeff_Mul()                    
-                common_b.setdefault(b, {}).setdefault(
-                    co[1], []).append(co[0])
+                co = e.as_coeff_Mul()
+                common_b.setdefault(b, {}).setdefault(co[1], []).append(co[0])
             for b, d in common_b.items():
                 for di, li in d.items():
                     d[di] = Add(*li)
@@ -712,7 +663,6 @@ class Mul(Expr, AssocOp):
             if any(c.is_finite == False for c in c_part):
                 return [S.NaN], [], order_symbols
             
-            from sympy.matrices.expressions.matexpr import ZeroMatrix
             shape = Add.broadcast_from_sequence(seq)
             coeff = ZeroMatrix(*shape)
             return [coeff], [], order_symbols
@@ -733,8 +683,10 @@ class Mul(Expr, AssocOp):
         if coeff.is_One:
             ...
         elif coeff.is_OneMatrix:
-            if len(coeff.shape) > max((len(arg.shape) for arg in c_part)):
+            if not c_part or len(coeff.shape) > max((len(arg.shape) for arg in c_part)):
                 c_part.insert(0, coeff)
+        elif coeff.is_Mul:
+            c_part = [*coeff.args] + c_part
         else:
             c_part.insert(0, coeff)
 
@@ -746,7 +698,7 @@ class Mul(Expr, AssocOp):
             c_part = [Add(*[coeff * f for f in c_part[1].args])]
 
         if infinitesimal:
-            return c_part, nc_part, infinitesimal 
+            return c_part, nc_part, infinitesimal
         return c_part, nc_part, order_symbols
 
     def _eval_power(self, e):
@@ -1057,7 +1009,7 @@ class Mul(Expr, AssocOp):
             [(k, 0, n) for k in kvals])
         return Sum(e, *l)
 
-    def _eval_determinant(self):
+    def _eval_determinant(self, **kwargs):
         if len(self.args) == 2:
             x, A = self.args
             if len(x.shape) == 2 and len(A.shape) == 1:
@@ -1435,12 +1387,38 @@ class Mul(Expr, AssocOp):
         elif is_rational == False:
             return False
 
+    def _eval_is_extended_rational(self):
+        trues = []
+        falses = []
+        for arg in self.args:
+            is_extended_rational = arg.is_extended_rational
+            if is_extended_rational is None:
+                return
+
+            if is_extended_rational:
+                trues.append(arg)
+            else:
+                falses.append(arg)
+
+        if not trues:
+            return False
+        
+        if not falses:
+            return True
+        
+        for t in trues:
+            is_zero = t.is_zero
+            if is_zero:
+                return True
+            
+            if is_zero is None:
+                return
+
+        return False
+
     def _eval_is_super_integer(self):
         return _fuzzy_group((a.is_super_integer for a in self.args), quick_exit=True)
         
-    def _eval_is_extended_rational(self):
-        return _fuzzy_group((a.is_extended_rational for a in self.args), quick_exit=True)
-
     def _eval_is_hyper_rational(self):
         return _fuzzy_group((a.is_hyper_rational for a in self.args), quick_exit=True)
         
@@ -1633,7 +1611,7 @@ class Mul(Expr, AssocOp):
                 return True
             if all(b == False for b in is_even):
                 return False
-            return 
+            return
         # !integer -> !odd
         if is_integer == False:
             return False
@@ -1655,14 +1633,34 @@ class Mul(Expr, AssocOp):
         if number_of_args > 1:
             return True
 
+    def _eval_is_singular(self):
+        for arg in self.args:
+            if arg.shape:
+                is_singular = arg.is_singular
+                if is_singular:
+                    return True
+
+                if is_singular is None:
+                    return
+                
+            else:
+                is_zero = arg.is_zero
+                if is_zero:
+                    return True
+                
+                if is_zero is None:
+                    return
+                
+        return False
+
     def _eval_subs(self, old, new, **hint):
+        if not old.is_Mul:
+            return
+
         from sympy.functions.elementary.complexes import sign
         from sympy.ntheory.factor_ import multiplicity
         from sympy.simplify.powsimp import powdenest
         from sympy.simplify.radsimp import fraction
-
-        if not old.is_Mul:
-            return 
 
         # try keep replacement literal so -2*x doesn't replace 4*x
         if old.args[0].is_Number and old.args[0] < 0:
@@ -1768,7 +1766,7 @@ class Mul(Expr, AssocOp):
                 c[co_old] = mult
             co_residual = co_self / co_old ** mult
         else:
-            co_residual = 1
+            co_residual = S.One
 
         # do quick tests to see if we can't succeed
 
@@ -1917,7 +1915,15 @@ class Mul(Expr, AssocOp):
             # rest of this routine
 
             margs = [Pow(new, cdid)] + margs
-        return co_residual * self2.func(*margs) * self2.func(*nc)
+
+        prod = co_residual
+        for m in margs:
+            prod *= m
+
+        for m in nc:
+            prod *= m
+            
+        return prod
 
     def _eval_nseries(self, x, n, logx):
         from sympy import Order, powsimp
@@ -1928,13 +1934,13 @@ class Mul(Expr, AssocOp):
         return res
 
     def _eval_as_leading_term(self, x, cdir=0):
-        return self.func(*[t.as_leading_term(x, cdir=cdir) for t in self.args])
+        return self.func(*(t.as_leading_term(x, cdir=cdir) for t in self.args))
 
     def _eval_conjugate(self):
-        return self.func(*[t.conjugate() for t in self.args])
+        return self.func(*(t.conjugate() for t in self.args))
 
     def _eval_adjoint(self):
-        return self.func(*[t.adjoint() for t in self.args[::-1]])
+        return self.func(*(t.adjoint() for t in self.args[::-1]))
 
     def _eval_exp(self):
         from sympy import logcombine, log
@@ -1944,7 +1950,7 @@ class Mul(Expr, AssocOp):
                 if coeff.is_even:
                     return S.One
                 if coeff.is_odd:
-                    return S.NegativeOne 
+                    return S.NegativeOne
                 coeff += S.Half
                 if coeff.is_even:
                     return -S.ImaginaryUnit
@@ -2059,12 +2065,12 @@ class Mul(Expr, AssocOp):
         elif rhs.is_zero:
             return Basic.simplify_Equal(self, lhs, rhs)
 
-    def simplifyKroneckerDelta(self):
+    def simplify_KroneckerDelta(self):
         for arg in self.args:
             if arg.is_KroneckerDelta:
                 i, j = arg.args
                 if i == 0 and j in self.args or j == 0 and i in self.args:
-                    return S.Zero                    
+                    return S.Zero
 
         coefficient = []
         delta = []
@@ -2086,20 +2092,20 @@ class Mul(Expr, AssocOp):
         else:
             coefficient = S.One
              
-        this = delta   
+        this = delta
         if this.is_Add:
             args = [*this.args]
             hit = False
             for i, arg in enumerate(this.args):
                 if arg.is_Mul:
-                    _arg = arg.simplifyKroneckerDelta()
+                    _arg = arg.simplify_KroneckerDelta()
                     if arg != _arg:
                         args[i] = _arg
                         hit = True
             if hit:
                 this = this.func(*args)
             if this.is_Add:
-                this = this.simplifyKroneckerDelta()
+                this = this.simplify_KroneckerDelta()
             if this != delta:
                 return this * coefficient
         else:
@@ -2107,8 +2113,20 @@ class Mul(Expr, AssocOp):
             if this != self:
                 return this
             
-        return self    
+        return self
     
+    @staticmethod
+    def can_be_canceled(expr, a):
+        if expr.is_Pow:
+            _a, e = expr.args
+            if e == -1:
+                if _a == a or a == -a:
+                    return True
+        elif expr.is_Rational:
+            q = expr.q
+            if q == a or q == -a:
+                return True
+
     def simplify(self, deep=False, **kwargs):
         if deep:
             return Expr.simplify(self, deep=True, **kwargs)
@@ -2126,7 +2144,7 @@ class Mul(Expr, AssocOp):
                     try:
                         j = self.args.index(-b)
                         args = [*self.args]
-                        args[i] = -1              
+                        args[i] = -1
                         del args[j]
                         return self.func(*args).simplify()
                     except:
@@ -2136,11 +2154,29 @@ class Mul(Expr, AssocOp):
         # dissolve the initial minus sign
         if a.is_Number and a._coeff_isneg():
             b = self.args[1]
-            if isinstance(b, Add):
+            if b.is_Add:
                 if a.is_infinite:
                     return self.func(*(-a, b.func(*(-arg for arg in b.args))) + self.args[2:])
                 else:
-                    return self.func(*(b.func(*(arg * a for arg in b.args)),) + self.args[2:])
+                    if b.args[0]._coeff_isneg():
+                        return self.func(*(b.func(*(arg * a for arg in b.args)),) + self.args[2:])
+                    
+                    for arg in b.args:
+                        if arg.is_Mul:
+                            if any(self.can_be_canceled(arg, a) for arg in arg.args):
+                                hit = True
+                                break
+
+                        elif self.can_be_canceled(arg, a):
+                            hit = True
+                            break
+
+                    else:
+                        hit = False
+                        
+                    if hit:
+                        return self.func(*(b.func(*(arg * a for arg in b.args)),) + self.args[2:])
+                                            
 
         infinity = []
         coeff = []
@@ -2164,7 +2200,7 @@ class Mul(Expr, AssocOp):
 
         from sympy import KroneckerDelta
         if self._has(KroneckerDelta):
-            this = self.simplifyKroneckerDelta()
+            this = self.simplify_KroneckerDelta()
             if this != self:
                 return this
             
@@ -2230,7 +2266,7 @@ class Mul(Expr, AssocOp):
                         if positive[i].limits == positive[j].limits:
                             positive[i] *= 2
                             del positive[j]
-                            return True                            
+                            return True
                         continue
                     limits = positive[i].limits_union(positive[j])
                     positive[i] = positive[i].func(positive[i].expr, *limits)
@@ -2239,14 +2275,31 @@ class Mul(Expr, AssocOp):
 
     def _eval_transpose(self, axis=-1):
         if axis == self.default_axis:
-            max_len_shape = self.max_len_shape()
-            if all(not arg.shape or len(arg.shape) == max_len_shape for arg in self.args):
+            scalar = []
+            vector = []
+            matrix = []
+            for arg in self.args:
+                if not arg.shape:
+                    scalar.append(arg)
+                elif len(arg.shape) == 1:
+                    vector.append(arg)
+                else:
+                    matrix.append(arg)
+                
+            if not vector:
                 return self.func(*(arg.T for arg in self.args))
 
+            if scalar:
+                return self.func(*vector, *matrix).T * self.func(*scalar)
+            
+            if len(matrix) == 1:
+                matrix, = matrix
+                if matrix.is_Identity:
+                    return self
+
     def domain_nonzero(self, x):
-        from sympy import Interval, Range
-        from sympy.core.numbers import oo        
-        domain = Range(-oo, oo) if x.is_integer else Interval(-oo, oo)
+        from sympy.core.numbers import oo
+        domain = x.range(-oo, oo)
         for arg in self.args:
             domain &= arg.domain_nonzero(x)
         return domain
@@ -2306,7 +2359,7 @@ class Mul(Expr, AssocOp):
             if coeff:
                 if domain:
                     return domain * Mul(*coeff)
-                return domain                
+                return domain
         else:
             for arg in self.args:
                 if len(arg.shape) < max_shape_len:
@@ -2359,7 +2412,7 @@ class Mul(Expr, AssocOp):
                 for i, term in enumerate(args):
                     term_tex = p._print(term)
 
-                    if not term.is_Product and p._needs_mul_brackets(term, first=(i == 0), last=(i == len(args) - 1)) or term.is_Reduced and i < len(args) - 1:
+                    if not term.is_Product and not term.is_Bool and not term.is_Exp and p._needs_mul_brackets(term, first=(i == 0), last=(i == len(args) - 1)) or term.is_Reduced and i < len(args) - 1:
                         term_tex = r"\left(%s\right)" % term_tex
 
                     if _between_two_numbers_p[0].search(last_term_tex) and _between_two_numbers_p[1].match(term_tex):
@@ -2373,7 +2426,7 @@ class Mul(Expr, AssocOp):
                         prev.is_Product and term.is_ExprWithLimits:
                             _tex += " \cdot "
                         else:
-                            _tex += separator                                
+                            _tex += separator
 
                     _tex += term_tex
                     last_term_tex = term_tex
@@ -2472,12 +2525,19 @@ class Mul(Expr, AssocOp):
             if item.base in b:
                 b_str[b.index(item.base)] = "(%s)" % b_str[b.index(item.base)]
 
+        if len(a) > 1:
+            if a[0].is_DenseMatrix or a[0].is_BlockMatrix and a[0].axis == 0:
+                if a[1].is_DenseMatrix or a[1].is_BlockMatrix:
+                    #sympify the first element
+                    a_str[0] = 'S' + a_str[0]
+
         if not b:
-            return sign + '*'.join(a_str)
-        elif len(b) == 1:
-            return sign + '*'.join(a_str) + "/" + b_str[0]
-        else:
-            return sign + '*'.join(a_str) + "/(%s)" % '*'.join(b_str)
+            return sign + ' * '.join(a_str)
+
+        if len(b) == 1:
+            return sign + ' * '.join(a_str) + " / " + b_str[0]
+
+        return sign + ' * '.join(a_str) + " / (%s)" % '*'.join(b_str)
 
     def _pretty(self, p):
         from sympy.printing.pretty.stringpict import prettyForm
@@ -2543,7 +2603,7 @@ class Mul(Expr, AssocOp):
     def is_lower(self):
         for arg in self.args:
             if not arg.shape:
-                continue            
+                continue
             if len(arg.shape) == 1:
                 continue
             if arg.is_lower:
@@ -2577,31 +2637,63 @@ class Mul(Expr, AssocOp):
         unk = []
         for t in arg.args:
             tnew = Abs(t)
-            if isinstance(tnew, Abs):
+            if isinstance(tnew, Abs) and tnew.arg == t:
                 unk.append(tnew.args[0])
             else:
                 known.append(tnew)
         known = Mul(*known)
         unk = Abs(Mul(*unk), evaluate=False) if unk else S.One
         return known * unk
-        
-        if all(arg.is_nonnegative for arg in self.args):
-            return self
     
     @property
     def dtype(self):
         if self.is_integer:
             from sympy import dtype
             return dtype.integer
-        return super(Mul, self).dtype()
+        return super(Mul, self).dtype
 
     def squeeze(self):
         return self.func(*[t for t in self.args if not t.is_OneMatrix])
 
-    def of(self, cls):
+    def of(self, cls, **kwargs):
         from sympy.core.of import Basic
-        res = Expr.of(self, cls)
-        if isinstance(res, tuple): 
+        if isinstance(cls, Basic):
+            indices = kwargs.get('indices', [None] * len(cls.args))
+            res = Expr.of(self, cls, indices=indices)
+        else:
+            res = Expr.of(self, cls)
+            indices = []
+
+        if res is None:
+            if cls.is_Mul:
+                return self.rotary_match(cls, indices)
+            
+            elif cls.is_Pow:
+                if len(cls.args) == 2 and cls.args[1] in (-1, 2):
+                    b, e = cls.args
+                    if b.is_Mul:
+                        if len(b.args) == len(self.args):
+                            cls = [b ** e for b in b.args]
+                            args = []
+                            for cls, arg in zip(cls, self.args):
+                                arg = arg.of(cls)
+                                if arg is None:
+                                    break
+                                args.append(arg)
+                            else:
+                                return tuple(args)
+                        else:
+                            return
+                    args = []
+                    for arg in self.args:
+                        arg = arg.of(cls)
+                        if arg is None:
+                            break
+                        args.append(arg)
+                    else:
+                        return Mul(*args)
+                     
+        elif isinstance(res, tuple):
             if cls.is_Mul:
                 if not isinstance(cls, type):
                     try:
@@ -2612,9 +2704,11 @@ class Mul(Expr, AssocOp):
                             if len(res) > 2:
                                 a, b = cls.args
                                 if a is Expr and (b is not Expr):
-                                    *res, b = res
+                                    index = indices[1]
+                                    b = res[index]
+                                    res = res[:index] + res[index + 1:]
                                     a = Mul(*res)
-                                    return (a, b)
+                                    return a, b
                         elif len(cls.args) == 1:
                             for i, r in enumerate(res):
                                 if isinstance(r, tuple):
@@ -2628,72 +2722,6 @@ class Mul(Expr, AssocOp):
                         if cls.of_LinearPattern():
                             return Mul(*res)
                     
-        elif res is None:
-            if cls.is_Mul:
-                if cls.of_LinearPattern():
-                    if self._coeff_isneg():
-                        return -self
-                    return
-                
-                if len(cls.args) == 2:
-                    a, b = cls.args
-                    cls = Basic.__new__(Mul, b, a)
-                    args = Expr.of(self, cls)
-                    if args is not None:
-                        if cls.of_LinearPattern():
-                            if isinstance(args, tuple):
-                                return Mul(*args)
-                        else:
-                            if isinstance(args, tuple):
-                                if len(args) > 2:
-                                    *_b, _a = args
-                                    _b = Mul(*_b)
-                                else:
-                                    _b, _a = args
-                                return _a, _b
-                    return args
-                if len(cls.args) == 3:
-                    a, b, c = cls.args
-                    if a.is_Number or a.is_ImaginaryUnit:
-                        if isinstance(a, type) and not isinstance(self.args[0], a) and isinstance(self.args[1], a):
-                            cls = Basic.__new__(Mul, c, a, b)
-                        else:
-                            cls = Basic.__new__(Mul, a, c, b)
-                            
-                        args = Expr.of(self, cls)
-                        if args is not None:
-                            _c, _b = args
-                            return (_b, _c)
-                        return args
-                    
-                for i, Ty in enumerate(cls.args):
-                    args = [*self.args]
-                    Ty_indices = [t for t, arg in enumerate(args) if isinstance(Ty, type) and isinstance(arg, Ty) or isinstance(Ty.func, type) and isinstance(arg, Ty.func)]
-                    if len(Ty_indices) == 1:
-                        types = [*cls.args]
-                        [j] = Ty_indices
-                        del types[i]
-                        
-                        Ty_value = args.pop(j)
-                        Ty_value = Ty_value.of(Ty)
-                        if Ty_value is None:
-                            break
-                        args = self.func(*args).of(Basic.__new__(Mul, *types))
-                        if args:
-                            if isinstance(args, tuple) and len(args) == len(cls.args) - 1:
-                                return args[:i] + (Ty_value,) + args[i:]
-            
-            elif cls.is_Pow:
-                if len(cls.args) == 2 and cls.args[1] in (-1, 2):
-                    args = []
-                    for arg in self.args:
-                        arg = arg.of(cls)
-                        if arg is None:
-                            break
-                        args.append(arg)
-                    else:
-                        return Mul(*args)
-                     
         return res
 
     def of_simple_poly(self, x):
@@ -2735,6 +2763,39 @@ class Mul(Expr, AssocOp):
                 if monotonicity is None:
                     args[i], monotonicity = arg.monotonicity(x)
                     if not monotonicity:
+                        if isinstance(args[i], tuple):
+                            lower, upper = args[i]
+                            if factor < 0:
+                                lower, upper = upper, lower
+                            [*args] = self.args
+                            args[i] = lower
+                            
+                            lower = Mul(*args)
+                            expr_lower, mon_lower = lower.monotonicity(x)
+                            
+                            args[i] = upper
+                            upper = Mul(*args)
+                            expr_upper, mon_upper = upper.monotonicity(x)
+
+                            if mon_lower < 0:
+                                if mon_upper > 0:
+                                    ...
+                                elif mon_upper < 0:
+                                    ...
+                                else:
+                                    if not upper._has(x):
+                                        return (expr_lower, upper), 0
+                            elif mon_lower > 0:
+                                ...
+                            else:
+                                if mon_upper > 0:
+                                    ...
+                                elif mon_upper < 0:
+                                    ...
+                                else:
+                                    if not lower._has(x):
+                                        if not upper._has(x):
+                                            return (lower, upper), 0                            
                         return None, 0
                 else:
                     return None, 0
@@ -2746,13 +2807,102 @@ class Mul(Expr, AssocOp):
                 else:
                     return None, 0
                 
+        if monotonicity is None:
+            return None, 0
+
         return self.func(*args, evaluate=False), monotonicity * factor
     
-    def is_continuous(self, *args):
+    def is_continuous_at(self, *args):
         from sympy.core.logic import fuzzy_and
-        return fuzzy_and(x.is_continuous(*args) for x in self.args)
+        return fuzzy_and(x.is_continuous_at(*args) for x in self.args)
 
+    def _eval_torch(self):
+        return prod(arg.torch for arg in self.args)
+
+    @staticmethod
+    def simplify_Lamda(self, squeeze=False):
+        vars = self.variables
+        limits = self.limits
+        modified = []
+        deformed = []
+        unmodified = []
+        constants = []
+        for arg in self.expr.args:
+            if arg.has(*vars):
+                if arg.is_Add:
+                    unmodified.append(arg)
+                else:
+                    lamda = self.func(arg, *limits)
+                    _lamda = lamda.simplify()
+                    if _lamda != lamda:
+                        if len(_lamda.shape) < len(self.shape):
+                            deformed.append(_lamda)
+                        else:
+                            modified.append(_lamda)
+                    else:
+                        unmodified.append(arg)
+            else:
+                constants.append(arg)
     
+        if deformed or modified or constants:
+            
+            if unmodified:
+                if max(len(expr.shape) for expr in unmodified) < len(self.expr.shape):
+                    from sympy import OneMatrix
+                    one = OneMatrix(*self.expr.shape)
+                    try:
+                        del constants[constants.index(one)]
+                        if not constants and not modified:
+                            return self
+                        
+                    except ValueError:
+                        ...
+                        
+                    unmodified.append(one)
+                    
+                unmodified = self.func(Mul(*unmodified), *limits)
+                unmodified = [unmodified]
+
+            if deformed:
+                deformed = Mul(*deformed)
+                from sympy import Transpose
+                deformed = Transpose.expand_dims(deformed, self.shape, len(self.limits))
+                deformed = [deformed]
+
+            return Mul(*constants, *modified, *unmodified, *deformed)
+        
+        return self
+    
+    @cacheit
+    def sort_key(self, order=None):
+        coeff, expr = self.as_coeff_Mul()
+
+        if expr.is_Pow:
+            expr, exp = expr.args
+        else:
+            expr, exp = expr, S.One
+
+        if expr.is_Dummy:
+            args = (expr.sort_key(),)
+        elif expr.is_Atom:
+            args = (str(expr),)
+        else:
+            if expr.is_Add:
+                args = expr.as_ordered_terms(order=order)
+            elif expr.is_Mul:
+                args = expr.as_ordered_factors(order=order)
+            else:
+                args = expr.args
+
+            args = tuple(arg.sort_key(order=order) for arg in args)
+
+        args = len(args), tuple(arg.class_key() for arg in self.args), args
+        exp = exp.sort_key(order=order)
+
+        class_key = expr.class_key()
+        return (*class_key, *coeff.sort_key()), args, exp, coeff
+
+
 mul = AssocOpDispatcher('mul')
 
     

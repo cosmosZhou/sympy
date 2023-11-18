@@ -9,6 +9,7 @@ from sympy.utilities.iterables import numbered_symbols, sift, \
         topological_sort, ordered
 
 from . import cse_opts
+from sympy.core.cache import cacheit
 
 # (preprocessor, postprocessor) pairs which are commonly useful. They should
 # each take a sympy expression and return a possibly transformed expression.
@@ -277,8 +278,8 @@ class Unevaluated(object):
     def as_unevaluated_basic(self):
         return self.func(*self.args, evaluate=False)
 
-    @property
-    def free_symbols(self):
+    @cacheit
+    def _eval_free_symbols(self):
         return set().union(*[a.free_symbols for a in self.args])
 
     __repr__ = __str__

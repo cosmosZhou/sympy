@@ -3,10 +3,10 @@ from sympy.concrete.expr_with_limits import Lamda
 from sympy.functions.special.tensor_functions import Bool
 from sympy.sets.contains import Element
 from sympy import Range
-from sympy.tensor.indexed import Indexed
 
 
 # https://tensorflow.google.cn/api_docs/python/tf/linalg/band_part
+@Function(complex=True, shape=property(lambda self: self.arg.shape))
 def BandPart(x, *limits):
     '''
     >>> n = 20
@@ -30,10 +30,3 @@ def BandPart(x, *limits):
     return x * Lamda[j:n, i:m](Bool(Element(j - i, Range(-num_lower, num_upper + 1, step=dilation))))
 
    
-def __getitem__(self, indices):
-    if isinstance(indices, tuple):
-        return Indexed(self, *indices)
-    return Indexed(self, indices)
-
-   
-BandPart = Function.BandPart(eval=BandPart, complex=True, __doc__=BandPart.__doc__, __getitem__=__getitem__)

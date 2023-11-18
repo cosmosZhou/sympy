@@ -59,7 +59,8 @@ def _process_limits(func, limits):
     def _find_x(func):
         free = func.free_symbols
         if len(free) == 1:
-            return free.pop()
+            free, = free
+            return free
         elif not free:
             return Dummy('k')
         else:

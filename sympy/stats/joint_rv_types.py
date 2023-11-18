@@ -1,25 +1,11 @@
-from sympy import (sympify, S, pi, sqrt, exp, Lambda, Indexed, besselk, gamma, Interval,
+from sympy import (sympify, S, pi, sqrt, exp, Lambda, Indexed, besselk, Gamma, Interval,
                    Range, factorial, Mul, Integer,
                    Add, rf, Eq, Piecewise, ones, Symbol, Pow, Rational, Sum,
                    Intersection, Matrix, symbols, Product, IndexedBase)
 from sympy.matrices import ImmutableMatrix, MatrixSymbol
 from sympy.matrices.expressions.determinant import det
 from sympy.stats.joint_rv import JointDistribution, JointPSpace, MarginalDistribution
-from sympy.stats.rv import _value_check, random_symbols
-
-__all__ = ['JointRV',
-'MultivariateNormal',
-'MultivariateLaplace',
-'Dirichlet',
-'GeneralizedMultivariateLogGamma',
-'GeneralizedMultivariateLogGammaOmega',
-'Multinomial',
-'MultivariateBeta',
-'MultivariateEwens',
-'MultivariateT',
-'NegativeMultinomial',
-'NormalGamma'
-]
+from sympy.stats.rv import _value_check
 
 def multivariate_rv(cls, sym, *args):
     args = list(map(sympify, args))
@@ -115,7 +101,7 @@ def JointRV(symbol, pdf, _set=None):
     pdf = Lambda(syms, pdf)
     dist = JointDistributionHandmade(pdf, _set)
     jrv = JointPSpace(symbol, dist).value
-    rvs = random_symbols(pdf)
+    rvs = pdf.random_symbols
     if len(rvs) != 0:
         dist = MarginalDistribution(dist, (jrv,))
         return JointPSpace(symbol, dist).value
@@ -310,7 +296,7 @@ class MultivariateTDistribution(JointDistribution):
         sigma_inv = sigma.inv()
         args = ImmutableMatrix(args)
         x = args - mu
-        return gamma((k + v)/2)/(gamma(v/2)*(v*pi)**(k/2)*sqrt(det(sigma)))\
+        return Gamma((k + v)/2)/(Gamma(v/2)*(v*pi)**(k/2)*sqrt(det(sigma)))\
         *(1 + 1/v*(x.transpose()*sigma_inv*x)[0])**((-v - k)/2)
 
 def MultivariateT(syms, mu, sigma, v):
@@ -370,7 +356,7 @@ class NormalGammaDistribution(JointDistribution):
         beta, alpha, lamda = self.beta, self.alpha, self.lamda
         mu = self.mu
 
-        return beta**alpha*sqrt(lamda)/(gamma(alpha)*sqrt(2*pi))*\
+        return beta**alpha*sqrt(lamda)/(Gamma(alpha)*sqrt(2*pi))*\
         tau**(alpha - S.Half)*exp(-1*beta*tau)*\
         exp(-1*(lamda*tau*(x - mu)**2)/S(2))
 
@@ -383,7 +369,7 @@ class NormalGammaDistribution(JointDistribution):
             x = sym[0]
             v, mu, sigma = self.alpha - S.Half, self.mu, \
                 S(self.beta)/(self.lamda * self.alpha)
-            return Lambda(sym, gamma((v + 1)/2)/(gamma(v/2)*sqrt(pi*v)*sigma)*\
+            return Lambda(sym, Gamma((v + 1)/2)/(Gamma(v/2)*sqrt(pi*v)*sigma)*\
                 (1 + 1/v*((x - mu)/sigma)**2)**((-v -1)/2))
         #For marginal over `tau`, return Gamma distribution as per construction
         from sympy.stats.crv_types import GammaDistribution
@@ -391,7 +377,7 @@ class NormalGammaDistribution(JointDistribution):
 
 def NormalGamma(sym, mu, lamda, alpha, beta):
     """
-    Creates a bivariate joint random variable with multivariate Normal gamma
+    Creates a bivariate joint random variable with multivariate Normal Gamma
     distribution.
 
     Parameters
@@ -455,7 +441,7 @@ class MultivariateBetaDistribution(JointDistribution):
 
     def pdf(self, *syms):
         alpha = self.alpha
-        B = Mul.fromiter(map(gamma, alpha))/gamma(Add(*alpha))
+        B = Mul.fromiter(map(Gamma, alpha))/Gamma(Add(*alpha))
         return Mul.fromiter(sym**(a_k - 1) for a_k, sym in zip(alpha, syms))/B
 
 def MultivariateBeta(syms, *alpha):
@@ -488,9 +474,9 @@ def MultivariateBeta(syms, *alpha):
     >>> x = Symbol('x')
     >>> y = Symbol('y')
     >>> density(B)(x, y)
-    x**(a1 - 1)*y**(a2 - 1)*gamma(a1 + a2)/(gamma(a1)*gamma(a2))
+    x**(a1 - 1)*y**(a2 - 1)*Gamma(a1 + a2)/(Gamma(a1)*Gamma(a2))
     >>> marginal_distribution(C, C[0])(x)
-    x**(a1 - 1)*gamma(a1 + a2)/(a2*gamma(a1)*gamma(a2))
+    x**(a1 - 1)*Gamma(a1 + a2)/(a2*Gamma(a1)*Gamma(a2))
 
     References
     ==========
@@ -616,12 +602,12 @@ class GeneralizedMultivariateLogGammaDistribution(JointDistribution):
         return Reals**len(self.lamda)
 
     def pdf(self, *y):
-        from sympy.functions.special.gamma_functions import gamma
+        from sympy.functions.special.gamma_functions import Gamma
         d, v, l, mu = self.delta, self.v, self.lamda, self.mu
         n = Symbol('n', negative=False, integer=True)
         k = len(l)
         sterm1 = Pow((1 - d), n)/\
-                ((gamma(v + n)**(k - 1))*gamma(v)*gamma(n + 1))
+                ((Gamma(v + n)**(k - 1))*Gamma(v)*Gamma(n + 1))
         sterm2 = Mul.fromiter(mui*li**(-v - n) for mui, li in zip(mu, l))
         term1 = sterm1 * sterm2
         sterm3 = (v + n) * sum([mui * yi for mui, yi in zip(mu, y)])
@@ -631,7 +617,7 @@ class GeneralizedMultivariateLogGammaDistribution(JointDistribution):
 
 def GeneralizedMultivariateLogGamma(syms, delta, v, lamda, mu):
     """
-    Creates a joint random variable with generalized multivariate log gamma
+    Creates a joint random variable with generalized multivariate log Gamma
     distribution.
 
     The joint pdf can be found at [1].
@@ -663,7 +649,7 @@ def GeneralizedMultivariateLogGamma(syms, delta, v, lamda, mu):
     >>> Gd = GeneralizedMultivariateLogGamma('G', d, v, l, mu)
     >>> density(Gd)(y[0], y[1], y[2])
     Sum(2**(-n)*exp((n + 1)*(y_1 + y_2 + y_3) - exp(y_1) - exp(y_2) -
-    exp(y_3))/gamma(n + 1)**3, (n, 0, oo))/2
+    exp(y_3))/Gamma(n + 1)**3, (n, 0, oo))/2
 
     References
     ==========
@@ -717,7 +703,7 @@ def GeneralizedMultivariateLogGammaOmega(syms, omega, v, lamda, mu):
     >>> y = symbols('y_1:4', positive=True)
     >>> density(G)(y[0], y[1], y[2])
     sqrt(2)*Sum((1 - sqrt(2)/2)**n*exp((n + 1)*(y_1 + y_2 + y_3) - exp(y_1) -
-    exp(y_2) - exp(y_3))/gamma(n + 1)**3, (n, 0, oo))/2
+    exp(y_2) - exp(y_3))/Gamma(n + 1)**3, (n, 0, oo))/2
 
     References
     ==========
@@ -777,7 +763,7 @@ class MultinomialDistribution(JointDistribution):
         term_2 = Mul.fromiter(p_k**x_k for p_k, x_k in zip(p, x))
         return Piecewise((term_1 * term_2, Eq(sum(x), n)), (0, True))
 
-def Multinomial(syms, n, *p):
+def multinomial(syms, n, *p):
     """
     Creates a discrete random variable with Multinomial Distribution.
 
@@ -799,11 +785,11 @@ def Multinomial(syms, n, *p):
     Examples
     ========
 
-    >>> from sympy.stats import density,  Multinomial, marginal_distribution
+    >>> from sympy.stats import density, multinomial, marginal_distribution
     >>> from sympy import symbols
     >>> x1, x2, x3 = symbols('x1, x2, x3', nonnegative=True, integer=True)
     >>> p1, p2, p3 = symbols('p1, p2, p3', positive=True)
-    >>> M = Multinomial('M', 3, p1, p2, p3)
+    >>> M = multinomial('M', 3, p1, p2, p3)
     >>> density(M)(x1, x2, x3)
     Piecewise((6*p1**x1*p2**x2*p3**x3/(factorial(x1)*factorial(x2)*factorial(x3)),
     Eq(x1 + x2 + x3, 3)), (0, True))
@@ -846,7 +832,7 @@ class NegativeMultinomialDistribution(JointDistribution):
 
     def pdf(self, *k):
         k0, p = self.k0, self.p
-        term_1 = (gamma(k0 + sum(k))*(1 - sum(p))**k0)/gamma(k0)
+        term_1 = (Gamma(k0 + sum(k))*(1 - sum(p))**k0)/Gamma(k0)
         term_2 = Mul.fromiter(pi**ki/factorial(ki) for pi, ki in zip(p, k))
         return term_1 * term_2
 
@@ -879,7 +865,7 @@ def NegativeMultinomial(syms, k0, *p):
     >>> N = NegativeMultinomial('M', 3, p1, p2, p3)
     >>> N_c = NegativeMultinomial('M', 3, 0.1, 0.1, 0.1)
     >>> density(N)(x1, x2, x3)
-    p1**x1*p2**x2*p3**x3*(-p1 - p2 - p3 + 1)**3*gamma(x1 + x2 +
+    p1**x1*p2**x2*p3**x3*(-p1 - p2 - p3 + 1)**3*Gamma(x1 + x2 +
     x3 + 3)/(2*factorial(x1)*factorial(x2)*factorial(x3))
     >>> marginal_distribution(N_c, N_c[0])(1).evalf().round(2)
     0.25

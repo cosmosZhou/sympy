@@ -118,6 +118,9 @@ class SingletonRegistry(Registry):
     def __repr__(self):
         return "S"
     
+    def __getitem__(self, args):
+        return self([*args])
+
     def __setitem__(self, lhs, rhs):
         try:
             assert lhs == rhs

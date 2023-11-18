@@ -6,8 +6,6 @@ from sympy.physics.mechanics.linearize import Linearizer
 from sympy.utilities import default_sort_key
 from sympy.utilities.iterables import iterable
 
-__all__ = ['LagrangesMethod']
-
 
 class LagrangesMethod(object):
     """Lagrange's method object.

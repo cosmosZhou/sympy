@@ -20,7 +20,8 @@ class Invoker:
     
     @property
     def parent(self):
-        return self._objs[-2]
+        if len(self._objs) > 1:
+            return self._objs[-2]
     
     @property
     def source(self):
@@ -43,7 +44,7 @@ class Invoker:
                     elif clue == 'imply':
                         return self.inference_status(True)
                 else:
-                    # in case of result of simplify                    
+                    # in case of result of simplify
                     if equivalent is not self.target:
                         clue = equivalent.clue
                         if clue is not None:
@@ -58,29 +59,56 @@ class Invoker:
                 return self.inference_status(True)
         return 'equivalent'
         
-    def result(self, obj, simplify=True, evaluate=None):
+    def process_index(self, i, obj):
+        this = self._objs[i - 1]
+        args = [*this.args]
+
+        index = self.index[i]
+        if isinstance(index, slice):
+            assert this.is_And or this.is_Or or this.is_Mul or this.is_Add or this.is_MatMul
+            start, stop, step = index.start, index.stop, index.step
+            if start is None:
+                start = 0
+            elif start < 0:
+                start += len(args)
+
+            if stop is None:
+                stop = len(args)
+            elif stop < 0:
+                stop += len(args)
+                
+            if step is None:
+                step = 1
+                
+            if step > 0:
+                index, *indices = range(start, stop, step)
+                indices.reverse()
+            else:
+                *indices, index = range(start, stop, step)
+                
+            for j in indices:
+                del args[j]
+
+        kwargs = this.kwargs
+        try:
+            args[index] = obj
+        except TypeError:
+            if index == 'shape':
+                obj = tuple(obj)
+            kwargs[index] = obj
+            args = ()
+        return this, args, kwargs
+    
+    def result(self, obj, simplify=-1, evaluate=None):
         assumptions = {self.determine_assumptions(obj): self.source}
-        from sympy.core.sympify import _sympify        
+        from sympy.core.sympify import _sympify
         obj = _sympify(obj)
         for i in range(-1, -len(self.index) - 1, -1):
-            this = self._objs[i - 1]
-            args = [*this.args]
-            
-            index = self.index[i]
-            try:
-                args[index] = obj
-            except TypeError:
-                assert this.is_And or this.is_Or
-                for j in index[::-1]:
-                    del args[j]
-                args.append(obj)
+            this, args, kwargs = self.process_index(i, obj)
             
             stop = i == -len(self.index)
-            
             if stop:
                 kwargs = assumptions
-            else:
-                kwargs = this.kwargs
                 
             if evaluate is not None:
                 kwargs['evaluate'] = evaluate
@@ -89,7 +117,9 @@ class Invoker:
                 _, *limits = args
                 for i, limit in enumerate(limits):
                     if limit[0] in self._domain_defined:
-                        x, domain = limit.coerce_setlimit() 
+                        x, domain, *dir = limit.coerce_setlimit()
+                        if dir:
+                            continue
                         domain_defined = self._domain_defined.pop(x)
                         if domain != domain_defined:
                             if domain_defined in domain: 
@@ -100,12 +130,13 @@ class Invoker:
                         for x in set(self._domain_defined):
                             if this._has(x): 
                                 args.append((x, self._domain_defined.pop(x)))                    
-
-            obj = this.func(*args, **kwargs)
             
-            if simplify and (not obj.is_ForAll or stop or not self._objs[i - 2].is_Exists):
+            obj = this.func(*args, **kwargs)
+            if simplify:
                 # exclude case Exists[C](All[x](f(x) == C))
-                obj = obj.simplify()
+                if not obj.is_ForAll or stop or not self._objs[i - 2].is_Exists:
+                    obj = obj.simplify()
+                simplify -= 1
                 
             if stop:
                 break
@@ -140,11 +171,9 @@ class Invoker:
         
         this = self.this
         
-        if this.is_ForAll: 
-            if self.callable.__func__ is this.func.simplify:
-                if self.parent.is_Exists:
-                    kwargs['local'] = True
-                    
+        if any(obj.is_Exists for obj in self._objs):
+            kwargs['local'] = True
+
         evaluate = kwargs.pop('evaluate', None)
         obj = self.invoke(*args, **kwargs)
         
@@ -153,35 +182,50 @@ class Invoker:
                 assert all(arg.is_Equal for arg in args)
                 assert all(arg.plausible is None for arg in args)                
             self.watch_domain_defined(obj)
-                
-        return self.result(obj,
-                           simplify=kwargs.get('simplify', True) is not None,
-                           evaluate=evaluate)
+        else:
+            for i in range(-2, -len(self._objs), -1):
+                parent = self._objs[i]
+                if parent.is_ExprWithLimits and not (parent.is_Expectation or parent.is_Variance or parent.is_Lamda):
+                    self.watch_domain_defined(obj, *parent.limits)
+                    
+        simplify = kwargs.get('simplify', True)
+        if simplify is None:
+            simplify = 0
+        elif isinstance(simplify, bool):
+            simplify = -1
+        else:
+            #warning: isinstance(True, int) or isinstance(False, int) is always True
+            if simplify:
+                simplify -= 1
+
+        return self.result(obj, simplify=simplify, evaluate=evaluate)
 
     def invoke(self, *args, **kwargs):
         if self._context:
             this = self.this
             reps = []
-            from sympy import Interval, Range
             outer_context = {}
-            for _, limits in self._context:
+            for expr, limits in self._context:
                 for x, *ab in limits:
-                    if x.shape:
+                    if x.shape or not ab:
                         continue
+                    
                     if len(ab) == 1:
-                        domain, *_ = ab
+                        domain, = ab
                         if domain.is_Boolean:
+                            if expr.is_ExprCondPair and domain is expr.cond:
+                                assert this is not domain, 'could not operate on the cond field of a piecewise expression under the condition of itself!'
                             domain = x.domain_conditioned(domain)
                         elif domain.is_ConditionSet:
                             domain = domain.base_set
-                    else:
+                    elif len(ab) == 2 and not ab[1].is_set:
                         for i, t in enumerate(ab):
                             for outer_var in outer_context:
                                 if t._has(outer_var):
                                     t = t._subs(outer_var, outer_context[outer_var][0])
                             ab[i] = t
                                 
-                        domain = (Range if x.is_integer else Interval)(*ab)
+                        domain = x.range(*ab)
                         
                     if x in outer_context:
                         x, _domain = outer_context[x]
@@ -193,7 +237,12 @@ class Invoker:
                             
                     _x = x.copy(domain=domain)
                     if x != _x:
-                        this = this._subs(x, _x).simplify()
+                        this = this._subs(x, _x)
+                        if this.is_ExprWithLimits and len(this.limits) > 1 and kwargs.get('simplify') is False:
+                            ...
+                        else:
+                            this = this.simplify()
+
                         reps.append((x, _x))
                         outer_context[x] = (_x, domain)
             
@@ -207,22 +256,27 @@ class Invoker:
                 if obj.is_bool:
                     if _obj.is_BooleanAtom:
                         _obj = _obj.copy(equivalent=obj)
-                obj = _obj                    
+                obj = _obj
         else: 
             if self.callable.__func__.__code__.co_name == 'apply':
                 axiom = args[0]
                 __kwdefaults__ = axiom.apply.__closure__[0].cell_contents.__kwdefaults__
-                if __kwdefaults__ and 'assumptions' in __kwdefaults__:
-                    assumptions = {}
-                    for obj in self._objs:
-                        if obj.is_ExprWithLimits:
-                            if obj.is_Exists:
-                                for x in obj.variables:
-                                    assumptions[x] = False 
-                            else:
-                                for x, *ab in obj.limits:
-                                    assumptions[x] = ab
-                    kwargs['assumptions'] = assumptions
+                if __kwdefaults__:
+                    if 'assumptions' in __kwdefaults__:
+                        assumptions = {}
+                        for obj in self._objs:
+                            if obj.is_ExprWithLimits:
+                                if obj.is_Exists:
+                                    for x in obj.variables:
+                                        assumptions[x] = False
+                                else:
+                                    for x, *ab in obj.limits:
+                                        assumptions[x] = ab
+                        kwargs['assumptions'] = assumptions
+                    elif 'simplify' in __kwdefaults__:
+                        simplify = __kwdefaults__['simplify']
+                        if not kwargs and not simplify:
+                            kwargs['simplify'] = simplify
                 
             obj = self.callable(*args, **kwargs)
         return obj
@@ -242,7 +296,7 @@ class Invoker:
             
         return self
         
-    def target_from_path(self, target, *path):
+    def target_from_path(self, target, *path, struct=None):
         for index in path:
             target = target.args[index]
         return target
@@ -256,7 +310,7 @@ class Invoker:
                                    func=self.target_from_path,
                                    fetch=self.fetch_from_path,
                                    output=[],
-                                   struct=struct)                      
+                                   struct=struct)
                                     
     method2index = {'rhs': 1,
                     'lhs': 0,
@@ -265,46 +319,25 @@ class Invoker:
                     'expr': 0,
                     'base': 0}
 
-    def watch_domain_defined(self, obj):
-            # beware that application of definition may cause the domain definition to be altered, thus causing logic error!
+    def watch_domain_defined(self, obj, *limits):
+        # beware that application of definition may cause the domain definition to be altered, thus causing logic error!
         target = self.target
-        target_keys = target._domain_defined.keys()
-        # obj_keys = obj._domain_defined.keys()
-        for key in target_keys:
-            original_domain = target.domain_defined(key)
-            altered_domain = obj.domain_defined(key)
+        if not limits:
+            from sympy import Tuple
+            limits = [Tuple(v) for v in target.free_symbols]
+
+        for limit in limits:
+            x, *ab = limit
+            original_domain = target.domain_defined(x)
+            altered_domain = obj.domain_defined(x)
             if original_domain != altered_domain:
-                
-                if original_domain not in altered_domain:
-                    from sympy.core.function import AppliedUndef
-                    if not target._has(AppliedUndef):
-                        target._domain_defined[key] = None
-                        print(target.domain_defined(key))
-                        
-                        obj._domain_defined[key] = None
-                        print(obj.domain_defined(key))
-                                            
-                        print('error occurred in', __file__)
-                        
-                    assert target._has(AppliedUndef)
-#                             print(original_domain)
-#                             print(altered_domain)
-                    if altered_domain not in original_domain:
-                        target._domain_defined[key] = None
-                        print(target.domain_defined(key))
-                        
-                        obj._domain_defined[key] = None
-                        print(obj.domain_defined(key))
-                                            
-                        print('error occurred in', __file__)
-                        
-                    assert altered_domain in original_domain
-                    target._domain_defined[key] = altered_domain
-                    original_domain = altered_domain
-                    
-                assert original_domain in altered_domain, "original domain of definition must lie in transformed domain of definition!"                    
-                assert key not in self._domain_defined                    
-                self._domain_defined[key] = original_domain
+                if original_domain in altered_domain:
+                    ...
+                else:
+                    x, domain = limit.coerce_setlimit()
+                    assert original_domain & domain in altered_domain & domain, "original domain of definition must lie in transformed domain of definition!"                    
+                assert x not in self._domain_defined
+                self._domain_defined[x] = original_domain
         
     def __getattr__(self, method): 
         target = self.target
@@ -316,6 +349,7 @@ class Invoker:
         
         if method == 'definition':
             self.watch_domain_defined(obj)
+            return self.result(obj)
             
         if isinstance(obj, MethodType):
             self.callable = obj
@@ -329,6 +363,11 @@ class Invoker:
         if index is None:
             return self.result(obj)
             
+        if obj is not target.args[index]:
+            assert method in ('lhs', 'rhs')
+            self.index.append(0)
+            self.append(target.args[0])
+        
         self.index.append(index)
         self.append(obj)
 
@@ -372,11 +411,21 @@ class Invoker:
     def __str__(self):
         return str(self.target)
 
+    def __len__(self):
+        return len(self.target)
+
     __repr__ = __str__
     
     @property
     def latex(self):
-        return self.target.latex
+        target = self.target
+        try:
+            return target.latex
+        except AttributeError:
+            if isinstance(target, tuple):
+                return r"\left[\begin{array}{%s}%s\end{array}\right]" % ('c', r'\\'.join(t.latex for t in target))
+        except Exception as e:
+            raise
 
     def _pretty(self, p):
         return p._print(self.target)
@@ -388,12 +437,28 @@ class Invoker:
             obj = target[indices]
              
             parent = self.parent
-            try:
-                index = parent.args.index(obj)
-            except ValueError:
-                assert parent.is_And or parent.is_Or
-                index = tuple(parent.args.index(o) for o in obj)
+            if isinstance(indices, slice):
+                assert parent.is_And or parent.is_Or or parent.is_Mul or parent.is_Add or parent.is_MatMul and isinstance(indices, slice) and (indices.step is None or indices.step == 1)
+                index = indices
                 obj = parent.func(*obj)
+            else:
+                try:
+                    index = parent.args.index(obj)
+                except ValueError:
+                    for key, value in parent.kwargs.items():
+                        if key == 'shape':
+                            try:
+                                index = value.index(obj)
+                                self.index.append('shape')
+                                from sympy import Tuple
+                                self._objs[-1] = Tuple(*target)
+                                self._objs.append(obj)
+                                break
+                            except ValueError:
+                                continue
+                        elif obj == value:
+                            index = key
+                            break
                 
             self.index.append(index)
             self._objs[-1] = obj
@@ -419,32 +484,8 @@ class Invoker:
 
     def enter(self, *args, **kwargs):
         target = self.target
-        limits = []
-        
-        if target.is_ExprWithLimits: 
-            if not args and not kwargs:
-                for limit in target.limits:
-                    x, *ab = limit
-                    if not ab and x.is_integer:
-                        limit = (x, target.expr.domain_defined(x))
-                    limits.append(limit)
-                limits.reverse()      
-            else:
-                limits = [*target.limits]
-            
-        elif target.is_ExprCondPair:
-            piecewise = self.parent
-            cond = target.cond
-            for e, c in piecewise.args:
-                if e == target.expr:
-                    break
-                cond &= c.invert()
-                
-            if cond.is_And:
-                limits = [(eq.wrt, eq) for eq in cond.args]
-            else: 
-                limits = [(cond.wrt, cond)]
-                
+        limits = target.limits_in_context(args or kwargs, self.parent)
+
         if args:
             for x in args:
                 if target.is_ExprWithLimits and x in target.variables:
@@ -483,10 +524,9 @@ class Identity(Invoker):
         from sympy import Equal
         
         for i in range(-1, -len(self.index) - 1, -1):
-            this = self._objs[i - 1]
-            args = [*this.args]
-            args[self.index[i]] = obj
-            obj = this.func(*args, **this.kwargs)
+            this, args, kwargs = self.process_index(i, obj)
+
+            obj = this.func(*args, **kwargs)
             if simplify:
                 obj = obj.simplify()
 

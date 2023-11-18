@@ -1,7 +1,7 @@
 from collections import defaultdict
 
 from sympy.core import (sympify, Basic, S, Expr, expand_mul, factor_terms,
-    Mul, Dummy, igcd, FunctionClass, Add, symbols, Wild, expand)
+    Mul, Dummy, igcd, Add, symbols, Wild, expand)
 from sympy.core.cache import cacheit
 from sympy.core.compatibility import reduce, iterable, SYMPY_INTS
 from sympy.core.function import count_ops, _mexpand
@@ -203,7 +203,7 @@ def trigsimp_groebner(expr, hints=[], quick=False, order="grlex",
         for e in hints:
             if isinstance(e, (SYMPY_INTS, Integer)):
                 n = e
-            elif isinstance(e, FunctionClass):
+            elif e.is_FunctionClass:
                 funcs.append(e)
             elif iterable(e):
                 iterables.append((e[0], e[1:]))

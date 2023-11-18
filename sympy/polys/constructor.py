@@ -170,7 +170,7 @@ def _construct_composite(coeffs, opt):
                 rationals = True
         elif coeff.is_Float:
             reals = True
-            break        
+            break
 
     if reals:
         max_prec = max([c._prec for c in coeffs])

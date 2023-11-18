@@ -14,24 +14,6 @@ from sympy.physics.quantum.hilbert import L2
 from sympy.physics.quantum.operator import DifferentialOperator, HermitianOperator
 from sympy.physics.quantum.state import Ket, Bra, State
 
-__all__ = [
-    'XOp',
-    'YOp',
-    'ZOp',
-    'PxOp',
-    'X',
-    'Y',
-    'Z',
-    'Px',
-    'XKet',
-    'XBra',
-    'PxKet',
-    'PxBra',
-    'PositionState3D',
-    'PositionKet3D',
-    'PositionBra3D'
-]
-
 #-------------------------------------------------------------------------
 # Position operators
 #-------------------------------------------------------------------------

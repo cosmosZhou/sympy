@@ -1,8 +1,10 @@
 from sympy import Basic
-from sympy.functions import adjoint, conjugate
+from sympy.functions import conjugate
 
 from sympy.matrices.expressions.matexpr import MatrixExpr
 from sympy.core.sympify import _sympify
+from sympy.core.cache import cacheit
+from sympy.core.containers import Tuple
 
 
 class Transpose(MatrixExpr):
@@ -44,20 +46,21 @@ class Transpose(MatrixExpr):
                 return cls[axes](arg)
             
         else:
-            [arg] = args
+            arg, = args
             if 'axis' in kwargs:
                 axis = kwargs.pop('axis')
             else:
                 axis = -1
                 
+        arg = _sympify(arg)
         if axis < 0:
             axis += len(arg.shape)
                 
         if kwargs.get('evaluate', True):
             transpose = arg._eval_transpose(axis=axis)
             if transpose is not None:
-                return transpose            
-            
+                return transpose
+
         obj = MatrixExpr.__new__(cls, arg, **kwargs)
         obj.axis = _sympify(axis)
         return obj
@@ -67,7 +70,7 @@ class Transpose(MatrixExpr):
         if self.axis == self.default_axis:
             return "%s.T" % p.parenthesize(self.arg, PRECEDENCE["Pow"])
         else:
-            return "%s.T%s" % (p.parenthesize(self.arg, PRECEDENCE["Pow"]), self.axis)
+            return "Transpose[%s](%s)" % (self.axis, p._print(self.arg))
 
     def need_parenthesis_for_arg(self):
         arg = self.arg
@@ -110,8 +113,8 @@ class Transpose(MatrixExpr):
     def arg(self):
         return self.args[0]
 
-    @property
-    def shape(self):        
+    @cacheit
+    def _eval_shape(self):        
         [*shape] = self.arg.shape
         shape[self.axis], shape[self.axis - 1] = shape[self.axis - 1], shape[self.axis]
         return tuple(shape)
@@ -122,20 +125,21 @@ class Transpose(MatrixExpr):
                 if len(self.shape) > 2:
                     return self.arg[i].T
                 
-                if isinstance(i, slice):
-                    start, stop = i.start, i.stop
-                    if start is None:
-                        if stop is None:
-                            return self
-                    from sympy.tensor.indexed import Sliced                
-                    return Sliced(self.arg, slice(None, None), i)
+                if isinstance(i, Tuple):
+                    size = self.shape[0]
+                    start, stop, step = i.slice_args
+                    if start == 0 and stop == size and step == 1:
+                        return self
+                    
+                    from sympy import Sliced                    
+                    return Sliced(self.arg, Tuple(0, self.arg.shape[0]), Tuple(start, stop))
                 return self.arg[:, i]
                         
             if hasattr(self.arg, '_entry'):
                 return self.arg._entry(j, i, expand=expand, **kwargs)
             
-            if isinstance(i, slice):
-                if isinstance(j, slice): 
+            if isinstance(i, Tuple):
+                if isinstance(j, Tuple): 
                     return self.arg[j, i].T
                 else:
                     return self.arg[j, i].T
@@ -151,7 +155,8 @@ class Transpose(MatrixExpr):
         return conjugate(self.arg)
 
     def _eval_conjugate(self):
-        return adjoint(self.arg)
+        from sympy import Adjoint
+        return Adjoint(self.arg)
 
     def _eval_transpose(self, axis=-1):
         if axis == self.axis:
@@ -161,12 +166,21 @@ class Transpose(MatrixExpr):
         from .trace import Trace
         return Trace(self.arg)  # Trace(X.T) => Trace(X)
 
-    def _eval_determinant(self):
+    def _eval_determinant(self, **kwargs):
         from sympy.matrices.expressions.determinant import det
         return det(self.arg)
 
     def _eval_is_extended_real(self):
         return self.arg.is_extended_real
+    
+    def _eval_is_hyper_real(self):
+        return self.arg.is_hyper_real
+    
+    def _eval_is_super_real(self):
+        return self.arg.is_super_real
+    
+    def _eval_is_hyper_complex(self):
+        return self.arg.is_hyper_complex
     
     def _eval_is_extended_positive(self):
         return self.arg.is_extended_positive
@@ -175,7 +189,7 @@ class Transpose(MatrixExpr):
         return self.arg.is_extended_negative
     
     def _eval_is_finite(self):
-        return self.arg.is_finite    
+        return self.arg.is_finite
 
     def _eval_derivative_matrix_lines(self, x):
         lines = self.args[0]._eval_derivative_matrix_lines(x)
@@ -194,6 +208,8 @@ class Transpose(MatrixExpr):
         from sympy.core.mul import Mul
         f = self.arg
         if isinstance(f, Function):
+            if len(f.shape) > 1:
+                return self
             return f.func(self.func(f.arg).simplify())
         if isinstance(f, Mul):
             if len(f.args[0].shape) == 0:
@@ -201,6 +217,7 @@ class Transpose(MatrixExpr):
 
         return self
 
+    @cacheit
     def _eval_domain_defined(self, x, **_):
         domain = MatrixExpr._eval_domain_defined(self, x)
         for arg in self.args:
@@ -211,23 +228,27 @@ class Transpose(MatrixExpr):
         this = self.arg
         if this.is_BlockMatrix and old.is_Transpose and old.arg.is_BlockMatrix:
             args = old.arg.args
-            from sympy.utilities.misc import sunday
+            from std.search import sunday
             i = sunday(this.args, args)
             if i >= 0:
                 return this.func(*this.args[:i] + (new.T,) + this.args[i + len(args):]).simplify().T
                 
         return MatrixExpr._subs(self, old, new, **hints)
 
-    def __getitem__(self, key):
-        if not isinstance(key, tuple) and isinstance(key, slice):
-            return self._entry(key)
-        if isinstance(key, tuple): 
-            if len(key) == 1:
-                key = key[0]
-            elif len(key) == 2:
-                i, j = key
-                if isinstance(i, slice):
-                    if isinstance(j, slice):
+    def __getitem__(self, indices):
+        if (indices := self.simplify_indices(indices)) is None:
+            return self
+        
+        if isinstance(indices, Tuple):
+            return self._entry(indices)
+
+        if isinstance(indices, tuple):
+            if len(indices) == 1:
+                indices = indices[0]
+            elif len(indices) == 2:
+                i, j = indices
+                if isinstance(i, Tuple):
+                    if isinstance(j, Tuple):
                         return self._entry(i, j)
                     else:
                         return self.func(self.arg[j])
@@ -237,9 +258,15 @@ class Transpose(MatrixExpr):
                     return self._entry(i, j)
                 else:
                     raise IndexError("Invalid indices (%s, %s)" % (i, j))
-        
-        assert isinstance(key, int) or key.is_Expr
-        return self._entry(key)
+
+            elif len(indices) == 3:
+                if len(self.shape) == len(indices):
+                    if self.axis == self.default_axis:
+                        k, i, j = indices
+                        return self.arg[k, j, i]
+
+        assert isinstance(indices, int) or indices.is_Expr
+        return self._entry(indices)
 
     def of(self, cls):
         if cls.is_IndexedOperator:
@@ -270,8 +297,28 @@ class Transpose(MatrixExpr):
                 else:
                     return self.args
 
+    def _eval_torch(self):
+        return self.arg.torch.transpose(self.axis - 1, self.axis)
+    
+    @staticmethod
+    def expand_dims(self, shape, pivot):
+        consistent_shape = shape[:-pivot] 
+        extra_shape = shape[-pivot:]
+        consistent_shape_len = len(consistent_shape)
+#                   transpose matrix from (*consistent_shape, *extra_shape) to (*extra_shape, *consistent_shape)
+#                   (3, 4, 5, 6) => (5, 6, 3, 4)
+        axes = []
+        for j in range(len(extra_shape)):
+            for i in range(consistent_shape_len):
+                axes.append(consistent_shape_len + j - i)
 
+        if len(self.shape) < len(shape):
+            from sympy import OneMatrix
+            self *= OneMatrix(*consistent_shape, *extra_shape)
 
+        return Transpose[tuple(axes)](self)
+
+        
 def transpose(expr):
     """Matrix transpose"""
     return Transpose(expr).doit(deep=False)
