@@ -236,7 +236,8 @@ class ExprWithLimits(Expr):
         for v in expr.yield_effective_variable(variable):
             if v.is_Indexed or v.is_Sliced or v.is_SlicedIndexed:
                 if v_enlarged := v.enlarge_indices(limits, expr):
-                    yield v_enlarged
+                    if v_enlarged._has(variable):
+                        yield v_enlarged
                 else:
                     yield v
             else:
