@@ -949,7 +949,7 @@ class Symbol(AtomicExpr, NotIterable):
                 
         return False
     
-    def _eval_transpose(self, axis=-1):
+    def _eval_transpose(self, *axis):
         if axis == self.default_axis:
             if len(self.shape) < 2:
                 return self
@@ -1332,7 +1332,7 @@ class Symbol(AtomicExpr, NotIterable):
             return True
         return definition.is_continuous_at(*args)
         
-    def of(self, cls):
+    def of(self, cls, **kwargs):
         from sympy import Set
         if cls is Set and self.is_set:
             return self
@@ -1393,16 +1393,6 @@ class Symbol(AtomicExpr, NotIterable):
         """Overloading for <<"""
         return Assuming(self, other)
     
-    @cacheit
-    def compile(self, *syms):
-        assert all(self._has(v) for v in syms)
-        definition = self.definition
-        if definition is None:
-            from sympy.keras.network import NetWorkSymbol
-            return NetWorkSymbol(self)
-        
-        return definition.compile(*syms)
-
     def find_path(self, cls, path, **kwargs):
         for attr in kwargs:
             value = getattr(self, attr)
@@ -1659,7 +1649,17 @@ class Symbol(AtomicExpr, NotIterable):
             Symbol.definition_append(definition, [(self, f'{sym} = Symbol({kwargs})')])
         return definition
 
- 
+    def _eval_try_div(self, factor):
+        if factor.is_Mul:
+            try:
+                index = factor.args.index(self)
+                [*args] = factor.args
+                del args[index]
+                return factor.func(*args)
+            except IndexError:
+                ...
+
+
 class Dummy(Symbol):
     """Dummy symbols are each unique, even if they have the same name:
 
@@ -3236,8 +3236,13 @@ class DtypeMatrix(Dtype):
     def __hash__(self):
         return hash((type(self).__name__, self.dtype, self.shape))
     
-    def transpose(self): 
-        return DtypeMatrix(self.dtype, (*self.lengths[:-2], self.lengths[-1], self.lengths[-2]))
+    def transpose(self, *args): 
+        if not args:
+            args = (-2, -1)
+        i, j = args
+        [*lengths] = self.lengths
+        lengths[i], lengths[j] = lengths[j], lengths[i]
+        return DtypeMatrix(self.dtype, lengths)
 
     def __call__(self, **kwargs):
         if not kwargs:

@@ -1565,19 +1565,6 @@ domain & limit[1] = %s
             return self.is_ZeroMatrix
         return self.is_Zero
 
-    def _eval_torch(self):
-        expr = self.expr
-        limits = self.limits
-        
-        ranges = []
-        for x, *args in limits:
-            assert x.is_integer
-            ranges.append([t.torch for t in args])
-
-        from sympy.concrete.expr_with_limits import Lamda
-        self = Lamda(expr, *limits).torch
-        return sum(self[indices] for indices in itertools.product(*(range(*args) for args in ranges)))
-    
     @classmethod
     def unnest(cls, expr, limits, symbols, evaluate=True, **assumptions):
     # unnest any nested calls

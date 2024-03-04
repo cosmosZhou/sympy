@@ -887,7 +887,7 @@ class Number(AtomicExpr):
     def _eval_shape(self):
         return ()
 
-    def _eval_transpose(self, axis=-1):
+    def _eval_transpose(self, *axis):
         return self
 
     def simplify(self, *_, **__):
@@ -914,18 +914,6 @@ class Number(AtomicExpr):
     def is_continuous_at(self, *args):
         return True
 
-    def _eval_torch(self):
-        import torch
-        data = torch.from_numpy(self.numpy)
-        if torch.cuda.is_available():
-            data = data.cuda()
-        return data
-
-    def _eval_keras(self):
-        import keras
-        data = keras.from_numpy(self.numpy)
-        return data
-    
     @staticmethod
     def simplify_Lamda(self, squeeze=False):
         if squeeze:
@@ -2140,7 +2128,7 @@ class Rational(Number):
         """Efficiently extract the coefficient of a summation. """
         return self, S.Zero
 
-    def of(self, cls):
+    def of(self, cls, **kwargs):
         if isinstance(cls, int):
             if self == cls:
                 return ()
@@ -2623,6 +2611,11 @@ class Integer(Rational):
 
     def _sympystr(self, p):
         return str(self.p)
+
+    def _eval_try_div(self, factor):
+        if factor.is_Integer:
+            if not self % factor:
+                return self / factor
 
 
 # Add sympify converters

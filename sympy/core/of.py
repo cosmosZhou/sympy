@@ -59,7 +59,7 @@ class Basic:
     # Wanted is used in expression: Product + {Sum[Sum]}
     is_Wanted = False
     is_IndexedOperator = False
-  
+
     def __new__(cls, *args, **kwargs):
         obj = object.__new__(Basic)
         obj.func = cls
@@ -719,6 +719,19 @@ class Basic:
         from sympy.core.core import Wanted
         return Wanted(self)
     
+    @property
+    def unwanted(self):
+        hit = False
+        args = []
+        for arg in self.args:
+            unwanted = getattr(arg, 'unwanted', arg)
+            hit |= unwanted is not arg
+            args.append(unwanted)
+
+        if hit:
+            return Basic.__new__(self.func, *args)
+        return self
+
     def __floordiv__(self, other):
         from sympy import Floor
         other = sympify(other)     
@@ -849,5 +862,18 @@ class Basic:
             try:
                 return basic.is_abstract
             except AttributeError:
+                ...
+
+    def of_simple_poly(self):
+        if self.is_Add and len(self.args) == 2:
+            from sympy import Expr
+            try:
+                index = self.args.index(Expr)
+                mul = self.args[1 - index]
+                if mul.is_Mul:
+                    if len(mul.args) == 2:
+                        if Expr in mul.args:
+                            return True
+            except:
                 ...
 

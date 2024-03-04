@@ -30,7 +30,7 @@ class Trace(Expr):
 
         return Basic.__new__(cls, mat)
 
-    def _eval_transpose(self, axis=-1):
+    def _eval_transpose(self, *axis):
         return self
 
     def _eval_derivative(self, v):

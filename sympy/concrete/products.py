@@ -368,7 +368,7 @@ class Product(ExprWithIntLimits):
         from sympy.simplify.simplify import product_simplify
         return product_simplify(self)
 
-    def _eval_transpose(self, axis=-1):
+    def _eval_transpose(self, *axis):
         if axis == self.default_axis: 
             return self.func(self.expr.transpose(), *self.limits)        
 
@@ -845,7 +845,7 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
         from sympy.simplify.simplify import product_simplify
         return product_simplify(self)
 
-    def _eval_transpose(self, axis=-1):
+    def _eval_transpose(self, *axis):
         if axis == self.default_axis:
             limits = self.limits
             function = self.expr

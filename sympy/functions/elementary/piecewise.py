@@ -970,7 +970,7 @@ class Piecewise(Function):
             return self.func(*args)
         return self
 
-    def _eval_transpose(self, axis=-1):
+    def _eval_transpose(self, *axis):
         if axis == self.default_axis:
             return self.func(*((e.T, c) for e, c in self.args))
 
@@ -1738,10 +1738,6 @@ class Piecewise(Function):
                 if expr.is_Piecewise:
                     expr.check_sanctity()
          
-    def _eval_torch(self):
-        for expr, cond in self.args:
-            if cond.torch == True:
-                return expr.torch
     
     @staticmethod
     def simplify_Lamda(self, squeeze=False):

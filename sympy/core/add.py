@@ -117,7 +117,7 @@ class Add(Expr, AssocOp):
         order_factors = []
 
         infinitesimal = None
-        from sympy.matrices.expressions.matexpr import OneMatrix, ZeroMatrix
+        from sympy import OneMatrix, ZeroMatrix
         for i, o in enumerate(seq):
 
             # O(x)
@@ -925,7 +925,7 @@ class Add(Expr, AssocOp):
     def _eval_conjugate(self):
         return self.func(*(t.conjugate() for t in self.args))
 
-    def _eval_transpose(self, axis=-1):
+    def _eval_transpose(self, *axis):
         if axis == self.default_axis:
             scalar = []
             vector = []
@@ -1649,22 +1649,25 @@ class Add(Expr, AssocOp):
 
         if res is None:
             if cls.is_Add:
-                return self.rotary_match(cls, indices)
+                res = self.rotary_match(cls, indices)
 
             elif cls.is_Mul:
                 args = []
                 common_terms = set()
                 for arg in self.args:
-                    a, c = arg.of(cls)
-                    args.append(a)
-                    common_terms.add(c)
-                    if len(common_terms) > 1:
+                    if ac := arg.of(cls):
+                        a, c = ac
+                        args.append(a)
+                        common_terms.add(c)
+                        if len(common_terms) > 1:
+                            return
+                    else:
                         return
                 c, = common_terms
                 return Add(*args), c
                     
-        elif isinstance(res, tuple):
-            if isinstance(cls, Basic) and len(res) > 2:
+        if isinstance(res, tuple) and isinstance(cls, Basic):
+            if len(res) > 2:
                 if cls.of_subtraction_pattern():
                     negative = []
                     positive = []
@@ -1675,10 +1678,37 @@ class Add(Expr, AssocOp):
                             positive.append(arg)
                     
                     return Add(*positive), Add(*negative)
+
                 elif cls.of_two_terms():
                     *res, mul = res
                     return Add(*res), mul
-                
+
+                elif cls.of_simple_poly():
+                    i = 1 - cls.args.index(Expr)
+                    index = indices[i]
+                    [*args] = self.args
+                    del args[index]
+                    
+                    coeff = res[index]
+                    if isinstance(coeff, tuple):
+                        coeff = Mul(*coeff)
+                    return coeff, Add(*args)
+
+            elif len(res) == 2:
+                for index, r in enumerate(res):
+                    if isinstance(r, tuple):
+                        break
+                else:
+                    return res
+
+                if cls.of_simple_poly() and cls.args.index(Expr) == 1 - index:
+                    mul_args = cls.args[index].args
+                    coeff = mul_args[1 - mul_args.index(Expr)]
+                    if not isinstance(coeff, type) and not isinstance(coeff, Basic):
+                        res = [*res]
+                        res[index] = Mul(*res[index])
+                        res = tuple(res)
+
         return res
 
     def of_simple_poly(self, x):
@@ -1843,9 +1873,6 @@ class Add(Expr, AssocOp):
             
         return S.One, self
         
-    def _eval_torch(self):
-        return sum(arg.torch for arg in self.args)
-
     @staticmethod
     def simplify_Lamda(self, squeeze=False):
         vars = self.variables
@@ -1895,6 +1922,208 @@ class Add(Expr, AssocOp):
     def is_comparable(self):
         return all(arg.is_comparable for arg in self.args)
 
+    def rewrite(self, *args, **hints):
+        if hints.get('collect'):
+            factor = hints.get('factor')
+            deep = hints.get('deep')
+            common_terms = None
+            others = []
+
+            additives = []
+            if factor is None:
+                muls = []
+                for arg in self.args:
+                    if arg.is_Mul:
+                        if common_terms is None:
+                            common_terms = {*arg.args}
+                        else:
+                            if common_terms & {*arg.args}:
+                                common_terms &= {*arg.args}
+                            else:
+                                others.append(arg)
+                                continue
+                        muls.append(arg)
+                    else:
+                        others.append(arg)
+
+                if len(muls) == 1:
+                    for i in reversed(range(len(others))):
+                        o = others[i]
+                        if not o.is_Number and o in common_terms:
+                            common_terms = {o}
+                            del others[i]
+                            additives.append(S.One)
+                            break
+                    else:
+                        muls = []
+
+                for arg in muls:
+                    if args := {*arg.args} - common_terms:
+                        arg = Mul(*args)
+                        additives.append(arg)
+                    else:
+                        return self
+                    
+                if len(additives) > 1:
+                    factor = Mul(*common_terms)
+                    additives = Add(*additives)
+                    if additives.is_Add and deep:
+                        additives = additives.rewrite(collect=True, deep=True)
+                elif args := self.search_for_intersection():
+                    # try a better algorithm to find common terms:
+                    i, j, common_terms = args
+                    others = [*self.args]
+                    del others[i]
+                    del others[j]
+                    
+                    if args := Mul.factorize([self.args[i], self.args[j]], common_terms):
+                        additives, factor = args
+                        if factor.is_Number:
+                            return self
+                        additives = Add(*additives)
+                    else:
+                        return self
+                else:
+                    return self
+
+                return additives * factor + Add(*others) 
+            else:
+                if isinstance(factor, (tuple, list)):
+                    ...
+                elif factor.is_Mul:
+                    factor = factor.args
+                else:
+                    factor = factor,
+                return self._collect(*factor)
+
+        return super().rewrite(*args, **hints)
+
+    # is not compatible with collect
+    def _collect(self, *args):
+        additives = []
+        others = []
+        factor, *factors = args
+        for arg in self.args:
+            quotient = arg.try_div(factor)
+            if quotient is None:
+                others.append(arg)
+            else:
+                additives.append(quotient)
+
+        sgm = Add(*additives)
+        if factors:
+            sgm = sgm._collect(*factors)
+
+        sgm *= factor
+        if others:
+            sgm += Add(*others)
+
+        return sgm
     
+    @classmethod
+    def complement(cls, argset, factor):
+        for arg in argset:
+            if arg == factor:
+                argset.remove(arg)
+                return argset
+
+            if arg.is_Pow:
+                b, e = arg.args
+                if b == factor:
+                    if e.is_Integer and e > 1:
+                        argset.remove(arg)
+                        argset.add(b ** (e - 1))
+                        return argset
+
+                    elif e.is_Add:
+                        if any(e.is_Integer and e >= 1 for e in e.args):
+                            argset.remove(arg)
+                            argset.add(b ** (e - 1))
+                            return argset
+
+                elif factor.is_Pow and factor.base == b:
+                    exp = factor.exp
+                    if e.is_Integer:
+                        if e > 0 and exp > 0 and e > exp or e < 0 and exp < 0 and e < exp:
+                            argset.remove(arg)
+                            argset.add(b ** (e - exp))
+                            return argset
+
+            elif arg == -factor:
+                argset.remove(arg)
+                argset.add(S(-1))
+                return argset
+
+    def _eval_try_div(self, factor):
+        if factor.is_Add:
+            if len(self.args) == len(factor.args):
+                # precondition: self.is_Add and factor.is_Add
+                quotient = set()
+                for a, b in zip(self.args, factor.args):
+                    q = a.try_div(b)
+                    if q is None:
+                        break
+
+                    quotient.add(q)
+                    if len(quotient) > 1:
+                        break
+                else:
+                    return quotient.pop()
+                return
+        else:
+            args = []
+            for i, arg in enumerate(self.args):
+                quotient = arg.try_div(factor)
+                if quotient is None:
+                    return
+                args.append(quotient)
+            return Add(*args)
+
+    @classmethod
+    def intersect_args(cls, lhs, rhs):
+        ret = set()
+        for x in lhs:
+            for y in rhs:
+                if x == y:
+                    # if not x.is_Number:
+                    ret.add(x)
+                    break
+
+                elif y.is_Pow:
+                    if z := y.extract_pow(x):
+                        ret.add(z)
+                        break
+
+                elif x == -y:
+                    if x.is_Mul:
+                        if x._coeff_isneg():
+                            ret.add(y)
+                        else:
+                            ret.add(y)
+
+                    elif x.is_Add and y.is_Add:
+                        if x.args[0]._coeff_isneg() and y.args[0]._coeff_isneg():
+                            ret.add(y)
+                        else:
+                            ret.add(x)
+                    else:
+                        ret.add(x)
+                    break
+
+                elif x.is_Pow:
+                    if z := x.extract_pow(y):
+                        ret.add(z)
+                        break
+
+        return ret
+
+    def search_for_intersection(self):
+        args = self.args
+        for i in range(1, len(args)):
+            for j in range(i):
+                # j < i
+                if ret := Add.intersect_args(args[i].args if args[i].is_Mul else [args[i]], args[j].args if args[j].is_Mul else [args[j]]):
+                    return i, j, ret
+
 from .mul import Mul, _keep_coeff, prod
 from sympy.core.numbers import Rational

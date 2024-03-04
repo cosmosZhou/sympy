@@ -1148,10 +1148,6 @@ class Equal(Relational):
 
     invert = BinaryCondition.invert
     
-    def _eval_torch(self):
-        import torch
-        return torch.eq(self.lhs.torch, self.rhs.torch)
-    
     def _subs_sliced(self, old, new, **hints):        
         lhs, rhs = self.args
         if lhs.is_random and lhs.is_symbol and not rhs.is_random and old.is_random and old.is_symbol and not new.is_random:
@@ -1437,10 +1433,6 @@ class Unequal(Relational):
     of = Equal.of
 
     invert = BinaryCondition.invert
-
-    def _eval_torch(self):
-        import torch
-        return torch.ne(self.lhs.torch, self.rhs.torch)
 
     @classmethod
     def sub_class_key(cls):
@@ -2057,10 +2049,6 @@ class GreaterEqual(_Greater):
             
         return res
 
-    def _eval_torch(self):
-        import torch
-        return torch.ge(self.lhs.torch, self.rhs.torch)
-
     def domain_conditioned(self, var):
         if ret := self.domain_conditioned_utility(var):
             a, solution, domain = ret
@@ -2348,10 +2336,6 @@ class LessEqual(_Less):
             
         return res
 
-    def _eval_torch(self):
-        import torch
-        return torch.le(self.lhs.torch, self.rhs.torch)
-    
     def domain_conditioned(self, var):
         if ret := self.domain_conditioned_utility(var):
             a, solution, domain = ret
@@ -2604,10 +2588,6 @@ class Greater(_Greater):
                     return (a, b)         
             
         return res
-
-    def _eval_torch(self):
-        import torch
-        return torch.gt(self.lhs.torch, self.rhs.torch)
 
     def domain_conditioned(self, var):
         if ret := self.domain_conditioned_utility(var):
@@ -2863,10 +2843,6 @@ class Less(_Less):
                     return (a, b)         
             
         return res
-
-    def _eval_torch(self):
-        import torch
-        return torch.lt(self.lhs.torch, self.rhs.torch)
 
     def domain_conditioned(self, var):
         if ret := self.domain_conditioned_utility(var):

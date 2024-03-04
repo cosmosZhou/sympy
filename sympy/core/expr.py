@@ -148,6 +148,9 @@ class Expr(Basic, EvalfMixin):
         return self._args
 
     def __eq__(self, other):
+        if self is other:
+            return True
+
         try:
             other = sympify(other)
             if not isinstance(other, Expr):
@@ -155,7 +158,7 @@ class Expr(Basic, EvalfMixin):
         except (SympifyError, SyntaxError):
             return False
         # check for pure number expr
-        if  not (self.is_Number and other.is_Number) and (type(self) != type(other)):
+        if not (self.is_Number and other.is_Number) and (type(self) != type(other)):
             return False
         a, b = self._hashable_content(), other._hashable_content()
         if a != b:
@@ -389,8 +392,7 @@ class Expr(Basic, EvalfMixin):
         if cmp is not None:
             return cmp
         
-        from sympy import GreaterEqual
-        from sympy.functions.elementary.miscellaneous import Min, Max
+        from sympy import GreaterEqual, Min, Max
         if isinstance(other, Min):
             for arg in other.args:
                 if self >= arg:
@@ -434,8 +436,7 @@ class Expr(Basic, EvalfMixin):
         if cmp is not None:
             return cmp
                             
-        from sympy import LessEqual
-        from sympy.functions.elementary.miscellaneous import Max, Min
+        from sympy import LessEqual, Max, Min
         if isinstance(other, Max):
             for arg in other.args:
                 if self <= arg:
@@ -480,8 +481,7 @@ class Expr(Basic, EvalfMixin):
         if cmp is not None:
             return cmp
         
-        from sympy import Greater
-        from sympy.functions.elementary.miscellaneous import Min, Max
+        from sympy import Greater, Min, Max
         if isinstance(other, Min):
             for arg in other.args:
                 if self > arg:
@@ -526,8 +526,7 @@ class Expr(Basic, EvalfMixin):
         if cmp is not None:
             return cmp
         
-        from sympy import Less
-        from sympy.functions.elementary.miscellaneous import Max, Min
+        from sympy import Less, Max, Min
         if isinstance(other, Max):
             for arg in other.args:
                 if self < arg:
@@ -1209,7 +1208,7 @@ class Expr(Basic, EvalfMixin):
         from sympy.functions.elementary.complexes import conjugate
         return conjugate(self)
 
-    def _eval_transpose(self, axis=-1):
+    def _eval_transpose(self, *axis):
         if axis == self.default_axis:
             from sympy.functions.elementary.complexes import conjugate
             if self.is_complex and not self.shape:
@@ -3842,10 +3841,12 @@ class Expr(Basic, EvalfMixin):
             if not f._has(x):
                 continue
             M = aggregate(f, (x,))
-            _f = M.doit()
+            _f = M.doit(approximate=True)
             if _f is M:
                 continue
             f = _f
+            if f.is_Add:
+                f = f.rewrite(collect=True, deep=True)
 
         return f
     
@@ -4107,8 +4108,8 @@ class Expr(Basic, EvalfMixin):
 
     @property
     def default_axis(self):
-        return len(self.shape) - 1
-        
+        return len(self.shape) - 2, 1
+
     def outer_product(self, other=None):
         if other is None:
             other = self
@@ -4156,6 +4157,82 @@ class Expr(Basic, EvalfMixin):
 
     def clear_infinitesimal(self):
         return self, S.Zero
+
+    def reshape(self, *shape):
+        from sympy import Lamda, Range
+        def prod(shape):
+            return reduce(lambda x, y : x * y, shape)
+        
+        if len(shape) > 1:
+            if len(self.shape) > 1:
+                return self.reshape(prod(shape)).reshape(*shape)
+            else:
+                # inflate a vector into a tensor
+                n, *shape = shape
+                step = prod(shape)                
+                i = self.generate_var(integer=True, excludes=self.variables_set if self.is_Lamda else None, domain=Range(n))
+                start = i * step
+                self = self[start : start + step]
+                if self.is_Lamda:
+                    expr, *limits = self.args
+                    hit = False
+                    for t, (k, *ab) in enumerate(limits):
+                        if len(ab) == 2:
+                            _k = k.func(k.name, domain=Range(*ab))
+                            expr = expr._subs(k, _k)
+                            limits[t] = _k,
+                            hit = True
+                    if hit:
+                        self = Lamda(expr, *limits)
+                self = self.simplify()
+                return Lamda[i](self.reshape(*shape))
+        else:
+            if len(self.shape) > 1:
+                # collapse a tensor into a vector
+                n, = shape
+                k = self.generate_var(integer=True, domain=Range(n))
+                indices = [None] * len(self.shape)
+                size = indices[:]
+                size[-1] = 1
+
+                for i in reversed(range(1, len(indices))):
+                    size[i - 1] = self.shape[i] * size[i]
+
+                var = k
+                for i in range(len(indices)):
+                    indices[i] = var // size[i]
+                    var %= size[i]
+                assert not var
+                return Lamda[k](self[indices])
+            else:
+                return self
+
+    def split(self, hidden_size, dim=-1):
+        if dim < 0:
+            dim += len(self.shape)
+        tp = self.shape[dim] / hidden_size
+        assert tp % 1 == 0 and tp > 0
+        former_shape, latter_shape = self.shape[:dim], self.shape[dim + 1:]
+        self = self.reshape(*former_shape, tp, hidden_size, *latter_shape)
+        if dim > 0:
+            from sympy import Transpose
+            self = Transpose[dim, -dim](self)
+        return self
+
+    def normalize_axis(self, axis):
+        i, j = axis
+        if i < 0:
+            i += len(self.shape)
+        if j == -1:
+            i -= 1
+            j = 1
+        return i, j
+
+    def _eval_try_div(self, factor):
+        ...
+
+    def try_div(self, factor):
+        return S.One if self == factor else self._eval_try_div(factor)
 
 
 class AtomicExpr(Atom, Expr):

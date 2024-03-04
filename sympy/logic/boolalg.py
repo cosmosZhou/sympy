@@ -506,13 +506,6 @@ class BooleanAtom(Boolean):
     def _pretty(self, p):
         return p._print(self.func.__name__)
 
-    def _eval_torch(self):
-        import torch
-        data = torch.from_numpy(self.numpy)
-        if torch.cuda.is_available():
-            data = data.cuda()
-        return data
-
 
 class BooleanTrue(with_metaclass(Singleton, BooleanAtom)):
     """

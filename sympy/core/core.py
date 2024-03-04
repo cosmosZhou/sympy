@@ -183,6 +183,10 @@ class BasicMeta(type):
     def __invert__(self):
         return Wanted(self)
     
+    @property
+    def unwanted(self):
+        return self
+    
     def __floordiv__(self, other):
         from sympy.core.of import Basic, sympify
         from sympy import Floor
@@ -307,6 +311,10 @@ class Wanted:
     
     def is_wanted(self):
         return True
+    
+    @property
+    def unwanted(self):
+        return self.func
 
     __add__ = BasicMeta.__add__
     __radd__ = BasicMeta.__radd__

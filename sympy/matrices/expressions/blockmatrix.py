@@ -607,7 +607,7 @@ class BlockMatrix(MatrixExpr):
             
             blocks.append(X.args)
         
-        if self.axis == self.default_axis:
+        if (self.axis - 1, self.axis) == self.default_axis:
             rows = cols
             cols = len(blocks)
             for row in range(rows):
@@ -724,7 +724,7 @@ class BlockMatrix(MatrixExpr):
             domain &= arg.domain_defined(x, allow_empty=True)
         return domain
 
-    def _eval_transpose(self, axis=-1):
+    def _eval_transpose(self, *axis):
         if axis == self.default_axis:
             len_shape = len(self.shape)
             

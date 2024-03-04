@@ -25,7 +25,7 @@ from sympy.functions.elementary.trigonometric import Sin, Cos, Tan, Sec, Csc, Co
 from sympy.functions.elementary.exponential import (exp_polar, exp, log, Exp, Log,
         LambertW)
 from sympy.functions.elementary.hyperbolic import (sinh, cosh, tanh, coth,
-        sech, csch, asinh, acosh, atanh, acoth, asech, acsch)
+        sech, csch, asinh, acosh, atanh, acoth, asech, acsch, Sinh, Cosh, Tanh, Coth, Sech, Csch)
 from sympy.functions.elementary.integers import floor, ceiling, frac, Floor, Ceiling, FractionalPart
 from sympy.functions.elementary.piecewise import Piecewise, piecewise_fold, ExprCondPair
 from sympy.functions.special.error_functions import (erf, erfc, erfi, erf2,

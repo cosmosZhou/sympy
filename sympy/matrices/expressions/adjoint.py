@@ -76,7 +76,7 @@ class Adjoint(MatrixExpr):
         from sympy.matrices.expressions.trace import Trace
         return conjugate(Trace(self.arg))
 
-    def _eval_transpose(self, axis=-1):
+    def _eval_transpose(self, *axis):
         if axis == self.default_axis:
             return conjugate(self.arg)
 

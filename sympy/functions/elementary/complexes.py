@@ -965,7 +965,7 @@ class Conjugate(Function):
         elif x.is_imaginary:
             return -conjugate(Derivative(self.args[0], x, evaluate=True))
 
-    def _eval_transpose(self, axis=-1):
+    def _eval_transpose(self, *axis):
         if axis == self.default_axis:
             from sympy import Adjoint
             return Adjoint(self.args[0])

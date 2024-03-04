@@ -717,7 +717,7 @@ class MatMul(MatrixExpr):
             eq &= arg.domain_definition(allow_empty=True)
         return eq
 
-    def _eval_transpose(self, axis=-1):
+    def _eval_transpose(self, *axis):
         """Transposition of matrix multiplication.
 
         Notes
@@ -765,10 +765,6 @@ class MatMul(MatrixExpr):
             return self.func(*args)
         return self
 
-    def _eval_torch(self):
-        from functools import reduce
-        return reduce(lambda x, y: x @ y if len(y.shape) > 1 else (x @ y.unsqueeze(-1)).squeeze(-1), (arg.torch for arg in self.args))
-    
     @staticmethod
     def simplify_Lamda(self, squeeze=False):
         expr = self.expr

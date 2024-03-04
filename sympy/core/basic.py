@@ -1953,6 +1953,12 @@ class Basic(Printable, metaclass=ManagedProperties):
             root = parent[root_index]
             if not root.isinstance(struct, *path[root_index:]):
                 raise
+
+            if isinstance(s.args, tuple):
+                for arg in s.args:
+                    if not isinstance(arg, type) and arg.is_wanted():
+                        for path in self.finditer(arg, definition=True):
+                            return path
         
         return self
     
@@ -3168,12 +3174,6 @@ class Basic(Printable, metaclass=ManagedProperties):
             return self.compile(*vars), indices
         return self, None
     
-    @cacheit
-    def compile(self, *syms):
-        assert all(self._has(v) for v in syms)
-        from sympy.keras.network import NetWorkMetaClass
-        return NetWorkMetaClass.mapping[self.func.__name__](*(arg.precompile(*syms) for arg in self.args))
-    
     @property
     def variables(self):
         return []
@@ -3195,6 +3195,26 @@ class Basic(Printable, metaclass=ManagedProperties):
         if exp:
             tex = r'%s^{%s}' % (tex, p._print(exp))
         return tex
+
+    def normalize_reduced_axis(self, axis):
+        if isinstance(axis, tuple):
+            axis = [*axis]
+            for i, a in enumerate(axis):
+                if a < 0:
+                    a += len(self.shape)
+                    hit = True
+                    axis[i] = a
+
+            axis.sort()
+            return tuple(axis)
+        else:
+            if axis < 0:
+                axis += len(self.shape)
+            return axis
+
+    @property
+    def default_axis(self):
+        return len(self.arg.shape) - 1
 
 
 class Atom(Basic):

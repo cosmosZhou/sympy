@@ -1677,9 +1677,9 @@ class MatrixOperations(MatrixRequired):
     def _eval_trace(self):
         return sum(self[i, i] for i in range(self.rows))
 
-    def _eval_transpose(self, axis=-1):
+    def _eval_transpose(self, *axis):
         if self.rows > 1:
-            if axis == -1 or axis == self.default_axis:
+            if axis == self.default_axis:
                 return self._new(*(self[j, i] for i in range(self.rows) for j in range(self.cols)), shape=(self.cols, self.rows))
         else:
             return self
@@ -1982,7 +1982,7 @@ class MatrixOperations(MatrixRequired):
             raise NonSquareMatrixError()
         return self._eval_trace()
 
-    def transpose(self):
+    def transpose(self, *args):
         """
         Returns the transpose of the matrix.
 
@@ -2015,7 +2015,9 @@ class MatrixOperations(MatrixRequired):
         conjugate: By-element conjugation
 
         """
-        return self._eval_transpose()
+        if not args:
+            args = self.default_axis
+        return self._eval_transpose(*args)
 
     T = property(transpose, None, None, "Matrix transposition.")
 

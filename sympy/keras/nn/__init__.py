@@ -96,10 +96,3 @@ def sigmoid(x):
     return 1 / (1 + exp(-x))
 
 sigmoid.name = 'sigmar'
-
-from .modules.module import Module
-from .modules.sparse import Embedding
-from .modules.container import ModuleList
-from .modules.rnn import CRF
-from .modules.conv import GLUCNN
-from .modules.classifier import SoftmaxClassifier

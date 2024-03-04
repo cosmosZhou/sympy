@@ -138,7 +138,7 @@ class KroneckerProduct(MatrixExpr):
     def _eval_conjugate(self):
         return KroneckerProduct(*[a.conjugate() for a in self.args]).doit()
 
-    def _eval_transpose(self, axis=-1):
+    def _eval_transpose(self, *axis):
         if axis == self.default_axis:
             return KroneckerProduct(*list(map(transpose, self.args))).doit()
 

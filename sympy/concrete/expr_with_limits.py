@@ -1541,29 +1541,6 @@ class ExprWithLimits(Expr):
         shape.reverse()
         return tuple(shape)
 
-    @cacheit
-    def compile(self, *syms):
-        assert all(self._has(v) for v in syms)
-        
-        expr = self.expr
-        vars = []
-        for v in self.variables: 
-            if expr._has(v):
-                vars.append(v)
-                assert v not in syms
-        
-        shape = []
-        for v, a, b in self.limits:
-            if a:
-                expr = expr._subs(v, v + a)
-                
-            shape.append((b - a).precompile(*syms))
-            
-        expr = expr.precompile(*vars, *syms)
-        
-        from sympy.keras.network import NetWorkMetaClass
-        return NetWorkMetaClass.mapping[self.func.__name__](expr, *shape)
-
 
 class AddWithLimits(ExprWithLimits):
     r"""Represents unevaluated oriented additions.
@@ -1591,7 +1568,7 @@ class AddWithLimits(ExprWithLimits):
         if all([x.is_real for x in flatten(self.limits)]):
             return self.func(self.expr.conjugate(), *self.limits)
 
-    def _eval_transpose(self, axis=-1):
+    def _eval_transpose(self, *axis):
         if axis == self.default_axis:
             if all([x.is_real for x in flatten(self.limits)]):
                 return self.func(self.expr.transpose(), *self.limits)
@@ -1844,16 +1821,17 @@ class Minima(MINMAXBase):
 
         if self.expr.infinitesimality is not None:
             expr, epsilon = self.expr.clear_infinitesimal()
-            return self.func(expr, *self.limits).doit() + epsilon
+            return self.func(expr, *self.limits).doit(**hints) + epsilon
         
-        expr, monotonicity = self.expr.monotonicity(x)
-        if monotonicity > 0:
-            return expr._subs(x, domain.min())
-        elif monotonicity < 0:
-            return expr._subs(x, domain.max())
-        elif isinstance(expr, tuple):
-            lower, upper = expr
-            return lower
+        if hints.get('approximate'):
+            expr, monotonicity = self.expr.monotonicity(x)
+            if monotonicity > 0:
+                return expr._subs(x, domain.min())
+            elif monotonicity < 0:
+                return expr._subs(x, domain.max())
+            elif isinstance(expr, tuple):
+                lower, upper = expr
+                return lower
                 
         return self
     
@@ -1925,16 +1903,17 @@ class Maxima(MINMAXBase):
 
         if self.expr.infinitesimality is not None:
             expr, epsilon = self.expr.clear_infinitesimal()
-            return self.func(expr, *self.limits).doit() + epsilon
+            return self.func(expr, *self.limits).doit(**hints) + epsilon
         
-        expr, monotonicity = self.expr.monotonicity(x)
-        if monotonicity > 0:
-            return expr._subs(x, domain.max())
-        elif monotonicity < 0:
-            return expr._subs(x, domain.min())
-        elif isinstance(expr, tuple):
-            lower, upper = expr
-            return upper
+        if hints.get('approximate'):
+            expr, monotonicity = self.expr.monotonicity(x)
+            if monotonicity > 0:
+                return expr._subs(x, domain.max())
+            elif monotonicity < 0:
+                return expr._subs(x, domain.min())
+            elif isinstance(expr, tuple):
+                lower, upper = expr
+                return upper
 
         return self
     
@@ -2553,10 +2532,10 @@ class Lamda(ExprWithLimits):
 #                     local variable
                     if len(domain) == 2:
                         if x.domain == x.range(*domain):
-                            symbols[i] = (x,)
+                            symbols[i] = x,
                             continue
                     _x = Symbol(x.name, integer=True)
-                    symbols[i] = (_x, *domain)
+                    symbols[i] = _x, *domain
 
                     expr = expr._subs(x, _x)
                 if len(domain) == 1:
@@ -2564,7 +2543,7 @@ class Lamda(ExprWithLimits):
                     assert domain.is_Range
                     if domain.step == 1:
                         mini = domain.min()
-                        symbols[i] = (x, 0, domain.max() - mini + 1)
+                        symbols[i] = x, 0, domain.max() - mini + 1
                         if mini != S.Zero:
                             expr = expr._subs(x, x + mini)
 
@@ -2762,7 +2741,7 @@ class Lamda(ExprWithLimits):
             elif len(domain) == 1:
                 [domain] = domain
                 self_start, self_stop, self_step = domain.args
-                from sympy.functions.elementary.integers import Ceiling
+                from sympy import Ceiling
                 n = Ceiling((self_stop - self_start) / self_step)
             else:
                 n = S.Infinity
@@ -3088,7 +3067,7 @@ class Lamda(ExprWithLimits):
                 expr = expr._subs(x, _x)
         return expr.is_extended_negative
     
-    def _eval_transpose(self, axis=-1):
+    def _eval_transpose(self, *axis):
         if axis == self.default_axis:
             if len(self.shape) < 2:
                 return self
@@ -3111,10 +3090,12 @@ class Lamda(ExprWithLimits):
                     
                 return
 
-        if axis < len(self.limits):
-            [*limits] = self.limits
-            limits[axis], limits[axis - 1] = limits[axis - 1], limits[axis] 
-            return self.func(self.expr, *limits).simplify()
+        start, offset = axis
+        stop = start + offset
+        if offset > 0 and stop < len(self.limits) or offset < 0 and start < len(self.limits):
+            [*limits] = reversed(self.limits)
+            limits.insert(stop, limits.pop(start))
+            return self.func(self.expr, *reversed(limits)).simplify()
 
     def generate_int_limit(self, index=-1, excludes=None, generator=None, var=None):
         if self.expr.shape:
@@ -3122,7 +3103,7 @@ class Lamda(ExprWithLimits):
             if index < 0:
                 index = len(self.shape) + index
             if index < len_shape:
-                return self.expr.generate_int_limit(index, excludes=excludes, generator=generator, var=var)
+                return self.expr.generate_int_limit(index, excludes=excludes | self.variables_set, generator=generator, var=var)
             index -= len_shape
         limit = self.limits[index]
         if excludes:
@@ -3172,38 +3153,6 @@ class Lamda(ExprWithLimits):
             limits.insert(axis, (i, 0, size))
             
             return Lamda(self[indices], *limits)
-
-    def _eval_torch(self):
-        import torch
-        embedding, indices = self.of_embedding()
-        if embedding is not None:
-            return torch.nn.functional.embedding(indices.torch, embedding.torch)
-        
-        tensor, axis, size = self.of_unsqueeze()
-        if tensor is not None:
-            sizes = [1] * (len(tensor.shape) + 1)
-            sizes[axis] = size
-            return torch.tile(torch.unsqueeze(tensor.torch, axis), sizes)
-        
-        inputs, W, bias, stride, padding, dilation = self.of_conv1d()
-        if inputs is not None:
-#             https://numpy.org/doc/stable/reference/generated/numpy.convolve.html
-#             https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.convolve.html
-            return torch.nn.functional.conv1d(
-                inputs.torch.transpose(1, 2), 
-                W.torch.transpose(0, 2), 
-                bias.torch, 
-                stride,
-                padding, 
-                dilation, 1).transpose(1, 2)
-                        
-        shape = [s if isinstance(s, int) else s.torch for s in self.shape]
-        network = self.expr.compile(*self.variables)
-        import itertools
-        network.prepare(torch=True)
-        results = [network(*indices, torch=True) for indices in itertools.product(*(range(size) for size in shape[:len(self.limits)]))]
-        import torch
-        return torch.stack(results).reshape(shape)
     
     @cacheit
     def of_embedding(self):

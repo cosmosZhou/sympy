@@ -184,7 +184,7 @@ class DiagonalizeVector(MatrixExpr):
             result *= KroneckerDelta(i, j)
         return result
 
-    def _eval_transpose(self, axis=-1):
+    def _eval_transpose(self, *axis):
         if axis == self.default_axis:
             return self
 

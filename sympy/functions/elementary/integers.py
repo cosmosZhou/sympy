@@ -72,7 +72,15 @@ class RoundFunction(Function):
         elif isinstance(spart, (floor, ceiling)):
             return ipart + spart
         else:
-            return ipart + cls(spart, evaluate=False)
+            if ipart:
+                return ipart + cls(spart, evaluate=False)
+            
+            if args := spart.of(Expr / Expr):
+                num, den = args
+                if args := num.of(Expr * den + Expr):
+                    k, b = args
+                    return k + cls(b / den)
+            return cls(spart, evaluate=False)
 
     def _eval_is_finite(self):
         return self.args[0].is_finite
@@ -155,7 +163,14 @@ class Floor(RoundFunction):
                     return arg
                 return arg - 1
             return floor._eval_number(cls, arg)
-
+        
+        if args := arg.of(Expr / Expr):
+            num, den = args
+            if den.is_positive:
+                if num.is_nonnegative:
+                    if num < den:
+                        return S.Zero
+                    
     def _eval_nseries(self, x, n, logx, cdir=0):
         r = self.subs(x, 0)
         args = self.args[0]
@@ -258,7 +273,6 @@ class Floor(RoundFunction):
 
 
 floor = Floor
-
 
 @dispatch(floor, Expr)
 def _eval_is_eq(lhs, rhs):  # noqa:F811

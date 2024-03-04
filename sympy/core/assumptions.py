@@ -757,6 +757,10 @@ class IndexedOperator:
         from sympy.core.core import Wanted
         return Wanted(self.basic)
     
+    @property
+    def unwanted(self):
+        return self.basic.unwanted
+
     def __repr__(self):
         return repr(self.basic)
     
@@ -766,24 +770,27 @@ class IndexedOperator:
         return getattr(self.basic, attr)
 
     def __getitem__(self, indices):
-        [[axis]] = self.limits
-        if self.func.__name__ == 'Basic' and isinstance(axis, int) and axis > 1:
-            args = self.args
-            assert args[-1].is_Wanted
-            last = args[-1].func[indices]
-            if isinstance(indices, type) or not indices.is_wanted():
-                last = ~last 
-            return self.func[args[:-1] + (last,)]
+        [*axis] = self.limits
+        axis = tuple(axis for axis, in axis)
+        if len(axis) == 1:
+            axis, = axis
+            if self.func.__name__ == 'Basic' and isinstance(axis, int) and axis > 1:
+                args = self.args
+                assert args[-1].is_Wanted
+                last = args[-1].func[indices]
+                if isinstance(indices, type) or not indices.is_wanted():
+                    last = ~last 
+                return self.func[args[:-1] + (last,)]
+
+        if isinstance(indices, tuple):
+            args = self.func, *indices
+        elif isinstance(indices, int) and indices > 1:
+            from sympy.core import Basic
+            return Basic[(self.unwanted,) * (indices - 1) + (~self,)]
         else:
-            if isinstance(indices, tuple):
-                args = self.func, *indices
-            elif isinstance(indices, int) and indices > 1:
-                from sympy.core import Basic
-                return Basic[(self,) * (indices - 1) + (~self,)]
-            else:
-                args = self.func, indices
-            from sympy.core.of import Basic
-            return Basic.__new__(*args, axis=axis)
+            args = self.func, indices
+        from sympy.core.of import Basic
+        return Basic.__new__(*args, axis=axis)
         
     def __pow__(self, other): 
         return BasicMeta.__pow__(self.basic, other)

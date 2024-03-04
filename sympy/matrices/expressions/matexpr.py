@@ -164,7 +164,7 @@ class MatrixExpr(Expr):
         from sympy.matrices.expressions.inverse import Inverse
         return Inverse(self)
 
-    def _eval_transpose(self, axis=-1):
+    def _eval_transpose(self, *axis):
         ...
 
     def _eval_power(self, exp):
@@ -882,7 +882,7 @@ class Identity(ConstantMatrix, MatrixExpr):
     def is_square(self):
         return True
 
-    def _eval_transpose(self, axis=-1):
+    def _eval_transpose(self, *axis):
         if axis == self.default_axis:
             return self
 
@@ -1036,7 +1036,7 @@ class ZeroMatrix(ConstantMatrix, MatrixExpr):
         from sympy import Pow
         return Pow(self, other, evaluate=False)
 
-    def _eval_transpose(self, axis=-1):
+    def _eval_transpose(self, *axis):
         if axis == self.default_axis:
             if len(self.shape) <= 1:
                 return self
@@ -1210,7 +1210,7 @@ class OneMatrix(ConstantMatrix, MatrixExpr):
         from sympy import ImmutableDenseMatrix
         return ImmutableDenseMatrix.ones(*self.shape)
 
-    def _eval_transpose(self, axis=-1):
+    def _eval_transpose(self, *axis):
         if axis == self.default_axis:
             if len(self.shape) <= 1:
                 return self
@@ -1558,7 +1558,7 @@ class SwapMatrix(ElementaryMatrix, MatrixExpr):
     def _eval_determinant(self, **kwargs):        
         return 2 * KroneckerDelta(self.i, self.j) - 1
 
-    def _eval_transpose(self, axis=-1):
+    def _eval_transpose(self, *axis):
         if axis == self.default_axis: 
             return self
 
@@ -1635,7 +1635,7 @@ class MulMatrix(ElementaryMatrix, MatrixExpr):
     def multiplier(self):
         return self.args[-1]
 
-    def _eval_transpose(self, axis=-1):
+    def _eval_transpose(self, *axis):
         if axis == self.default_axis:
             return self
 
@@ -1778,7 +1778,7 @@ class AddMatrix(ElementaryMatrix, MatrixExpr):
     def j(self):
         return self.args[1]
 
-    def _eval_transpose(self, axis=-1):
+    def _eval_transpose(self, *axis):
         if axis == self.default_axis:
             return self.func(self.n, self.j, self.i, self.multiplier)
 
@@ -1932,7 +1932,7 @@ class ShiftMatrix(ElementaryMatrix, MatrixExpr):
     def _eval_determinant(self, **kwargs):
         return (-1) ** (self.j - self.i)
 
-    def _eval_transpose(self, axis=-1):
+    def _eval_transpose(self, *axis):
         if axis == self.default_axis:
             return ShiftMatrix(self.n, self.j, self.i)
 

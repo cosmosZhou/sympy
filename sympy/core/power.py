@@ -947,7 +947,7 @@ class Pow(Expr):
         if self.is_extended_real:
             return self
 
-    def _eval_transpose(self, axis=-1):
+    def _eval_transpose(self, *axis):
         if axis == self.default_axis:
             i, p = self.exp.is_integer, self.base.is_complex
             if p:
@@ -1466,7 +1466,7 @@ class Pow(Expr):
 
         # make sure the expression to be matched is an Expr
         if not isinstance(expr, Expr):
-            return None
+            return
 
         b, e = expr.as_base_exp()
 
@@ -1474,7 +1474,10 @@ class Pow(Expr):
         sb, se = self.as_base_exp()
         if sb.is_Symbol and se.is_Integer and expr:
             if e.is_rational:
-                return sb.matches(b ** (e / se), repl_dict)
+                e /= se
+                if e.is_Integer:
+                    return sb.matches(b ** e, repl_dict)
+                return
             return sb.matches(expr ** (1 / se), repl_dict)
 
         d = repl_dict.copy()
@@ -2039,10 +2042,6 @@ class Pow(Expr):
             return Conjugate(b) ** e
         return Conjugate(self)
 
-    def _eval_torch(self):
-        b, e = self.args
-        return b.torch ** e.torch
-    
     @staticmethod
     def simplify_Lamda(self, squeeze=False):
         expr, *limits = self.args
@@ -2149,6 +2148,40 @@ class Pow(Expr):
         
         return True
 
+    def _eval_try_div(self, factor):
+        b, e = self.args
+        if b == factor:
+            if e >= 1:
+                return b ** (e - 1)
+
+        elif factor.is_Pow and b == factor.base:
+            if (diff := e - factor.exp) >= 0:
+                return b ** diff
+
+    def extract_pow(self, x):
+        by, ey = self.args
+        if by == x:
+            if ey.is_Integer and ey > 1:
+                return x
+
+            elif ey.is_Add:
+                if any(e.is_Integer and e >= 1 for e in ey.args):
+                    return x
+
+        elif x.is_Pow:
+            bx, ex = x.args
+            if bx == by:
+                if ex.is_Add:
+                    argset = {*ex.args}
+                    if ey in argset or ey.is_Add and all(e in argset for e in ey.args):
+                        return self
+
+                if ex.is_Integer and ey.is_Integer:
+                    if ex > 0 and ey > 0:
+                        return bx ** min(ex, ey)
+
+                    if ex < 0 and ey < 0:
+                        return bx ** max(ex, ey)
 
 from .add import Add
 from .numbers import Integer

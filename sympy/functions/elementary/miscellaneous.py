@@ -656,11 +656,6 @@ class Max(MinMaxBase, Application):
 
         return MinMaxBase.__mul__(self, other)
 
-    def _eval_torch(self):
-        import torch
-        from functools import reduce
-        return reduce(lambda x, y: torch.maximum(x, y), (arg.torch for arg in self.args))
-    
     
 class Min(MinMaxBase, Application):
     """
@@ -800,11 +795,6 @@ class Min(MinMaxBase, Application):
 
         return MinMaxBase.__mul__(self, other)
 
-    def _eval_torch(self):
-        import torch
-        from functools import reduce
-        return reduce(lambda x, y: torch.minimum(x, y), (arg.torch for arg in self.args))
-        
     
 Min.negated_type = Max
 Max.negated_type = Min

@@ -140,7 +140,7 @@ class Application(Basic):
         return super(Application, cls).__new__(cls, *args, **options)
 
     @classmethod
-    def eval(cls, *args):
+    def eval(cls, *args, **kwargs):
         """
         Returns a canonical form of cls applied to arguments args.
 
@@ -170,7 +170,7 @@ class Application(Basic):
                         return cls(coeff) * cls(terms)
 
         """
-        return
+        ...
 
     @property
     def func(self):
@@ -910,12 +910,6 @@ class AppliedUndef(Function):
     def defun(self, **kwargs):
         return self.func(*self.args, evaluate=True)
 
-    @cacheit
-    def compile(self, *syms):
-        assert all(self._has(v) for v in syms)
-        from sympy.keras.network import NetWorkAppliedUndef
-        return NetWorkAppliedUndef(self, *(arg.precompile(*syms)for arg in self.args))
-       
     def __contains__(self, other):
         if self == other:
             return True
@@ -960,150 +954,6 @@ class AppliedUndef(Function):
             return Transpose(self)
         
         return super(AppliedUndef, self).T
-    
-    def _execute_torch_recursion(self, *args):
-        y = self.defun()
-        recursive = [*y.finditer(self.func)]
-        if len(recursive) != 1:
-            return
-        
-        recursive, = recursive
-        if not y.is_Piecewise:
-            return
-        
-        if len(y.args) != 2:
-            return
-        
-        (e1, c1), (e0, S[True]) = y.args
-        vars = c1.free_symbols & set().union(*(arg.free_symbols for arg in self.args))
-        if len(vars) != 1:
-            return
-        
-        N, = vars
-        if not N.is_integer:
-            return
-        
-        index = [i for i, (h_x, x) in enumerate(zip(recursive.args, self.args)) if h_x != x]
-        if len(index) != 1:
-            return
-        
-        index, = index
-        if self.args[index].is_Tuple:
-            initial = self.args[index][0]
-            initial_t = recursive.args[index][0]
-        else:
-            initial = self.args[index]
-            initial_t = recursive.args[index]
-        
-        b, a = initial.of_simple_poly(N)
-        if a != 1:
-            return
-
-        domain = c1.domain_conditioned(N)
-        if not domain.is_Range:
-            return
-        
-        if not domain.stop.is_infinite:
-            return
-        
-        start = domain.start
-        
-        diff = initial_t - initial
-        if diff == -1:
-#                                 forward recursive function
-            h = y.generate_var(var='h', **recursive.type.dict)
-            assert y._has(recursive)
-            y = y._subs(recursive, h)
-            data = e0.torch
-            for i in range(start, N.torch + 1):
-                h._torch = data
-                data = y.torch
-                
-        elif diff == 1:
-#                                 backward recursive function
-            ...
-        else:
-            return
-        
-        return data
-        
-    def execute_torch_recursion(self):
-        y = self.defun()
-        recursive = [*y.finditer(self.func)]
-        if len(recursive) != 1:
-            return
-        
-        recursive, = recursive
-        if not y.is_Piecewise:
-            return
-        
-        if len(y.args) != 2:
-            return
-        
-        (e1, c1), (e0, S[True]) = y.args
-        vars = c1.free_symbols & set().union(*(arg.free_symbols for arg in self.args))
-        if len(vars) != 1:
-            return
-        
-        N, = vars
-        if not N.is_integer:
-            return
-        
-        index = [i for i, (h_x, x) in enumerate(zip(recursive.args, self.args)) if h_x != x]
-        if len(index) != 1:
-            return
-        
-        index, = index
-        if self.args[index].is_Tuple:
-            initial = self.args[index][0]
-            initial_t = recursive.args[index][0]
-        else:
-            initial = self.args[index]
-            initial_t = recursive.args[index]
-        
-        b, a = initial.of_simple_poly(N)
-        if a != 1:
-            return
-
-        domain = c1.domain_conditioned(N)
-        if not domain.is_Range:
-            return
-        
-        if not domain.stop.is_infinite:
-            return
-        
-        start = domain.start
-        
-        diff = initial_t - initial
-        if diff == -1:
-#                                 forward recursive function
-            h = y.generate_var(var='h', **recursive.type.dict)
-            assert y._has(recursive)
-            y = y._subs(recursive, h)
-            data = e0.torch
-            for i in range(start, N.torch + 1):
-                h._torch = data
-                data = y.torch
-                
-        elif diff == 1:
-#                                 backward recursive function
-            ...
-        else:
-            return
-        
-        return data
-    
-    def _eval_torch(self):
-        data = self.execute_torch_recursion()
-        if data is None:
-            return self.defun().torch
-        return data
-    
-    def _eval_keras(self):
-        data = self.execute_keras_recursion()
-        if data is None:
-            return self.defun().keras
-        return data
     
     @property
     def is_aggregate(self):

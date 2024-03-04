@@ -687,7 +687,7 @@ class Indexed(Expr):
             return definition.generate_int_limit(*args, **kwargs) 
         return Expr.generate_int_limit(self, *args, **kwargs)
       
-    def _eval_transpose(self, axis=-1):
+    def _eval_transpose(self, *axis):
         if axis == self.default_axis:
             if len(self.shape) < 2:
                 return self
@@ -809,10 +809,6 @@ class Indexed(Expr):
         
         return self
                                 
-    def _eval_torch(self):
-        base, *indices = (arg.torch for arg in self.args)
-        return base[indices]
-    
     @staticmethod
     def simplify_Lamda(self, squeeze=False):
         variables = tuple(x for x, *_ in self.limits[::-1])
@@ -2055,11 +2051,6 @@ class Sliced(Expr):
         
         return self
 
-    def _eval_torch(self):
-        base, *indices = self.args
-        base = base.torch
-        indices = [slice(*[None if arg is None else arg.torch for arg in index.args]) for index in indices]
-        return base[indices]
     
     @staticmethod
     def simplify_Lamda(self, squeeze=False):
@@ -2838,7 +2829,7 @@ class SlicedIndexed(Expr):
         
         return domain
 
-    def _eval_transpose(self, axis=-1):
+    def _eval_transpose(self, *axis):
         if axis == self.default_axis:
             if len(self.shape) < 2:
                 return self
@@ -2910,12 +2901,6 @@ class SlicedIndexed(Expr):
                         
         return self
 
-    def _eval_torch(self):
-        base = self.base.torch
-        slices = [slice(*[None if arg is None else arg.torch for arg in index.args]) for index in self.slices]
-        indices = [index.torch for index in self.indices]
-        return base[tuple((*slices, *indices))]
-    
     @property
     def var(self):
         assert self.base.is_random

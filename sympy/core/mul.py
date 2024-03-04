@@ -2273,7 +2273,7 @@ class Mul(Expr, AssocOp):
                     del positive[j]
                     return True
 
-    def _eval_transpose(self, axis=-1):
+    def _eval_transpose(self, *axis):
         if axis == self.default_axis:
             scalar = []
             vector = []
@@ -2704,11 +2704,37 @@ class Mul(Expr, AssocOp):
                             if len(res) > 2:
                                 a, b = cls.args
                                 if a is Expr and (b is not Expr):
-                                    index = indices[1]
-                                    b = res[index]
-                                    res = res[:index] + res[index + 1:]
-                                    a = Mul(*res)
-                                    return a, b
+                                    if isinstance(b, Basic) and b.func.is_Pow and b.args == (Expr, -1):
+                                        # b == 1 / Expr
+                                        index = indices[1]
+
+                                        a = []
+                                        reciprocal = [res[index]]
+
+                                        for i in range(0, index):
+                                            if arg := res[i].of(b):
+                                                reciprocal.append(arg)
+                                            else:
+                                                a.append(res[i])
+
+                                        for i in range(index + 1, len(res)):
+                                            if arg := res[i].of(b):
+                                                reciprocal.append(arg)
+                                            else:
+                                                a.append(res[i])
+
+                                        a = Mul(*a) if a else S.One
+                                        b = Mul(*reciprocal)
+                                        return a, b
+                                    else:    
+                                        index = indices[1]
+                                        if index is None:
+                                            return Mul(*res)
+                                        else:
+                                            b = res[index]
+                                            res = res[:index] + res[index + 1:]
+                                            a = Mul(*res)
+                                            return a, b
                         elif len(cls.args) == 1:
                             for i, r in enumerate(res):
                                 if isinstance(r, tuple):
@@ -2816,9 +2842,6 @@ class Mul(Expr, AssocOp):
         from sympy.core.logic import fuzzy_and
         return fuzzy_and(x.is_continuous_at(*args) for x in self.args)
 
-    def _eval_torch(self):
-        return prod(arg.torch for arg in self.args)
-
     @staticmethod
     def simplify_Lamda(self, squeeze=False):
         vars = self.variables
@@ -2902,9 +2925,55 @@ class Mul(Expr, AssocOp):
         class_key = expr.class_key()
         return (*class_key, *coeff.sort_key()), args, exp, coeff
 
+    @classmethod
+    def factorize(cls, args, common_terms):
+        factor = Mul(*common_terms)
+        additives = []
+        for arg in args:
+            if isinstance(arg, int):
+                print(args)
+            if arg.is_Mul:
+                argset = {*arg.args}
+                for c in common_terms:
+                    argset = Add.complement(argset, c)
+                    if argset is None:
+                        return
+
+                additives.append(Mul(*argset))
+            elif arg.is_Pow:
+                b, e1 = arg.args
+                if be := factor.of(Pow):
+                    S[b], e0 = be
+                elif factor == b:
+                    e0 = S.One
+                else:
+                    return
+                additives.append(b ** (e1 - e0))
+            elif arg == factor:
+                additives.append(S.One)
+            else:
+                return
+
+        return additives, factor
+
+    def _eval_try_div(self, factor):
+        if factor.is_Mul:
+            coeff, [*args] = self.as_coeff_mul()
+            _coeff, [*_args] = factor.as_coeff_mul()
+            argset = {*args}
+            _argset = {*_args}
+            if _argset & argset == _argset:
+                return Mul(*argset - _argset) * coeff / _coeff
+        else:
+            for i, arg in enumerate(self.args):
+                quotient = arg.try_div(factor)
+                if quotient is not None:
+                    args = [*self.args]
+                    del args[i]
+                    return Mul(*args) * quotient
+
 
 mul = AssocOpDispatcher('mul')
-
     
 def prod(a, start=1):
     """Return product of elements of a. Start with int 1 so if only

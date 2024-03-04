@@ -3,9 +3,34 @@ from sympy.concrete.summations import Sum
 from sympy.core.cache import cacheit
 from sympy.core.singleton import S
 from sympy.concrete.expr_with_limits import Minima, Maxima
+from sympy.core.containers import Tuple
+
 
 class Reduced(Function):
     is_elementwise = False
+
+    def __new__(cls, *args, **options):
+        if len(args) > 1 and isinstance(args[-1], tuple):
+            arg, *axis = args
+            axis = tuple(axis for axis, in axis)
+            if len(axis) == 1:
+                axis, = axis
+        else:
+            arg, = args
+            if isinstance(arg, dict):
+                arg = S(arg)
+            axis = -1
+        axis = arg.normalize_reduced_axis(axis)
+
+        if options.get('evaluate', True):
+            result = cls.eval(arg, axis=axis)
+            if result is not None:
+                return result
+            
+        from sympy.core.basic import Basic
+        obj = Basic.__new__(cls, arg)
+        obj.axis = Tuple(*axis) if isinstance(axis, tuple) else S(axis)
+        return obj
 
     def _subs(self, old, new, **hints):
         #need to consider the shape reduction, if the shape is reduced, then reduced operator should be removed!
@@ -29,6 +54,28 @@ class Reduced(Function):
             return self.func(arg)
 
         return self
+
+    def _hashable_content(self):
+        axis = self.axis
+        if not isinstance(axis, (tuple, Tuple)):
+            axis = axis,
+        return super()._hashable_content() + axis
+
+    @cacheit
+    def _eval_shape(self):
+        axis = self.axis
+        [*shape] = self.arg.shape
+        if shape:
+            if isinstance(axis, (tuple, Tuple)):
+                for axis in reversed(axis):
+                    del shape[axis]
+            else:
+                del shape[axis]
+        return tuple(shape)
+
+    @property
+    def default_axis(self):
+        return len(self.arg.shape) - 1
 
 
 class ReducedSum(Reduced):
@@ -65,26 +112,42 @@ class ReducedSum(Reduced):
             return self.func(rest).doit(deep=deep) + sgm
         return self
 
-    @cacheit
-    def _eval_shape(self):
-        return self.arg.shape[:-1]
-
     @property
     def dtype(self):
         return self.arg.dtype
 
     def _sympystr(self, p):
         # return '\N{N-ARY SUMMATION}(%s)' % p._print(self.arg)
-        return 'ReducedSum(%s)' % p._print(self.arg)
+        axis = self.axis
+        if axis == self.default_axis:
+            return 'ReducedSum(%s)' % p._print(self.arg)
+        else:
+            if isinstance(axis, (tuple, Tuple)):
+                axis = ', '.join(p._print(axis) for axis in axis)
+            else:
+                axis = p._print(axis)
+            return 'ReducedSum[%s](%s)' % (axis, p._print(self.arg))
 
     def _latex(self, p, exp=None):
+        axis = self.axis
         expr = p._print(self.arg)
         if self.arg.is_Add or self.arg.is_MatMul:
             expr = r"\left(%s\right)" % expr
-        expr = r"\sum{%s}" % expr
-        if exp is None:
-            return expr
+
+        if axis == self.default_axis:
+            expr = r"\sum{%s}" % expr
+            if exp is None:
+                return expr
+        else:
+            if isinstance(axis, (tuple, Tuple)):
+                axis = ', '.join(p._print(axis) for axis in axis)
+            else:
+                axis = p._print(axis)
+            expr = r"\sum\nolimits_{%s}{%s}" % (axis, expr)
+            if exp is None:
+                return expr
         return r"\left(%s\right)^{%s}" % (expr, exp)
+
     
     def _eval_is_finite(self):
         return self.arg.is_finite
@@ -102,8 +165,7 @@ class ReducedSum(Reduced):
         return self.arg.is_extended_negative
 
     def _eval_exp(self):
-        from sympy import log
-        from sympy.concrete.products import Product
+        from sympy import log, Product
         if isinstance(self.arg, log):
             return Product(self.arg.arg, *self.limits)
 
@@ -174,10 +236,6 @@ class ReducedMean(Reduced):
             return self.func(rest).doit(deep=deep) + sgm
         else:
             return self
-
-    @cacheit
-    def _eval_shape(self):
-        return self.arg.shape[:-1]
 
     @property
     def dtype(self):
@@ -272,13 +330,12 @@ class ReducedMinMaxBase(Reduced):
         else:
             return self
 
-    @cacheit
-    def _eval_shape(self):
-        return self.arg.shape[:-1]
-
     @property
     def dtype(self):
-        return self.arg.dtype
+        expr = self.arg
+        if expr.is_set:
+            return expr.etype
+        return expr.dtype
 
     def _sympystr(self, p):
         return '%s(%s)' % (self.__class__.__name__, p._print(self.arg))
@@ -347,9 +404,10 @@ class ReducedMinMaxBase(Reduced):
         return self
 
     @classmethod
-    def eval(cls, arg):
-        if not arg.shape and not arg.is_set:
-            return arg
+    def eval(cls, arg, axis=-1):
+        if axis == arg.default_axis:
+            if not arg.shape and not arg.is_set:
+                return arg
 
 
 class ReducedMin(ReducedMinMaxBase):
@@ -364,20 +422,16 @@ class ReducedMax(ReducedMinMaxBase):
     r"""Represents unevaluated reduced maximize.
     input must be a multi-dimensional tensor
     """
-    operator = Maxima
+    operator = Maxima    
 
 
-class ReducedArgMinMaxBase(Function):
+class ReducedArgMinMaxBase(Reduced):
     r"""Represents unevaluated reduced ArgMax / ArgMin.
     input must be a multi-dimensional tensor
     """
     
     is_integer = True
     
-    @cacheit
-    def _eval_shape(self):
-        return self.arg.shape[:-1]
-
     @property
     def dtype(self):
         from sympy.core.symbol import dtype
@@ -441,12 +495,10 @@ class ReducedArgMax(ReducedArgMinMaxBase):
     input must be a multi-dimensional tensor
     """
     
-    def _eval_torch(self):
-        return self.arg.torch.argmax(-1)
-    
     @classmethod
-    def eval(cls, arg):
-        return arg._eval_ReducedArgMax()
+    def eval(cls, arg, axis=-1):
+        if axis == arg.default_axis:
+            return arg._eval_ReducedArgMax()
 
 
 class ReducedArgMin(ReducedArgMinMaxBase):
@@ -454,9 +506,7 @@ class ReducedArgMin(ReducedArgMinMaxBase):
     input must be a multi-dimensional tensor
     """
     
-    def _eval_torch(self):
-        return self.arg.torch.argmin(-1)
-    
     @classmethod
-    def eval(cls, arg):
-        return arg._eval_ReducedArgMin()
+    def eval(cls, arg, axis=-1):
+        if axis == arg.default_axis:
+            return arg._eval_ReducedArgMin()

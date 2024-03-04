@@ -460,9 +460,6 @@ class Exp(ExpBase):
             return None, 0
         return self.func(arg, evaluate=False), monotonicity
 
-    def _eval_torch(self):
-        return self.arg.torch.exp()
-    
     @classmethod
     def _eval_simplify_Lamda(cls, self, squeeze=False):
         expr = self.expr

@@ -103,7 +103,7 @@ class MatPow(MatrixExpr):
             return base
         return MatPow(base, exp)
 
-    def _eval_transpose(self, axis=-1):
+    def _eval_transpose(self, *axis):
         if axis == self.default_axis:
             base, exp = self.args
             return MatPow(base.T, exp)

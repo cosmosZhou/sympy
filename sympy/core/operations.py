@@ -573,8 +573,7 @@ class AssocOp(Basic):
             from sympy.core.expr import Expr
             a, b = cls.args
             cls = Basic.__new__(self.func, b, a)
-            args = Expr.of(self, cls, indices=indices)
-            if args is not None:
+            if args := Expr.of(self, cls, indices=indices):
                 indices.reverse()
                 if cls.of_LinearPattern():
                     if isinstance(args, tuple):
@@ -597,22 +596,39 @@ class AssocOp(Basic):
                     return _a, _b
             return args
         
+        self_args = self.args
         for i, Ty in enumerate(cls.args):
-            args = [*self.args]
-            Ty_indices = [t for t, arg in enumerate(args) if isinstance(Ty, type) and isinstance(arg, Ty) or isinstance(Ty.func, type) and isinstance(arg, Ty.func)]
-            if len(Ty_indices) == 1:
+            j = None
+            for t, arg in enumerate(self_args):
+                if isinstance(Ty, type):
+                    hit = isinstance(arg, Ty)
+                elif Ty.is_Basic and not isinstance(Ty, Basic):
+                    hit = Ty == arg # Ty is actually a specific determined number
+                elif isinstance(Ty.func, type):
+                    hit = isinstance(arg, Ty.func)
+                else:
+                    continue
+
+                if hit:
+                    if j is None:
+                        j = t
+                    else:
+                        break
+            else:
+                if j is None:
+                    continue
+
                 types = [*cls.args]
-                j, = Ty_indices
                 del types[i]
                 
+                args = [*self_args]
                 Ty_value = args.pop(j)
                 Ty_value = Ty_value.of(Ty)
                 if Ty_value is None:
                     break
 
                 indices_ = [None] * len(types)
-                args = self.func(*args).of(Basic.__new__(self.func, *types), indices=indices_)
-                if args:
+                if args := self.func(*args).of(Basic.__new__(self.func, *types), indices=indices_):
                     any_is_null = False
                     for t, index in enumerate(indices_):
                         if index is None:

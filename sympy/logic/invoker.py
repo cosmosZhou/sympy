@@ -194,7 +194,7 @@ class Invoker:
         elif isinstance(simplify, bool):
             simplify = -1
         else:
-            #warning: isinstance(True, int) or isinstance(False, int) is always True
+            # warning: isinstance(True, int) or isinstance(False, int) is always True
             if simplify:
                 simplify -= 1
 
@@ -287,7 +287,9 @@ class Invoker:
     def fetch_from_path(self, *path, struct=None):
         target = self.target
         if struct is not None: 
-            target.fetch_from_path(*path, struct=struct)            
+            _path = target.fetch_from_path(*path, struct=struct)
+            if isinstance(_path, tuple):
+                path += _path
             
         for index in path:
             self.index.append(index)
