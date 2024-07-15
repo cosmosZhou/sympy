@@ -378,18 +378,15 @@ class BinaryCondition(Boolean):
     def domain_definition(self, **_):
         return self.lhs.domain_definition() & self.rhs.domain_definition()
     
-    def __nonzero__(self):
+    def __bool__(self):
         return False
-    
-    __bool__ = __nonzero__
     
     @staticmethod
     def eval(cls, *args, **options):
-        args = list(map(sympify, args))
+        if options.pop('sympify', True):
+            args = tuple(map(sympify, args))
         from sympy.core.parameters import global_parameters
-        evaluate = options.pop('evaluate', global_parameters.evaluate)
-        
-        if evaluate:
+        if options.pop('evaluate', global_parameters.evaluate):
             evaluated = cls.eval(*args)
             if evaluated is not None:
 
@@ -599,10 +596,8 @@ class BooleanTrue(with_metaclass(Singleton, BooleanAtom)):
 
     """
 
-    def __nonzero__(self):
+    def __bool__(self):
         return True
-
-    __bool__ = __nonzero__
 
     def __hash__(self):
         return hash(True)
@@ -693,10 +688,8 @@ class BooleanFalse(with_metaclass(Singleton, BooleanAtom)):
 
     """
 
-    def __nonzero__(self):
+    def __bool__(self):
         return False
-
-    __bool__ = __nonzero__
 
     def __hash__(self):
         return hash(False)
@@ -741,7 +734,7 @@ class BooleanFalse(with_metaclass(Singleton, BooleanAtom)):
     def _latex(self, p):
         return r"\text{False}"
 
-    
+
 true = BooleanTrue()
 false = BooleanFalse()
 # We want S.true and S.false to work, rather than S.BooleanTrue and
@@ -772,7 +765,7 @@ class BooleanFunction(Application, Boolean):
     @property
     def dtype(self):
         from sympy.core.symbol import dtype
-        return dtype.condition
+        return dtype.bool
 
     def _eval_simplify(self, ratio, measure, rational, inverse):
         rv = self.func(*[a._eval_simplify(ratio=ratio, measure=measure,

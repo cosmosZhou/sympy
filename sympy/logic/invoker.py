@@ -106,8 +106,7 @@ class Invoker:
         for i in range(-1, -len(self.index) - 1, -1):
             this, args, kwargs = self.process_index(i, obj)
             
-            stop = i == -len(self.index)
-            if stop:
+            if stop := i == -len(self.index):
                 kwargs = assumptions
                 
             if evaluate is not None:

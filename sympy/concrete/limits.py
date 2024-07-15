@@ -200,7 +200,12 @@ def limits_common(limits, _limits, is_or=False, clue=None):
 def limits_intersect(limits, _limits, clue=None):
     dic = limits_common(limits, _limits, clue=clue)
     if dic:
-        return limits_update(limits, dic) + limits_delete(_limits, dic)
+        keys = dic.keys()
+        limits = limits_update(limits, dic)
+        _limits = limits_delete(_limits, dic)
+        from std import array_split
+        limits_prior, limits_after = array_split(_limits, lambda limit: any(arg.has(*keys) for arg in limit[1:]))
+        return limits_prior + limits + limits_after
     else:
         if type(_limits) != type(limits):
             _limits = type(limits)(_limits)

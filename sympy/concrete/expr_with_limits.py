@@ -219,12 +219,9 @@ class ExprWithLimits(Expr):
         expr = self.expr
         for v in expr.yield_random_symbols():
             if v.is_Indexed or v.is_Sliced or v.is_SlicedIndexed:
-                if v_enlarged := v.enlarge_indices(limits, expr):
-                    yield v_enlarged
-                else:
-                    yield v
-            else:                    
-                yield v
+                if v_expanded := v.expand_indices(limits, expr):
+                    v = v_expanded
+            yield v
 
         for x, *ab in limits:
             for v in ab:
@@ -235,13 +232,12 @@ class ExprWithLimits(Expr):
         expr = self.expr
         for v in expr.yield_effective_variable(variable):
             if v.is_Indexed or v.is_Sliced or v.is_SlicedIndexed:
-                if v_enlarged := v.enlarge_indices(limits, expr):
-                    if v_enlarged._has(variable):
-                        yield v_enlarged
-                else:
-                    yield v
-            else:
-                yield v
+                if v_expanded := v.expand_indices(limits, expr):
+                    if v_expanded._has(variable):
+                        v = v_expanded
+                    else:
+                        continue
+            yield v
 
         for x, *ab in limits:
             for v in ab:
@@ -1322,7 +1318,7 @@ class ExprWithLimits(Expr):
                 history.insert(0, self)
                 for this in reversed(history):
                     if this.is_ExprWithLimits:
-                        last = last.enlarge_indices(this.limits)
+                        last = last.expand_indices(this.limits)
                         if last._has(pattern):
                             return True
         else:
@@ -1346,7 +1342,7 @@ class ExprWithLimits(Expr):
                 if last.is_Indexed and len(history) >= 3 and history[-3].is_Sliced and history[-3].base == last:
                     last = history[-3]
                 
-                last = last.enlarge_indices(self.limits)
+                last = last.expand_indices(self.limits)
                 if last._has(pattern):
                     return last not in self.variables
         else:

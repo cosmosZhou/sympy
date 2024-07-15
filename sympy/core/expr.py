@@ -673,7 +673,7 @@ class Expr(Basic, EvalfMixin):
         free = self.free_symbols
         prec = 1
         if free:
-            from sympy.utilities.randtest import random_complex_number
+            return
             a, c, b, d = re_min, re_max, im_min, im_max
             reps = dict(list(zip(free, [random_complex_number(a, b, c, d, rational=True)
                            for zi in free])))

@@ -4151,18 +4151,14 @@ class TensorBinaryCondition(Boolean):
     def domain_definition(self, **_):
         return self.lhs.domain_definition() & self.rhs.domain_definition()
     
-    def __nonzero__(self):
+    def __bool__(self):
         return False
-    
-    __bool__ = __nonzero__
     
     @staticmethod
     def eval(cls, *args, **options):
         args = list(map(sympify, args))
         from sympy.core.parameters import global_parameters
-        evaluate = options.pop('evaluate', global_parameters.evaluate)
-        
-        if evaluate:
+        if options.pop('evaluate', global_parameters.evaluate):
             evaluated = cls.eval(*args)
             if evaluated is not None:
 

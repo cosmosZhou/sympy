@@ -399,20 +399,6 @@ def sympify(a, locals=None, convert_xor=True, strict=False, rational=False,
                 from ..tensor.array import Array
                 return Array(a.flat, a.shape)  # works with e.g. NumPy arrays
 
-    if not isinstance(a, str):
-        for coerce in (float, int):
-            try:
-                coerced = coerce(a)
-            except (TypeError, ValueError):
-                continue
-            # XXX: AttributeError only needed here for Py2
-            except AttributeError:
-                continue
-            try:
-                return sympify(coerced)
-            except SympifyError:
-                continue
-
     if isinstance(a, list):
         def flatten(a):
             if isinstance(a, list):

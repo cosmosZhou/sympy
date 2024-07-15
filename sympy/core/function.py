@@ -49,6 +49,8 @@ from sympy.utilities.misc import filldedent
 import mpmath, inspect, types, re
 import mpmath.libmp as mlib
 from collections import Counter
+from typing import get_type_hints
+
 
 class PoleError(Exception):
     pass
@@ -1130,9 +1132,10 @@ class UndefinedFunction(ManagedProperties):
         
         if isinstance(name, types.FunctionType):
             func, name = name, name.__name__
+            if type_hints := get_type_hints(func):
+                ...
             kwargs['eval'] = func
-            __doc__ = func.__doc__
-            if __doc__:
+            if __doc__ := func.__doc__:
                 __dict__['__doc__'] = __doc__
             
         __dict__.update(kwargs)
@@ -1178,6 +1181,15 @@ class UndefinedFunction(ManagedProperties):
     def __xor__(self, other):
         from sympy.core.assumptions import IndexedOperator
         return IndexedOperator(self, [(other,)], 0)
+
+    @property
+    def is_infinitely_recursive(self):
+        var, expr = self.eval.args
+        this_expr = self(var)
+        for e in expr.preorder_traversal():
+            if e == this_expr:
+                return True
+
 
 # XXX: The type: ignore on WildFunction is because mypy complains:
 #
@@ -3064,7 +3076,7 @@ class Subs(Expr):
                 history.insert(0, self)
                 for this in reversed(history):
                     if this.is_ExprWithLimits:
-                        last = last.enlarge_indices(this.limits)
+                        last = last.expand_indices(this.limits)
                         if last._has(pattern):
                             return True
         else:
@@ -3088,7 +3100,7 @@ class Subs(Expr):
                 if last.is_Indexed and len(history) >= 3 and history[-3].is_Sliced and history[-3].base == last:
                     last = history[-3]
                 
-                last = last.enlarge_indices(self.limits)
+                last = last.expand_indices(self.limits)
                 if last._has(pattern):
                     return last not in self.variables
         else:

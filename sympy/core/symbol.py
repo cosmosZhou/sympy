@@ -199,9 +199,9 @@ class Symbol(AtomicExpr, NotIterable):
             return other in self.definition
         
         if other.is_Symbol:
-            domain_assumed = other.domain_assumed
-            if domain_assumed is not None:
-                return domain_assumed in self
+            domain = other.domain_assumed
+            if domain is not None:
+                return domain in self
 
 # precondition, self and other are structurally equal!
     def _dummy_eq(self, other):
@@ -223,6 +223,8 @@ class Symbol(AtomicExpr, NotIterable):
                
             if isinstance(domain, set):
                 assumptions['domain'] = sympify(domain) 
+            elif isinstance(domain, type):
+                assumptions['domain'] = domain
             elif domain.is_Range:
                 if domain.start is S.NegativeInfinity:
                     if domain.stop is S.Infinity:
@@ -368,11 +370,11 @@ class Symbol(AtomicExpr, NotIterable):
         """
         cls._sanitize(assumptions, cls)
         if len(args) == 1:
-            [definition] = args
-            if isinstance(definition, str):
-                name = definition
+            arg, = args
+            if isinstance(arg, str):
+                name = arg
             else:
-                assumptions['definition'] = definition
+                assumptions['definition'] = arg
                 name = None
         elif len(args) == 2:
             name, definition = args
@@ -702,6 +704,8 @@ class Symbol(AtomicExpr, NotIterable):
                 return dtype.extended_complex
             elif self.is_hyper_complex:
                 return dtype.hyper_complex
+            elif (domain := self._assumptions.get('domain')) and isinstance(domain, type):
+                return domain.etype
             else:
                 return dtype.super_complex
             
@@ -1055,13 +1059,14 @@ class Symbol(AtomicExpr, NotIterable):
         
     def _eval_is_finite(self):
         if domain := self._assumptions.get('domain'):
-            domain_assumed = self.domain_assumed
-            if domain_assumed.is_Range or domain_assumed.is_Interval: 
+            if isinstance(domain, type):
+                return
+            if domain.is_Range or domain.is_Interval: 
                 return True
-            if domain_assumed.is_FiniteSet:
-                if all(arg.is_finite for arg in domain_assumed.args):
+            if domain.is_FiniteSet:
+                if all(arg.is_finite for arg in domain.args):
                     return True
-                if all(arg.is_infinite for arg in domain_assumed.args):
+                if all(arg.is_infinite for arg in domain.args):
                     return False
             return
         
@@ -1085,6 +1090,8 @@ class Symbol(AtomicExpr, NotIterable):
 
     def _eval_is_super_integer(self):
         if domain := self._assumptions.get('domain'):
+            if isinstance(domain, type):
+                return
             return domain.is_super_integer
         if definition := self._assumptions.get('definition'):
             return definition.is_super_integer
@@ -1115,6 +1122,8 @@ class Symbol(AtomicExpr, NotIterable):
 
     def _eval_is_super_rational(self):
         if domain := self._assumptions.get('domain'):
+            if isinstance(domain, type):
+                return
             return domain.is_super_rational
         if definition := self._assumptions.get('definition'):
             return definition.is_super_rational
@@ -1145,6 +1154,8 @@ class Symbol(AtomicExpr, NotIterable):
         
     def _eval_is_super_real(self):
         if domain := self._assumptions.get('domain'):
+            if isinstance(domain, type):
+                return
             return domain.is_super_real
         if definition := self._assumptions.get('definition'):
             return definition.is_super_real
@@ -1155,6 +1166,8 @@ class Symbol(AtomicExpr, NotIterable):
 
     def _eval_is_extended_complex(self):
         if domain := self._assumptions.get('domain'):
+            if isinstance(domain, type):
+                return
             return domain.is_extended_complex
         if definition := self._assumptions.get('definition'):
             return definition.is_extended_complex
@@ -1165,6 +1178,8 @@ class Symbol(AtomicExpr, NotIterable):
 
     def _eval_is_hyper_complex(self):
         if domain := self._assumptions.get('domain'):
+            if isinstance(domain, type):
+                return
             return domain.is_hyper_complex
         if definition := self._assumptions.get('definition'):
             return definition.is_hyper_complex
@@ -2224,6 +2239,8 @@ def disambiguate(*iter):
 
 
 class Dtype:
+
+    is_tuple = False  # indicate a tuple of different data types
     is_bool = False
     is_set = False
     
@@ -2334,6 +2351,9 @@ class Dtype:
     @property
     def distribution(self):
         return DtypeDistribution()
+
+    def type(self, type):
+        return DtypeType(type)
 
     @property
     def emptySet(self):
@@ -3301,6 +3321,7 @@ class DtypeBoolean(Dtype):
 
 
 class DtypeDistribution(Dtype):
+
     is_distribution = True
     
     def __str__(self):
@@ -3315,6 +3336,48 @@ class DtypeDistribution(Dtype):
 
     def __hash__(self):
         return hash(type(self).__name__)
+
+
+class DtypeTuple(Dtype):
+
+    is_tuple = True
+    
+    def __init__(self, *dtype):
+        self.dtype = dtype
+
+    def __str__(self):
+        return 'tuple'
+    
+    @property
+    def dict(self):
+        return {'dtype': self.dtype}
+
+    def __eq__(self, other):
+        return isinstance(other, DtypeTuple)
+
+    def __hash__(self):
+        return hash(type(self).__name__)
+
+
+class DtypeType(Dtype):
+
+    is_type = True
+    
+    def __init__(self, type):
+        self.type = type
+
+    def __str__(self):
+        return self.type.__name__ + '.etype'
+    
+    @property
+    def dict(self):
+        return {'domain': self.type}
+
+    def __eq__(self, other):
+        return isinstance(other, DtypeType) and self.type == other.type
+
+    def __hash__(self):
+        return hash((self.__class__, self.type))
 
 
 dtype = Dtype()

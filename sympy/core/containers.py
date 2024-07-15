@@ -380,8 +380,12 @@ class Tuple(Basic):
     def _latex(self, p):
         return p._print_tuple(self)
 
+    def dtype(self):
+        from sympy.core.symbol import DtypeTuple
+        return DtypeTuple(*(arg.dtype for arg in self.args))
 
-converter[tuple] = lambda tup: Tuple(*tup)
+
+converter[tuple] = lambda args: Tuple(*args)
 
 
 def tuple_wrapper(method):

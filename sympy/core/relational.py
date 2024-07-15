@@ -129,7 +129,7 @@ class Relational(BinaryCondition, Expr, EvalfMixin):
         1 > x
         """
         a, b = self.args
-        return self.reversed_type(b, a, evaluate=False)
+        return self.reversed_type(b, a, sympify=False, evaluate=False)
 
     def __neg__(self, **kwargs):
         """Return the relationship with signs reversed.
@@ -564,11 +564,10 @@ class Equal(Relational):
     __slots__ = ()
 
     def __new__(cls, lhs, rhs=None, **options):
-
-        evaluate = options.pop('evaluate', global_parameters.evaluate)
-        lhs = _sympify(lhs)
-        rhs = _sympify(rhs)
-        if evaluate:
+        if options.pop('sympify', True):
+            lhs = _sympify(lhs)
+            rhs = _sympify(rhs)
+        if options.pop('evaluate', global_parameters.evaluate):
             # If one expression has an _eval_Eq, return its results.
             if hasattr(lhs, '_eval_Eq'):
                 r = lhs._eval_Eq(rhs)
@@ -586,7 +585,7 @@ class Equal(Relational):
             elif not (lhs.is_Symbol or rhs.is_Symbol) and (lhs.is_Boolean != rhs.is_Boolean):
                 return S.false  # only Booleans can equal Booleans
             from sympy.sets.contains import Element
-            if Element(rhs, lhs.domain).is_BooleanFalse or Element(lhs, rhs.domain).is_BooleanFalse:
+            if Element(rhs, lhs.domain, sympify=False).is_BooleanFalse or Element(lhs, rhs.domain, sympify=False).is_BooleanFalse:
                 return S.false.copy(**options)
 
             if isinstance(lhs, Expr) and isinstance(rhs, Expr) and not lhs.dtype.is_set and not rhs.dtype.is_set and not lhs.dtype.is_bool:
@@ -1244,10 +1243,10 @@ class Unequal(Relational):
         return 'Unequal(%s, %s)' % tuple(p._print(arg) for arg in self.args)
 
     def __new__(cls, lhs, rhs, **options):
-        lhs = _sympify(lhs)
-        rhs = _sympify(rhs)
-        evaluate = options.pop('evaluate', global_parameters.evaluate)
-        if evaluate:
+        if options.pop('sympify', True):
+            lhs = _sympify(lhs)
+            rhs = _sympify(rhs)
+        if options.pop('evaluate', global_parameters.evaluate):
             is_equal = Equal(lhs, rhs)
             if isinstance(is_equal, BooleanAtom):
                 if 'plausible' in options:
@@ -1453,15 +1452,10 @@ class Inequality(Relational):
     __slots__ = ()
 
     def __new__(cls, lhs, rhs, **options):
-
-        try:
+        if options.pop('sympify', True):
             lhs = _sympify(lhs)
             rhs = _sympify(rhs)
-        except SympifyError:
-            return NotImplemented
-
-        evaluate = options.pop('evaluate', global_parameters.evaluate)
-        if evaluate:
+        if options.pop('evaluate', global_parameters.evaluate):
             # First we invoke the appropriate inequality method of `lhs`
             # (e.g., `lhs.__lt__`).  That method will try to reduce to
             # boolean or raise an exception.  It may keep calling

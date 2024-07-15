@@ -771,8 +771,6 @@ class ProductSet(Set):
     def __bool__(self):
         return all([bool(s) for s in self.args])
 
-    __nonzero__ = __bool__
-
     def __neg__(self):
         return self.func(*(-arg for arg in self.args))
 

@@ -12,18 +12,9 @@ from sympy import Mul, Add, Pow, log, exp, sqrt, cos, sin, tan, asin, acos, acot
 from sympy.core.sympify import sympify, _sympify
 from sympy.functions.special.bessel import airybiprime
 from sympy.functions.special.error_functions import li
-from sympy.utilities.exceptions import sympy_deprecation_warning
 
 
 def mathematica(s, additional_translations=None):
-    sympy_deprecation_warning(
-        """The ``mathematica`` function for the Mathematica parser is now
-deprecated. Use ``parse_mathematica`` instead.
-The parameter ``additional_translation`` can be replaced by SymPy's
-.replace( ) or .subs( ) methods on the output expression instead.""",
-        deprecated_since_version="1.11",
-        active_deprecations_target="mathematica-parser-new",
-    )
     parser = MathematicaParser(additional_translations)
     return sympify(parser._parse_old(s))
 

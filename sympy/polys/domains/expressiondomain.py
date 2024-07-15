@@ -118,10 +118,8 @@ class ExpressionDomain(Field, CharacteristicZero, SimpleDomain):
         def __ne__(f, g):
             return not f == g
 
-        def __nonzero__(f):
+        def __bool__(f):
             return f.ex != 0
-
-        __bool__ = __nonzero__
 
         def gcd(f, g):
             from sympy.polys import gcd

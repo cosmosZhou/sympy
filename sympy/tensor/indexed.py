@@ -776,8 +776,8 @@ class Indexed(Expr):
     of_simple_poly = Symbol.of_simple_poly
     
     monotonicity = Symbol.monotonicity
-        
-    def enlarge_indices(self, limits, expr=None):
+    
+    def expand_indices(self, limits, expr=None):
         base, *indices = self.args
         
         indices_transformed = [*indices]
@@ -791,7 +791,7 @@ class Indexed(Expr):
                 continue
 
             if len(ab) == 2 and not ab[1].is_set:
-                if args := enlarge_indices(limit, indices_transformed):
+                if args := expand_indices(limit, indices_transformed):
                     t, args = args
                     indices_transformed[t] = args
                     hit = True
@@ -799,7 +799,7 @@ class Indexed(Expr):
             elif not ab and expr is not None:
                 domain = expr.domain_defined(i)
                 if domain.is_Range:
-                    if args := enlarge_indices((i, *domain.args), indices_transformed):
+                    if args := expand_indices((i, *domain.args), indices_transformed):
                         t, args = args
                         indices_transformed[t] = args
                         hit = True
@@ -1059,6 +1059,7 @@ class Indexed(Expr):
                 return
             
             return CartesianSpace(domain, *self.shape)
+
 
 class Sliced(Expr):
     """Represents a mathematical object with Slices,
@@ -2015,10 +2016,10 @@ class Sliced(Expr):
             return self.copy(domain=None)
         return self
 
-    def enlarge_indices(self, limits, expr=None):
+    def expand_indices(self, limits, expr=None):
         base, *indices = self.args
         if base.is_Indexed:
-            base = base.enlarge_indices(limits)
+            base = base.expand_indices(limits)
             if base.is_Sliced:
                 base, *new_indices = base.args
                 indices = new_indices + indices
@@ -2033,7 +2034,7 @@ class Sliced(Expr):
                 continue
 
             if len(ab) == 2 and not ab[1].is_set:
-                if args := enlarge_indices(limit, indices):
+                if args := expand_indices(limit, indices):
                     t, args = args
                     indices_transformed[t] = args
                     hit = True
@@ -2041,7 +2042,7 @@ class Sliced(Expr):
             elif not ab and expr is not None:
                 domain = expr.domain_defined(i)
                 if domain.is_Range:
-                    if args := enlarge_indices((i, *domain.args), indices):
+                    if args := expand_indices((i, *domain.args), indices):
                         t, args = args
                         indices_transformed[t] = args
                         hit = True
@@ -3430,7 +3431,7 @@ def index_complement(lhs, rhs):
 
     return set()
 
-def enlarge_indices(limit, indices):
+def expand_indices(limit, indices):
     i, a, b = limit
     for t, d in enumerate(indices):
         if d.is_Tuple:

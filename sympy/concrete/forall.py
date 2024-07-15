@@ -89,11 +89,13 @@ class ForAll(Quantifier):
                 continue
             if len(ab) == 1:
                 domain = ab[0]
-            else:
+            elif ab:
                 a, b = ab
                 if b.is_set:
                     continue
                 domain = x.range(a, b)
+            else:
+                domain = x.universalSet
                 
             if self.expr._has(x) and domain.is_set:
                 _eval_domain_defined = self.expr.domain_defined(x)

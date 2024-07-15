@@ -630,7 +630,11 @@ class Basic(Printable, metaclass=ManagedProperties):
     def merge_symbols(v, s):
         if s:
             from sympy import Range
-            if v.is_Indexed:
+            if v.is_Symbol:
+                if s_deleted := {t for t in s if (t.is_Sliced or t.is_Indexed) and t.base == v}:
+                    s -= s_deleted
+
+            elif v.is_Indexed:
                 if v.base in s:
                     return
                 x, *indices = v.args
@@ -3155,7 +3159,7 @@ class Basic(Printable, metaclass=ManagedProperties):
         from sympy.concrete.expr_with_limits import Lamda
         return Lamda(self[tuple(indices)], *limits)
     
-    def enlarge_indices(self, limits, **kwargs):
+    def expand_indices(self, limits, **kwargs):
         return self
     
     @staticmethod

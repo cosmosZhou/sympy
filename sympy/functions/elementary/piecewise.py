@@ -318,7 +318,7 @@ class Piecewise(Function):
                     nonredundant.append(c)
                 cond = cond.func(*nonredundant)
             elif isinstance(cond, Relational):
-                if cond.invert().canonical in current_cond:
+                if current_cond and cond.invert().canonical in current_cond:
                     cond = S.true
 
             current_cond.add(cond)

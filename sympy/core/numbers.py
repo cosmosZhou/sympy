@@ -1350,10 +1350,8 @@ class Float(Number):
     def _eval_is_zero(self):
         return self._mpf_ == fzero
 
-    def __nonzero__(self):
-        return self._mpf_ != fzero
-
-    __bool__ = __nonzero__
+    def __bool__(self):
+        return not self.is_zero
 
     def __neg__(self):
         return Float._new(mlib.mpf_neg(self._mpf_), self._prec)
@@ -2617,6 +2615,14 @@ class Integer(Rational):
             if not self % factor:
                 return self / factor
 
+    @property
+    def zero(self):
+        return S.Zero
+
+    # lean4 definition of natural numbers
+    def succ(self):
+        return self + 1
+
 
 # Add sympify converters
 converter[int] = Integer
@@ -2839,10 +2845,8 @@ class Zero(with_metaclass(Singleton, IntegerConstant)):
         # Order(0,x) -> 0
         return self
 
-    def __nonzero__(self):
+    def __bool__(self):
         return False
-
-    __bool__ = __nonzero__
 
     def as_coeff_Mul(self, rational=False):  # XXX this routine should be deleted
         """Efficiently extract the coefficient of a summation. """

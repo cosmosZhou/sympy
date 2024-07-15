@@ -1079,10 +1079,8 @@ class ZeroMatrix(ConstantMatrix, MatrixExpr):
     def _entry(self, i, j=None, **kwargs):
         return ZeroMatrix.static_entry(self, i, j)
 
-    def __nonzero__(self):
+    def __bool__(self):
         return False
-
-    __bool__ = __nonzero__
 
     def _latex(self, p):
         return r'\mathbf{0}_{%s}' % ','.join(map(p._print, self.shape))
