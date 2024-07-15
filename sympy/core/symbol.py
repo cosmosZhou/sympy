@@ -1552,7 +1552,7 @@ class Symbol(AtomicExpr, NotIterable):
 
     @classmethod
     def compile_definition_statement(cls, line):
-        m = re.match('(.+?) *= *(Symbol|Function)\((\w+=.+)\) *$', line)
+        m = re.match('(.+?) *= *(Symbol|Function)\((.+)\) *$', line)
         if m:
             name, func, kwargs = m.groups()
             if ',' in name:
